@@ -1,0 +1,68 @@
+# PawHome 可复用 UI / 能力（供后续迭代对照）
+
+> 由助手维护：新增通用组件或样式时，可在此补充一条，便于在其它页面快速复用。
+
+## 通用弹窗
+
+| 资源 | 路径 | 说明 |
+|------|------|------|
+| **PawNoticeModal** | `components/PawNoticeModal.vue` | 居中白底圆角卡片：灰字主文案 + 分割线 +「我知道了」。`v-model:visible`、`message`、`confirmText`（默认「我知道了」）。`z-index: 10000`。与领养入口的 `AdoptEntryHintModal` 为同一视觉规范。 |
+| 文案常量 | `utils/pawNoticeMessages.js` | 见下表。 |
+
+### pawNoticeMessages 文案一览
+
+| 常量 | 文案 |
+|------|------|
+| `PAW_MSG_ADOPT_DAY_LIMIT` | 抱歉，您今日领养次数已用完 |
+| `PAW_MSG_VOTE_DAY_LIMIT` | 抱歉，您今日投票次数已用完 |
+| `PAW_MSG_VOICE_LEVEL` | 抱歉，您当前等级暂无语音权限 |
+| `PAW_MSG_VOICE_DAY_LIMIT` | 抱歉，您今日语音次数已用完 |
+| 领养入口拦截封装 | `utils/adoptEntryGate.js` | 本地 `PAW_ADOPT_ENTRY_HINT_DISMISSED`；`shouldShowAdoptEntryHint` / `dismissAdoptEntryHint`。 |
+| **AdoptEntryHintModal** | `components/AdoptEntryHintModal.vue` | 对 `PawNoticeModal` 的薄封装，默认领养次数文案，兼容旧引用。 |
+
+**接入方式示例：**
+
+```vue
+<PawNoticeModal
+  v-model:visible="showX"
+  :message="PAW_MSG_VOTE_DAY_LIMIT"
+  @confirm="onXConfirm"
+/>
+```
+
+## 等级胶囊（Lv）
+
+| 资源 | 路径 |
+|------|------|
+| 样式 | `styles/lv-cap.scss`（`App.vue` 已 `@import`） |
+| 用法 | `<view class="lv-cap"><text class="lv-cap__txt">Lv1</text></view>` |
+
+## 评论 / 动态相关
+
+| 资源 | 路径 |
+|------|------|
+| 评论输入条 | `components/yard/YardCommentComposer.vue` |
+| 评论流 + 动态/投粮 Tab | `components/yard/YardReviewFeed.vue` |
+| 投粮榜条 | `components/yard/YardFeedRankStrip.vue` |
+| 小院摘要卡片 | `components/yard/YardInfoSummaryCard.vue` |
+| 小院宠物状态卡片 / 列表区 | `components/yard/YardPetStatusCard.vue`、`components/yard/YardPetStatusListBlock.vue` | 待领养 / 已领养 / 失踪 / 死亡分组：顶胶囊、横向头像+名+品种、右下「n只」。列表页 `pages/yard/yardPetStatusList.vue`；小院详情 `commodityDetails` 六头像后 `>` 跳转。 |
+| 详情底栏 | `components/DetailTabber.vue`（`joined` / `@join` / `@leave` / `@adopt`） |
+
+## 其它
+
+| 资源 | 路径 |
+|------|------|
+| 无缝滚动榜 | `components/SeamlessScroll.vue`（`items` 等 props） |
+| 个人资料跳转 | `utils/profileNav.js` → `openUserProfile` |
+
+---
+
+## 当前演示级弹窗挂载点（待接后端）
+
+| 场景 | 页面/组件 | 行为说明 |
+|------|-----------|----------|
+| 当日无投票次数 | `pages/yard/juryDetail.vue` | 首次点击「挺真实/有点假」若 `mockVoteDayBlocked` 为 true 则弹出 `PAW_MSG_VOTE_DAY_LIMIT`，确认后关闭拦截。 |
+| 无语音权限 / 语音次数用完 | `components/yard/YardCommentComposer.vue` | 麦克风：第 1 次 `PAW_MSG_VOICE_LEVEL`，第 2 次 `PAW_MSG_VOICE_DAY_LIMIT`，之后走原 toast。 |
+| 领养入口提示 | `pages/index/index.vue`、`pages/dynamicDetail/index.vue` | `AdoptEntryHintModal` + `adoptEntryGate.js`。 |
+
+接接口后：删除或改为请求结果的 `mock*` / `micStage` 等演示字段，用接口返回值驱动 `PawNoticeModal` 的 `visible` 与 `message`。

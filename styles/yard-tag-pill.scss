@@ -1,0 +1,32 @@
+/* 全局「小院」胶囊标签：矮扁胶囊 + 黄底黑字，业务页统一使用 .yard-tag-pill / YardTagPill 组件 */
+
+.yard-tag-pill {
+	display: inline-flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	height: 32rpx;
+	padding: 0 14rpx;
+	box-sizing: border-box;
+	background: #ffdd00;
+	border-radius: 9999rpx;
+	flex-shrink: 0;
+	vertical-align: middle;
+}
+
+.yard-tag-pill__text {
+	font-size: 20rpx;
+	color: #111;
+	font-weight: 500;
+	line-height: 1;
+}
+
+/* 跟在昵称/小院名称后的左边距 */
+.yard-tag-pill--ml {
+	margin-left: 12rpx;
+}
+
+/* 与 px 排版混用时（如标题栏用户信息） */
+.yard-tag-pill--ml-px6 {
+	margin-left: 6px;
+}

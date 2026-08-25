@@ -1,0 +1,171 @@
+<template>
+	<view class="customTabber">
+		<view class="customTabberItem" :class="{'active':activeItem === 0}" @click="changeTabber(0)">
+			<text>
+				首页
+			</text>
+		</view>
+		<view class="customTabberItem" :class="{'active':activeItem === 1}" @click="changeTabber(1)"><text>自营</text>
+		</view>
+		<view class="customContent" @click="openPublishPanel">
+			<view class="fab-bg">
+				<image class="customImage" src="/static/fabu.png" mode="aspectFit"></image>
+			</view>
+		</view>
+		<view class="customTabberItem" :class="{'active':activeItem === 2}" @click="changeTabber(2)">
+			<view class="tab-label-wrap">
+				<text>消息</text>
+				<view class="message"><text>99+</text></view>
+			</view>
+		</view>
+		<view class="customTabberItem" :class="{'active':activeItem === 3}" @click="changeTabber(3)"><text>我</text>
+		</view>
+	</view>
+</template>
+
+<script>
+	export default {
+		name: "CustomBabber",
+		props: {
+			tabIndex: {
+				type: Number,
+				default: 0
+			}
+		},
+		data() {
+			return {
+				activeItem: 0
+			};
+		},
+		watch: {
+			tabIndex: {
+				immediate: true,
+				handler(n) {
+					this.activeItem = n
+				}
+			}
+		},
+		methods: {
+			openPublishPanel() {
+				uni.navigateTo({ url: '/pages/publishDynamic/index' })
+			},
+			changeTabber(index) {
+				const routes = [
+					'/pages/index/index',
+					'/pages/selfRun/index',
+					'/pages/message/index',
+					'/pages/me/index'
+				]
+				const url = routes[index]
+				if (!url) return
+				this.activeItem = index
+				const pages = getCurrentPages()
+				const cur = pages.length ? '/' + pages[pages.length - 1].route : ''
+				if (cur === url) return
+				// #ifdef MP-WEIXIN
+				uni.switchTab({
+					url,
+					fail: () => {
+						uni.reLaunch({ url })
+					}
+				})
+				// #endif
+				// #ifndef MP-WEIXIN
+				uni.reLaunch({ url })
+				// #endif
+			},
+		}
+	}
+</script>
+
+<style lang="less" scoped>
+	.customTabber {
+		width: 100%;
+		height: 74px;
+		padding-bottom: calc(18px + constant(safe-area-inset-bottom));
+		padding-bottom: calc(18px + env(safe-area-inset-bottom));
+		padding-top: 8px;
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		box-sizing: border-box;
+		background: #ffffff;
+		border-top: 1rpx solid #ebebeb;
+		z-index: 999;
+		.customTabberItem {
+			flex: 1;
+			height: 100%;
+			text-align: center;
+			font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+			font-size: 16px;
+			font-weight: 500;
+			line-height: 22px;
+			color: #8c8c8c;
+			text-align: center;
+			vertical-align: top;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			position: relative;
+		}
+
+		.tab-label-wrap {
+			position: relative;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0 8px;
+		}
+
+		.message {
+			position: absolute;
+			left: 100%;
+			top: -2px;
+			margin-left: -14px;
+			min-width: 29px;
+			height: 15px;
+			padding: 0 5px;
+			box-sizing: border-box;
+			border-radius: 100px;
+			color: #fff;
+			background: #ff2741;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			font-size: 12px;
+			font-weight: 500;
+			line-height: 1;
+		}
+
+		.active {
+			color: #333333;
+			font-weight: 600;
+		}
+
+		.customContent {
+			flex: 1;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+
+			.fab-bg {
+				width: 43px;
+				height: 32px;
+				border-radius: 8px;
+				background: #ffe60f;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+
+			.customImage {
+				width: 32px;
+				height: 24px;
+			}
+		}
+
+	}
+</style>

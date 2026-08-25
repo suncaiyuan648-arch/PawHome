@@ -1,0 +1,24 @@
+<view class="custom-tab-bar-root">
+	<view class="custom-tab-bar-inner">
+		<view class="tab-item {{selected === 0 ? 'active' : ''}}" data-index="0" bindtap="onTabTap">
+			<text>首页</text>
+		</view>
+		<view class="tab-item {{selected === 1 ? 'active' : ''}}" data-index="1" bindtap="onTabTap">
+			<text>自营</text>
+		</view>
+		<view class="tab-fab-slot" bindtap="onFabTap">
+			<view class="fab-bg">
+				<image class="fab-img" src="/static/fabu.png" mode="aspectFit"></image>
+			</view>
+		</view>
+		<view class="tab-item tab-item-msg {{selected === 2 ? 'active' : ''}}" data-index="2" bindtap="onTabTap">
+			<view class="tab-label-wrap">
+				<text>消息</text>
+				<view class="msg-dot"><text>99+</text></view>
+			</view>
+		</view>
+		<view class="tab-item {{selected === 3 ? 'active' : ''}}" data-index="3" bindtap="onTabTap">
+			<text>我</text>
+		</view>
+	</view>
+</view>

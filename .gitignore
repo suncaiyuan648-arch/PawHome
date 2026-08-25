@@ -1,0 +1,6 @@
+unpackage/
+node_modules/
+.DS_Store
+
+# Cursor / 聊天粘贴图勿放此处；整个目录若出现会被打进主包 static
+static/comment/

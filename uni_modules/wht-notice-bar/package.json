@@ -1,0 +1,79 @@
+{
+	"id": "wht-notice-bar",
+	"displayName": "wht-notice-bar 通知栏 滚动效果 多主题切换 高度自定义",
+	"version": "1.0.0",
+	"description": "专业级通知栏组件！支持炫酷滚动效果、多种主题切换、自定义样式，让你的应用瞬间高大上！完美支持Vue2/3、H5、小程序、APP",
+	"keywords": [
+        "通知栏",
+        "notice",
+        "滚动通知",
+        "公告栏",
+        "notice-bar"
+    ],
+	"dcloudext": {
+		"contact": {
+			"qq": ""
+		},
+		"declaration": {
+			"ads": "无",
+			"data": "无",
+			"permissions": "无"
+		},
+        "type": "component-vue",
+        "npmurl": ""
+	},
+	"repository": "https://github.com/funnywus/wht-ui.git",
+	"author": "",
+	"license": "MIT",
+	"uni_modules": {
+		"dependencies": [],
+		"encrypt": [],
+		"platforms": {
+			"cloud": {
+				"tcb": "y",
+				"aliyun": "y",
+				"alipay": "n"
+			},
+			"client": {
+				"Vue": {
+					"vue2": "y",
+					"vue3": "y"
+				},
+				"App": {
+                    "app-vue": "y",
+                    "app-nvue": "n",
+                    "app-harmony": "u",
+                    "app-uvue": "u"
+                },
+				"H5-mobile": {
+					"Safari": "y",
+					"Android Browser": "y",
+					"微信浏览器(Android)": "y",
+					"QQ浏览器(Android)": "y"
+				},
+				"H5-pc": {
+					"Chrome": "y",
+					"IE": "n",
+					"Edge": "y",
+					"Firefox": "y",
+					"Safari": "y"
+				},
+				"小程序": {
+					"微信": "y",
+					"阿里": "y",
+					"百度": "y",
+					"字节跳动": "y",
+					"QQ": "y",
+					"钉钉": "y",
+					"快手": "y",
+					"飞书": "y",
+					"京东": "y"
+				},
+				"快应用": {
+					"华为": "y",
+					"联盟": "y"
+				}
+			}
+		}
+	}
+}

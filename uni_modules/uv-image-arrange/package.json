@@ -1,0 +1,81 @@
+{
+	"id": "uv-image-arrange",
+	"displayName": "朋友圈图片展示 九宫格展示 四宫格展示 单张展示（自动控制大小）",
+	"version": "1.1.0",
+	"description": "高性能超小体积图片展示组件，完全模拟朋友圈展示，四张时为四宫格，九张为久宫格，单张可限制其展示的最大宽度及最大高度自动展示",
+	"keywords": [
+        "朋友圈图片展示",
+        "九宫格展示",
+        "四宫格展示",
+        "图片预览",
+        "微信朋友圈"
+    ],
+	"engines": {
+		"HBuilderX": "^3.91"
+	},
+	"dcloudext": {
+		"sale": {
+			"regular": {
+				"price": "0.00"
+			},
+			"sourcecode": {
+				"price": "0.00"
+			}
+		},
+		"contact": {
+			"qq": ""
+		},
+		"declaration": {
+			"ads": "无",
+			"data": "插件不采集任何数据",
+			"permissions": "无"
+		},
+		"type": "component-vue"
+	},
+	"uni_modules": {
+		"encrypt": [],
+		"platforms": {
+			"cloud": {
+				"tcb": "y",
+                "aliyun": "y",
+                "alipay": "n"
+			},
+			"client": {
+				"App": {
+                    "app-vue": "y",
+                    "app-nvue": "y",
+                    "app-harmony": "u",
+                    "app-uvue": "n"
+                },
+				"H5-mobile": {
+					"Safari": "y",
+					"Android Browser": "y",
+					"微信浏览器(Android)": "y",
+					"QQ浏览器(Android)": "y"
+				},
+				"H5-pc": {
+					"Chrome": "y",
+					"IE": "y",
+					"Edge": "y",
+					"Firefox": "y",
+					"Safari": "y"
+				},
+				"小程序": {
+					"微信": "y",
+					"阿里": "y",
+					"百度": "y",
+					"字节跳动": "y",
+					"QQ": "y"
+				},
+				"快应用": {
+					"华为": "y",
+					"联盟": "y"
+				},
+				"Vue": {
+					"vue2": "y",
+					"vue3": "y"
+				}
+			}
+		}
+	}
+}

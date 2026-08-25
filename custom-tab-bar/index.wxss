@@ -1,0 +1,97 @@
+/* 底栏高度由内容 + 安全区决定，避免「外层 padding + 内层 96px」叠出双倍留白 */
+.custom-tab-bar-root {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 99999;
+	pointer-events: auto;
+	background: #ffffff;
+	border-top: 1rpx solid #ebebeb;
+	box-sizing: border-box;
+	width: 100%;
+	padding-top: 8px;
+	padding-bottom: constant(safe-area-inset-bottom);
+	padding-bottom: env(safe-area-inset-bottom);
+}
+
+.custom-tab-bar-inner {
+	width: 100%;
+	box-sizing: border-box;
+	min-height: 48px;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0 2px;
+}
+
+.tab-item {
+	flex: 1;
+	min-height: 48px;
+	text-align: center;
+	font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-size: 16px;
+	font-weight: 500;
+	line-height: 22px;
+	color: #8c8c8c;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: relative;
+}
+
+.tab-item.active {
+	color: #333333;
+	font-weight: 600;
+}
+
+.tab-label-wrap {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 8px;
+}
+
+.msg-dot {
+	position: absolute;
+	left: 100%;
+	top: -2px;
+	margin-left: -14px;
+	min-width: 29px;
+	height: 15px;
+	padding: 0 5px;
+	box-sizing: border-box;
+	border-radius: 100px;
+	color: #fff;
+	background: #ff2741;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1;
+}
+
+.tab-fab-slot {
+	flex: 1;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.fab-bg {
+	width: 43px;
+	height: 32px;
+	border-radius: 8px;
+	background: #ffe60f;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.fab-img {
+	width: 32px;
+	height: 24px;
+}

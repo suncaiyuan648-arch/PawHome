@@ -1,0 +1,525 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/selfRun/index",
+      "style": {
+        "navigationBarTitleText": "uni-app"
+      }
+    },
+    {
+      "path": "pages/message/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/messageDetail/index",
+      "style": {
+        "navigationStyle": "custom",
+        "backgroundColor": "#F5F5F5"
+      }
+    },
+    {
+      "path": "pages/me/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    }
+  ],
+  "subPackages": [
+    {
+      "root": "pages/meMore",
+      "pages": [
+        {
+          "path": "settings",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F7F8FA"
+          }
+        },
+        {
+          "path": "shippingAddress",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F8F8F8"
+          }
+        },
+        {
+          "path": "addShippingAddress",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F7F7F7"
+          }
+        },
+        {
+          "path": "addServiceAddress",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F7F7F7"
+          }
+        },
+        {
+          "path": "regionSelector",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F6F6F6"
+          }
+        },
+        {
+          "path": "locationSearch",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F3F3F3"
+          }
+        },
+        {
+          "path": "myAdoption",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "browsingHistory",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F8F8F8"
+          }
+        },
+        {
+          "path": "level",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFF8E8"
+          }
+        },
+        {
+          "path": "levelRules",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F3F4F6"
+          }
+        },
+        {
+          "path": "annualReport",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#1A6FD4"
+          }
+        },
+        {
+          "path": "helpedAnimals",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        },
+        {
+          "path": "myFeedings",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "yardFeedOrders",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "feedingDetail",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "feedingDetail90",
+          "style": { "navigationStyle": "custom", "backgroundColor": "#FFFFFF" }
+        },
+        {
+          "path": "feedingDetail91",
+          "style": { "navigationStyle": "custom", "backgroundColor": "#FFFFFF" }
+        },
+        {
+          "path": "feedingDetail92",
+          "style": { "navigationStyle": "custom", "backgroundColor": "#FFFFFF" }
+        },
+        {
+          "path": "adoptionDetail",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "adoptionFlow",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "adoptionApplyContent",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "adoptionConfirm",
+          "style": { "navigationStyle": "custom", "backgroundColor": "#F5F5F5" }
+        },
+        {
+          "path": "adoptionProofList",
+          "style": { "navigationStyle": "custom", "backgroundColor": "#F5F5F5" }
+        },
+        {
+          "path": "myAssets",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/commodityDetails",
+      "pages": [
+        {
+          "path": "index",
+          "style": {
+            "navigationStyle": "custom"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/dynamicDetail",
+      "pages": [
+        {
+          "path": "index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/feature",
+      "pages": [
+        {
+          "path": "index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/citySelect",
+      "pages": [
+        {
+          "path": "index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F3F3F3"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/search",
+      "pages": [
+        {
+          "path": "index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/leaderboard",
+      "pages": [
+        {
+          "path": "index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFF8E8"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/user",
+      "pages": [
+        {
+          "path": "profile",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "followFans",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/publishDynamic",
+      "pages": [
+        {
+          "path": "index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#000000"
+          }
+        },
+        {
+          "path": "postFeed",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "postFeedOrder",
+          "style": { "navigationStyle": "custom", "backgroundColor": "#F5F5F5" }
+        },
+        {
+          "path": "postSuccess",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/auth",
+      "pages": [
+        {
+          "path": "realName",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F6F6F6"
+          }
+        },
+        {
+          "path": "verifyResult",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F6F6F6"
+          }
+        },
+        {
+          "path": "login",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "bindPhone",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "smsVerify",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/adoption",
+      "pages": [
+        {
+          "path": "pickCats",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        },
+        {
+          "path": "petDetail",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "adoptApply",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "adoptApplySuccess",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        },
+        {
+          "path": "extras",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "result",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        },
+        {
+          "path": "submitOrder",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/yard",
+      "pages": [
+        {
+          "path": "catGuide",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "createCatYard",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F6F6F6"
+          }
+        },
+        {
+          "path": "yardCats",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "addKitten",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F0F0F0"
+          }
+        },
+        {
+          "path": "breedPicker",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "yardCertify",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F0F0F0"
+          }
+        },
+        {
+          "path": "yardCertifyDone",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        },
+        {
+          "path": "adoptionAudit",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "juryPanel",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "juryDetail",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "yardPetStatusList",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        }
+      ]
+    }
+  ],
+  "tabBar": {
+    "custom": true,
+    "color": "#8c8c8c",
+    "selectedColor": "#333333",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/selfRun/index",
+        "text": "自营"
+      },
+      {
+        "pagePath": "pages/message/index",
+        "text": "消息"
+      },
+      {
+        "pagePath": "pages/me/index",
+        "text": "我"
+      }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "uni-app",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8",
+    "app-plus": {
+      "background": "#efeff4"
+    }
+  }
+}

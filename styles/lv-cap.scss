@@ -1,0 +1,23 @@
+/**
+ * 全局 Lv 等级胶囊（深棕底 + 浅色字，紧凑高度）
+ * 用法：<view class="lv-cap"><text class="lv-cap__txt">Lv1</text></view>
+ */
+.lv-cap {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	height: 26rpx;
+	min-width: 0;
+	padding: 0 10rpx;
+	border-radius: 999rpx;
+	background: #5c4033;
+	vertical-align: middle;
+}
+
+.lv-cap__txt {
+	font-size: 18rpx;
+	font-weight: 600;
+	color: #fff8ef;
+	line-height: 1;
+}
