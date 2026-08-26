@@ -215,7 +215,7 @@ export default {
 .af-frame-48,.af-frame-49{background:#f5f5f5}
 .af-frame-48 .af-statusbar-reference,.af-frame-50 .af-statusbar-reference,.af-frame-54 .af-statusbar-reference{height:130px}
 .af-frame-50 .af-statusbar-reference,.af-frame-54 .af-statusbar-reference{height:199px}
-.af-location-card>*,.af-location-copy>text{transform:translateY(-2px)}
+.af-location-card>view,.af-location-card>text,.af-location-copy>text{transform:translateY(-2px)}
 .af-contact-head,.af-contact-copy{transform:translateY(2px)}
 .af-frame-44 .af-content,.af-frame-45 .af-content{padding-bottom:15px}.af-frame-46 .af-heading,.af-frame-47 .af-heading{height:71px}.af-frame-48 .af-heading,.af-frame-49 .af-heading{display:none}.af-frame-48 .af-content,.af-frame-49 .af-content{padding-top:12px}.af-frame-49 .af-apply-card{margin-bottom:10px}.af-frame-50 .af-heading,.af-frame-51 .af-heading,.af-frame-52 .af-heading,.af-frame-53 .af-heading,.af-frame-54 .af-heading,.af-frame-55 .af-heading,.af-frame-56 .af-heading,.af-frame-57 .af-heading{height:81px}.af-frame-50 .af-content,.af-frame-54 .af-content{padding-bottom:14px}.af-frame-50 .af-location-card,.af-frame-54 .af-location-card{margin-top:10px}.af-frame-51 .af-proof-card,.af-frame-52 .af-proof-card,.af-frame-53 .af-proof-card{margin-top:0}.af-frame-52 .af-pets-card,.af-frame-53 .af-pets-card{margin-top:10px}.af-frame-55 .af-content,.af-frame-56 .af-content,.af-frame-57 .af-content{padding-bottom:0}.af-frame-55 .af-proof-card,.af-frame-56 .af-proof-card,.af-frame-57 .af-proof-card{margin-top:0}
 .af-frame-55 .af-progress-fill{width:6%!important}.af-frame-56 .af-progress-fill{width:29%!important}.af-frame-57 .af-progress-fill{width:84%!important}

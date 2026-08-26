@@ -364,7 +364,9 @@ export default {
 	height: 36rpx;
 }
 .yard-cats-top-reference{position:absolute;left:0;top:0;width:375px;height:100px;z-index:30;pointer-events:none}
-.roster-mode > :not(.roster-wrap) { display: none !important; }
+.roster-mode .nav-wrap,
+.roster-mode .category-tabs,
+.roster-mode .main-scroll { display: none !important; }
 .roster-wrap { width: 100%; min-height: 100vh; }
 .publish-nav { flex-shrink: 0; background: #f6f8fa; }
 .publish-owner-row { height: 52px; display: flex; align-items: center; padding: 0 12px 0 4px; box-sizing: border-box; }

@@ -1,5 +1,13 @@
 <template>
-	<view class="container" :class="{ 'state-scrolled': pageState === 'dynamic-scrolled' || hideTopActions }">
+	<view
+		class="container"
+		:class="{ 'state-scrolled': pageState === 'dynamic-scrolled' || hideTopActions }"
+		@wheel.capture="onFeedWheel"
+		@pointerdown.capture="onFeedPointerStart"
+		@pointermove.capture="onFeedPointerMove"
+		@pointerup.capture="onFeedPointerEnd"
+		@pointercancel.capture="onFeedPointerEnd"
+	>
 		<!-- #ifndef MP-WEIXIN -->
 		<image class="h5-status-bar" :src="activeFeedTab === 'yard' ? '/static/figma/home-header-yard-exact.png' : '/static/figma/home-header-exact.png'" mode="scaleToFill"></image>
 		<!-- #endif -->
@@ -80,11 +88,10 @@
 			:scroll-into-view="scrollIntoViewId"
 			@scroll="handleFeedScroll"
 			@scrolltoupper="onFeedScrollToUpper"
-			@touchstart="onFeedTouchStart"
-			@touchmove="onFeedTouchMove"
-			@touchend="onFeedTouchEnd"
-			@touchcancel="onFeedTouchEnd"
-			@wheel="onFeedWheel"
+			@touchstart.capture="onFeedTouchStart"
+			@touchmove.capture="onFeedTouchMove"
+			@touchend.capture="onFeedTouchEnd"
+			@touchcancel.capture="onFeedTouchEnd"
 			@refresherpulling="onRefresherPulling"
 			@refresherrefresh="onPullRefresh"
 			@scrolltolower="onReachBottom"
@@ -223,10 +230,12 @@
 				hideTopActions: false,
 				lastFeedScrollTop: 0,
 				feedTouchLastY: 0,
-				feedTouchDirection: '',
 				isFeedTouching: false,
-				feedTouchStartedWhileHidden: false,
-				topActionsRevealArmed: false,
+				feedPointerLastY: 0,
+				isFeedPointerActive: false,
+				pendingTopActionsHidden: null,
+				topActionsIntentTimer: null,
+				suppressScrollIntentUntil: 0,
 				refresherTriggered: false,
 				isRefreshing: false,
 				pullingDistance: 0,
@@ -328,13 +337,11 @@
 			},
 			handleFeedScroll(e) {
 				const scrollTop = e?.detail?.scrollTop || 0
+				const scrollDelta = scrollTop - this.lastFeedScrollTop
 
-				// 收起造成的布局回流不会携带 revealArmed，只有新的回顶操作才能展开。
-				if (!this.hideTopActions && scrollTop >= 80) {
-					this.collapseTopActions()
-				} else if (this.hideTopActions && scrollTop <= 4) {
-					const isRealReturnToTop = scrollTop < this.lastFeedScrollTop
-					if (this.topActionsRevealArmed || isRealReturnToTop) this.expandTopActions()
+				// 无触摸设备用实际滚动方向兜底；头部动画引发的滚动重算在保护期内忽略。
+				if (!this.isFeedTouching && Date.now() >= this.suppressScrollIntentUntil && Math.abs(scrollDelta) >= 1) {
+					this.queueTopActionsIntent(scrollDelta > 0)
 				}
 
 				this.showBackTopBtn = this.hideTopActions && scrollTop > 120
@@ -347,52 +354,82 @@
 			},
 			onFeedTouchStart(e) {
 				this.isFeedTouching = true
-				this.feedTouchStartedWhileHidden = this.hideTopActions
-				if (this.feedTouchStartedWhileHidden) this.topActionsRevealArmed = true
 				this.feedTouchLastY = this.getFeedTouchY(e)
-				this.feedTouchDirection = ''
 			},
 			onFeedTouchMove(e) {
 				const currentY = this.getFeedTouchY(e)
 				const deltaY = currentY - this.feedTouchLastY
-				if (deltaY > 2) {
-					this.feedTouchDirection = 'down'
-					// 兼容搜索区在同一次触摸中刚刚收起、用户随即反向下拉的情况。
-					if (this.hideTopActions) {
-						this.feedTouchStartedWhileHidden = true
-						this.topActionsRevealArmed = true
-					}
-				}
-				if (deltaY < -2) this.feedTouchDirection = 'up'
+				// 手指上滑代表内容向上移动并收起；手指下滑代表展开。
+				if (deltaY > 2) this.queueTopActionsIntent(false)
+				if (deltaY < -2) this.queueTopActionsIntent(true)
 				this.feedTouchLastY = currentY
 			},
 			onFeedTouchEnd() {
 				this.isFeedTouching = false
-				// 短距离下拉可能在 touchend 前只触发一次到顶事件，结束手势时再兜底判断。
-				if (this.hideTopActions && this.lastFeedScrollTop <= 4 && this.topActionsRevealArmed) {
-					this.expandTopActions()
-				}
+				// 手势结束立即落地最后一个方向，避免快速滑动后停留在旧状态。
+				this.flushTopActionsIntent()
 			},
 			onFeedWheel(e) {
 				const deltaY = Number(e?.deltaY || e?.detail?.deltaY || 0)
-				if (this.hideTopActions && deltaY < 0) this.topActionsRevealArmed = true
+				if (deltaY > 0) this.queueTopActionsIntent(true)
+				if (deltaY < 0) this.queueTopActionsIntent(false)
 			},
-			collapseTopActions() {
-				this.hideTopActions = true
-				this.topActionsRevealArmed = false
+			onFeedPointerStart(e) {
+				this.isFeedPointerActive = true
+				this.feedPointerLastY = Number(e?.clientY || e?.pageY || 0)
 			},
-			expandTopActions() {
-				this.hideTopActions = false
-				this.topActionsRevealArmed = false
-				this.feedTouchDirection = ''
-				this.feedTouchStartedWhileHidden = false
+			onFeedPointerMove(e) {
+				if (!this.isFeedPointerActive) return
+				const currentY = Number(e?.clientY || e?.pageY || 0)
+				const deltaY = currentY - this.feedPointerLastY
+				if (deltaY > 2) this.queueTopActionsIntent(false)
+				if (deltaY < -2) this.queueTopActionsIntent(true)
+				this.feedPointerLastY = currentY
+			},
+			onFeedPointerEnd() {
+				if (!this.isFeedPointerActive) return
+				this.isFeedPointerActive = false
+				this.flushTopActionsIntent()
+			},
+			queueTopActionsIntent(shouldHide) {
+				// 同方向连续事件不反复延后；方向反转时重置 72ms 防抖，最后动作获胜。
+				if (this.pendingTopActionsHidden === shouldHide && this.topActionsIntentTimer) return
+				if (this.topActionsIntentTimer) clearTimeout(this.topActionsIntentTimer)
+				this.topActionsIntentTimer = null
+				this.pendingTopActionsHidden = shouldHide
+
+				// 最后动作与当前状态一致时，只需取消尚未执行的相反动作。
+				if (this.hideTopActions === shouldHide) {
+					this.pendingTopActionsHidden = null
+					return
+				}
+
+				this.topActionsIntentTimer = setTimeout(() => this.flushTopActionsIntent(), 72)
+			},
+			flushTopActionsIntent() {
+				if (this.topActionsIntentTimer) clearTimeout(this.topActionsIntentTimer)
+				this.topActionsIntentTimer = null
+				if (this.pendingTopActionsHidden === null) return
+				const shouldHide = this.pendingTopActionsHidden
+				this.pendingTopActionsHidden = null
+				this.setTopActionsState(shouldHide)
+			},
+			setTopActionsState(shouldHide) {
+				if (this.hideTopActions === shouldHide) return
+				this.hideTopActions = shouldHide
+				this.suppressScrollIntentUntil = Date.now() + 320
+				this.showBackTopBtn = shouldHide && this.lastFeedScrollTop > 120
+				if (this.pageState === 'dynamic-scrolled') this.pageState = 'dynamic'
 			},
 			onFeedScrollToUpper() {
-				if (this.hideTopActions && this.topActionsRevealArmed) this.expandTopActions()
+				if (this.pendingTopActionsHidden === false) this.flushTopActionsIntent()
 			},
 			backToTop() {
 				this.scrollIntoViewId = 'feed-top-anchor'
-				this.expandTopActions()
+				if (this.topActionsIntentTimer) clearTimeout(this.topActionsIntentTimer)
+				this.topActionsIntentTimer = null
+				this.pendingTopActionsHidden = null
+				this.setTopActionsState(false)
 				this.showBackTopBtn = false
 				this.lastFeedScrollTop = 0
 				setTimeout(() => {
@@ -401,6 +438,7 @@
 			},
 			onRefresherPulling(e) {
 				this.pullingDistance = e?.detail?.dy || 0
+				if (this.pullingDistance > 2) this.queueTopActionsIntent(false)
 			},
 			onPullRefresh() {
 				if (this.isRefreshing) return
@@ -449,6 +487,7 @@
 		},
 		beforeDestroy() {
 			if (this.noMoreHintTimer) clearTimeout(this.noMoreHintTimer)
+			if (this.topActionsIntentTimer) clearTimeout(this.topActionsIntentTimer)
 		}
 	}
 </script>
@@ -566,7 +605,8 @@
 			width: 100%;
 			height: 70px;
 			position: relative;
-			overflow: visible;
+			overflow: hidden;
+			isolation: isolate;
 			transition: height .28s cubic-bezier(.22, .61, .36, 1);
 			will-change: height;
 
@@ -578,6 +618,7 @@
 				top: 0;
 				z-index: 1;
 				opacity: 1;
+				pointer-events: none;
 				transition: opacity .28s cubic-bezier(.22, .61, .36, 1);
 			}
 
@@ -715,6 +756,8 @@
 		}
 
 		.tab {
+			position: relative;
+			z-index: 3;
 			flex-shrink: 0;
 			height: 37px;
 			width: 100%;
