@@ -81,10 +81,8 @@
 <style lang="less" scoped>
 	.customTabber {
 		width: 100%;
-		height: 74px;
-		padding-bottom: calc(18px + constant(safe-area-inset-bottom));
-		padding-bottom: calc(18px + env(safe-area-inset-bottom));
-		padding-top: 8px;
+		height: 73px;
+		padding-bottom: 34px;
 		position: absolute;
 		left: 0;
 		bottom: 0;
@@ -93,14 +91,13 @@
 		align-items: center;
 		box-sizing: border-box;
 		background: #ffffff;
-		border-top: 1rpx solid #ebebeb;
 		z-index: 999;
 		.customTabberItem {
 			flex: 1;
 			height: 100%;
 			text-align: center;
-			font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-			font-size: 16px;
+			font-family: 'Source Han Sans CN', 'PingFang SC', sans-serif;
+			font-size: 15px;
 			font-weight: 500;
 			line-height: 22px;
 			color: #8c8c8c;
@@ -123,11 +120,12 @@
 		.message {
 			position: absolute;
 			left: 100%;
-			top: -2px;
-			margin-left: -14px;
+			top: -4.5px;
+			margin-left: -20px;
+			width: 29px;
 			min-width: 29px;
 			height: 15px;
-			padding: 0 5px;
+			padding: 0 4px;
 			box-sizing: border-box;
 			border-radius: 100px;
 			color: #fff;
@@ -142,7 +140,8 @@
 
 		.active {
 			color: #333333;
-			font-weight: 600;
+			font-size: 16px;
+			font-weight: 500;
 		}
 
 		.customContent {
@@ -155,10 +154,11 @@
 				width: 43px;
 				height: 32px;
 				border-radius: 8px;
-				background: #ffe60f;
+				background: #ffe60d;
 				display: flex;
 				align-items: center;
 				justify-content: center;
+				transform: translateY(1.5px);
 			}
 
 			.customImage {

@@ -1,5 +1,5 @@
 <template>
-	<view class="container" :class="{ 'state-scrolled': pageState === 'dynamic-scrolled' }">
+	<view class="container" :class="{ 'state-scrolled': pageState === 'dynamic-scrolled' || hideTopActions }">
 		<!-- #ifndef MP-WEIXIN -->
 		<image class="h5-status-bar" :src="activeFeedTab === 'yard' ? '/static/figma/home-header-yard-exact.png' : '/static/figma/home-header-exact.png'" mode="scaleToFill"></image>
 		<!-- #endif -->
@@ -11,7 +11,7 @@
 						<text>{{ selectedCity }}</text>
 						<image class="city-icon" src="/static/jiao.png"></image>
 					</view>
-					<text class="title-txt">首页</text>
+					<text class="title-txt" :class="{ 'title-txt--yard': activeFeedTab === 'yard' }">首页</text>
 					<text v-if="activeFeedTab === 'yard'" class="service-title">宠物服务</text>
 				</view>
 			</view>
@@ -29,16 +29,18 @@
 					</view>
 					<view class="search-btn" @click="openLeaderboard"><text>排行榜</text></view>
 				</view>
-				<wht-notice-bar class="home-notice-bar" text="　广东汕头的花开富贵老师对小院我就是要喂猫投粮400克，积善缘，得福报~　" type="success" :showIcon="false"
-					:scrollable="false" :speed="100" bgColor="rgba(255, 251, 220, 1)" color="rgba(80, 80, 80, 1)"
-					radius="0">
-				</wht-notice-bar>
+				<view class="home-announcement">
+					<PawAnnouncementMarquee
+						ref="homeAnnouncement"
+						:items="announcementItems"
+						:speed="82"
+						:gap="1000"
+						:poll-url="announcementPollUrl"
+						:ws-url="announcementWsUrl"
+					/>
+				</view>
 			</view>
 		</view>
-		<!-- #ifndef MP-WEIXIN -->
-		<image v-if="pageState !== 'dynamic-scrolled'" class="home-notice-reference" src="/static/figma/home-notice-exact.png" mode="scaleToFill"></image>
-		<image v-else class="home-notice-reference home-notice-reference--scrolled" src="/static/figma/home-notice-scrolled-exact.png" mode="scaleToFill"></image>
-		<!-- #endif -->
 		<view class="tab" :class="{ 'tab-scrolled': hideTopActions }">
 			<view class="tab-left">
 				<view
@@ -77,9 +79,16 @@
 			scroll-with-animation
 			:scroll-into-view="scrollIntoViewId"
 			@scroll="handleFeedScroll"
+			@scrolltoupper="onFeedScrollToUpper"
+			@touchstart="onFeedTouchStart"
+			@touchmove="onFeedTouchMove"
+			@touchend="onFeedTouchEnd"
+			@touchcancel="onFeedTouchEnd"
+			@wheel="onFeedWheel"
 			@refresherpulling="onRefresherPulling"
 			@refresherrefresh="onPullRefresh"
 			@scrolltolower="onReachBottom"
+			:upper-threshold="4"
 			:lower-threshold="80"
 			:show-scrollbar="false"
 		>
@@ -101,7 +110,7 @@
 						<view class="home-yard-main">
 							<view class="home-yard-name-row"><text class="home-yard-name">我就是要喂猫</text><text class="home-yard-verified">已实名</text></view>
 							<view v-if="yard.variant === 'badges'" class="home-yard-badges">
-								<text>剩余6/21日</text><text>已成立2个月</text><text>入驻4人</text>
+								<text>剩余6/21只</text><text>已成立2个月</text><text>入驻4人</text>
 							</view>
 							<view v-else class="home-yard-org"><uni-icons type="auth-filled" color="#2c8cff" :size="14"></uni-icons><text>合肥市希望流浪动物基地</text></view>
 						</view>
@@ -155,14 +164,14 @@
 	</view>
 </template>
 
-<script>
+	<script>
 	import CustomTabber from "@/components/CustomTabber/index.vue"
-	import WhtNoticeBar from "@/components/WhtNoticeBar/index.vue"
+	import PawAnnouncementMarquee from "@/components/PawAnnouncementMarquee.vue"
 	import { openUserProfile } from "@/utils/profileNav.js"
 	export default {
 		components: {
 			CustomTabber,
-			WhtNoticeBar
+			PawAnnouncementMarquee
 		},
 		onShow() {
 			this.searchAnimating = false
@@ -186,6 +195,21 @@
 				zan1:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAeCAYAAAA/xX6fAAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAF+SURBVEiJvZdbtoMgDEVPWJ3XpUOqDqA6gMiQpBMz/bjElVK10JaeL1FwmwcJEioVQvAicgXgAUBERudcvFwusWQ91cCYeSCi6+aLiM4lUFcDNLBIRGcRGQFEAEhWv9SpFMbMg153XXdWcHKxR3LxKxVbSER/wH/M7P3S2FUDkSxwzj0AQgj+60DrztyiZVkU+HD/I6AmS+5OKxG5fQVorev7fsifa2xLdQgMIfgC6zzwHNtqIDMPIjKnYdyyziZMabaedOGyLN64x5s50ey7B6U1AIBpmuatORpb/eBT2rizLswmj1uWqbL4+Z05HgCYGX3fD2TqY0wTRqDcRTapDj5szQOapkl0cGTNJ7JGrUlTmmXvyLzbV3WLd2Wr0U+ApvDffgKEKQ7NgXnhbw7MS2NToC19uuWaArd6ZVOgcefaK5sB9/poM+BeH3UoPIvU6OiUsJ5LRWRm5vGTmmp/AdL46ZRAAKAd45va6z4OALquo6MTWYUi0m/AXqu7A58a2QJRlyArAAAAAElFTkSuQmCC',
 				zan2:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAcCAYAAAB/E6/TAAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAE4SURBVEiJvZYxVoNAFEXvo05va+EyACcLcQG6iZBduAnX4IRhAR4b25xjZW/NtwiJRCFMQuBVw5n5//Lf8IcRZ8jS1CGtAAeAtFZZFjGxiobkeYHZqmPKK4TlUHwSC+qESG+AszR1VwFZnhc98EUD7Kr0fNAJ3cUujAN1782vpM1oUK9tO22H4qNBmN2fmL0FoK79KFBTjRtKoqq6HHSib/5qEAKthrU0dSSJa6xyEbFbdtb53o+hrv2+WgFYlr1GJm+9or4wu4lYt1ZZFjpYFBt4iaS1LMtskuTH8mNPhli5uUCTV/QOgLSZZY8UguawzsP438Swmmae3DqFIJi+os/9YGrQ4QycFKQQHuYAPbcfEuDjSom/W2OvEB6PQWZPVwItWpB/F8pEVeUxWwIvI0Ees2XfrfUHCTFt74bNhAQAAAAASUVORK5CYII=',
 				selectedCity: '广州市',
+				announcementItems: [
+					{ id: 'feeding-demo-1', text: '广东汕头的花开富贵老师对小院我就是要喂猫投粮400克，积善缘，得福报~' },
+					{ id: 'feeding-demo-2', text: '广州天河的橘子汽水为幸福小院投粮300克，愿每只流浪猫都能吃饱~' },
+					{ id: 'feeding-demo-3', text: '深圳南山的猫咪守护者为阳光小院投粮500克，谢谢你的温柔投喂！' },
+					{ id: 'feeding-demo-4', text: '佛山禅城的小鱼干老师为喵星人之家投粮200克，爱心已送达~' },
+					{ id: 'feeding-demo-5', text: '东莞松山湖的春风十里为流浪猫驿站投粮800克，今日猫粮已加满！' },
+					{ id: 'feeding-demo-6', text: '珠海香洲的海边散步为暖暖小院投粮350克，让毛孩子不再挨饿~' },
+					{ id: 'feeding-demo-7', text: '惠州惠城的星空旅人为猫猫补给站投粮600克，感谢这份爱心！' },
+					{ id: 'feeding-demo-8', text: '中山石岐的团团圆圆为有猫小院投粮250克，愿善意一直传递~' },
+					{ id: 'feeding-demo-9', text: '江门蓬江的元气满满为街角猫屋投粮450克，猫咪们正在开心用餐~' },
+					{ id: 'feeding-demo-10', text: '肇庆端州的晚风为希望小院投粮700克，你的每次投喂都很有意义~' }
+				],
+				// 接入后端时填写轮询接口或 WebSocket 地址；为空时只播放本地初始公告。
+				announcementPollUrl: '',
+				announcementWsUrl: '',
 				sortOptions: ['最近更新', '离我最近', '只看猫咪', '只看狗狗'],
 				selectedSort: '最近更新',
 				showSortDropdown: false,
@@ -198,6 +222,11 @@
 				isTabSwitching: false,
 				hideTopActions: false,
 				lastFeedScrollTop: 0,
+				feedTouchLastY: 0,
+				feedTouchDirection: '',
+				isFeedTouching: false,
+				feedTouchStartedWhileHidden: false,
+				topActionsRevealArmed: false,
 				refresherTriggered: false,
 				isRefreshing: false,
 				pullingDistance: 0,
@@ -300,19 +329,70 @@
 			handleFeedScroll(e) {
 				const scrollTop = e?.detail?.scrollTop || 0
 
-				// 使用区间阈值控制显隐，避免在底部因微小滚动反复切换导致抖动
-				if (scrollTop <= 28) {
-					this.hideTopActions = false
-				} else if (scrollTop >= 80) {
-					this.hideTopActions = true
+				// 收起造成的布局回流不会携带 revealArmed，只有新的回顶操作才能展开。
+				if (!this.hideTopActions && scrollTop >= 80) {
+					this.collapseTopActions()
+				} else if (this.hideTopActions && scrollTop <= 4) {
+					const isRealReturnToTop = scrollTop < this.lastFeedScrollTop
+					if (this.topActionsRevealArmed || isRealReturnToTop) this.expandTopActions()
 				}
 
 				this.showBackTopBtn = this.hideTopActions && scrollTop > 120
 				this.lastFeedScrollTop = scrollTop
 			},
+			getFeedTouchY(e) {
+				const touch = (e?.touches && e.touches[0]) || (e?.changedTouches && e.changedTouches[0])
+				if (!touch) return 0
+				return Number(touch.clientY !== undefined ? touch.clientY : touch.pageY) || 0
+			},
+			onFeedTouchStart(e) {
+				this.isFeedTouching = true
+				this.feedTouchStartedWhileHidden = this.hideTopActions
+				if (this.feedTouchStartedWhileHidden) this.topActionsRevealArmed = true
+				this.feedTouchLastY = this.getFeedTouchY(e)
+				this.feedTouchDirection = ''
+			},
+			onFeedTouchMove(e) {
+				const currentY = this.getFeedTouchY(e)
+				const deltaY = currentY - this.feedTouchLastY
+				if (deltaY > 2) {
+					this.feedTouchDirection = 'down'
+					// 兼容搜索区在同一次触摸中刚刚收起、用户随即反向下拉的情况。
+					if (this.hideTopActions) {
+						this.feedTouchStartedWhileHidden = true
+						this.topActionsRevealArmed = true
+					}
+				}
+				if (deltaY < -2) this.feedTouchDirection = 'up'
+				this.feedTouchLastY = currentY
+			},
+			onFeedTouchEnd() {
+				this.isFeedTouching = false
+				// 短距离下拉可能在 touchend 前只触发一次到顶事件，结束手势时再兜底判断。
+				if (this.hideTopActions && this.lastFeedScrollTop <= 4 && this.topActionsRevealArmed) {
+					this.expandTopActions()
+				}
+			},
+			onFeedWheel(e) {
+				const deltaY = Number(e?.deltaY || e?.detail?.deltaY || 0)
+				if (this.hideTopActions && deltaY < 0) this.topActionsRevealArmed = true
+			},
+			collapseTopActions() {
+				this.hideTopActions = true
+				this.topActionsRevealArmed = false
+			},
+			expandTopActions() {
+				this.hideTopActions = false
+				this.topActionsRevealArmed = false
+				this.feedTouchDirection = ''
+				this.feedTouchStartedWhileHidden = false
+			},
+			onFeedScrollToUpper() {
+				if (this.hideTopActions && this.topActionsRevealArmed) this.expandTopActions()
+			},
 			backToTop() {
 				this.scrollIntoViewId = 'feed-top-anchor'
-				this.hideTopActions = false
+				this.expandTopActions()
 				this.showBackTopBtn = false
 				this.lastFeedScrollTop = 0
 				setTimeout(() => {
@@ -382,6 +462,7 @@
 		display: flex;
 		flex-direction: column;
 		box-sizing: border-box;
+		font-family: "Source Han Sans CN", "PingFang SC", sans-serif;
 
 		.h5-status-bar {
 			position: absolute;
@@ -393,27 +474,16 @@
 			pointer-events: none;
 		}
 
-		.home-notice-reference {
-			position: absolute;
-			left: 0;
-			top: 134px;
-			width: 375px;
-			height: 24px;
-			z-index: 1100;
-			pointer-events: none;
-		}
-		.home-notice-reference--scrolled { top: 90px; height: 22px; }
-
 		.container1 {
 			flex-shrink: 0;
 			width: 100%;
-			height: 90px;
+			height: 83px;
 			position: relative;
 			overflow: visible;
 
 			.container1-bg {
 				width: 100%;
-				height: 90px;
+				height: 83px;
 				position: absolute;
 				left: 0;
 				top: 0;
@@ -423,21 +493,22 @@
 
 		.title {
 			width: 100%;
-			height: 90px;
+			height: 54px;
 			display: flex;
 			justify-content: center;
-			align-content: center;
+			align-items: center;
 			position: relative;
 			box-sizing: border-box;
-			padding-top: 40px;
+			padding: 0;
 			position: absolute;
 			left: 0;
-			top: 0;
+			top: 36px;
 			z-index: 60;
 			overflow: visible;
 
 			.title-content {
 				width: 100%;
+				height: 54px;
 				display: flex;
 				justify-content: center;
 				align-items: center;
@@ -475,83 +546,95 @@
 				vertical-align: top;
 			}
 
+			.title-txt--yard {
+				position: absolute;
+				left: 205px;
+			}
+
 			.service-title {
 				position: absolute;
 				left: 122px;
 				font-size: 15px;
 				font-weight: 400;
 				line-height: 20px;
-				color: #8f8f8f;
+				color: #7e7469;
 			}
 		}
 
 		.container2 {
 			flex-shrink: 0;
 			width: 100%;
-			height: 67px;
+			height: 70px;
 			position: relative;
-			overflow: hidden;
-			transition: height .25s ease, opacity .25s ease, margin .25s ease;
+			overflow: visible;
+			transition: height .28s cubic-bezier(.22, .61, .36, 1);
+			will-change: height;
 
 			.container2-bg {
 				width: 100%;
-				height: 67px;
+				height: 80px;
 				position: absolute;
 				left: 0;
 				top: 0;
 				z-index: 1;
+				opacity: 1;
+				transition: opacity .28s cubic-bezier(.22, .61, .36, 1);
 			}
 
 			.box2 {
 				width: 100%;
-				height: 67px;
-				position: absolute;
-				left: 0;
-				top: 0;
+				height: 70px;
+				position: relative;
 				z-index: 2;
+				display: flex;
+				flex-direction: column;
+				box-sizing: border-box;
+				padding-top: 8px;
 			}
 		}
 
 		.container2.hidden {
-			height: 0;
-			opacity: 0;
-			margin: 0;
+			height: 20px;
+			overflow: hidden;
 		}
 
-		&.state-scrolled .container2.hidden {
-			height: 19px;
-			opacity: 1;
+		.container2.hidden .box2 {
+			height: 70px;
 		}
 
-		&.state-scrolled .container1,&.state-scrolled .container1-bg{height:79px}
-		&.state-scrolled .title{height:100px}
+		&.state-scrolled .container1,
+		&.state-scrolled .container1-bg { height: 83px; }
+		&.state-scrolled .title { height: 54px; }
 
-		&.state-scrolled .container2.hidden .search {
-			display: none;
-		}
-
-		&.state-scrolled .paw-list {
-			margin-top: -224px;
-		}
 		&.state-scrolled .load-more-indicator{display:none}
-		&.state-scrolled .back-top-btn{bottom:129px}
+		&.state-scrolled .back-top-btn { bottom: 131px; }
+		&.state-scrolled .container2-bg { opacity: 0; }
+		&.state-scrolled .feed-scroll { border-top: 0; }
+		&.state-scrolled .feed-scroll-inner { padding-top: 0; }
 
 		.search {
+			position: relative;
+			width: 100%;
 			display: flex;
 			align-items: center;
-			height: 38px;
-			margin-bottom: 3px;
-			padding: 1px 15px 0;
+			height: 33px;
+			flex-shrink: 0;
+			margin: 0;
+			padding: 0 13px 0 16px;
 			box-sizing: border-box;
+			opacity: 1;
+			transform: translateY(0);
+			transform-origin: 50% 0;
+			transition: transform .28s cubic-bezier(.22, .61, .36, 1), opacity .18s ease;
+			will-change: transform, opacity;
 
 			.search-input {
-				height: 35px;
+				height: 33px;
 				box-sizing: border-box;
-				transform: translateY(-1.5px);
 				flex: 1;
-				border-radius: 50px;
+				border-radius: 17.5px;
 				background: rgba(255, 255, 255, 1);
-				border: 2px solid;
+				border: 1.5px solid #1f1e18;
 				padding-left: 10px;
 				padding-right: 2px;
 				display: flex;
@@ -578,7 +661,7 @@
 
 				.search-right {
 					width: 55px;
-					height: 26px;
+					height: 28px;
 					border-radius: 14px;
 					background: rgba(31, 31, 31, 1);
 					font-size: 12px;
@@ -591,9 +674,9 @@
 			}
 
 			.search-btn {
-				width: 50px;
+				width: 52px;
 				height: 30px;
-				margin-left: 13px;
+				margin-left: 14px;
 				border-radius: 5px;
 				background: rgba(255, 230, 13, 1);
 				font-size: 13px;
@@ -607,26 +690,41 @@
 			}
 		}
 
-		.home-notice-bar {
+		.home-announcement {
+			position: relative;
+			z-index: 4;
 			display: block;
-			padding-left: 8px;
+			width: 100%;
+			height: 20px;
+			flex-shrink: 0;
+			margin-top: 9px;
 			box-sizing: border-box;
-			width: calc(100% + 8px);
-			margin-right: -8px;
-			transform: scaleY(0.96);
-			transform-origin: center top;
+			transform: translateY(0);
+			transition: transform .28s cubic-bezier(.22, .61, .36, 1);
+			will-change: transform;
+		}
+
+		.container2.hidden .search {
+			opacity: 0;
+			transform: translateY(-50px);
+			pointer-events: none;
+		}
+
+		.container2.hidden .home-announcement {
+			transform: translateY(-50px);
 		}
 
 		.tab {
 			flex-shrink: 0;
-			min-height: 37px;
+			height: 37px;
 			width: 100%;
-			margin-top: 1px;
-			padding: 4px 0 6px 10px;
+			margin-top: 0;
+			padding: 4px 0 6px 11px;
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
 			box-sizing: border-box;
+			transition: height .28s cubic-bezier(.22, .61, .36, 1), padding .28s cubic-bezier(.22, .61, .36, 1);
 
 			.tab-left {
 				flex: 1;
@@ -634,7 +732,7 @@
 				display: flex;
 				justify-content: flex-start;
 				align-items: center;
-				column-gap: 20px;
+				column-gap: 18px;
 
 				.tab-item {
 					display: inline-flex;
@@ -650,7 +748,7 @@
 				}
 
 				.active {
-					font-size: 18px;
+					font-size: 16px;
 					font-weight: 700;
 					color: rgba(34, 34, 34, 1);
 					line-height: 1;
@@ -659,8 +757,8 @@
 
 			.tab-right {
 				position: relative;
-				font-size: 15px;
-				font-weight: 600;
+				font-size: 14px;
+				font-weight: 700;
 				letter-spacing: 0px;
 				line-height: 1;
 				color: rgba(34, 34, 34, 1);
@@ -668,7 +766,7 @@
 				align-items: center;
 				flex-shrink: 0;
 				padding-left: 0;
-				padding-right: 8px;
+				padding-right: 11px;
 
 				.tab-right-text {
 					display: inline-flex;
@@ -677,8 +775,8 @@
 				}
 
 				.tab-right-icon {
-					width: 10px;
-					height: 7px;
+					width: 8px;
+					height: 4px;
 					margin-left: 3px;
 					flex-shrink: 0;
 					align-self: center;
@@ -687,12 +785,12 @@
 		}
 
 		.tab.tab-scrolled {
-			padding: 4px 0 6px 10px;
-			min-height: 44px;
+			height: 41px;
+			padding: 4px 0 6px 11px;
 		}
 
 		.tab.tab-scrolled .tab-left {
-			column-gap: 12px;
+			column-gap: 18px;
 		}
 
 		.dropdown-mask {
@@ -721,30 +819,42 @@
 		}
 
 		.sort-dropdown {
-			right: 16px;
-			top: 39px;
-			width: 150px;
-			min-width: 150px;
+			right: 17px;
+			top: 32.5px;
+			width: 149px;
+			min-width: 149px;
+			height: 161px;
+			padding-top: 10.5px;
+			box-sizing: border-box;
 		}
 
 		.dropdown-item {
-			padding: 8.5px 14px;
-			font-size: 14px;
-			line-height: 20px;
+			height: 37px;
+			padding: 0 15px;
+			box-sizing: border-box;
+			font-size: 12px;
+			line-height: 11px;
 			color: #999;
 			white-space: nowrap;
 			display: flex;
 			align-items: center;
-			justify-content: space-between;
+			justify-content: flex-start;
 		}
 
 		.dropdown-item.active {
 			color: #333;
-			font-weight: 400;
+			font-weight: 500;
 			background: #fff;
 		}
 
-		.dropdown-check { font-size: 16px; font-weight: 700; color: #222; }
+		.dropdown-check {
+			position: absolute;
+			right: 14px;
+			top: 25.5px;
+			font-size: 16px;
+			font-weight: 700;
+			color: #222;
+		}
 
 		.feed-scroll {
 			flex: 1;
@@ -752,14 +862,15 @@
 			min-height: 0;
 			width: 100%;
 			box-sizing: border-box;
-			background: #fff;
+			background: #f9fafa;
+			border-top: 5px solid #fff;
 		}
 
 		.feed-scroll-inner {
 			box-sizing: border-box;
 			width: 100%;
-			padding: 0 5px;
-			background: #fff;
+			padding: 1px 5px 0;
+			background: #f9fafa;
 			min-height: 100%;
 			/* 底栏盖住底部，列表尾部略抬高即可（安全区已在 custom-tab-bar 内处理） */
 			padding-bottom: calc(8px + 56px);
@@ -770,7 +881,7 @@
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-			padding-top: 116px;
+			padding-top: 117px;
 			box-sizing: border-box;
 		}
 
@@ -780,52 +891,54 @@
 		}
 
 		.home-empty-title {
-			margin-top: 28px;
-			font-size: 15px;
+			margin-top: 24px;
+			font-size: 14px;
 			line-height: 20px;
-			color: #777;
+			color: #666;
 		}
 
 		.home-empty-subtitle {
 			margin-top: 6px;
-			font-size: 13px;
-			line-height: 18px;
-			color: #aaa;
+			font-size: 12px;
+			line-height: 17px;
+			color: #999;
 		}
 
 		.home-yard-list {
 			margin: 0 -5px;
 			background: #fafafa;
-			padding: 6px 13px 76px;
+			padding: 5px 13px 76px;
 			min-height: 100%;
 			box-sizing: border-box;
 		}
 
 		.home-yard-card {
 			background: #fff;
+			height: 231px;
+			box-sizing: border-box;
 			border-radius: 8px;
-			padding: 15px 13px 13px;
+			padding: 14px 12px 15px;
 			margin-bottom: 8px;
 			overflow: hidden;
 		}
 
 		.home-yard-top { position: relative; display: flex; align-items: flex-start; }
-		.home-yard-avatar { width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; }
-		.home-yard-main { flex: 1; min-width: 0; margin-left: 10px; }
+		.home-yard-avatar { width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0; }
+		.home-yard-main { flex: 1; min-width: 0; margin-left: 11px; }
 		.home-yard-name-row { display: flex; align-items: center; height: 20px; }
-		.home-yard-name { font-size: 15px; font-weight: 700; color: #222; }
-		.home-yard-verified { margin-left: 8px; font-size: 10px; color: #f59a23; }
-		.home-yard-distance { position:absolute;right:0;top:0;padding-top:4px;font-size:11px;color:#aaa;white-space:nowrap; }
-		.home-yard-badges { display: flex; align-items: center; gap: 6px; margin-top: 7px; }
-		.home-yard-badges text { padding: 3px 7px; border-radius: 4px; background: #fff6df; color: #f08c00; font-size: 10px; line-height: 16px; }
-		.home-yard-org { display: flex; align-items: center; margin-top: 7px; color: #666; font-size: 11px; gap: 3px; }
-		.home-yard-desc { display: block; margin-top: 11px; font-size: 12px; line-height: 18px; color: #ababab; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-		.home-yard-gallery { margin-top: 8px; white-space: nowrap; }
-		.home-yard-card:nth-child(2) .home-yard-gallery { margin-top: 9px; }
+		.home-yard-name { font-size: 14px; font-weight: 700; color: #333; }
+		.home-yard-verified { margin-left: 3px; padding: 0 7px; height: 16px; line-height: 16px; border-radius: 10.5px; background: #fffaf0; font-size: 10px; font-weight: 500; color: #a9731d; }
+		.home-yard-distance { position:absolute;right:0;top:1px;font-size:11px;line-height:16.5px;color:#999;white-space:nowrap; }
+		.home-yard-badges { display: flex; align-items: center; gap: 7px; margin-top: 9px; }
+		.home-yard-badges text { height: 16px; box-sizing: border-box; padding: 0 5px; border-radius: 5px; background: #fefada; color: #ee8002; font-size: 11px; font-weight: 500; line-height: 16px; }
+		.home-yard-org { display: flex; align-items: center; margin-top: 9px; color: #333; font-size: 12px; line-height: 12px; gap: 3px; }
+		.home-yard-desc { display: block; margin-top: 11px; font-size: 12px; line-height: 12px; color: #a1a1a1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+		.home-yard-gallery { height: 114px; margin-top: 15px; white-space: nowrap; }
+		.home-yard-card:nth-child(2) .home-yard-gallery { margin-top: 15px; }
 		.home-yard-gallery-row { display: inline-flex; }
-		.home-yard-photo { width: 96px; margin-right: 6px; }
-		.home-yard-photo image { display: block; width: 96px; height: 96px; border-radius: 7px; }
-		.home-yard-photo text { display: block; margin-top: 5px; font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+		.home-yard-photo { width: 97px; margin-right: 5px; }
+		.home-yard-photo image { display: block; width: 97px; height: 96px; border-radius: 7px; }
+		.home-yard-photo text { display: block; margin-top: 2px; font-size: 11px; line-height: 16px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 		.refresh-indicator {
 			display: flex;
@@ -882,10 +995,10 @@
 
 		.back-top-btn {
 			position: fixed;
-			right: 29px;
-			bottom: 129px;
-			width: 44px;
-			height: 44px;
+			right: 32px;
+			bottom: 131px;
+			width: 40px;
+			height: 40px;
 			box-sizing: border-box;
 			border-radius: 50%;
 			background: #fff;
@@ -925,12 +1038,12 @@
 			padding: 0 0 10px;
 			box-sizing: border-box;
 			display: flex;
-			gap: 3px;
+			gap: 5px;
 			transition: opacity .22s ease, transform .22s ease;
 		}
 
 		.paw-column {
-			width: calc((100% - 3px) / 2);
+			width: calc((100% - 5px) / 2);
 			min-width: 0;
 		}
 
@@ -946,7 +1059,7 @@
 			display: block;
 			box-sizing: border-box;
 			overflow: hidden;
-			background: #fff;
+			background: #feffff;
 			border-radius: 4px;
 			margin-bottom: 4px;
 
@@ -980,12 +1093,12 @@
 			}
 
 			.card-label {
-				padding: 9px;
+				padding: 8px 9px 0;
 
 				.card-label-text {
-					font-size: 14px;
+					font-size: 13px;
 					font-weight: 500;
-					line-height: 18.82px;
+					line-height: 19px;
 					color: rgba(51, 51, 51, 1);
 					display: -webkit-box;
 					line-clamp: 2;
@@ -996,12 +1109,10 @@
 				}
 			}
 
-			&.single-line-card .card-label {
-				padding: 6px 9px;
-			}
+			&.single-line-card .card-label { padding: 8px 9px 0; }
 
 			.card-user {
-				padding: 0 9px 9px 9px;
+				padding: 7px 9px 10px;
 				display: flex;
 				align-items: center;
 				justify-content: space-between;
@@ -1054,24 +1165,23 @@
 
 		.card:nth-child(2n) .card-img { height: 240px; }
 
-		/* Figma feed grid geometry shared with the search result masonry. */
-		.paw-list { gap: 4px; margin-top: 0; }
+		/* Figma feed grid geometry: 5 / 180 / 5 / 180 / 5. */
+		.paw-list { gap: 5px; margin-top: 0; }
 		.paw-column { width: 180px; flex: none; }
-		.paw-column:last-child { width: 181px; }
+		.paw-column:last-child { width: 180px; }
 		.card .card-label,
-		.card.single-line-card .card-label { padding: 8px 10px 2px; }
+		.card.single-line-card .card-label { padding: 8px 9px 0; }
 		.card .card-label .card-label-text {
 			display: -webkit-box;
-			-webkit-line-clamp: 1;
+			-webkit-line-clamp: 2;
 			-webkit-box-orient: vertical;
 			overflow: hidden;
 		}
 		.card:not(.single-line-card) .card-label .card-label-text { height: 38px; }
-		.card .card-user { padding: 7px 10px 8px; }
-		.card .card-user { padding-top: 5px; padding-bottom: 10px; }
-		.card .card-label .card-label-text { line-clamp: 1 !important; -webkit-line-clamp: 1 !important; }
+		.card .card-user { padding: 7px 9px 10px; }
+		.card.single-line-card .card-user { padding: 8px 9px 9px; }
+		.card.single-line-card .card-label .card-label-text { line-clamp: 1; -webkit-line-clamp: 1; }
 		.card .card-user .card-user-icon { border-radius: 50%; }
-		&.state-scrolled .card:not(.single-line-card) .card-user { position: relative; top: -2px; }
 		&.state-scrolled .feed-scroll,
 		&.state-scrolled .feed-scroll-inner { background: #fafafa; }
 	}
