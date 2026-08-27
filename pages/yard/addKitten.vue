@@ -109,14 +109,21 @@
 		</scroll-view>
 
 		<view class="footer">
-			<view class="save-btn" @click="onSave"><text>保存</text></view>
+			<PawButton class="save-btn" text="保存" size="lg" @click="onSave" />
 		</view>
 
-		<!-- 通用底部选择 -->
-		<view v-if="sheetKind" class="pick-mask" @click="closeSheet"></view>
-		<view v-if="sheetKind" class="pick-sheet" :class="{ 'pick-sheet--scale': sheetKind === 'value' }" @click.stop>
+		<!-- 价值使用页面专属刻度，其余选项统一走选择 Sheet -->
+		<PawSelectionSheet
+			v-model="selectionSheetVisible"
+			title="选择属性"
+			:items="sheetOptions"
+			:value="currentSheetValue"
+			@select="onPickOption"
+		/>
+		<view v-if="sheetKind === 'value'" class="pick-mask" @click="closeSheet"></view>
+		<view v-if="sheetKind === 'value'" class="pick-sheet pick-sheet--scale" @click.stop>
 			<view class="pick-close" @click="closeSheet"><text>×</text></view>
-			<view v-if="sheetKind === 'value'" class="scale-sheet">
+			<view class="scale-sheet">
 				<text class="scale-title">宠物价值</text>
 				<text class="scale-value">￥{{ petValue }}</text>
 				<image class="scale-ruler" src="/static/figma/pet-value-ruler.png" mode="scaleToFill" />
@@ -124,22 +131,14 @@
 				<text class="scale-copy">设置过低会给虐猫人群批量收猫可乘之机，设置过高会导致真正想要领养的人放弃，领养额度只是货币约束申请的门槛，您拥有申请的审核权，请综合宠物的品种、大小等因素合理设置，推荐设置15~30之间</text>
 				<view class="scale-save" @click="closeSheet"><text>保存价值</text></view>
 			</view>
-			<view v-else class="pick-card">
-				<view
-					v-for="(opt, oi) in sheetOptions"
-					:key="'o-' + oi"
-					class="pick-item"
-					@click="onPickOption(opt)"
-				>
-					<text class="pick-label">{{ opt }}</text>
-					<text v-if="isOptionSelected(opt)" class="pick-check">✓</text>
-				</view>
-			</view>
 		</view>
 	</view>
 </template>
 
 <script>
+import PawSelectionSheet from '@/components/overlay/PawSelectionSheet.vue'
+import PawButton from '@/components/base/PawButton.vue'
+
 const STATUS_OPTS = ['待领养', '已领养', '失踪', '死亡']
 const GENDER_OPTS = ['男生', '女生']
 const NEUTER_OPTS = ['未绝育', '已绝育']
@@ -148,6 +147,7 @@ const BREED_OPTS = ['蓝金', '金渐层', '银渐层', '英短', '美短', '中
 const PERSONALITY_OPTS = ['非常亲人', '亲人', '不亲人']
 
 export default {
+	components: { PawSelectionSheet, PawButton },
 	data() {
 		return {
 			statusBarHeight: 20,
@@ -202,6 +202,18 @@ export default {
 					return PERSONALITY_OPTS
 				default:
 					return []
+			}
+		},
+		currentSheetValue() {
+			const map = { status: 'status', gender: 'gender', neuter: 'neuter', vaccine: 'vaccine', personality: 'personality' }
+			return map[this.sheetKind] ? this.form[map[this.sheetKind]] : ''
+		},
+		selectionSheetVisible: {
+			get() {
+				return !!this.sheetKind && this.sheetKind !== 'value'
+			},
+			set(value) {
+				if (!value) this.closeSheet()
 			}
 		}
 	},

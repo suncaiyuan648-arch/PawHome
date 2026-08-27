@@ -1,7 +1,6 @@
 <template>
   <view class="yfp-host">
-  <view v-if="visible" class="yfp-root" @touchmove.stop.prevent="noop">
-    <view class="yfp-mask" @tap="close"></view>
+  <PawBottomSheet v-model:visible="visibleProxy" variant="feed" :close-on-mask="true" :safe-area="true" :z-index="10050">
     <view class="yfp-sheet" @tap.stop>
       <view class="yfp-close-hit" @tap="close">
         <text class="yfp-close-x">×</text>
@@ -46,10 +45,8 @@
         <text class="yfp-learn-arr">›</text>
       </view>
 
-      <view class="yfp-pay-hit" @tap="onPay">
-        <view class="yfp-pay-btn">
-          <text class="yfp-pay-txt">{{ payButtonLine }}</text>
-        </view>
+      <view class="yfp-pay-hit">
+        <PawButton class="yfp-pay-btn" :text="payButtonLine" size="md" tone="brand" block @click="onPay" />
       </view>
 
       <view class="yfp-agree-row" @tap.stop="toggleAgree">
@@ -66,44 +63,23 @@
 
       <view class="yfp-safe" />
     </view>
-  </view>
+  </PawBottomSheet>
 
-  <!-- 投喂成功（设计稿下半屏，不含顶栏）：黄勾 + 文案 + 查看订单 -->
-  <view v-if="successVisible" class="yfs-root" @touchmove.stop.prevent="noop">
-    <view class="yfs-mask" @tap="closeSuccess"></view>
-    <view class="yfs-sheet" @tap.stop>
-      <view class="yfs-close-hit" @tap="closeSuccess">
-        <text class="yfs-close-x">×</text>
-      </view>
-      <view class="yfs-head">
-        <view class="yfs-badge">
-          <text class="yfs-check">✓</text>
-        </view>
-        <text class="yfs-title">投喂成功</text>
-      </view>
-      <view class="yfs-poem">
-        <text class="yfs-line">饿了就睡 醒了就找</text>
-        <text class="yfs-line">日子浑浑噩噩</text>
-        <text class="yfs-line">谢谢你给我一口粮</text>
-        <text class="yfs-line">也给我一点盼头</text>
-      </view>
-      <view class="yfs-btn-hit" @tap="goFeedOrder">
-        <view class="yfs-btn">
-          <text class="yfs-btn-txt">查看投喂订单</text>
-        </view>
-      </view>
-      <view class="yfs-safe" />
-    </view>
-  </view>
+  <PawResultSheet v-model="successVisible" title="投喂成功" description="饿了就睡 醒了就找\n日子浑浑噩噩\n谢谢你给我一口粮\n也给我一点盼头" action-text="查看投喂订单" @action="onFeedOrder" />
   </view>
 </template>
 
 <script>
+import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
+import PawResultSheet from '@/components/feedback/PawResultSheet.vue'
+import PawButton from '@/components/base/PawButton.vue'
+
 /**
  * 小院底部「投喂」弹窗（设计稿 rectangle 34626785）
  */
 export default {
   name: "YardFeedPopup",
+  components: { PawBottomSheet, PawResultSheet, PawButton },
   props: {
     visible: {
       type: Boolean,
@@ -114,7 +90,7 @@ export default {
       default: 1199999,
     },
   },
-  emits: ["update:visible", "pay", "learn-food"],
+  emits: ["update:visible", "pay", "learn-food", "agreement", "feed-order"],
   data() {
     return {
       successVisible: false,
@@ -152,6 +128,10 @@ export default {
     };
   },
   computed: {
+    visibleProxy: {
+      get() { return this.visible },
+      set(value) { this.$emit("update:visible", value) }
+    },
     heroFormatted() {
       try {
         return Number(this.heroCount).toLocaleString("zh-CN");
@@ -188,17 +168,13 @@ export default {
     },
     onLearnFood() {
       this.$emit("learn-food");
-      uni.showToast({ title: "猫粮说明（演示）", icon: "none" });
     },
     openAgreement(which) {
-      uni.showToast({
-        title: which === "feed" ? "投喂协议（演示）" : "防诱导诈骗提醒（演示）",
-        icon: "none",
-      });
+      this.$emit("agreement", which);
     },
     onPay() {
       if (!this.agreed) {
-        uni.showToast({ title: "请先阅读并勾选协议", icon: "none" });
+        this.$emit("agreement", "required");
         return;
       }
       const p = this.selectedPkg;
@@ -214,16 +190,9 @@ export default {
     closeSuccess() {
       this.successVisible = false;
     },
-    goFeedOrder() {
+    onFeedOrder() {
       this.closeSuccess();
-      uni.navigateTo({
-        url: "/pages/meMore/yardFeedOrders",
-        fail: () =>
-          uni.switchTab({
-            url: "/pages/me/index",
-            fail: () => uni.showToast({ title: "订单入口（演示）", icon: "none" }),
-          }),
-      });
+      this.$emit("feed-order");
     },
   },
 };
@@ -231,7 +200,7 @@ export default {
 
 <style lang="less" scoped>
 /* 设计稿 375 宽 → rpx 按 750 换算 */
-@yfp-yellow: rgba(255, 215, 0, 1);
+@yfp-yellow: var(--paw-color-brand, #ffe60f);
 @yfp-card-grey: rgba(242, 242, 242, 1);
 @yfp-text: rgba(51, 51, 51, 1);
 @yfp-muted: rgba(139, 139, 139, 1);
@@ -258,17 +227,13 @@ export default {
 }
 
 .yfp-sheet {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2;
+  position: relative;
   width: 100%;
   min-height: 846rpx;
   box-sizing: border-box;
   padding: 48rpx 46rpx 24rpx;
   background: #ffffff;
-  border-radius: 40rpx 40rpx 0 0;
+  border-radius: 0;
 }
 
 .yfp-close-hit {
@@ -441,14 +406,6 @@ export default {
   padding: 0 24rpx;
 }
 
-.yfp-pay-txt {
-  font-size: 32rpx;
-  font-weight: 700;
-  line-height: 44rpx;
-  color: @yfp-text;
-  text-align: center;
-}
-
 .yfp-agree-row {
   display: flex;
   flex-direction: row;
@@ -504,7 +461,7 @@ export default {
 }
 
 .yfp-safe {
-  height: env(safe-area-inset-bottom);
+  height: 16rpx;
   min-height: 16rpx;
 }
 

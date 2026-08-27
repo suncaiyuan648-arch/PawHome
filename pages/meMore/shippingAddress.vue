@@ -13,7 +13,9 @@
 
 		<scroll-view class="main-scroll" scroll-y :show-scrollbar="false" :bounces="false" :enable-flex="true">
 			<view v-if="currentList.length" class="list-pad">
-				<view v-for="(row, i) in currentList" :key="'a-' + i" class="addr-card">
+				<view v-for="(row, i) in currentList" :key="'a-' + i">
+					<PawAddressCard v-if="!manageMode && !pickMode" :address="row" mode="display" @click="onAddrBodyTap(row)" />
+					<view v-else class="addr-card">
 					<view class="addr-main">
 						<view v-if="pickMode" class="pick-radio" :class="{ selected: selectedId === row.id }" @click.stop="selectedId=row.id"><text v-if="selectedId === row.id">✓</text></view>
 						<view v-else class="addr-pin">
@@ -47,6 +49,7 @@
 							</view>
 						</view>
 					</view>
+					</view>
 				</view>
 			</view>
 			<view v-else class="empty-state">
@@ -66,20 +69,14 @@
 			</view>
 		</view>
 
-		<view v-if="showDeleteDialog" class="delete-mask" @click.stop="closeDeleteDialog">
-			<view class="delete-panel" @click.stop>
-				<text class="delete-panel-msg">确定要删除该地址吗</text>
-				<view class="delete-panel-btns">
-					<view class="delete-btn delete-btn--cancel" @click="closeDeleteDialog"><text>取消</text></view>
-					<view class="delete-btn delete-btn--danger" @click="confirmDeleteAddress"><text>删除</text></view>
-				</view>
-			</view>
-		</view>
+		<PawDialog v-model="showDeleteDialog" variant="destructive" title="确定要删除该地址吗" confirm-text="删除" cancel-text="取消" :show-cancel="true" :close-on-mask="false" @cancel="closeDeleteDialog" @confirm="confirmDeleteAddress" />
 	</view>
 </template>
 
 <script>
 import { goBackSmart } from '@/utils/navBack.js'
+import PawAddressCard from '@/components/form/PawAddressCard.vue'
+import PawDialog from '@/components/overlay/PawDialog.vue'
 
 const mockShipping = () => {
 	const detail = '湖南省 长沙市 雨花区 中意一路167号 乐盈前城2栋2单元18楼天台'
@@ -94,6 +91,7 @@ const mockService = () => [
 ]
 
 export default {
+	components: { PawAddressCard, PawDialog },
 	data() {
 		return {
 			statusBarHeight: 20,

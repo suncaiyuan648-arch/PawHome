@@ -88,14 +88,14 @@
 	  </view>
 	  <view v-if="figmaVariant" class="pd-message-card">
 		<text class="pd-message-title">云家长寄语留言板</text>
-		<view class="pd-message-row"><image src="/static/figma/adoption-flow/pet-owner.png" mode="aspectFill"></image><view><view class="pd-message-name"><text>姜栋</text><text class="pd-level">Lv1</text><text class="pd-role">小黄的第3任云家长</text></view><text class="pd-message-copy">给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞</text><text class="pd-message-meta">昨天 20:45　江西　回复</text></view><view class="pd-like"><uni-icons type="hand-up-filled" color="#ff334d" :size="15"></uni-icons><text>32</text></view></view>
+		<view class="pd-message-row"><image src="/static/figma/adoption-flow/pet-owner.png" mode="aspectFill"></image><view><view class="pd-message-name"><text>姜栋</text><LevelCapsule level="1" /><text class="pd-role">小黄的第3任云家长</text></view><text class="pd-message-copy">给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞</text><text class="pd-message-meta">昨天 20:45　江西　回复</text></view><view class="pd-like"><uni-icons type="hand-up-filled" color="#ff334d" :size="15"></uni-icons><text>32</text></view></view>
 	  </view>
 
       <view class="pd-pad-bottom" />
     </scroll-view>
 
     <view v-if="!figmaVariant" class="pd-tabber-wrap">
-      <DetailTabber :joined="yardJoined" @adopt="openAdoptFlow" @join="onYardJoin" @leave="onYardLeave" />
+      <DetailTabber :joined="yardJoined" @adopt="openAdoptFlow" @join="onYardJoin" @leave="onYardLeave" @feed-order="openFeedOrders" @learn-food="showLearnFood" />
     </view>
 
     <AdoptEntryHintModal v-model:visible="showAdoptEntryHint" :message="pawAdoptEntryMsg" @confirm="onAdoptEntryHintConfirm" />
@@ -116,6 +116,7 @@ import AdoptEntryHintModal from "@/components/AdoptEntryHintModal.vue";
 import AdoptPickCatsSheet from "@/components/AdoptPickCatsSheet.vue";
 import YardTagPill from "@/components/YardTagPill.vue";
 import PawPetDetailFigma from "@/components/PawPetDetailFigma.vue";
+import LevelCapsule from "@/components/LevelCapsule.vue";
 import { shouldShowAdoptEntryHint, dismissAdoptEntryHint } from "@/utils/adoptEntryGate.js";
 import { PAW_MSG_ADOPT_DAY_LIMIT } from "@/utils/pawNoticeMessages.js";
 
@@ -129,6 +130,7 @@ export default {
     AdoptEntryHintModal,
     YardTagPill,
     PawPetDetailFigma,
+    LevelCapsule,
   },
   data() {
     return {
@@ -410,6 +412,12 @@ export default {
       this.yardJoined = false;
       uni.showToast({ title: "已退出入驻", icon: "none" });
     },
+    openFeedOrders() {
+      uni.navigateTo({ url: '/pages/meMore/yardFeedOrders' });
+    },
+    showLearnFood() {
+      uni.showToast({ title: '猫粮说明', icon: 'none' });
+    },
   },
 };
 </script>
@@ -503,6 +511,7 @@ export default {
   height: 0;
   min-height: 0;
   width: 100%;
+  padding-bottom: 100px;
   box-sizing: border-box;
 }
 

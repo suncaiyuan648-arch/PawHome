@@ -28,16 +28,19 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 4rpx 16rpx;
+		width: 28px;
+		height: 13px;
+		padding: 0;
 		border-radius: 999rpx;
-		background: rgba(82, 52, 0, 1);
+		background: var(--paw-level-bg, #523400);
 		box-sizing: border-box;
+		flex-shrink: 0;
 	}
 
 	.level-capsule__txt {
-		font-size: 20rpx;
+		font-size: 11px;
 		font-weight: 500;
-		line-height: 28rpx;
-		color: #ff6b35;
+		line-height: 7px;
+		color: var(--paw-level-text, #f6e1b8);
 	}
 </style>

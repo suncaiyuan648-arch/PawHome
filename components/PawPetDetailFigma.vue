@@ -1,13 +1,13 @@
 <template>
   <view class="pet-detail-figma" :class="'pet-detail-figma--' + variant">
     <view class="hero-wrap">
-      <image class="hero-exact" src="/static/figma/pet-detail/hero-exact.png" mode="scaleToFill" />
+      <image class="hero-exact" src="/static/figma/pet-detail/hero-exact.png" mode="aspectFill" />
       <view class="hero-back" @click="$emit('back')" />
       <view class="hero-album" @click="$emit('album')" />
     </view>
 
     <view class="pet-strip">
-      <image v-for="(x, i) in stripItems" :key="i" :class="['strip-avatar', { active: i === 3 }]" :style="{ left: x + 'px' }" :src="i === 3 ? '/static/figma/pet-detail/strip-active.png' : '/static/figma/pet-detail/strip-orange.png'" mode="scaleToFill" />
+      <image v-for="(x, i) in stripItems" :key="i" :class="['strip-avatar', { active: i === 3 }]" :style="{ left: x + 'px' }" :src="i === 3 ? '/static/figma/pet-detail/strip-active.png' : '/static/figma/pet-detail/strip-orange.png'" mode="aspectFill" />
       <view class="strip-triangle" />
     </view>
 
@@ -21,7 +21,7 @@
       </view>
       <text class="pet-copy">小黄是我见过最乖最帅最萌的小猫，饭量很大，<br />希望可以多多投喂猫粮给它</text>
       <view class="yard-row">
-        <image class="yard-avatar" src="/static/figma/pet-detail/yard-avatar.png" mode="scaleToFill" />
+        <image class="yard-avatar" src="/static/figma/pet-detail/yard-avatar.png" mode="aspectFill" />
         <text class="yard-name">我就是要喂猫</text>
         <text class="yard-tag">小院</text>
       </view>
@@ -40,9 +40,9 @@
     <view class="message-card">
       <text class="message-title">云家长寄语留言板</text>
       <view class="message-row">
-        <image class="message-avatar" src="/static/figma/pet-detail/message-avatar.png" mode="scaleToFill" />
+        <image class="message-avatar" src="/static/figma/pet-detail/message-avatar.png" mode="aspectFill" />
         <view class="message-body">
-          <view class="message-author"><text>姜栋</text><text class="level">Lv1</text><text class="role">小黄的第3任云家长</text></view>
+          <view class="message-author"><text>姜栋</text><LevelCapsule level="1" /><text class="role">小黄的第3任云家长</text></view>
           <text class="message-copy">给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞</text>
           <view class="message-meta"><text>昨天 20:45&nbsp;&nbsp;江西&nbsp;&nbsp;回复</text><view class="like"><image src="/static/figma/pet-detail/icon-like.png" mode="scaleToFill" /><text>32</text></view></view>
         </view>
@@ -65,8 +65,11 @@
 </template>
 
 <script>
+import LevelCapsule from '@/components/LevelCapsule.vue'
+
 export default {
   name: 'PawPetDetailFigma',
+  components: { LevelCapsule },
   props: {
     variant: { type: Number, default: 35 },
   },

@@ -3,23 +3,7 @@
 		<!-- #ifndef MP-WEIXIN -->
 		<image class="h5-status-bar" src="/static/figma/leaderboard-top.png" mode="scaleToFill"></image>
 		<!-- #endif -->
-		<view class="nav-wrap" :style="{ paddingTop: statusBarHeight + 'px' }">
-			<view
-				class="nav-row"
-				:style="{ marginTop: navRowOffsetTop + 'px', height: navRowHeight + 'px', paddingRight: menuRightInset + 'px' }"
-			>
-				<view class="nav-left" @click="goBack">
-					<image class="nav-back-icon" src="/static/nav-back-arrow.png" mode="aspectFit"></image>
-				</view>
-				<text class="nav-title">排行榜</text>
-				<!-- #ifdef MP-WEIXIN -->
-				<view class="nav-cap-spacer" :style="{ width: menuWidth + menuRightInset + 'px' }"></view>
-				<!-- #endif -->
-				<!-- #ifndef MP-WEIXIN -->
-				<view class="nav-right" :style="{ width: menuWidth + 'px' }"></view>
-				<!-- #endif -->
-			</view>
-		</view>
+		<PawPageNav title="排行榜" :auto-back="false" @back="goBack" />
 
 		<view class="tabs">
 			<view
@@ -55,7 +39,7 @@
 				<view class="podium-card-inner" @click.stop="openLbUser(topThree[1])">
 					<view class="podium-name-row">
 						<text class="podium-name">{{ topThree[1].name }}</text>
-						<view class="lv-cap"><text class="lv-cap__txt">Lv{{ topThree[1].lv }}</text></view>
+						<LevelCapsule :level="topThree[1].lv" />
 					</view>
 					<text class="podium-weight">{{ topThree[1].weight }}斤</text>
 					<text class="podium-city">{{ topThree[1].city }}</text>
@@ -75,7 +59,7 @@
 				<view class="podium-card-inner" @click.stop="openLbUser(topThree[0])">
 					<view class="podium-name-row">
 						<text class="podium-name">{{ topThree[0].name }}</text>
-						<view class="lv-cap"><text class="lv-cap__txt">Lv{{ topThree[0].lv }}</text></view>
+						<LevelCapsule :level="topThree[0].lv" />
 					</view>
 					<text class="podium-weight">{{ topThree[0].weight }}斤</text>
 					<text class="podium-city">{{ topThree[0].city }}</text>
@@ -106,7 +90,7 @@
 				<view class="podium-card-inner" @click.stop="openLbUser(topThree[2])">
 					<view class="podium-name-row">
 						<text class="podium-name">{{ topThree[2].name }}</text>
-						<view class="lv-cap"><text class="lv-cap__txt">Lv{{ topThree[2].lv }}</text></view>
+						<LevelCapsule :level="topThree[2].lv" />
 					</view>
 					<text class="podium-weight">{{ topThree[2].weight }}斤</text>
 					<text class="podium-city">{{ topThree[2].city }}</text>
@@ -134,7 +118,7 @@
 					<view class="list-main-line">
 						<view class="list-name-with-lv" @click.stop="openLbUser(row)">
 							<text class="list-name">{{ row.name }}</text>
-							<view class="lv-cap"><text class="lv-cap__txt">Lv{{ row.lv }}</text></view>
+							<LevelCapsule :level="row.lv" />
 						</view>
 						<view class="list-metrics">
 							<text class="list-weight">{{ row.weight }}斤</text>
@@ -151,7 +135,7 @@
 			<image class="footer-avatar" src="/static/figma/brand-logo.png" mode="aspectFill" @click.stop="openLbUser(selfRow)"></image>
 			<view class="footer-mid" @click.stop="openLbUser(selfRow)">
 				<text class="footer-name">{{ selfRow.name }}</text>
-				<view class="lv-cap"><text class="lv-cap__txt">Lv{{ selfRow.lv }}</text></view>
+				<LevelCapsule :level="selfRow.lv" />
 			</view>
 			<view class="footer-cols">
 				<view class="footer-col">
@@ -172,9 +156,10 @@
 </template>
 
 <script>
-import { getWechatNavLayout } from '@/utils/navLayout.js'
 import { openUserProfile } from '@/utils/profileNav.js'
 import { goBackSmart } from '@/utils/navBack.js'
+import LevelCapsule from '@/components/LevelCapsule.vue'
+import PawPageNav from '@/components/PawPageNav.vue'
 
 function cloneBoard(payload) {
 	return {
@@ -265,14 +250,10 @@ const TAB_BOARD = {
 }
 
 export default {
+	components: { LevelCapsule, PawPageNav },
 	data() {
 		const initial = cloneBoard(TAB_BOARD.day_feed)
 		return {
-			statusBarHeight: 20,
-			navRowOffsetTop: 0,
-			navRowHeight: 32,
-			menuWidth: 87,
-			menuRightInset: 8,
 			activeTab: 'day_feed',
 			tabLoading: false,
 			_tabLoadTimer: null,
@@ -287,14 +268,7 @@ export default {
 			selfRow: initial.selfRow
 		}
 	},
-	onLoad() {
-		const nav = getWechatNavLayout()
-		this.statusBarHeight = nav.statusBarHeight
-		this.navRowOffsetTop = nav.navRowOffsetTop
-		this.navRowHeight = nav.navRowHeight
-		this.menuWidth = nav.menuWidth
-		this.menuRightInset = nav.menuRightInset
-	},
+	onLoad() {},
 	beforeDestroy() {
 		if (this._tabLoadTimer) {
 			clearTimeout(this._tabLoadTimer)

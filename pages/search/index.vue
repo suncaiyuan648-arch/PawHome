@@ -4,41 +4,10 @@
 		<image v-if="pageState && pageState !== 'empty'" class="h5-status-bar h5-search-top" src="/static/figma/search-top-full.png" mode="scaleToFill"></image>
 		<image v-else class="h5-status-bar" src="/static/figma/status-bar-search.png" mode="scaleToFill"></image>
 		<!-- #endif -->
-		<view class="nav-wrap" :style="{ paddingTop: statusBarHeight + 'px' }">
-			<view
-				class="nav-row"
-				:style="{ marginTop: navRowOffsetTop + 'px', height: navRowHeight + 'px', paddingRight: menuRightInset + 'px' }"
-			>
-				<view class="nav-left" @click="goBack">
-					<image class="nav-back-icon" src="/static/nav-back-arrow.png" mode="aspectFit"></image>
-				</view>
-				<!-- #ifdef MP-WEIXIN -->
-				<view class="nav-cap-spacer" :style="{ width: menuWidth + menuRightInset + 'px' }"></view>
-				<!-- #endif -->
-				<!-- #ifndef MP-WEIXIN -->
-				<view class="nav-right" :style="{ width: menuWidth + 'px', height: navRowHeight + 'px', borderRadius: navRowHeight / 2 + 'px' }">
-					<view class="nav-dot-btn"><text>···</text></view>
-					<view class="nav-split"></view>
-					<view class="nav-circle-btn"></view>
-				</view>
-				<!-- #endif -->
-			</view>
-		</view>
+		<PawPageNav class="search-page-nav" background="#f5f5f5" fallback-url="/pages/index/index" :auto-back="false" @back="goBack" />
 
 		<view class="search-row">
-			<view class="search-box">
-				<uni-icons type="search" color="#D2D2D2" :size="14"></uni-icons>
-				<input
-					class="search-input"
-					v-model="keyword"
-					type="text"
-					placeholder="蓝金渐层"
-					placeholder-class= "search-placeholder"
-					confirm-type="search"
-					@confirm="onSearch"
-				/>
-				<view class="search-btn" @click="onSearch"><text>搜一搜</text></view>
-			</view>
+			<PawSearchBar v-model="keyword" placeholder="蓝金渐层" @search="onSearch" />
 		</view>
 
 		<view class="search-body">
@@ -69,18 +38,7 @@
 		</template>
 
 		<template v-else>
-			<view class="tab-row tab-row--empty">
-				<view
-					v-for="tab in tabs"
-					:key="tab.key"
-					class="tab-item"
-					:class="{ active: activeTab === tab.key }"
-					@click="activeTab = tab.key"
-				>
-					<text>{{ tab.label }}</text>
-					<view class="tab-line"></view>
-				</view>
-			</view>
+			<PawTabs class="tab-row tab-row--empty" v-model="activeTab" :items="tabs" variant="compact" />
 			<view class="empty-wrap">
 				<image class="empty-art" src="/static/figma/home/empty-search.png" mode="aspectFit"></image>
 				<text class="empty-text">没有相关内容</text>
@@ -89,21 +47,16 @@
 		</template>
 		</view>
 
-		<view v-if="showDeleteAllDialog" class="mask" @click="showDeleteAllDialog = false">
-			<view class="sheet" @click.stop>
-				<text class="sheet-title">删除全部搜索历史</text>
-				<view class="sheet-actions">
-					<view class="sheet-btn cancel" @click="showDeleteAllDialog = false"><text>取消</text></view>
-					<view class="sheet-btn danger" @click="confirmDeleteAll"><text>删除</text></view>
-				</view>
-			</view>
-		</view>
+		<PawDialog v-model="showDeleteAllDialog" variant="destructive" title="删除全部搜索历史" confirm-text="删除" cancel-text="取消" :show-cancel="true" :close-on-mask="false" @confirm="confirmDeleteAll" />
 	</view>
 </template>
 
 <script>
 import SearchResultTabs from '@/components/SearchResultTabs.vue'
-import { getWechatNavLayout } from '@/utils/navLayout.js'
+import PawPageNav from '@/components/PawPageNav.vue'
+import PawSearchBar from '@/components/navigation/PawSearchBar.vue'
+import PawTabs from '@/components/navigation/PawTabs.vue'
+import PawDialog from '@/components/overlay/PawDialog.vue'
 import { goBackSmart } from '@/utils/navBack.js'
 
 const HISTORY_KEY = 'PAWHOME_SEARCH_HISTORY'
@@ -111,16 +64,15 @@ const DEMO_HISTORY = ['狸花猫', '545876656', '幸福小区', '年糕', '朝�
 
 export default {
 	components: {
-		SearchResultTabs
+		SearchResultTabs,
+		PawPageNav,
+		PawSearchBar,
+		PawTabs,
+		PawDialog
 	},
 	data() {
 		return {
 			pageState: '',
-			statusBarHeight: 20,
-			navRowOffsetTop: 0,
-			navRowHeight: 44,
-			menuWidth: 87,
-			menuRightInset: 8,
 			keyword: '',
 			latestSearchKeyword: '',
 			historyList: [],
@@ -143,10 +95,8 @@ export default {
 		}
 	},
 	onLoad(options = {}) {
-		this.layoutNav()
 		this.pageState = options.state || ''
 		if (this.pageState === 'empty') {
-			this.navRowHeight = 44
 			this.keyword = '蓝金渐层'
 			this.latestSearchKeyword = ''
 			this.historyList = []
@@ -168,14 +118,6 @@ export default {
 		if (this.pageState !== 'empty') this.readHistory()
 	},
 	methods: {
-		layoutNav() {
-			const nav = getWechatNavLayout()
-			this.statusBarHeight = nav.statusBarHeight
-			this.navRowOffsetTop = nav.navRowOffsetTop
-			this.navRowHeight = nav.navRowHeight
-			this.menuWidth = nav.menuWidth
-			this.menuRightInset = nav.menuRightInset
-		},
 		readHistory() {
 			const list = uni.getStorageSync(HISTORY_KEY)
 			if (Array.isArray(list)) {
@@ -240,7 +182,7 @@ export default {
 }
 .h5-status-bar { position: absolute; left: 0; top: 0; width: 100%; height: 40px; z-index: 1200; pointer-events: none; }
 .h5-search-top { height: 135px; }
-.search-page--dynamic .nav-wrap,.search-page--dynamic .search-row,.search-page--yard .nav-wrap,.search-page--yard .search-row,.search-page--user .nav-wrap,.search-page--user .search-row,.search-page--idle .nav-wrap,.search-page--idle .search-row,.search-page--deleting .nav-wrap,.search-page--deleting .search-row{visibility:hidden}
+.search-page--dynamic .search-page-nav,.search-page--dynamic .search-row,.search-page--yard .search-page-nav,.search-page--yard .search-row,.search-page--user .search-page-nav,.search-page--user .search-row,.search-page--idle .search-page-nav,.search-page--idle .search-row,.search-page--deleting .search-page-nav,.search-page--deleting .search-row{visibility:hidden}
 .search-body {
 	flex: 1;
 	min-height: 0;
@@ -264,11 +206,7 @@ export default {
 .nav-split { width: 1rpx; height: 22rpx; background: #e2e2e2; }
 .nav-circle-btn { width: 32rpx; height: 32rpx; border-radius: 50%; border: 2rpx solid #1f1f1f; background: #fff; }
 .search-row { padding: 8rpx 16px 0; }
-.search-box { height: 34px; border: 2px solid #2e2e2e; border-radius: 50px; display: flex; align-items: center; padding: 0 2px 0 10px; background: #fff; box-sizing: border-box; }
-.search-input { flex: 1; min-width: 0; margin-left: 6px; font-size: 14px; color: #333; }
-.search-placeholder { color: #d8d8d8; font-size: 14px; }
-.search-btn { width: 55px; height: 26px; border-radius: 14px; background: #1f1f1f; display: flex; align-items: center; justify-content: center; }
-.search-btn text { color: #fff; font-size: 12px; font-weight: 500; }
+.search-page-nav { flex-shrink: 0; }
 .history-head { margin-top: 24rpx; padding: 0 24rpx; display: flex; align-items: center; justify-content: space-between; }
 .search-page--idle .history-head,.search-page--deleting .history-head{margin-top:-4px;padding:0 15px}
 .history-title { font-size: 15px; color: #222; font-weight: 500; }

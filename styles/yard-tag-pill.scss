@@ -5,25 +5,25 @@
 	flex-direction: row;
 	align-items: center;
 	justify-content: center;
-	height: 32rpx;
-	padding: 0 14rpx;
+	height: 16px;
+	padding: 0 5px;
 	box-sizing: border-box;
-	background: #ffdd00;
-	border-radius: 9999rpx;
+	background: #fff463;
+	border-radius: 8px;
 	flex-shrink: 0;
 	vertical-align: middle;
 }
 
 .yard-tag-pill__text {
-	font-size: 20rpx;
-	color: #111;
+	font-size: 10px;
+	color: #333;
 	font-weight: 500;
 	line-height: 1;
 }
 
 /* 跟在昵称/小院名称后的左边距 */
 .yard-tag-pill--ml {
-	margin-left: 12rpx;
+	margin-left: 6px;
 }
 
 /* 与 px 排版混用时（如标题栏用户信息） */

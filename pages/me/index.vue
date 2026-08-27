@@ -35,8 +35,8 @@
 					<view class="profile-info">
 						<view class="name-row">
 							<text class="profile-name">浮生孤影</text>
-							<view class="lv-cap" @click.stop="goLevelPage">
-								<text class="lv-cap__txt">Lv.1</text>
+							<view @click.stop="goLevelPage">
+								<LevelCapsule level="1" />
 							</view>
 						</view>
 						<text class="paw-id">逢猫号: 2876598765</text>
@@ -218,9 +218,10 @@
 
 <script>
 	import CustomTabber from '@/components/CustomTabber/index.vue'
+	import LevelCapsule from '@/components/LevelCapsule.vue'
 
 	export default {
-		components: { CustomTabber },
+		components: { CustomTabber, LevelCapsule },
 		data() {
 			return {
 				pageState: 'default',

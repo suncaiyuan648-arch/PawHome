@@ -1,28 +1,69 @@
 page {
-  --paw-color-brand: #ffdd00;
-  --paw-color-brand-soft: #fff58a;
-  --paw-color-text: #1f1f1f;
+  /* PawHome semantic tokens: fixed UI follows the 375px Figma baseline. */
+  --paw-color-brand: #ffe60f;
+  --paw-color-brand-soft: #fff463;
+  --paw-color-brand-disabled: rgba(255, 244, 99, .5);
+  --paw-color-rank: #fbc800;
+  --paw-color-text-strong: #282827;
+  --paw-color-text: #333333;
+  --paw-color-text-primary: #333333;
   --paw-color-text-secondary: #666666;
+  --paw-color-text-tertiary: #999999;
   --paw-color-text-muted: #999999;
+  --paw-color-text-meta: #8c8c8c;
+  --paw-color-text-link-muted: #616161;
   --paw-color-background: #f5f5f5;
+  --paw-color-page-subtle: #f7f8fa;
   --paw-color-surface: #ffffff;
-  --paw-color-border: #eeeeee;
+  --paw-color-input: #f4f4f5;
+  --paw-color-border: #ececec;
+  --paw-color-border-strong: #d9d9d9;
   --paw-color-success: #8fd35b;
   --paw-color-warning: #f3a33b;
-  --paw-color-danger: #ff5a61;
-  --paw-radius-small: 8rpx;
-  --paw-radius-medium: 16rpx;
-  --paw-radius-card: 24rpx;
+  --paw-color-danger: #ff3d3d;
+  --paw-owner-bg: #ffecef;
+  --paw-owner-text: #ff0038;
+  --paw-verified-bg: #fffaf0;
+  --paw-verified-text: #a9731d;
+  --paw-level-bg: #523400;
+  --paw-level-text: #f6e1b8;
+  --paw-yard-tag-bg: #fff463;
+  --paw-yard-tag-text: #333333;
+  --paw-yard-stat-bg: #fefada;
+  --paw-yard-stat-text: #ee8002;
+  --paw-feed-source-text: #384d7b;
+  --paw-radius-xs: 4px;
+  --paw-radius-sm: 5px;
+  --paw-radius-control: 8px;
+  --paw-radius-card: 10px;
+  --paw-radius-sheet: 20px;
   --paw-radius-pill: 999rpx;
   --paw-page-gutter: 24rpx;
   --paw-section-gap: 20rpx;
   --paw-nav-height: 88rpx;
   --paw-action-height: 88rpx;
   --paw-shadow-card: 0 4rpx 16rpx rgba(25, 25, 25, 0.04);
+  --paw-motion-instant: 80ms;
+  --paw-motion-micro: 120ms;
+  --paw-motion-fast: 160ms;
+  --paw-motion-base: 220ms;
+  --paw-motion-sheet: 260ms;
+  --paw-motion-layout: 280ms;
+  --paw-motion-ticker: 350ms;
+  --paw-ease-standard: cubic-bezier(.22, .61, .36, 1);
+  --paw-ease-enter: cubic-bezier(0, 0, .2, 1);
+  --paw-ease-exit: cubic-bezier(.4, 0, 1, 1);
+  --paw-z-nav: 200;
+  --paw-z-footer: 300;
+  --paw-z-popover: 800;
+  --paw-z-dialog: 10000;
+  --paw-z-sheet: 10020;
+  --paw-z-composer: 10030;
+  --paw-z-share: 10040;
 
   color: var(--paw-color-text);
   background: var(--paw-color-background);
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: "Source Han Sans CN", "PingFang SC", -apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-serif;
 }
 
 .paw-page {
@@ -63,5 +104,5 @@ page {
 }
 
 .paw-safe-bottom {
-  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
 }

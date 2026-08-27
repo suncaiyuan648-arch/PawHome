@@ -1,6 +1,9 @@
 {
     "name" : "PawHome",
     "appid" : "__UNI__7FD222C",
+    "uniStatistics" : {
+        "enable" : false
+    },
     "description" : "",
     "versionName" : "1.0.0",
     "versionCode" : "100",

@@ -65,7 +65,7 @@ export default {
 </script>
 
 <style scoped>
-.paw-nav { position: relative; z-index: 20; box-sizing: border-box; }
+.paw-nav { position: relative; z-index: var(--paw-z-nav, 200); box-sizing: border-box; }
 .paw-nav--fixed { position: fixed; top: 0; left: 0; right: 0; }
 .paw-nav__row { position: relative; display: flex; align-items: center; min-height: 64rpx; box-sizing: border-box; }
 .paw-nav__side { position: relative; z-index: 2; display: flex; align-items: center; justify-content: center; min-width: 88rpx; min-height: 88rpx; box-sizing: border-box; }

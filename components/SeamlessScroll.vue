@@ -4,7 +4,7 @@
       class="scroll-content"
       :style="{
         transform: `translateY(${translateY}px)`,
-        transition: enableTransition ? 'transform .35s ease' : 'none'
+        transition: enableTransition ? 'transform var(--paw-motion-ticker, 350ms) var(--paw-ease-standard, ease)' : 'none'
       }"
     >
       <view
@@ -20,9 +20,7 @@
           </view>
           <view class="info-name">
             <text>{{ item.text }}</text>
-            <view class="info-lv">
-              <text>Lv{{ item.level != null ? item.level : 1 }}</text>
-            </view>
+            <LevelCapsule :level="item.level != null ? item.level : 1" />
           </view>
         </view>
         <view class="ranking">
@@ -35,14 +33,16 @@
 
 <script>
 import { safeImgSrc } from "@/utils/safeImgSrc.js";
+import LevelCapsule from "@/components/LevelCapsule.vue";
 
 export default {
   name: "SeamlessScroll",
+  components: { LevelCapsule },
   props: {
-    /** 传入则覆盖内置演示数据；项可为 { text, level?, avatar?, rankTitle?, pawId? } */
+    /** 项可为 { text, level?, avatar?, rankTitle?, pawId? }；数据由页面传入。 */
     items: {
       type: Array,
-      default: null,
+      default: () => [],
     },
     avatarFallback: {
       type: String,
@@ -55,12 +55,6 @@ export default {
   },
   data() {
     return {
-      defaultScrollList: [
-        { id: 1, text: "张三", rankTitle: "小院投喂第一名", pawId: "ss-demo-1" },
-        { id: 2, text: "隶属", rankTitle: "小院投喂第二名", pawId: "ss-demo-2" },
-        { id: 3, text: "王五", rankTitle: "小院投喂第三名", pawId: "ss-demo-3" },
-        { id: 4, text: "赵六", rankTitle: "小院投喂第四名", pawId: "ss-demo-4" },
-      ],
       currentIndex: 0,
       rowHeight: 40,
       translateY: 0,
@@ -70,12 +64,7 @@ export default {
   },
   computed: {
     scrollList() {
-      if (Array.isArray(this.items) && this.items.length > 0) {
-        return this.items.map((x, i) =>
-          typeof x === "string" ? { text: x, id: i } : { id: i, ...x }
-        );
-      }
-      return this.defaultScrollList;
+      return this.items.map((x, i) => typeof x === "string" ? { text: x, id: i } : { id: i, ...x });
     },
     renderList() {
       if (!this.scrollList.length) return [];
@@ -111,6 +100,7 @@ export default {
     },
     startAutoScroll() {
       this.stopAutoScroll();
+      if (this.scrollList.length <= 1) return;
       this.intervalTimer = setInterval(() => {
         if (this.scrollList.length <= 1) return;
         this.currentIndex += 1;
@@ -163,21 +153,6 @@ export default {
     line-height: 20px;
     display: flex;
     align-items: center;
-    .info-lv {
-      margin-left: 5px;
-      border-radius: 15px;
-      background: rgba(82, 52, 0, 1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2px 5px;
-      border-radius: 50px;
-      font-size: 11px;
-      font-weight: 500;
-      line-height: 12px;
-      color: rgba(246, 225, 184, 1);
-      vertical-align: top;
-    }
   }
 }
 .ranking {

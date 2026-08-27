@@ -18,14 +18,14 @@
     <template v-else-if="mode === 'medals'">
       <image class="medal-bg" src="/static/figma/medals/medal-page-bg.png" mode="scaleToFill" />
       <PawPageNav title="我的勋章" background="transparent" fallback-url="/pages/me/index" />
-      <view class="medal-profile"><image class="profile-photo" src="/static/figma/me-avatar.png" mode="aspectFill" /><view class="profile-copy"><view class="profile-name-row"><text class="asset-name">浮生孤影</text><view class="lv-cap"><text class="lv-cap__txt">Lv1</text></view></view><text class="asset-muted">您的勋章数量超越80%用户</text></view><view class="medal-count"><text class="medal-number">0</text><text class="count-unit">枚勋章</text></view></view>
+      <view class="medal-profile"><image class="profile-photo" src="/static/figma/me-avatar.png" mode="aspectFill" /><view class="profile-copy"><view class="profile-name-row"><text class="asset-name">浮生孤影</text><LevelCapsule level="1" /></view><text class="asset-muted">您的勋章数量超越80%用户</text></view><view class="medal-count"><text class="medal-number">0</text><text class="count-unit">枚勋章</text></view></view>
       <view class="main-medal" @click="openNewMedal"><image src="/static/figma/medals/guardian-medal.png" mode="scaleToFill" /></view><text class="recent">最近获得</text><text class="recent-copy">累计投喂10斤</text><text class="earned">已获得 9 枚勋章</text><view class="medal-divider"></view>
       <view class="medal-grid"><view v-for="i in 6" :key="i" @click="openNewMedal"><view class="grid-medal"><image src="/static/figma/medals/guardian-medal.png" mode="scaleToFill" /></view><text>诸邪退散</text></view></view>
     </template>
 
     <template v-else-if="mode === 'map'">
       <PawPageNav title="勋章地图" background="#e4e4e4" fallback-url="/pages/meMore/myAssets?mode=medals" />
-      <view class="map-footer"><image class="profile-photo" src="/static/figma/me-avatar.png" mode="aspectFill" /><view class="profile-copy"><view class="profile-name-row"><text class="asset-name">浮生孤影</text><view class="lv-cap"><text class="lv-cap__txt">Lv1</text></view></view><text class="asset-muted">您的勋章数量超越80%用户</text></view><view class="medal-count"><text class="medal-number">0</text><text class="count-unit">枚勋章</text></view></view>
+      <view class="map-footer"><image class="profile-photo" src="/static/figma/me-avatar.png" mode="aspectFill" /><view class="profile-copy"><view class="profile-name-row"><text class="asset-name">浮生孤影</text><LevelCapsule level="1" /></view><text class="asset-muted">您的勋章数量超越80%用户</text></view><view class="medal-count"><text class="medal-number">0</text><text class="count-unit">枚勋章</text></view></view>
     </template>
 
     <template v-else>
@@ -38,8 +38,9 @@
 <script>
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawPetRoster from '@/components/PawPetRoster.vue'
+import LevelCapsule from '@/components/LevelCapsule.vue'
 export default {
-  components: { PawPageNav, PawPetRoster },
+  components: { PawPageNav, PawPetRoster, LevelCapsule },
   data() { return { mode: 'pets', listState: '', pets: [
     { name: '奥利奥', breed: '加菲猫', avatar: '/static/figma/pets/pet-orange.png' }, { name: '煤球', breed: '奶牛猫', avatar: '/static/figma/pets/pet-black-white.png' }, { name: '呗呗', breed: '金毛', avatar: '/static/figma/pets/pet-dog.png' }, { name: '呗呗', breed: '金毛', avatar: '/static/figma/pets/pet-dog.png' }
   ] } },

@@ -52,24 +52,22 @@
 			<view class="card form-card">
 				<view class="row row-input">
 					<text class="lb">小院名称</text>
-					<input
+					<PawFormField
 						class="ipt"
-						type="text"
-						:value="yardName"
+						bare
+						:model-value="yardName"
 						:placeholder="animalKind === 'dog' ? '地点+名字，例如：朝阳小区汪汪队' : '地点+名字，例如：朝阳小区猫猫队'"
-						placeholder-class="input-placeholder"
-						@input="onYardNameInput"
+						@update:model-value="onYardNameChange"
 					/>
 				</view>
 				<view class="row row-input">
 					<text class="lb">联系方式</text>
-					<input
+					<PawFormField
 						class="ipt"
-						type="text"
-						:value="yardContact"
+						bare
+						:model-value="yardContact"
 						placeholder="请填写手机号或微信号用于领养"
-						placeholder-class="input-placeholder"
-						@input="onContactInput"
+						@update:model-value="onContactChange"
 					/>
 				</view>
 				<view class="row row-yard-location">
@@ -140,9 +138,10 @@
 
 <script>
 import PawNoticeModal from '@/components/PawNoticeModal.vue'
+import PawFormField from '@/components/form/PawFormField.vue'
 import { PAW_MSG_VOICE_LEVEL, PAW_MSG_VOICE_DAY_LIMIT } from '@/utils/pawNoticeMessages.js'
 export default {
-	components: { PawNoticeModal },
+	components: { PawNoticeModal, PawFormField },
 	data() {
 		return {
 			animalKind: 'cat',
@@ -218,8 +217,14 @@ export default {
 		onYardNameInput(e) {
 			this.yardName = (e.detail.value || '').trimStart()
 		},
+		onYardNameChange(value) {
+			this.yardName = (value || '').trimStart()
+		},
 		onContactInput(e) {
 			this.yardContact = (e.detail.value || '').trimStart()
+		},
+		onContactChange(value) {
+			this.yardContact = (value || '').trimStart()
 		},
 		onLocDetailInput(e) {
 			this.locDetail = e.detail.value || ''

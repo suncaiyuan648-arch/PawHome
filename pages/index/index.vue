@@ -59,21 +59,15 @@
 					@click="changeFeedTab(tab.key)"
 				>{{ tab.label }}</view>
 			</view>
-			<view class="tab-right" @click.stop="toggleSortDropdown">
-				<text class="tab-right-text">{{ selectedSort }}</text>
-				<image class="tab-right-icon" src="/static/jiantou.png"></image>
-				<view v-if="showSortDropdown" class="dropdown-menu sort-dropdown" @click.stop>
-					<view
-						v-for="sort in sortOptions"
-						:key="sort"
-						class="dropdown-item"
-						:class="{ active: selectedSort === sort }"
-						@click="selectSort(sort)"
-					><text>{{ sort }}</text><text v-if="selectedSort === sort" class="dropdown-check">✓</text></view>
-				</view>
-			</view>
+			<PawPopoverMenu v-model="showSortDropdown" :items="sortOptions" :active-key="selectedSort" @select="selectSort">
+				<template #trigger>
+					<view class="tab-right">
+						<text class="tab-right-text">{{ selectedSort }}</text>
+						<image class="tab-right-icon" src="/static/jiantou.png"></image>
+					</view>
+				</template>
+			</PawPopoverMenu>
 		</view>
-		<view v-if="showSortDropdown" class="dropdown-mask" @click="closeDropdowns"></view>
 		<!-- 列表区用 flex 占满剩余高度；去掉 enhanced，避免微信小程序触摸/图层异常 -->
 		<scroll-view
 			class="feed-scroll"
@@ -111,45 +105,11 @@
 				<text class="home-empty-subtitle">这个城市好像还没有人发布</text>
 			</view>
 			<view v-else-if="activeFeedTab === 'yard'" class="home-yard-list">
-				<view class="home-yard-card" v-for="yard in yardCards" :key="yard.id" @click="goYardDetail">
-					<view class="home-yard-top">
-						<image class="home-yard-avatar" src="/static/figma/search/yard-avatar-exact.png" mode="aspectFill"></image>
-						<view class="home-yard-main">
-							<view class="home-yard-name-row"><text class="home-yard-name">我就是要喂猫</text><text class="home-yard-verified">已实名</text></view>
-							<view v-if="yard.variant === 'badges'" class="home-yard-badges">
-								<text>剩余6/21只</text><text>已成立2个月</text><text>入驻4人</text>
-							</view>
-							<view v-else class="home-yard-org"><uni-icons type="auth-filled" color="#2c8cff" :size="14"></uni-icons><text>合肥市希望流浪动物基地</text></view>
-						</view>
-						<text class="home-yard-distance">3.2km 金水区</text>
-					</view>
-					<text class="home-yard-desc">春去秋来二十年的救助流浪猫时间匆匆而去，在此希望每个毛孩子都被温柔相待。</text>
-					<scroll-view class="home-yard-gallery" scroll-x :show-scrollbar="false">
-						<view class="home-yard-gallery-row"><view v-for="n in 4" :key="n" class="home-yard-photo"><image src="/static/figma/search/yard-gallery-exact.png" mode="aspectFill"></image><text>开饭了开饭了开饭</text></view></view>
-					</scroll-view>
-				</view>
+					<YardSummaryCard v-for="yard in yardCards" :key="yard.id" class="home-yard-card" :yard="yardModel(yard)" variant="list" @click="goYardDetail" />
 			</view>
 			<view v-else class="paw-list" :class="{ 'tab-switching': isTabSwitching }">
 				<view class="paw-column" v-for="(column, columnIndex) in feedColumns" :key="'feed-column-' + columnIndex">
-				<view class="card" :class="{ 'single-line-card': entry.item.title.length < 12 }" v-for="entry in column" :key="'fc-' + entry.index">
-					<view class="card-image-wrap" @click="goDetail">
-						<image class="card-img" mode="aspectFill" :lazy-load="false" :src="entry.item.cover"></image>
-						<view v-if="!entry.item.embeddedLocation" class="card-location"><text>● 3.2km 金水区</text></view>
-					</view>
-					<view class="card-label">
-						<view class="card-label-text">{{ entry.item.title }}</view>
-					</view>
-					<view class="card-user">
-						<view class="card-user-left" @click.stop="openAuthorProfile">
-							<image class="card-user-icon" src="/static/figma/home/feed-avatar.png" mode="aspectFill"></image>
-							<view class="card-user-name">朝阳小区猫猫队</view>
-						</view>
-						<view class="card-user-right" @click.stop="toggleFeedCardLike(entry.index)">
-							<image class="card-user-dianzan" :src="entry.item.liked ? zan2 : zan1" mode="aspectFit"></image>
-							<text class="card-user-num">{{ entry.item.likes }}</text>
-						</view>
-					</view>
-				</view>
+				<FeedCard v-for="entry in column" :key="'fc-' + entry.index" :item="entry.item" @click="goDetail" @user-click="openAuthorProfile" @like="toggleFeedCardLike(entry.index)" />
 				</view>
 			</view>
 			<view v-if="!isDynamicEmpty && activeFeedTab !== 'yard'" class="load-more-indicator">
@@ -174,11 +134,17 @@
 	<script>
 	import CustomTabber from "@/components/CustomTabber/index.vue"
 	import PawAnnouncementMarquee from "@/components/PawAnnouncementMarquee.vue"
+	import PawPopoverMenu from "@/components/navigation/PawPopoverMenu.vue"
+	import FeedCard from "@/components/dynamic/FeedCard.vue"
+	import YardSummaryCard from "@/components/yard/YardSummaryCard.vue"
 	import { openUserProfile } from "@/utils/profileNav.js"
 	export default {
 		components: {
 			CustomTabber,
-			PawAnnouncementMarquee
+			PawAnnouncementMarquee,
+			PawPopoverMenu,
+			FeedCard,
+			YardSummaryCard
 		},
 		onShow() {
 			this.searchAnimating = false
@@ -307,6 +273,18 @@
 			selectSort(sort) {
 				this.selectedSort = sort
 				this.showSortDropdown = false
+			},
+			yardModel(yard) {
+				return {
+					name: '我就是要喂猫',
+					avatar: '/static/figma/search/yard-avatar-exact.png',
+					verified: true,
+					distance: '3.2km 金水区',
+					location: yard.variant === 'org' ? '合肥市希望流浪动物基地' : '',
+					tags: yard.variant === 'badges' ? ['剩余6/21只', '已成立2个月', '入驻4人'] : [],
+					description: '春去秋来二十年的救助流浪猫时间匆匆而去，在此希望每个毛孩子都被温柔相待。',
+					gallery: [1, 2, 3, 4].map(id => ({ src: '/static/figma/search/yard-gallery-exact.png', title: '开饭了开饭了开饭' }))
+				}
 			},
 			changeFeedTab(tabKey) {
 				if (this.activeFeedTab === tabKey) return

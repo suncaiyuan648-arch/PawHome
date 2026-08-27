@@ -11,7 +11,7 @@
       <view class="throw-rank-label">{{ feedSummary }}</view>
       <view class="throw-rank-right" @click.stop="onLeaderboardTap">
         <text>排行榜</text>
-        <image class="throw-icon" src="/static/youjiantou.png"></image>
+        <PawChevron class="throw-icon" :size="6" color="#9c9c9c" />
       </view>
     </view>
     <SeamlessScroll
@@ -24,10 +24,11 @@
 
 <script>
 import SeamlessScroll from "@/components/SeamlessScroll.vue";
+import PawChevron from "@/components/base/PawChevron.vue";
 
 export default {
   name: "YardFeedRankStrip",
-  components: { SeamlessScroll },
+  components: { SeamlessScroll, PawChevron },
   props: {
     showMetaRow: {
       type: Boolean,
@@ -45,7 +46,7 @@ export default {
       type: String,
       default: "",
     },
-    /** 传给 SeamlessScroll；空数组则用组件内置演示数据 */
+    /** 传给 SeamlessScroll；空数组时不使用演示数据 */
     seamlessItems: {
       type: Array,
       default: () => [],

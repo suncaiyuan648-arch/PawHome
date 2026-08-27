@@ -5,72 +5,23 @@
 		</view>
 		<view class="settings-body">
 			<view class="settings-card">
-				<view class="settings-row" @click="tapRow('个人信息')">
-					<text class="settings-row-label">个人信息</text>
-					<image
-						class="settings-chevron"
-						src="/static/me/link-chevron.png"
-						mode="aspectFit"
-					></image>
-				</view>
+				<PawOptionRow label="个人信息" @click="tapRow('个人信息')" />
 				<view class="settings-divider"></view>
-				<view class="settings-row" @click="tapRow('收货地址')">
-					<text class="settings-row-label">收货地址</text>
-					<image
-						class="settings-chevron"
-						src="/static/me/link-chevron.png"
-						mode="aspectFit"
-					></image>
-				</view>
+				<PawOptionRow label="收货地址" @click="tapRow('收货地址')" />
 			</view>
 
 			<view class="settings-card">
-				<view class="settings-row" @click="tapRow('账号与安全')">
-					<text class="settings-row-label">账号与安全</text>
-					<image
-						class="settings-chevron"
-						src="/static/me/link-chevron.png"
-						mode="aspectFit"
-					></image>
-				</view>
+				<PawOptionRow label="账号与安全" @click="tapRow('账号与安全')" />
 			</view>
 
 			<view class="settings-card">
-				<view class="settings-row" @click="tapRow('客服帮助')">
-					<text class="settings-row-label">客服帮助</text>
-					<image
-						class="settings-chevron"
-						src="/static/me/link-chevron.png"
-						mode="aspectFit"
-					></image>
-				</view>
+				<PawOptionRow label="客服帮助" @click="tapRow('客服帮助')" />
 				<view class="settings-divider"></view>
-				<view class="settings-row" @click="tapRow('意见反馈')">
-					<text class="settings-row-label">意见反馈</text>
-					<image
-						class="settings-chevron"
-						src="/static/me/link-chevron.png"
-						mode="aspectFit"
-					></image>
-				</view>
+				<PawOptionRow label="意见反馈" @click="tapRow('意见反馈')" />
 				<view class="settings-divider"></view>
-				<view class="settings-row" @click="tapRow('平台协议')">
-					<text class="settings-row-label">平台协议</text>
-					<image
-						class="settings-chevron"
-						src="/static/me/link-chevron.png"
-						mode="aspectFit"
-					></image>
-				</view>
+				<PawOptionRow label="平台协议" @click="tapRow('平台协议')" />
 				<view class="settings-divider"></view>
-				<view class="settings-row" @click="tapRow('关于逢猫')">
-					<text class="settings-row-label">关于逢猫</text>
-					<image
-						class="settings-chevron"
-						src="/static/me/link-chevron.png"
-						mode="aspectFit"
-					></image>
-				</view>
+				<PawOptionRow label="关于逢猫" @click="tapRow('关于逢猫')" />
 			</view>
 
 			<view class="settings-card settings-card--logout" @click="onLogout">
@@ -81,7 +32,10 @@
 </template>
 
 <script>
+	import PawOptionRow from '@/components/form/PawOptionRow.vue'
+
 	export default {
+		components: { PawOptionRow },
 		data(){return{statusBarHeight:20}},
 		onLoad(){const s=uni.getSystemInfoSync();this.statusBarHeight=s.statusBarHeight||20
 			// #ifdef H5

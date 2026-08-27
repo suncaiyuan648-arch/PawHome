@@ -1,23 +1,24 @@
 /**
  * 全局 Lv 等级胶囊（深棕底 + 浅色字，紧凑高度）
- * 用法：<view class="lv-cap"><text class="lv-cap__txt">Lv1</text></view>
+ * 用法：<LevelCapsule :level="1" />。保留类名仅用于旧页面兼容。
  */
 .lv-cap {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	box-sizing: border-box;
-	height: 26rpx;
+	width: 28px;
+	height: 13px;
 	min-width: 0;
-	padding: 0 10rpx;
+	padding: 0;
 	border-radius: 999rpx;
-	background: #5c4033;
+	background: #523400;
 	vertical-align: middle;
 }
 
 .lv-cap__txt {
-	font-size: 18rpx;
-	font-weight: 600;
-	color: #fff8ef;
-	line-height: 1;
+	font-size: 11px;
+	font-weight: 500;
+	color: #f6e1b8;
+	line-height: 7px;
 }

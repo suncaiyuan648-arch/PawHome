@@ -1,17 +1,11 @@
 <template>
 	<view class="page">
-		<view class="nav-wrap" :style="{ paddingTop: statusBarHeight + 'px' }">
-			<view class="nav-row">
-				<view class="nav-side nav-left" @click.stop="goBack"><image class="nav-back-icon" src="/static/nav-back-arrow.png" mode="aspectFit"></image></view>
-				<text class="nav-title">逢猫评审团</text>
-				<view class="nav-side nav-right" :style="{ width: menuRightWidth + 'px' }"></view>
-			</view>
-		</view>
+		<PawPageNav title="逢猫评审团" :auto-back="false" @back="goBack" />
 		<scroll-view class="main-scroll" scroll-y :show-scrollbar="false">
 			<view class="head-row"><text class="n">86</text><text class="n n2">9896</text></view>
 			<view class="sub-row"><text class="s on">待投票</text><text class="s">投票结束</text></view>
 			<view class="card" v-for="(it,i) in list" :key="i" @click="openDetail(it)">
-				<view class="card-head"><image src="/static/figma/jury-db5da0781d7667c3490af5cfa74dd2fc7cf1ac01.png" mode="aspectFill"></image><view class="card-owner"><view class="title">{{ it.name }}<text class="lv">Lv1</text></view><text class="date">2026.02.22</text></view><text class="tag" :class="{done:it.done}">{{ it.done?'投票结束':'投票中' }}</text></view>
+				<view class="card-head"><image src="/static/figma/jury-db5da0781d7667c3490af5cfa74dd2fc7cf1ac01.png" mode="aspectFill"></image><view class="card-owner"><view class="title">{{ it.name }}<LevelCapsule level="1" /></view><text class="date">2026.02.22</text></view><text class="tag" :class="{done:it.done}">{{ it.done?'投票结束':'投票中' }}</text></view>
 				<view class="bar"><view class="left">92% (挺真实)</view><view class="right">8%</view></view>
 				<text class="txt">今天不做课间操了，开一个紧急例会，就在昨天，发生了一件骇人听闻的学生袭击老师事件</text>
 				<view class="evidence-row"><image src="/static/figma/jury-d0a23847642d582320e26f7499c0a5c51acf5a86.jpg" mode="aspectFill"></image><image src="/static/figma/jury-e81f2c2074a7772e8fbca3d3828b3a751f5cb5bb.png" mode="aspectFill"></image></view>
@@ -21,7 +15,10 @@
 	</view>
 </template>
 <script>
-export default{data(){return{statusBarHeight:20,menuRightWidth:87,list:[{id:'jury-1',name:'我就是要喂猫',done:false},{id:'jury-2',name:'我就是要喂猫',done:true}]}},onLoad(){const s=uni.getSystemInfoSync();this.statusBarHeight=s.statusBarHeight||20;
+import LevelCapsule from '@/components/LevelCapsule.vue'
+import PawPageNav from '@/components/PawPageNav.vue'
+
+export default{components:{LevelCapsule,PawPageNav},data(){return{statusBarHeight:20,menuRightWidth:87,list:[{id:'jury-1',name:'我就是要喂猫',done:false},{id:'jury-2',name:'我就是要喂猫',done:true}]}},onLoad(){const s=uni.getSystemInfoSync();this.statusBarHeight=s.statusBarHeight||20;
 // #ifdef H5
 this.statusBarHeight=44
 // #endif

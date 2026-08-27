@@ -35,9 +35,7 @@
           <view class="review-content">
             <view class="review-name" @click.stop="openReviewMainUser">
               <view>姜栋</view>
-              <view class="level">
-                <text>Lv1</text>
-              </view>
+              <LevelCapsule :level="1" />
             </view>
             <view class="review-text">
               <view class="avatar-group">
@@ -174,7 +172,7 @@
           <view class="throw-row__grow">
             <view class="throw-row__name-lv" @click.stop="openThrowUser(item)">
               <text class="throw-row__name">{{ item.name }}</text>
-              <view class="lv-cap"><text class="lv-cap__txt">Lv{{ item.level }}</text></view>
+              <LevelCapsule :level="item.level" />
             </view>
           </view>
           <text class="throw-row__weight">{{ item.weightText }}</text>
@@ -199,12 +197,13 @@ import NineGridLayout from "@/components/libai-NineGridLayout/libai-NineGridLayo
 import uniIcons from "@/uni_modules/uni-icons/components/uni-icons/uni-icons.vue";
 import YardCommentComposer from "@/components/yard/YardCommentComposer.vue";
 import ReplyComposerSheet from "@/components/ReplyComposerSheet.vue";
+import LevelCapsule from "@/components/LevelCapsule.vue";
 import { safeImgSrc } from "@/utils/safeImgSrc.js";
 import { openUserProfile } from "@/utils/profileNav.js";
 
 export default {
   name: "YardReviewFeed",
-  components: { NineGridLayout, uniIcons, YardCommentComposer, ReplyComposerSheet },
+  components: { NineGridLayout, uniIcons, YardCommentComposer, ReplyComposerSheet, LevelCapsule },
   props: {
     /** 为 true 时隐藏「动态 / 投粮记录」Tab（动态详情页评论流样式） */
     hideStatusTab: {

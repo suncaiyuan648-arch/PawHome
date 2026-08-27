@@ -33,10 +33,10 @@
 					</view>
 					<view class="media-row">
 						<image v-for="src in mediaList" :key="src" class="media-preview" :src="src" mode="aspectFill"></image>
-						<view class="media-add" @click="pickMedia">
-						<uni-icons type="image" color="#b0b0b0" :size="40"></uni-icons>
-						<text class="media-txt">照片/视频</text>
-						</view>
+						<PawUploadTile class="media-add" @select="pickMedia">
+							<uni-icons type="image" color="#b0b0b0" :size="40"></uni-icons>
+							<text class="media-txt">照片/视频</text>
+						</PawUploadTile>
 					</view>
 				</view>
 
@@ -58,7 +58,7 @@
 						<view class="order-top">
 							<view class="order-name-row" @click.stop="openOrderUser(selectedOrder)">
 								<text class="order-name">{{ selectedOrder.userName }}</text>
-								<view class="lv-cap"><text class="lv-cap__txt">Lv{{ selectedOrder.level }}</text></view>
+								<LevelCapsule :level="selectedOrder.level" />
 							</view>
 							<text v-if="selectedOrder.timedOut" class="order-timeout">已超时</text>
 							<text v-else class="order-countdown">{{ selectedOrder.countdown }}</text>
@@ -113,7 +113,7 @@
 						<view class="oc-top">
 							<view class="oc-name-row" @click.stop="openOrderUser(o)">
 								<text class="oc-name">{{ o.userName }}</text>
-								<view class="lv-cap"><text class="lv-cap__txt">Lv{{ o.level }}</text></view>
+								<LevelCapsule :level="o.level" />
 							</view>
 							<text v-if="o.timedOut" class="oc-timeout">已超时</text>
 							<text v-else class="oc-countdown">{{ o.countdown }}</text>
@@ -133,6 +133,8 @@
 <script>
 import { goBackSmart } from '@/utils/navBack.js'
 import { openUserProfile } from '@/utils/profileNav.js'
+import LevelCapsule from '@/components/LevelCapsule.vue'
+import PawUploadTile from '@/components/form/PawUploadTile.vue'
 
 const MOCK_ORDERS = () => [
 	{
@@ -159,6 +161,7 @@ const MOCK_ORDERS = () => [
 ]
 
 export default {
+	components: { LevelCapsule, PawUploadTile },
 	data() {
 		return {
 			statusBarHeight: 20,

@@ -30,23 +30,42 @@
 />
 ```
 
+## 组件治理基线
+
+本轮按 `docs/pages-design/复用组件.md` 先盘点仓库现状，再收敛重复实现：
+
+| 治理结果 | 组件 | 代码位置 | 已接入页面/组件 |
+|------|------|------|------|
+| REFINE / MERGE | `PawButton` / `PawPrimaryButton` | `components/base/PawButton.vue`、`components/PawPrimaryButton.vue` | 固定底栏、结果页、表单、投喂弹层 |
+| NEW | `PawOverlay` / `PawDialog` / `PawBottomSheet` | `components/overlay/` | 通知、删除确认、分享、回复、选择、结果 |
+| NEW | `PawFixedActionBar` / `PawSafeArea` | `components/layout/`、`components/base/` | 动态详情、小院详情、领养详情、详情底栏 |
+| MERGE | `YardSummaryCard` | `components/yard/YardSummaryCard.vue` | 首页、动态详情、兼容旧 `YardInfoSummaryCard` |
+| NEW | `DynamicMediaViewer` / `FeedingSourceRow` / 评论体系 | `components/dynamic/` | 动态详情、小院详情 |
+| NEW | `PawTabs` / `PawSearchBar` / `PawPopoverMenu` | `components/navigation/` | 搜索页、首页、小院详情 |
+| NEW | `PawActionSheet` / `PawSelectionSheet` | `components/overlay/` | 个人主页更多、添加宠物属性选择 |
+| NEW | `PawFormField` / `PawOptionRow` / `PawUploadTile` / `PawAddressCard` | `components/form/` | 创建小院、设置、发布动态、地址页 |
+
+页面接入约束：页面负责数据、跳转和 Toast；复用组件只负责展示、动效和事件。通用组件不内置演示列表或业务导航，图片默认使用 `aspectFill`，品牌色统一使用 `styles/paw-design-system.scss` 语义 Token。
+
 ## 等级胶囊（Lv）
 
 | 资源 | 路径 |
 |------|------|
 | 样式 | `styles/lv-cap.scss`（`App.vue` 已 `@import`） |
-| 用法 | `<view class="lv-cap"><text class="lv-cap__txt">Lv1</text></view>` |
+| 用法 | `<LevelCapsule :level="1" />` |
+
+只能保留 `components/LevelCapsule.vue` 一个真实视觉实现；`styles/lv-cap.scss` 仅为历史页面提供兼容样式，不应在新页面直接绘制 `.lv-cap`。
 
 ## 评论 / 动态相关
 
 | 资源 | 路径 |
 |------|------|
-| 评论输入条 | `components/yard/YardCommentComposer.vue` |
-| 评论流 + 动态/投粮 Tab | `components/yard/YardReviewFeed.vue` |
+| 评论输入条 | `components/dynamic/CommentComposer.vue`；旧 `YardCommentComposer` 为兼容薄封装 |
+| 评论流 | `components/dynamic/CommentThread.vue`、`CommentItem.vue`、`VoiceComment.vue` |
 | 投粮榜条 | `components/yard/YardFeedRankStrip.vue` |
-| 小院摘要卡片 | `components/yard/YardInfoSummaryCard.vue` |
+| 小院摘要卡片 | `components/yard/YardSummaryCard.vue`；旧 `YardInfoSummaryCard` 为兼容薄封装 |
 | 小院宠物状态卡片 / 列表区 | `components/yard/YardPetStatusCard.vue`、`components/yard/YardPetStatusListBlock.vue` | 待领养 / 已领养 / 失踪 / 死亡分组：顶胶囊、横向头像+名+品种、右下「n只」。列表页 `pages/yard/yardPetStatusList.vue`；小院详情 `commodityDetails` 六头像后 `>` 跳转。 |
-| 详情底栏 | `components/DetailTabber.vue`（`joined` / `@join` / `@leave` / `@adopt`） |
+| 详情底栏 | `components/layout/PawFixedActionBar.vue`；`DetailTabber` 保留业务事件兼容层 |
 
 ## 其它
 

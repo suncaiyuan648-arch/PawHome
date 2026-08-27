@@ -38,9 +38,7 @@
 								<view class="name-more-row">
 									<view class="name-line">
 										<text class="nickname">{{ displayNickname }}</text>
-										<view class="lv-cap">
-											<text class="lv-cap__txt">Lv1</text>
-										</view>
+										<LevelCapsule level="1" />
 									</view>
 									<view class="profile-more-wrap" :style="navTrailingInsetStyle">
 										<view class="nav-more-trigger" @click.stop="openMoreActionSheet">
@@ -54,9 +52,7 @@
 						</view>
 						<view class="profile-under-avatar">
 							<view v-if="verified || profileTags.length" class="profile-tags-row">
-								<view v-if="verified" class="profile-oval-tag">
-									<text class="profile-oval-tag-text">已实名</text>
-								</view>
+								<PawVerifiedBadge v-if="verified" />
 								<view
 									v-for="(t, i) in profileTags"
 									:key="'pt-' + i"
@@ -141,7 +137,7 @@
 					<view v-for="item in reviewList" :key="item.id" class="review-row">
 						<image class="review-avatar" :src="item.avatar" mode="aspectFill"></image>
 						<view class="review-main">
-							<view class="review-name-line"><text class="review-name">{{ item.name }}</text><view class="lv-cap"><text class="lv-cap__txt">Lv1</text></view></view>
+							<view class="review-name-line"><text class="review-name">{{ item.name }}</text><LevelCapsule level="1" /></view>
 							<text class="review-copy">{{ item.copy }}</text>
 							<text class="review-meta">{{ item.time }}　{{ item.region }}　回复</text>
 						</view>
@@ -279,7 +275,7 @@
 							<view class="joined-header-mid">
 								<view class="joined-title-row">
 									<text class="joined-nickname">{{ item.userName }}</text>
-									<text v-if="item.verified" class="joined-verified">已实名</text>
+														<PawVerifiedBadge v-if="item.verified" />
 								</view>
 								<view v-if="item.variant === 'badges'" class="joined-badges">
 									<view
@@ -386,37 +382,16 @@
 			</view>
 		</view>
 
-		<!-- 更多：底部抽屉（举报 / 分享 / …） -->
-		<view
-			v-if="showMoreActionSheet"
-			class="more-sheet-mask"
-			@click.self="closeMoreActionSheet"
-		>
-			<view class="more-sheet-panel" @click.stop>
-				<view class="more-sheet-item more-sheet-item--danger" @click="onMoreSheet('report')">
-					<text class="more-sheet-txt">举报</text>
-				</view>
-				<view class="more-sheet-item more-sheet-item--strong" @click="onMoreSheet('share')">
-					<text class="more-sheet-txt">分享</text>
-				</view>
-				<view class="more-sheet-item more-sheet-item--muted" @click="onMoreSheet('block')">
-					<text class="more-sheet-txt">拉黑</text>
-				</view>
-				<view class="more-sheet-item more-sheet-item--muted" @click="onMoreSheet('remark')">
-					<text class="more-sheet-txt">备注</text>
-				</view>
-				<view class="more-sheet-gap"></view>
-				<view class="more-sheet-item more-sheet-item--muted" @click="closeMoreActionSheet">
-					<text class="more-sheet-txt">取消</text>
-				</view>
-			</view>
-		</view>
+		<PawActionSheet v-model="showMoreActionSheet" :items="moreActionItems" @select="onMoreSheet" />
 	</view>
 </template>
 
 <script>
 	import { goBackSmart } from '@/utils/navBack.js'
 	import YardTagPill from '@/components/YardTagPill.vue'
+	import LevelCapsule from '@/components/LevelCapsule.vue'
+	import PawVerifiedBadge from '@/components/identity/PawVerifiedBadge.vue'
+	import PawActionSheet from '@/components/overlay/PawActionSheet.vue'
 
 	const mockFeedForUser = (nickname, avatar) => [
 		{
@@ -532,7 +507,7 @@
 	]
 
 	export default {
-		components: { YardTagPill },
+		components: { YardTagPill, LevelCapsule, PawVerifiedBadge, PawActionSheet },
 		data() {
 			return {
 				donateList: mockDonateRows(),
@@ -564,6 +539,12 @@
 				},
 				followed: false,
 				showUnfollowConfirm: false,
+				moreActionItems: [
+					{ key: 'report', label: '举报', tone: 'danger' },
+					{ key: 'share', label: '分享' },
+					{ key: 'block', label: '拉黑' },
+					{ key: 'remark', label: '备注' }
+				],
 				profileTimelineMode: false,
 				profileTimeline: [
 					{ day: '23', month: '', action: '云养了一只宠物30天', copy: '流浪的时候经常去小卖店偷吃火腿肠被打骂', images: ['/static/figma/profile/timeline-1.png', '/static/figma/profile/timeline-2.png', '/static/figma/profile/timeline-3.png'] },
@@ -666,13 +647,14 @@
 			},
 			onMoreSheet(action) {
 				this.closeMoreActionSheet()
+				const actionKey = typeof action === 'string' ? action : action && action.key
 				const map = {
 					report: '举报',
 					share: '分享',
 					block: '拉黑',
 					remark: '备注'
 				}
-				uni.showToast({ title: map[action] || '', icon: 'none' })
+				uni.showToast({ title: map[actionKey] || '', icon: 'none' })
 			},
 			goFollowFansPage(tab) {
 				const t = tab === 'fans' ? 'fans' : 'follow'
