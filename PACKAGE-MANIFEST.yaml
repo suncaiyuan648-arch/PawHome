@@ -1,0 +1,20 @@
+package: PawHome-Figma-Codex-Integration
+purpose: overlay_into_pawhome_root
+figma_file_key: 03pt0RiVfBFCvn4PsIyezk
+files:
+  - AGENTS.md
+  - .gitignore
+  - docs/design/figma-map.yaml
+  - docs/design/README.md
+  - docs/design/visual-baseline/README.md
+  - docs/pages-design/首页.md
+  - docs/pages-design/动态详情.md
+  - docs/pages-design/复用组件.md
+  - docs/development/Codex-微信开发者工具自动调试方案.md
+  - docs/development/Codex调试Prompt模板.md
+  - docs/development/微信小程序自动调试报告模板.md
+  - docs/development/examples/wechat-mcp.example.toml
+  - scripts/wx-debug/preflight.sh
+  - scripts/wx-debug/start-dev.sh
+  - scripts/wx-debug/stop-dev.sh
+  - scripts/wx-debug/open-devtools.sh

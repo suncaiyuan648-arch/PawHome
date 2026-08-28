@@ -1,7 +1,7 @@
 <template>
   <view class="dynamic-media-viewer">
     <swiper class="dynamic-media-viewer__swiper" :current="current" :duration="250" :circular="false" @change="onChange">
-      <swiper-item v-for="(item, index) in mediaItems" :key="item.id || index">
+      <swiper-item v-for="(item, index) in mediaItems" :key="item.id || index" class="dynamic-media-viewer__item">
         <image class="dynamic-media-viewer__image" :src="resolveSrc(item)" mode="aspectFill" @tap.stop="onPreview(item, index)" />
       </swiper-item>
     </swiper>
@@ -36,8 +36,10 @@ export default {
 </script>
 
 <style scoped>
-.dynamic-media-viewer { position: relative; width: calc(100% - 71px); height: 500px; margin: 22px auto 0; overflow: hidden; background: #eee; }
-.dynamic-media-viewer__swiper, .dynamic-media-viewer__image { display: block; width: 100%; height: 100%; }
+.dynamic-media-viewer { position: relative; width: 304px; height: 500px; margin: 0 auto; overflow: hidden; background: #eee; }
+.dynamic-media-viewer__swiper { display: block; width: 100%; height: 100%; }
+.dynamic-media-viewer__item { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; }
+.dynamic-media-viewer__image { position: absolute; top: -3.18%; left: 0; display: block; width: 236.9%; height: 106.37%; max-width: none; }
 .dynamic-media-viewer__dots { position: absolute; right: 10px; bottom: 8px; left: 10px; display: flex; gap: 3px; height: 3px; }
 .dynamic-media-viewer__dot { flex: 1; height: 3px; border-radius: 2px; background: rgba(255, 255, 255, .25); transition: opacity 180ms ease; }
 .dynamic-media-viewer__dot.active { background: rgba(255, 255, 255, .5); }

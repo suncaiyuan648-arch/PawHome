@@ -3,7 +3,7 @@
     <image v-if="image" class="paw-empty-state__image" :src="image" mode="aspectFit" />
     <text class="paw-empty-state__title">{{ title }}</text>
     <text v-if="description" class="paw-empty-state__description">{{ description }}</text>
-    <PawButton v-if="actionText" class="paw-empty-state__action" text="" tone="ghost" size="sm" @click="$emit('action')"><text>{{ actionText }}</text></PawButton>
+    <PawButton v-if="actionText" class="paw-empty-state__action" text="" tone="ghost" size="sm" flush nowrap @click="$emit('action')"><text>{{ actionText }}</text></PawButton>
   </view>
 </template>
 
@@ -18,5 +18,5 @@ export default { name: 'PawEmptyState', components: { PawButton }, props: { imag
 .paw-empty-state__image { width: 78px; height: 79px; }
 .paw-empty-state__title { margin-top: 8px; color: #666; font-size: 14px; line-height: 20px; }
 .paw-empty-state__description { margin-top: 4px; color: #999; font-size: 12px; line-height: 17px; }
-.paw-empty-state__action { width: 76px; margin-top: 12px; padding: 0; }
+.paw-empty-state__action { width: 76px; height: 33px; min-height: 33px; margin-top: 12px; padding: 0; }
 </style>

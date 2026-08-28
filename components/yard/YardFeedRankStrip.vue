@@ -1,5 +1,13 @@
 <template>
-  <view class="yard-feed-rank-strip">
+  <view class="yard-feed-rank-strip" :class="`yard-feed-rank-strip--${variant}`">
+    <template v-if="variant === 'detail'">
+      <view class="detail-rank__top"><SeamlessScroll class="detail-rank__scroll" :items="seamlessItems.length ? seamlessItems : null" :rank-title="seamlessRankTitle" @user-click="$emit('rank-user', $event)" /></view>
+      <view class="detail-rank__bottom">
+        <text class="detail-rank__summary">{{ feedSummary }}</text>
+        <view class="detail-rank__leaderboard" @tap.stop="onLeaderboardTap"><text>排行榜</text><image src="/static/figma/dynamic-detail/chevron-right.svg" mode="aspectFit" /></view>
+      </view>
+    </template>
+    <template v-else>
     <view v-if="showMetaRow" class="throw-position">
       <view class="throw-text">{{ regionText }}</view>
       <view class="throw-info">
@@ -19,6 +27,7 @@
       :rank-title="seamlessRankTitle"
       @user-click="$emit('rank-user', $event)"
     />
+    </template>
   </view>
 </template>
 
@@ -55,6 +64,10 @@ export default {
       type: String,
       default: "小院投喂第一名",
     },
+    variant: {
+      type: String,
+      default: "default",
+    },
   },
   methods: {
     onLeaderboardTap() {
@@ -68,6 +81,17 @@ export default {
 .yard-feed-rank-strip {
   margin-bottom: 10px;
 }
+
+.yard-feed-rank-strip--detail { width: 100%; height: 77px; margin: 0; background: #fff; overflow: hidden; }
+.detail-rank__top { height: 39px; box-sizing: border-box; overflow: hidden; border-bottom: .2px solid #ececec; }
+.detail-rank__scroll :deep(.css-scroll-container) { height: 39px; padding: 0 8px; box-sizing: border-box; }
+.detail-rank__scroll :deep(.scroll-item) { height: 39px; padding: 0 5px; }
+.detail-rank__scroll :deep(.info-name) { font-size: 13px; }
+.detail-rank__scroll :deep(.ranking) { font-size: 13px; }
+.detail-rank__bottom { display: flex; align-items: center; justify-content: space-between; height: 38px; padding: 0 12px; box-sizing: border-box; }
+.detail-rank__summary { color: #333; font-size: 14px; line-height: 20px; }
+.detail-rank__leaderboard { display: inline-flex; align-items: center; color: #9c9c9c; font-size: 13px; font-weight: 500; line-height: 18px; }
+.detail-rank__leaderboard image { width: 6px; height: 10px; margin-left: 6px; transform: rotate(180deg); }
 
 .throw-position {
   display: flex;

@@ -213,16 +213,17 @@
 				scrollIntoViewId: '',
 				yardCards: [{ id: 1, variant: 'badges' }, { id: 2, variant: 'org' }],
 				feedCards: [
-					{ cover: '/static/figma/search/dynamic-left-1.png', embeddedLocation: true, title: '小猫吃的好开心', liked: false, likes: 37 },
+					{ cover: '/static/figma/home/dynamic-left.png', distance: '3.2km', district: '金水区', title: '小猫吃的好开心', liked: false, likes: 37 },
 					{
-						cover: '/static/figma/search/dynamic-right-1.png',
-						embeddedLocation: true,
+						cover: '/static/figma/home/dynamic-right.png',
+						distance: '3.2km',
+						district: '金水区',
 						title: '小猫吃的好开心啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊',
 						liked: true,
 						likes: 32
 					},
-					{ cover: '/static/figma/search/dynamic-left-2.png', embeddedLocation: true, title: '小猫吃的好开心', liked: false, likes: 37 },
-					{ cover: '/static/figma/search/dynamic-right-2.png', embeddedLocation: true, title: '小猫吃的好开心', liked: false, likes: 37 }
+					{ cover: '/static/figma/home/dynamic-left.png', distance: '3.2km', district: '金水区', title: '小猫吃的好开心', liked: false, likes: 37 },
+					{ cover: '/static/figma/home/dynamic-right.png', distance: '3.2km', district: '金水区', title: '小猫吃的好开心', liked: false, likes: 37 }
 				]
 			}
 		},

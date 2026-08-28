@@ -20,8 +20,8 @@
     />
     <view class="reply-composer-sheet__bar">
       <view class="reply-composer-sheet__tools">
-        <view class="reply-composer-sheet__hit" @tap.stop="$emit('voice')"><image src="/static/me/annual-china.svg" mode="aspectFit" /></view>
-        <view class="reply-composer-sheet__hit" @tap.stop="$emit('pick-image')"><image src="/static/me/order-review.svg" mode="aspectFit" /></view>
+        <view class="reply-composer-sheet__hit" @tap.stop="$emit('voice')"><image src="/static/figma/dynamic-detail/composer-voice.svg" mode="aspectFit" /></view>
+        <view class="reply-composer-sheet__hit" @tap.stop="$emit('pick-image')"><image src="/static/figma/dynamic-detail/composer-emoji.svg" mode="aspectFit" /></view>
       </view>
       <PawButton class="reply-composer-sheet__send" tone="brand-soft" size="xs" :disabled="!hasText" text="发送" @click="onSend" />
     </view>
@@ -60,6 +60,7 @@ export default {
 .reply-composer-sheet__bar { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px 12px; }
 .reply-composer-sheet__tools { display: flex; align-items: center; gap: 4px; }
 .reply-composer-sheet__hit { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; }
-.reply-composer-sheet__hit image { width: 22px; height: 22px; }
+.reply-composer-sheet__hit image { width: 17px; height: 17px; }
+.reply-composer-sheet__hit:first-child image { width: 13px; height: 17px; }
 .reply-composer-sheet__send { width: 54px; padding: 0; }
 </style>

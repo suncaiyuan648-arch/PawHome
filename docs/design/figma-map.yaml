@@ -1,0 +1,163 @@
+schema_version: 1
+
+figma:
+  file_name: "逢猫投喂流浪猫板块"
+  file_key: "03pt0RiVfBFCvn4PsIyezk"
+  file_url: "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/%E9%80%A2%E7%8C%AB%E6%8A%95%E5%96%82%E6%B5%81%E6%B5%AA%E7%8C%AB%E6%9D%BF%E5%9D%97?node-id=0-1"
+  node_url_pattern: "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/%E9%80%A2%E7%8C%AB%E6%8A%95%E5%96%82%E6%B5%81%E6%B5%AA%E7%8C%AB%E6%9D%BF%E5%9D%97?node-id={node_id_dash}"
+  design_baseline_width: 375
+  access_note: "URL is an index only. Live inspection still requires Figma MCP/connector permissions in the local agent environment."
+
+rules:
+  - "Never guess a node by visual similarity."
+  - "Use exact node_id from this map when live Figma tooling is available."
+  - "Read shared_component_doc before implementing page-local equivalents."
+  - "If live Figma is unavailable, use design_doc plus local visual baseline and explicitly report the limitation."
+  - "Do not commit temporary Figma MCP asset URLs into production code."
+
+shared_component_doc: "docs/pages-design/复用组件.md"
+
+pages:
+  home:
+    name: "首页"
+    route: "/pages/index/index"
+    source: "pages/index/index.vue"
+    design_doc: "docs/pages-design/首页.md"
+    states:
+      dynamic:
+        name: "投喂首页-动态"
+        node_id: "62:23815"
+      dynamic_empty:
+        name: "投喂首页-动态-空状态"
+        node_id: "62:24022"
+      dynamic_filter_sheet:
+        name: "投喂首页-动态筛选弹窗"
+        node_id: "62:24224"
+      yard:
+        name: "投喂首页-小院"
+        node_id: "62:25292"
+      dynamic_scrolled:
+        name: "投喂首页-动态-上滑状态"
+        node_id: "62:25667"
+
+  dynamic_detail:
+    name: "动态详情"
+    route: "/pages/dynamicDetail/index"
+    source: "pages/dynamicDetail/index.vue"
+    design_doc: "docs/pages-design/动态详情.md"
+    states:
+      default:
+        name: "动态详情"
+        node_id: "62:27383"
+        query:
+          yardId: "1"
+      comments_empty:
+        name: "动态详情-评论空状态"
+        node_id: "62:27724"
+        query:
+          yardId: "1"
+          state: "comments-empty"
+
+  search:
+    name: "搜索"
+    route: "/pages/search/index"
+    source: "pages/search/index.vue"
+    design_doc: null
+    states:
+      dynamic:
+        name: "搜索-动态"
+        node_id: "62:28350"
+      yard:
+        name: "搜索-小院"
+        node_id: "62:28526"
+      user:
+        name: "搜索-用户"
+        node_id: "62:28865"
+      idle:
+        name: "搜索-待搜索"
+        node_id: "62:28996"
+      idle_delete:
+        name: "搜索-待搜索-删除"
+        node_id: "62:29084"
+
+  publish_dynamic:
+    name: "发布动态"
+    route: "/pages/publishDynamic/index"
+    source: "pages/publishDynamic/index.vue"
+    design_doc: null
+    states:
+      default:
+        name: "发布动态"
+        node_id: "62:30949"
+      select_order:
+        name: "发布动态-选择订单"
+        node_id: "62:35896"
+      result:
+        name: "动态发布结果页"
+        node_id: "62:35942"
+
+# Figma states whose current code route/source has not yet been formally mapped.
+# Keep them here for discovery, but do not let an agent guess the route.
+unresolved_design_states:
+  yard_detail_dynamic:
+    name: "院子详情-动态"
+    node_id: "62:26000"
+  yard_detail_dynamic_empty:
+    name: "院子详情-动态-动态空状态"
+    node_id: "62:26418"
+  yard_detail_feed_records:
+    name: "院子详情-投喂记录"
+    node_id: "62:26677"
+  yard_detail_dynamic_expanded:
+    name: "院子详情-动态展开"
+    node_id: "62:26947"
+
+components:
+  level_capsule:
+    semantic_name: "LevelCapsule"
+    node_id: "62:42069"
+    figma_name: "Group 1321318288"
+  feeding_source_row:
+    semantic_name: "FeedingSourceRow"
+    node_id: "62:42047"
+    figma_name: "Frame 1321318267"
+  reply_target_inline:
+    semantic_name: "ReplyTargetInline"
+    node_id: "62:42056"
+    figma_name: "Group 1321318296"
+  user_name_level:
+    semantic_name: "UserNameLevel"
+    node_id: "62:42062"
+    figma_name: "Frame 1321318274"
+  yard_location_line:
+    semantic_name: "YardLocationLine"
+    node_id: "62:42065"
+    figma_name: "Frame 1321317912"
+  rank_user_name_level:
+    semantic_name: "RankUserNameLevel"
+    node_id: "62:42071"
+    figma_name: "Group 1321318303"
+  avatar_name_level_row:
+    semantic_name: "AvatarNameLevelRow"
+    node_id: "62:42074"
+    figma_name: "Group 1321318301"
+  chevron_right:
+    semantic_name: "ChevronRight"
+    node_id: "62:42089"
+    figma_name: "详情"
+  yard_type_badge:
+    semantic_name: "YardTypeBadge"
+    node_id: "62:42091"
+    figma_name: "Frame 1321318310"
+  yard_name_verified:
+    semantic_name: "YardNameVerified"
+    node_id: "62:42094"
+    figma_name: "Group 1321318304"
+  verified_badge:
+    semantic_name: "PawVerifiedBadge"
+    node_id: "62:42097"
+    figma_name: "Frame 1321318103"
+  user_name_owner:
+    semantic_name: "UserNameOwner"
+    node_id: "62:42099"
+    figma_name: "Frame 1321318340"

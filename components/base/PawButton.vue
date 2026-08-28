@@ -5,7 +5,7 @@
       `paw-button--${tone}`,
       `paw-button--${size}`,
       `paw-button--${shape}`,
-      { 'paw-button--block': block, 'paw-button--disabled': disabled, 'paw-button--loading': loading }
+      { 'paw-button--block': block, 'paw-button--flush': flush, 'paw-button--nowrap': nowrap, 'paw-button--disabled': disabled, 'paw-button--loading': loading }
     ]"
     :disabled="disabled || loading"
     :loading="loading"
@@ -27,6 +27,8 @@ export default {
     size: { type: String, default: 'md' },
     shape: { type: String, default: 'pill' },
     block: { type: Boolean, default: false },
+    flush: { type: Boolean, default: false },
+    nowrap: { type: Boolean, default: false },
     loading: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
     formType: { type: String, default: '' }
@@ -60,6 +62,8 @@ export default {
 }
 .paw-button::after { display: none; }
 .paw-button--block { display: flex; width: 100%; }
+.paw-button--flush { padding-right: 0; padding-left: 0; }
+.paw-button--nowrap { white-space: nowrap; }
 .paw-button--xs { height: 30px; min-height: 30px; font-size: 13px; }
 .paw-button--sm { height: 33px; min-height: 33px; font-size: 13px; }
 .paw-button--md { height: 42px; min-height: 42px; font-size: 15px; }

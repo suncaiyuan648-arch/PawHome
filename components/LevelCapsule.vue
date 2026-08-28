@@ -1,5 +1,6 @@
 <template>
-	<view class="level-capsule">
+	<text v-if="inline" class="level-capsule__inline">Lv{{ displayLevel }}</text>
+	<view v-else class="level-capsule">
 		<text class="level-capsule__txt">Lv{{ displayLevel }}</text>
 	</view>
 </template>
@@ -12,6 +13,10 @@
 			level: {
 				type: [Number, String],
 				default: 1,
+			},
+			inline: {
+				type: Boolean,
+				default: false,
 			},
 		},
 		computed: {
@@ -42,5 +47,22 @@
 		font-weight: 500;
 		line-height: 7px;
 		color: var(--paw-level-text, #f6e1b8);
+	}
+
+	.level-capsule__inline {
+		display: inline-block;
+		min-width: 28px;
+		height: 13px;
+		padding: 0 4px;
+		border-radius: 999rpx;
+		background: var(--paw-level-bg, #523400);
+		box-sizing: border-box;
+		color: var(--paw-level-text, #f6e1b8);
+		font-size: 11px;
+		font-weight: 500;
+		line-height: 13px;
+		text-align: center;
+		vertical-align: middle;
+		white-space: nowrap;
 	}
 </style>

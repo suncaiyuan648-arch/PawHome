@@ -36,7 +36,7 @@ export default {
 </script>
 
 <style scoped>
-.paw-avatar-stack { display: inline-flex; align-items: center; padding: 7px 4px; min-width: 36px; box-sizing: content-box; cursor: pointer; }
+.paw-avatar-stack { display: inline-flex; align-items: center; height: 22px; min-width: 0; padding: 0; box-sizing: border-box; cursor: pointer; }
 .paw-avatar-stack__item { border: 1px solid #fff; box-sizing: border-box; }
 .paw-avatar-stack__more { margin-left: 4px; color: #666; font-size: 11px; }
 </style>

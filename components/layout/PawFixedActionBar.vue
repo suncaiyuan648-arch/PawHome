@@ -1,5 +1,5 @@
 <template>
-  <PawSafeArea class="paw-fixed-action-bar" :class="{ 'paw-fixed-action-bar--safe': safeArea }" :enabled="safeArea">
+  <view class="paw-fixed-action-bar" :class="{ 'paw-fixed-action-bar--safe': safeArea }">
     <view class="paw-fixed-action-bar__actions">
       <view
         v-for="action in actions"
@@ -20,23 +20,25 @@
       :text="primaryAction.label"
       :tone="primaryAction.tone || 'brand'"
       :size="primaryAction.size || 'md'"
+      block
+      flush
+      nowrap
       :loading="!!primaryAction.loading"
       :disabled="!!primaryAction.disabled"
       @click="$emit('primary', primaryAction)"
     >
       <image v-if="primaryAction.image" class="paw-fixed-action-bar__primary-icon" :src="primaryAction.image" mode="aspectFit" />
-      <text>{{ primaryAction.label }}</text>
+      <text class="paw-fixed-action-bar__primary-label">{{ primaryAction.label }}</text>
     </PawButton>
-  </PawSafeArea>
+  </view>
 </template>
 
 <script>
 import PawButton from '@/components/base/PawButton.vue'
-import PawSafeArea from '@/components/base/PawSafeArea.vue'
 
 export default {
   name: 'PawFixedActionBar',
-  components: { PawButton, PawSafeArea },
+  components: { PawButton },
   props: {
     actions: { type: Array, default: () => [] },
     primaryAction: { type: Object, default: null },
@@ -50,14 +52,16 @@ export default {
 </script>
 
 <style scoped>
-.paw-fixed-action-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--paw-z-footer, 300); display: flex; align-items: center; min-height: 88px; padding: 8px 13px; box-sizing: border-box; border-top: 1px solid #eee; background: #fff; }
-.paw-fixed-action-bar--safe { padding-bottom: 8px; }
-.paw-fixed-action-bar__actions { display: flex; align-items: center; flex: 0 0 auto; }
-.paw-fixed-action-bar__action { display: flex; align-items: center; justify-content: center; flex-direction: column; width: 52px; min-height: 44px; color: #777; font-size: 10px; line-height: 14px; }
+.paw-fixed-action-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--paw-z-footer, 300); display: flex; flex-flow: row nowrap; align-items: flex-start; height: 88px; min-height: 88px; padding: 7px 18px 0 7px; box-sizing: border-box; border-top: .5px solid rgba(0, 0, 0, .05); background: #fff; }
+.paw-fixed-action-bar--safe { padding-bottom: env(safe-area-inset-bottom); }
+.paw-fixed-action-bar__actions { display: flex; flex: 1 1 auto; align-items: flex-start; justify-content: space-between; min-width: 156px; height: 42px; }
+.paw-fixed-action-bar__action { display: flex; align-items: center; justify-content: flex-start; flex-direction: column; width: 52px; height: 53px; padding-top: 5px; box-sizing: border-box; color: #999; font-size: 11px; font-weight: 500; line-height: 14px; }
 .paw-fixed-action-bar__action--disabled { opacity: .45; }
 .paw-fixed-action-bar__action--pressed { opacity: .7; transform: scale(.98); }
-.paw-fixed-action-bar__icon { width: 21px; height: 21px; margin-bottom: 3px; }
-.paw-fixed-action-bar__uni-icon { height: 23px; margin-bottom: 1px; }
-.paw-fixed-action-bar__primary { flex: 1; min-width: 0; margin-left: 8px; }
-.paw-fixed-action-bar__primary-icon { width: 21px; height: 21px; margin-right: 8px; }
+.paw-fixed-action-bar__icon { width: 21px; height: 21px; margin-bottom: 1px; }
+.paw-fixed-action-bar__uni-icon { height: 21px; margin-bottom: 1px; }
+.paw-fixed-action-bar__primary { flex: 0 0 188px; align-self: flex-start; width: 188px; height: 42px; min-height: 42px; margin: 0 0 0 6px; padding: 0; border-radius: 42px; background: #ffe60f; color: #282827; font-size: 15px; font-weight: 500; white-space: nowrap; }
+.paw-fixed-action-bar__primary :deep(.paw-button) { display: flex; width: 100%; height: 100%; min-height: 42px; align-items: center; justify-content: center; box-sizing: border-box; }
+.paw-fixed-action-bar__primary-icon { width: 32px; height: 32px; margin-right: 8px; flex-shrink: 0; }
+.paw-fixed-action-bar__primary-label { display: block; line-height: 20px; white-space: nowrap; }
 </style>
