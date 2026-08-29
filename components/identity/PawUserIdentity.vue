@@ -38,14 +38,14 @@ export default {
 </script>
 
 <style scoped>
-.paw-user-identity { display: inline-flex; align-items: center; min-width: 0; }
+.paw-user-identity { display: inline-flex; align-items: center; column-gap: 8px; min-width: 0; }
 .paw-user-identity--block { display: flex; width: 100%; box-sizing: border-box; }
 .paw-user-identity--block .paw-user-identity__content { flex: 1 1 0%; width: 0; min-width: 0; }
-.paw-user-identity__content { min-width: 0; margin-left: 8px; }
+.paw-user-identity__content { min-width: 0; }
 .paw-user-identity__name-row { display: flex; align-items: center; column-gap: 3px; min-width: 0; }
 .paw-user-identity__name { overflow: hidden; color: #333; font-size: 13px; font-weight: 500; line-height: 16px; text-overflow: ellipsis; white-space: nowrap; }
 .paw-user-identity--large .paw-user-identity__name { font-size: 14px; font-weight: 700; }
-.paw-user-identity--compact .paw-user-identity__content { margin-left: 5px; }
+.paw-user-identity--compact { column-gap: 5px; }
 .paw-user-identity__name-row :deep(.paw-owner-badge),
 .paw-user-identity__name-row :deep(.paw-verified-badge),
 .paw-user-identity__name-row :deep(.level-capsule) { flex-shrink: 0; }

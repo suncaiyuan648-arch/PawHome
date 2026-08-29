@@ -4,7 +4,10 @@
   "private": true,
   "scripts": {
     "dev:mp-weixin": "node scripts/run-uni.cjs dev",
-    "build:mp-weixin": "node scripts/run-uni.cjs build"
+    "build:mp-weixin": "node scripts/run-uni.cjs build",
+    "check:typography": "node scripts/check-typography.cjs",
+    "check:ui-governance": "node scripts/check-ui-governance.cjs",
+    "check:ui": "npm run check:typography && npm run check:ui-governance"
   },
   "dependencies": {
     "@dcloudio/uni-app": "3.0.0-5020420260813003",

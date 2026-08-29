@@ -39,7 +39,7 @@ export default {
 .legacy-success { position: relative; display: flex; align-items: center; flex-direction: column; min-height: 374px; padding: 42px 28px 30px; box-sizing: border-box; }
 .legacy-success__close { position: absolute; top: 4px; right: 6px; }
 .legacy-success__icon { display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; border-radius: 50%; background: var(--paw-color-brand, #ffe60f); }
-.legacy-success__title { margin-top: 14px; color: #222; font-size: 16px; font-weight: 600; }
+.legacy-success__title { margin-top: 14px; color: #222; font-size: 16px; font-weight: 500; }
 .legacy-success__body { margin-top: 38px; color: #666; font-size: 14px; line-height: 20px; text-align: center; white-space: pre-line; }
 .legacy-success__benefits { display: flex; gap: 18px; margin-top: 25px; color: #777; font-size: 11px; text-align: center; }
 .legacy-success__benefits view { display: flex; align-items: center; flex-direction: column; gap: 7px; }

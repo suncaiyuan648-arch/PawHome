@@ -225,7 +225,7 @@ export default {
 .nav-back-icon { width: 20rpx; height: 36rpx; }
 .crumb-row { min-height: 46px; display: flex; align-items: center; column-gap: 20rpx; padding: 0 20rpx; box-sizing: border-box; }
 .crumb-item { font-size: 16px; color: #8e8e8e; line-height: 22px; max-width: 120rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.crumb-item--active { color: #2a2a2a; font-weight: 600; }
+.crumb-item--active { color: #2a2a2a; font-weight: 500; }
 .list-scroll { flex: 1; min-height: 0; width: 100%; box-sizing: border-box; }
 .list-wrap { margin: 16px 8px 12px; background: #fff; border-radius: 4px; overflow: hidden; }
 .list-item { min-height: 48px; display: flex; align-items: center; justify-content:space-between; border-bottom: 1px solid #f2f2f2; padding: 0 14px; box-sizing: border-box; }

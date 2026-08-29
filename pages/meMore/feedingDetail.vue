@@ -243,7 +243,7 @@
 		left: 50%;
 		transform: translateX(-50%);
 		font-size: 34rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #111111;
 		line-height: 48rpx;
 		max-width: 50%;
@@ -322,7 +322,7 @@
 
 	.yard-name {
 		font-size: 30rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #111111;
 		line-height: 42rpx;
 	}
@@ -336,7 +336,7 @@
 	}
 
 	.feed-line--bold {
-		font-weight: 600;
+		font-weight: 500;
 	}
 
 	.time-small {
@@ -468,7 +468,7 @@
 
 	.tl-date {
 		font-size: 26rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #111111;
 		line-height: 36rpx;
 	}
@@ -557,9 +557,9 @@
 
 	.fab-feedback text {
 		font-size: 26rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #111111;
 		line-height: 36rpx;
 	}
-	.food-summary-mask{position:fixed;inset:0;z-index:900;background:#5b5b5b;display:flex;align-items:center;justify-content:center}.food-summary-dialog{width:251px;height:223px;border-radius:18px;background:#fff;overflow:hidden;padding:0 22px;box-sizing:border-box;transform:translateY(-35px)}.food-summary-title{display:block;margin-top:17px;padding-bottom:16px;border-bottom:1px solid #eee;text-align:center;font-size:20px;font-weight:600}.food-summary-row{height:43px;display:flex;align-items:center;justify-content:space-between;color:#888;font-size:14px}.food-summary-row text:last-child{color:#555}.food-summary-action{height:49px;margin:5px -22px 0;border-top:1px solid #eee;display:flex;align-items:center;justify-content:center;color:#999;font-size:16px}
+	.food-summary-mask{position:fixed;inset:0;z-index:900;background:#5b5b5b;display:flex;align-items:center;justify-content:center}.food-summary-dialog{width:251px;height:223px;border-radius:18px;background:#fff;overflow:hidden;padding:0 22px;box-sizing:border-box;transform:translateY(-35px)}.food-summary-title{display:block;margin-top:17px;padding-bottom:16px;border-bottom:1px solid #eee;text-align:center;font-size:20px;font-weight: 500}.food-summary-row{height:43px;display:flex;align-items:center;justify-content:space-between;color:#888;font-size:14px}.food-summary-row text:last-child{color:#555}.food-summary-action{height:49px;margin:5px -22px 0;border-top:1px solid #eee;display:flex;align-items:center;justify-content:center;color:#999;font-size:16px}
 </style>

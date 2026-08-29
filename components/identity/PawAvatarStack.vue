@@ -7,6 +7,7 @@
       :src="typeof item === 'string' ? item : item.avatar"
       :size="size"
       :fallback="fallback"
+      ring-color="#fff"
       :style="{ marginLeft: index === 0 ? '0' : `-${overlap}px`, zIndex: visibleItems.length - index }"
     />
     <text v-if="hiddenCount > 0" class="paw-avatar-stack__more">+{{ hiddenCount }}</text>
@@ -30,13 +31,15 @@ export default {
   computed: {
     visibleItems() { return this.items.slice(0, this.max) },
     hiddenCount() { return Math.max(0, this.items.length - this.max) },
-    stackStyle() { return { minHeight: typeof this.size === 'number' ? `${this.size}px` : this.size } }
+    stackStyle() {
+      const resolvedSize = typeof this.size === 'number' ? `${this.size}px` : this.size
+      return { height: resolvedSize, minHeight: resolvedSize }
+    }
   }
 }
 </script>
 
 <style scoped>
-.paw-avatar-stack { display: inline-flex; align-items: center; height: 22px; min-width: 0; padding: 0; box-sizing: border-box; cursor: pointer; }
-.paw-avatar-stack__item { border: 1px solid #fff; box-sizing: border-box; }
+.paw-avatar-stack { display: inline-flex; align-items: center; min-width: 0; padding: 0; box-sizing: border-box; cursor: pointer; }
 .paw-avatar-stack__more { margin-left: 4px; color: #666; font-size: 11px; }
 </style>

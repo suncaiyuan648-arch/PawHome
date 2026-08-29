@@ -289,7 +289,7 @@ export default {
 }
 .f-label text:first-child {
 	font-size: 28rpx;
-	font-weight: 600;
+	font-weight: 500;
 	color: #222;
 	line-height: 40rpx;
 }
@@ -362,7 +362,7 @@ export default {
 }
 .photo-label text:first-child {
 	font-size: 28rpx;
-	font-weight: 600;
+	font-weight: 500;
 	color: #222;
 	line-height: 40rpx;
 }
@@ -466,6 +466,6 @@ export default {
 }
 .submit-btn--disabled text {
 	color: #b0b0b0;
-	font-weight: 600;
+	font-weight: 500;
 }
 </style>

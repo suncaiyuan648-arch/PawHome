@@ -28,7 +28,7 @@
 						<view class="feed-title">{{ entry.item.title }}</view>
 						<view class="feed-foot">
 							<view class="feed-user" @click.stop="openDynamicAuthor(entry.item)">
-								<image class="feed-avatar" :src="entry.item.avatar" mode="aspectFill"></image>
+								<PawAvatar class="feed-avatar" :src="entry.item.avatar" fallback="/static/user.png" size="30rpx" />
 								<text class="feed-name">{{ entry.item.name }}</text>
 							</view>
 							<view class="feed-like" @click.stop="toggleDynamicLike(entry.index)">
@@ -47,11 +47,11 @@
 				<view class="yard-list">
 					<view class="yard-card" v-for="(yard, i) in yardList" :key="'y-' + i">
 						<view class="yard-top" @click.stop="openYardCard(yard)">
-							<image class="yard-avatar" :src="yard.avatar" mode="aspectFill"></image>
+							<PawAvatar class="yard-avatar" :src="yard.avatar" fallback="/static/user.png" :size="48" :clickable="true" @click.stop="openYardCard(yard)" />
 							<view class="yard-mid">
 								<view class="yard-name-row">
 									<text class="yard-name">{{ yard.name }}</text>
-									<text v-if="yard.verified" class="yard-verified">已实名</text>
+									<PawVerifiedBadge v-if="yard.verified" />
 								</view>
 								<view v-if="yard.variant === 'badges'" class="yard-badges">
 									<view class="yard-badge" v-for="(b, bi) in yard.badges" :key="'b-' + i + '-' + bi">
@@ -83,7 +83,7 @@
 			<scroll-view class="pane-scroll" scroll-y :show-scrollbar="false" :bounces="false" :enable-flex="true">
 				<view class="user-list">
 					<view class="user-row" v-for="(u, i) in userList" :key="'u-' + i">
-						<image class="user-avatar" :src="u.avatar" mode="aspectFill" @click.stop="openUserRow(u)"></image>
+						<PawAvatar class="user-avatar" :src="u.avatar" fallback="/static/user.png" :size="42" :clickable="true" @click.stop="openUserRow(u)" />
 						<view class="user-main" @click.stop="openUserRow(u)">
 							<text class="user-name">{{ u.name }}</text>
 							<text class="user-meta">粉丝 {{ u.fans }}</text>
@@ -99,9 +99,12 @@
 
 <script>
 import { openUserProfile, openYardDetail } from '@/utils/profileNav.js'
+import PawAvatar from '@/components/identity/PawAvatar.vue'
+import PawVerifiedBadge from '@/components/identity/PawVerifiedBadge.vue'
 
 export default {
 	name: 'SearchResultTabs',
+	components: { PawAvatar, PawVerifiedBadge },
 	props: {
 		modelValue: {
 			type: String,
@@ -242,8 +245,7 @@ export default {
 .yard-avatar { width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; }
 .yard-mid { flex: 1; min-width: 0; margin-left: 20rpx; padding-right: 0; }
 .yard-name-row { display: flex; align-items: center; gap: 12rpx; flex-wrap: wrap; }
-.yard-name { font-size: 30rpx; font-weight: 600; color: #111; line-height: 42rpx; }
-.yard-verified { font-size: 22rpx; color: #ff6b00; line-height: 30rpx; }
+.yard-name { font-size: 30rpx; font-weight: 500; color: #111; line-height: 42rpx; }
 .yard-distance { position:absolute;right:0;top:0;font-size: 22rpx; color: #999; line-height: 32rpx; max-width: 160rpx; text-align: right; }
 .yard-badges { display: flex; flex-wrap: nowrap; gap: 5px; margin-top: 8px; }
 .yard-badge { padding: 3px 5px; border-radius: 4px; background: #fff8e6; white-space:nowrap; }

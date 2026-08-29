@@ -72,7 +72,7 @@
 					<view class="hist-card-title">{{ item.title }}</view>
 					<view class="hist-card-foot">
 						<view class="hist-foot-left" @click.stop="openUserFromItem(item)">
-							<image class="hist-avatar" :src="item.userAvatar" mode="aspectFill"></image>
+							<PawAvatar class="hist-avatar" :src="item.userAvatar" fallback="/static/user.png" size="36rpx" />
 							<text class="hist-name">{{ item.userName }}</text>
 						</view>
 						<view class="hist-foot-right" @click.stop="toggleFeedLike(idx)">
@@ -96,16 +96,18 @@
 					@click="onYardTap(item)"
 				>
 					<view class="yard-header">
-						<image
+						<PawAvatar
 							class="yard-avatar"
 							:src="item.userAvatar"
-							mode="aspectFill"
+							fallback="/static/user.png"
+							:size="48"
+							:clickable="true"
 							@click.stop="openUserFromItem(item)"
-						></image>
+						/>
 						<view class="yard-header-mid">
 							<view class="yard-title-row" @click.stop="openUserFromItem(item)">
 								<text class="yard-nickname">{{ item.userName }}</text>
-								<text v-if="item.verified" class="yard-verified">已实名</text>
+								<PawVerifiedBadge v-if="item.verified" />
 							</view>
 							<view v-if="item.variant === 'badges'" class="yard-badges">
 								<view
@@ -150,6 +152,8 @@
 <script>
 	import { goBackSmart } from '@/utils/navBack.js'
 	import { openUserProfile, openYardDetail } from '@/utils/profileNav.js'
+	import PawAvatar from '@/components/identity/PawAvatar.vue'
+	import PawVerifiedBadge from '@/components/identity/PawVerifiedBadge.vue'
 
 	const mockFeed = () => [
 		{
@@ -263,6 +267,7 @@
 	]
 
 	export default {
+		components: { PawAvatar, PawVerifiedBadge },
 		data() {
 			return {
 				statusBarHeight: 20,
@@ -393,7 +398,7 @@
 		left: 50%;
 		transform: translateX(-50%);
 		font-size: 34rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #111111;
 		line-height: 48rpx;
 		max-width: 50%;
@@ -435,7 +440,7 @@
 	}
 
 	.tab-item--active .tab-text {
-		font-weight: 600;
+		font-weight: 500;
 		color: #111111;
 	}
 
@@ -659,7 +664,7 @@
 
 	.yard-nickname {
 		font-size: 30rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #111111;
 		line-height: 42rpx;
 	}

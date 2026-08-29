@@ -150,7 +150,7 @@ export default {
 .search-input { flex: 1; min-width: 0; margin-left: 10rpx; font-size: 24rpx; color: #333; }
 .search-placeholder { color: #c4c4c4; font-size: 24rpx; }
 .city-chip { margin-left: 16rpx; display: inline-flex; align-items: center; }
-.city-chip text { margin-left: 6rpx; font-size: 26rpx; font-weight: 600; color: #232323; line-height: 36rpx; }
+.city-chip text { margin-left: 6rpx; font-size: 26rpx; font-weight: 500; color: #232323; line-height: 36rpx; }
 .result-scroll { flex: 1; min-height: 0; width: 100%; box-sizing: border-box; }
 .result-list { padding: 8rpx 0 24rpx; }
 .result-item { min-height: 126rpx; display: flex; align-items: center; padding: 0 22rpx; border-bottom: 1rpx solid #f2f2f2; box-sizing: border-box; }

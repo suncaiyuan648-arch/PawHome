@@ -1,0 +1,22 @@
+page {
+  /* Typography tokens are deliberately system-first: the bundled Source Han OTFs
+   * are too large to make the runtime's default font, and are not globally loaded. */
+  --paw-font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --paw-font-body-s: 12px;
+  --paw-font-body-m: 13px;
+  --paw-font-body-l: 14px;
+  --paw-font-title-s: 15px;
+  --paw-font-title-m: 16px;
+  --paw-font-weight-regular: 400;
+  --paw-font-weight-medium: 500;
+  --paw-font-weight-bold: 700;
+  font-family: var(--paw-font-family);
+}
+
+view,
+text,
+button,
+input,
+textarea {
+  font-family: inherit;
+}

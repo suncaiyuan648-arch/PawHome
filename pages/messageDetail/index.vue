@@ -77,10 +77,10 @@ export default {
 .service-time { display: block; padding: 44rpx 0; color: #999999; font-size: 24rpx; text-align: center; }
 .service-block:first-child .service-time { padding: 14rpx 0; }
 .service-card { padding: 28rpx 30rpx 0; }
-.service-title { display: block; color: #222222; font-size: 30rpx; font-weight: 600; }
+.service-title { display: block; color: #222222; font-size: 30rpx; font-weight: 500; }
 .service-copy { display: block; margin-top: 10rpx; padding-bottom: 28rpx; color: #666666; font-size: 24rpx; line-height: 36rpx; }
 .service-link-row { display: flex; align-items: center; justify-content: space-between; min-height: 126rpx; border-top: 1rpx solid #eeeeee; }
-.service-link { color: #00a8d8; font-size: 30rpx; font-weight: 600; }
+.service-link { color: #00a8d8; font-size: 30rpx; font-weight: 500; }
 .service-chevron { color: #999999; font-size: 48rpx; font-weight: 300; }
 .interaction-row { display: flex; align-items: flex-start; min-height: 142rpx; margin-left: 32rpx; padding: 20rpx 30rpx 20rpx 0; box-sizing: border-box; border-bottom: 1rpx solid #eeeeee; }
 .interaction-avatar { flex: 0 0 auto; width: 96rpx; height: 96rpx; border-radius: 50%; }

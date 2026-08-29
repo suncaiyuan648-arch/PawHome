@@ -629,7 +629,7 @@ export default {
 
 .pd-status text {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   color: #333;
 }
 
@@ -699,7 +699,7 @@ export default {
 
 .pd-yard-name {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
   color: #222;
 }
 

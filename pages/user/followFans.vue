@@ -188,7 +188,7 @@
 		transform: translateX(-50%);
 		max-width: 46%;
 		font-size: 34rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #111111;
 		line-height: 48rpx;
 		overflow: hidden;
@@ -291,7 +291,7 @@
 
 	.tab-cell--active .tab-txt {
 		color: #111111;
-		font-weight: 600;
+		font-weight: 500;
 	}
 
 	.tab-line {
@@ -340,7 +340,7 @@
 
 	.user-name {
 		font-size: 30rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #111111;
 		line-height: 42rpx;
 	}

@@ -356,7 +356,7 @@ export default {
 	display: inline-flex; align-items: center; height: 56rpx; padding: 0 22rpx;
 	border-radius: 28rpx; background: #fff; box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.06);
 }
-.voice-chip-sec { margin-left: 10rpx; font-size: 28rpx; font-weight: 600; color: #2f2f2f; line-height: 1; }
+.voice-chip-sec { margin-left: 10rpx; font-size: 28rpx; font-weight: 500; color: #2f2f2f; line-height: 1; }
 .voice-chip-del {
 	margin-left: 14rpx; width: 44rpx; height: 44rpx; border-radius: 50%; background: #e8e8e8;
 	color: #888; font-size: 32rpx; line-height: 44rpx; text-align: center;
@@ -391,7 +391,7 @@ export default {
 .row-input { align-items: center; }
 .row-arrow { align-items: center; }
 .row-yard-location { align-items: center; }
-.lb { width: 148rpx; flex-shrink: 0; font-size: 32rpx; color: #2d2d2d; font-weight: 600; }
+.lb { width: 148rpx; flex-shrink: 0; font-size: 32rpx; color: #2d2d2d; font-weight: 500; }
 .lb-top { padding-top: 6rpx; }
 .ipt {
 	flex: 1;
@@ -425,12 +425,12 @@ export default {
 .addr-card--picked { align-items: flex-start; }
 .dot { width: 28rpx; height: 28rpx; border-radius: 50%; background: #f8f3e8; margin-right: 12rpx; flex-shrink: 0; margin-top: 6rpx; }
 .addr-main { flex: 1; min-width: 0; }
-.addr-title { font-size: 30rpx; color: #2a2a2a; font-weight: 600; line-height: 40rpx; }
+.addr-title { font-size: 30rpx; color: #2a2a2a; font-weight: 500; line-height: 40rpx; }
 .addr-sub { display: block; margin-top: 4rpx; font-size: 24rpx; color: #8a8a8a; line-height: 32rpx; }
-.addr-add { font-size: 30rpx; color: #f3a33f; font-weight: 600; margin-left: 12rpx; flex-shrink: 0; }
+.addr-add { font-size: 30rpx; color: #f3a33f; font-weight: 500; margin-left: 12rpx; flex-shrink: 0; }
 .addr-line1 { font-size: 28rpx; color: #333; line-height: 40rpx; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .addr-line2 { display: block; margin-top: 8rpx; font-size: 26rpx; color: #666; line-height: 36rpx; }
-.addr-edit-link { font-size: 30rpx; color: #f3a33f; font-weight: 600; margin-left: 12rpx; flex-shrink: 0; align-self: center; }
+.addr-edit-link { font-size: 30rpx; color: #f3a33f; font-weight: 500; margin-left: 12rpx; flex-shrink: 0; align-self: center; }
 
 .footer { height:93px;padding:8px 12px 42px;background:#f6f6f6;box-sizing:border-box; }
 .save-btn { height:43px;border-radius:22px;background:#d4fa83;color:#1f1f1f;font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center; }
@@ -451,7 +451,7 @@ export default {
 	display: flex; align-items: center; justify-content: center;
 	padding: 0 26rpx; box-sizing: border-box;
 }
-.timer-text { margin-left: 10rpx; font-size: 56rpx; font-weight: 600; color: #2f2f2f; line-height: 1; }
+.timer-text { margin-left: 10rpx; font-size: 56rpx; font-weight: 500; color: #2f2f2f; line-height: 1; }
 .voice-tip { margin-top: 34rpx; font-size: 56rpx; color: #9b9b9b; line-height: 68rpx; }
 .record-btn {
 	margin-top: 94rpx; width: 198rpx; height: 198rpx; border-radius: 50%;

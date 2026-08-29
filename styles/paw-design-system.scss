@@ -63,7 +63,7 @@ page {
 
   color: var(--paw-color-text);
   background: var(--paw-color-background);
-  font-family: "Source Han Sans CN", "PingFang SC", -apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-serif;
+  font-family: var(--paw-font-family, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif);
 }
 
 .paw-page {
@@ -94,7 +94,7 @@ page {
   background: var(--paw-color-brand);
   color: #111111;
   font-size: 30rpx;
-  font-weight: 600;
+  font-weight: var(--paw-font-weight-medium, 500);
   line-height: 1;
 }
 

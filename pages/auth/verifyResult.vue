@@ -75,7 +75,7 @@ export default {
 .nav-side { min-width: 80rpx; display: flex; align-items: center; }
 .nav-left { padding: 8rpx 24rpx 8rpx 16rpx; justify-content: center; }
 .nav-back-icon { width: 20rpx; height: 36rpx; }
-.nav-title { font-size: 40rpx; font-weight: 600; color: #222; line-height: 52rpx; }
+.nav-title { font-size: 40rpx; font-weight: 500; color: #222; line-height: 52rpx; }
 
 .center-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; padding-top: 38px; box-sizing: border-box; }
 .center-wrap--success { padding-top: 101px; }
@@ -86,7 +86,7 @@ export default {
 .icon-wrap--success { background: #ffe60f; }
 .icon-glyph { font-size: 64rpx; color: #6d6d6d; line-height: 1; }
 .icon-wrap--success .icon-glyph { color: #1f1f1f; font-weight: 700; }
-.main-title { margin-top: 14px; font-size: 15px; font-weight: 600; color: #1f1f1f; line-height: 22px; }
+.main-title { margin-top: 14px; font-size: 15px; font-weight: 500; color: #1f1f1f; line-height: 22px; }
 .sub-title { margin-top: 66px; font-size: 12px; color: #666; line-height: 18px; }
 
 .footer-bar { padding: 0 0 calc(177px + env(safe-area-inset-bottom)); box-sizing: border-box; display:flex;justify-content:center; }

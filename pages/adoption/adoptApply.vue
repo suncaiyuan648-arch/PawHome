@@ -332,7 +332,7 @@
 		align-items: center;
 		justify-content: center;
 		font-size: 34rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #111;
 		pointer-events: none;
 		z-index: 1;
@@ -501,7 +501,7 @@
 	}
 	.add-plus {
 		font-size: 40rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #ffdd00;
 		line-height: 1;
 		transform: translateY(-2rpx);
@@ -545,7 +545,7 @@
 	.help-form-card { margin-bottom:18rpx; padding:0 24rpx; background:#fff; border-radius:12rpx; }
 	.help-form-row { min-height:110rpx; display:flex; align-items:center; justify-content:space-between; border-bottom:1rpx solid #eee; font-size:27rpx; color:#222; }
 	.help-form-row:last-child { border-bottom:none; }
-	.help-form-row > text:last-child { max-width:60%; text-align:right; font-weight:600; }
+	.help-form-row > text:last-child { max-width:60%; text-align:right; font-weight: 500; }
 	.required,.amount { color:#f33; }
 	.help-notice { display:flex; align-items:flex-start; gap:10rpx; padding:4rpx 4rpx 18rpx; color:#999; font-size:20rpx; line-height:24rpx; }
 	.help-notice text { flex:1; }
@@ -567,7 +567,7 @@
 		background: #ffdd00;
 		color: #111;
 		font-size: 32rpx;
-		font-weight: 600;
+		font-weight: 500;
 		border: none;
 	}
 </style>

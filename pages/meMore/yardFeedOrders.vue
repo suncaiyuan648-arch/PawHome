@@ -188,7 +188,7 @@
 
 	.nav-title-text {
 		font-size: 34rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #111111;
 		line-height: 48rpx;
 	}
@@ -209,7 +209,7 @@
 
 	.nav-title-badge text {
 		font-size: 20rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #ffffff;
 		line-height: 1;
 	}

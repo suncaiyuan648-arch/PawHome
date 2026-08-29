@@ -512,7 +512,7 @@ export default {
 
 .comment-cap-txt {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
   color: rgba(51, 51, 51, 1);
 }
 

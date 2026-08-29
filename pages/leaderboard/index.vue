@@ -352,7 +352,7 @@ export default {
 	left: 50%;
 	transform: translateX(-50%);
 	font-size: 34rpx;
-	font-weight: 600;
+	font-weight: 500;
 	color: #1a1a1a;
 }
 
@@ -387,7 +387,7 @@ export default {
 
 .tab-item--active text {
 	color: #1a1a1a;
-	font-weight: 600;
+	font-weight: 500;
 }
 
 .tab-line {
@@ -625,7 +625,7 @@ export default {
 
 .podium-name {
 	font-size: 26rpx;
-	font-weight: 600;
+	font-weight: 500;
 	color: #1a1a1a;
 	max-width: 9em;
 	overflow: hidden;
@@ -683,7 +683,7 @@ export default {
 
 .list-rank {
 	width: 64rpx;
-	font-family: 'Source Han Sans SC', 'Source Han Sans CN', 'Noto Sans SC', 'PingFang SC', sans-serif;
+	font-family: var(--paw-font-family, -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif);
 	font-size: 40rpx;
 	font-weight: 700;
 	color: #202221;
@@ -724,7 +724,7 @@ export default {
 	min-width: 0;
 	max-width: 100%;
 	font-size: 28rpx;
-	font-weight: 600;
+	font-weight: 500;
 	color: #222;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -802,7 +802,7 @@ export default {
 
 .footer-name {
 	font-size: 44rpx;
-	font-weight: 600;
+	font-weight: 500;
 	color: #222;
 	max-width: 160rpx;
 	overflow: hidden;
@@ -830,7 +830,7 @@ export default {
 
 .footer-col-main {
 	font-size: 40rpx;
-	font-weight: 600;
+	font-weight: 500;
 	color: #1a5080;
 }
 

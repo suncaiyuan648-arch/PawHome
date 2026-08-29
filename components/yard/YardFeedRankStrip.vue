@@ -4,7 +4,7 @@
       <view class="detail-rank__top"><SeamlessScroll class="detail-rank__scroll" :items="seamlessItems.length ? seamlessItems : null" :rank-title="seamlessRankTitle" @user-click="$emit('rank-user', $event)" /></view>
       <view class="detail-rank__bottom">
         <text class="detail-rank__summary">{{ feedSummary }}</text>
-        <view class="detail-rank__leaderboard" @tap.stop="onLeaderboardTap"><text>排行榜</text><image src="/static/figma/dynamic-detail/chevron-right.svg" mode="aspectFit" /></view>
+        <view class="detail-rank__leaderboard" @tap.stop="onLeaderboardTap"><text>排行榜</text><PawChevron class="detail-rank__chevron" /></view>
       </view>
     </template>
     <template v-else>
@@ -19,7 +19,7 @@
       <view class="throw-rank-label">{{ feedSummary }}</view>
       <view class="throw-rank-right" @click.stop="onLeaderboardTap">
         <text>排行榜</text>
-        <PawChevron class="throw-icon" :size="6" color="#9c9c9c" />
+        <PawChevron class="throw-icon" />
       </view>
     </view>
     <SeamlessScroll
@@ -91,7 +91,7 @@ export default {
 .detail-rank__bottom { display: flex; align-items: center; justify-content: space-between; height: 38px; padding: 0 12px; box-sizing: border-box; }
 .detail-rank__summary { color: #333; font-size: 14px; line-height: 20px; }
 .detail-rank__leaderboard { display: inline-flex; align-items: center; color: #9c9c9c; font-size: 13px; font-weight: 500; line-height: 18px; }
-.detail-rank__leaderboard image { width: 6px; height: 10px; margin-left: 6px; transform: rotate(180deg); }
+.detail-rank__chevron { margin-left: 6px; }
 
 .throw-position {
   display: flex;

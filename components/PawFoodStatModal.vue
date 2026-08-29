@@ -128,7 +128,7 @@ export default {
 
 .pfs-value {
   font-size: 28rpx;
-  font-weight: 600;
+  font-weight: 500;
   color: #111;
   flex-shrink: 0;
 }

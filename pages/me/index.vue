@@ -477,7 +477,7 @@
 	.chief-title {
 		display: block;
 		font-size: 28rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #fee0c5;
 		line-height: 40rpx;
 	}
@@ -722,7 +722,7 @@
 
 	.order-badge text {
 		font-size: 20rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #ffffff;
 		line-height: 1;
 	}
@@ -838,7 +838,7 @@
 
 	.yard-badge text {
 		font-size: 22rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #ffffff;
 		line-height: 1;
 	}

@@ -16,7 +16,7 @@
     <view class="author-row" :style="authorRowStyle" @tap.stop="openProfile">
       <PawAvatar :src="author.avatar" :size="34" />
       <text class="author-name">{{ author.name }}</text>
-      <PawOwnerBadge v-if="!commentsEmpty" />
+      <PawOwnerBadge v-if="!commentsEmpty" class="author-owner-badge" />
     </view>
 
     <view class="notice-line" :style="{ top: contentTop + 'px' }">
@@ -195,7 +195,7 @@ export default {
 </script>
 
 <style scoped>
-.dynamic-page { position: relative; width: 100%; height: 100vh; overflow: hidden; background: #fff; color: #252525; font-family: "Source Han Sans CN", "PingFang SC", sans-serif; }
+.dynamic-page { position: relative; width: 100%; height: 100vh; overflow: hidden; background: var(--paw-color-background, #f5f5f5); color: #252525; font-family: var(--paw-font-family, -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif); }
 .h5-status-bar { position: absolute; top: 0; left: 0; z-index: 220; width: 100%; height: 44px; pointer-events: none; }
 .dynamic-nav-menu { display: flex; align-items: center; justify-content: center; width: 87px; height: 32px; border-radius: 16px; background: #fff; }
 .dynamic-nav-menu__more { width: 19px; height: 7px; }
@@ -205,7 +205,7 @@ export default {
 :deep(.paw-nav__back-icon) { width: 24px; height: 24px; }
 .author-row { position: absolute; top: 56px; left: 37px; z-index: 210; display: flex; align-items: center; column-gap: 5px; height: 34px; box-sizing: border-box; }
 .author-name { margin-left: 4px; color: #333; font-size: 14px; font-weight: 500; line-height: 16px; }
-.author-row .paw-owner-badge { margin-left: 0; }
+.author-owner-badge { display: block; flex: 0 0 auto; width: 30px; height: 16px; line-height: 0; }
 .notice-line { position: absolute; right: 0; left: 0; z-index: 30; height: 20px; overflow: hidden; pointer-events: none; }
 .dynamic-scroll { position: absolute; right: 0; left: 0; z-index: 1; width: 100%; box-sizing: border-box; background: #f5f5f5; }
 .post-section { background: #fff; }

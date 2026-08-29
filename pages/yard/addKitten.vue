@@ -440,7 +440,7 @@ export default {
 }
 .f-label text:first-child {
 	font-size: 30rpx;
-	font-weight: 600;
+	font-weight: 500;
 	color: #222;
 	line-height: 42rpx;
 }
@@ -571,7 +571,7 @@ export default {
 	color: #fff;
 	font-size: 24rpx;
 	line-height: 1;
-	font-weight: 600;
+	font-weight: 500;
 }
 .media-add {
 	width: 160rpx;
@@ -688,11 +688,11 @@ export default {
 	line-height: 44rpx;
 }
 .scale-sheet { padding: 60px 11px 16px; box-sizing: border-box; }
-.scale-title { display: block; text-align: center; font-size: 15px; font-weight: 600; color: #222; }
+.scale-title { display: block; text-align: center; font-size: 15px; font-weight: 500; color: #222; }
 .scale-value { display: block; margin-top: 7px; text-align: center; font-size: 22px; font-weight: 700; color: #222; }
 .scale-ruler { display: block; width: 309px; height: 66px; margin: 14px auto 0; }
 .scale-hint { display: block; margin-top: 49px; text-align: center; font-size: 12px; line-height: 17px; color: #ff7900; }
 .scale-copy { display: block; margin: 9px 8px 0; text-align: center; font-size: 10px; line-height: 14px; color: #999; }
 .scale-save { height: 44px; margin-top: 101px; border-radius: 22px; background: #ffe600; display: flex; align-items: center; justify-content: center; }
-.scale-save text { font-size: 14px; font-weight: 600; color: #222; }
+.scale-save text { font-size: 14px; font-weight: 500; color: #222; }
 </style>

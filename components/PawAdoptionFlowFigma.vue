@@ -3,7 +3,8 @@
     <!-- #ifndef MP-WEIXIN -->
     <image class="af-statusbar-reference" :src="statusBarReference" mode="scaleToFill" />
     <!-- #endif -->
-    <view class="af-top">
+    <view class="af-top" :style="afTopStyle">
+      <!-- #ifndef MP-WEIXIN -->
       <view class="af-statusbar">
         <text>9:41</text>
         <view class="af-system-icons" aria-label="系统状态">
@@ -12,16 +13,19 @@
           <uni-icons type="circle-filled" color="#111" :size="10" />
         </view>
       </view>
+      <!-- #endif -->
       <view class="af-nav">
         <view class="af-nav-side af-back" role="button" aria-label="返回" @click="goBack">
           <image src="/static/nav-back-arrow.png" mode="aspectFit" />
         </view>
         <text class="af-nav-title">{{ navTitle }}</text>
+        <!-- #ifndef MP-WEIXIN -->
         <view class="af-mini-menu" aria-label="小程序菜单">
           <uni-icons type="more-filled" color="#222" :size="18" />
           <view class="af-menu-rule" />
           <uni-icons type="circle-filled" color="#111" :size="14" />
         </view>
+        <!-- #endif -->
       </view>
     </view>
 
@@ -96,7 +100,7 @@
         <view class="af-card af-contact-card">
           <view class="af-contact-head">
             <image :src="assets.contact" mode="aspectFill" />
-            <text>芝</text><view>院主</view><text class="af-contact-link">联系方式</text><uni-icons type="right" color="#aaa" :size="13" />
+            <text>芝</text><PawOwnerBadge class="af-contact-owner" /><text class="af-contact-link">联系方式</text><uni-icons type="right" color="#aaa" :size="13" />
           </view>
           <text class="af-contact-copy">{{ contactCopy }}</text>
         </view>
@@ -128,14 +132,18 @@
       </template>
       <button v-else class="af-btn af-btn-yellow af-btn-review" @click="showToast('进入评价')">评价</button>
     </view>
+    <!-- #ifndef MP-WEIXIN -->
     <view class="af-home-indicator" />
+    <!-- #endif -->
   </view>
 </template>
 
 <script>
+import PawOwnerBadge from '@/components/identity/PawOwnerBadge.vue'
 const ASSET_ROOT = '/static/figma/adoption-flow/'
 export default {
   name: 'PawAdoptionFlowFigma',
+  components: { PawOwnerBadge },
   props: { frame: { type: [Number, String], default: 44 } },
   data() {
     return {
@@ -149,13 +157,20 @@ export default {
         contact: ASSET_ROOT + '07acee523d24ba7ebaf21ec60dee542f1e3fdcd4.png',
         proof: ASSET_ROOT + 'e81f2c2074a7772e8fbca3d3828b3a751f5cb5bb.png'
       },
-      pets: []
+      pets: [],
+      statusBarHeight: 0
     }
   },
   created() {
+    const systemInfo = uni.getSystemInfoSync()
+    this.statusBarHeight = systemInfo.statusBarHeight || 0
     this.pets = [{ name: '奥利奥', src: this.assets.petOne }, { name: '呗呗', src: this.assets.petTwo }]
   },
   computed: {
+    afTopStyle() {
+      if (!this.statusBarHeight) return {}
+      return { paddingTop: `${this.statusBarHeight}px`, height: `${this.statusBarHeight + 44}px` }
+    },
     frameNumber() { return Number(this.frame) || 44 },
     statusBarReference() { return `/static/figma/adoption-flow/top-${this.frameNumber}.png?v=3` },
     navTitle() { return this.frameNumber === 48 ? '领养信息' : this.frameNumber === 49 ? '申请内容' : this.frameNumber === 55 ? '领养进度' : '领养申请' },
@@ -197,16 +212,13 @@ export default {
 </script>
 
 <style scoped>
-@font-face{font-family:"Source Han Sans CN";src:url("/static/fonts/SourceHanSansCN-Regular.otf") format("opentype");font-style:normal;font-weight:400;font-display:block}
-@font-face{font-family:"Source Han Sans CN";src:url("/static/fonts/SourceHanSansCN-Medium.otf") format("opentype");font-style:normal;font-weight:500;font-display:block}
-@font-face{font-family:"Source Han Sans CN";src:url("/static/fonts/SourceHanSansCN-Bold.otf") format("opentype");font-style:normal;font-weight:600 900;font-display:block}
 .af-heading text{font-weight:700}
-.af-page{position:relative;min-height:100vh;overflow:hidden;background:linear-gradient(180deg,#fffde6 0,#fff 100px,#f5f5f5 180px,#f5f5f5 100%);color:#333;font-family:"Source Han Sans CN","Noto Sans CJK SC","PingFang SC",-apple-system,BlinkMacSystemFont,"Microsoft YaHei",sans-serif;box-sizing:border-box}.af-page.af-yellow{background:linear-gradient(180deg,#fcf276 0,#fcf276 307px,#f5f5f5 307px,#f5f5f5 100%)}.af-frame-46.af-yellow,.af-frame-47.af-yellow{background:linear-gradient(180deg,#fcf276 0,#fcf276 279px,#f5f5f5 279px,#f5f5f5 100%)}.af-page.af-progress-page{background:linear-gradient(180deg,#fffde6 0,#fff 100px,#f5f5f5 180px,#f5f5f5 100%)}
+.af-page{position:relative;min-height:100vh;overflow:hidden;background:linear-gradient(180deg,#fffde6 0,#fff 100px,#f5f5f5 180px,#f5f5f5 100%);color:#333;font-family:var(--paw-font-family,-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif);box-sizing:border-box}.af-page.af-yellow{background:linear-gradient(180deg,#fcf276 0,#fcf276 307px,#f5f5f5 307px,#f5f5f5 100%)}.af-frame-46.af-yellow,.af-frame-47.af-yellow{background:linear-gradient(180deg,#fcf276 0,#fcf276 279px,#f5f5f5 279px,#f5f5f5 100%)}.af-page.af-progress-page{background:linear-gradient(180deg,#fffde6 0,#fff 100px,#f5f5f5 180px,#f5f5f5 100%)}
 .af-statusbar-reference{position:absolute;left:0;top:0;width:100%;height:108px;z-index:100;pointer-events:none}
-.af-top{height:90px;background:transparent}.af-statusbar{height:36px;padding:8px 18px 0 21px;box-sizing:border-box;display:flex;align-items:flex-start;justify-content:space-between;color:#111;font-size:12px;font-weight:600}.af-system-icons{display:flex;align-items:center;gap:4px;height:16px}.af-nav{position:relative;height:54px;display:flex;align-items:center;justify-content:center}.af-nav-title{font-size:17px;line-height:25px;font-weight:500}.af-nav-side{position:absolute;left:6px;top:11px;width:87px;height:32px;display:flex;align-items:center}.af-back image{margin-left:11px;width:9px;height:17px}.af-mini-menu{position:absolute;right:6px;top:11px;width:87px;height:32px;border:1px solid rgba(0,0,0,.08);border-radius:17px;background:rgba(255,255,255,.88);display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box}.af-menu-rule{width:1px;height:20px;background:#e8e8e8}
-.af-content{position:relative;padding:0 15px 70px}.af-heading{height:71px;display:flex;align-items:flex-start;padding:26px 3px 0;box-sizing:border-box;gap:7px}.af-heading text{font-size:20px;line-height:29px;font-weight:600;color:#111}.af-heading .uni-icons{margin-top:5px}.af-heading-status-image{width:19px;height:19px;margin-top:5px;flex:0 0 19px}.af-card{background:#fff;border-radius:6px;box-sizing:border-box;margin-bottom:10px}.af-apply-card{height:285px;padding:9px 10px}.af-apply-card.with-user{height:329px;padding-top:11px}.af-user-line{height:34px;display:flex;align-items:center;margin:0 8px 9px}.af-user-line image{width:34px;height:34px;border-radius:50%}.af-user-line>text{font-size:14px;margin-left:6px}.af-role-tag{height:15px;line-height:15px;padding:0 5px;margin-left:6px;border-radius:3px;background:#ff9d4d;color:#fff;font-size:10px}.af-apply-copy{display:block;margin:0 7px;font-size:15px;line-height:15.5px;height:110px;overflow:hidden}.af-apply-photos{display:flex;gap:2px;margin-top:39px}.with-user .af-apply-photos{margin-top:39px;margin-left:8px}.af-apply-photos image{width:106px;height:106px;border-radius:4px}
+.af-top{height:90px;background:transparent}.af-statusbar{height:36px;padding:8px 18px 0 21px;box-sizing:border-box;display:flex;align-items:flex-start;justify-content:space-between;color:#111;font-size:12px;font-weight: 500}.af-system-icons{display:flex;align-items:center;gap:4px;height:16px}.af-nav{position:relative;height:54px;display:flex;align-items:center;justify-content:center}.af-nav-title{font-size:17px;line-height:25px;font-weight:500}.af-nav-side{position:absolute;left:6px;top:11px;width:87px;height:32px;display:flex;align-items:center}.af-back image{margin-left:11px;width:9px;height:17px}.af-mini-menu{position:absolute;right:6px;top:11px;width:87px;height:32px;border:1px solid rgba(0,0,0,.08);border-radius:17px;background:rgba(255,255,255,.88);display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box}.af-menu-rule{width:1px;height:20px;background:#e8e8e8}
+.af-content{position:relative;padding:0 15px 70px}.af-heading{height:71px;display:flex;align-items:flex-start;padding:26px 3px 0;box-sizing:border-box;gap:7px}.af-heading text{font-size:20px;line-height:29px;font-weight:700;color:#111}.af-heading .uni-icons{margin-top:5px}.af-heading-status-image{width:19px;height:19px;margin-top:5px;flex:0 0 19px}.af-card{background:#fff;border-radius:6px;box-sizing:border-box;margin-bottom:10px}.af-apply-card{height:285px;padding:9px 10px}.af-apply-card.with-user{height:329px;padding-top:11px}.af-user-line{height:34px;display:flex;align-items:center;margin:0 8px 9px}.af-user-line image{width:34px;height:34px;border-radius:50%}.af-user-line>text{font-size:14px;margin-left:6px}.af-role-tag{height:15px;line-height:15px;padding:0 5px;margin-left:6px;border-radius:3px;background:#ff9d4d;color:#fff;font-size:10px}.af-apply-copy{display:block;margin:0 7px;font-size:15px;line-height:15.5px;height:110px;overflow:hidden}.af-apply-photos{display:flex;gap:2px;margin-top:39px}.with-user .af-apply-photos{margin-top:39px;margin-left:8px}.af-apply-photos image{width:106px;height:106px;border-radius:4px}
 .af-pets-card{height:231px;padding:15px 18px 0}.af-pets-card.without-owner{height:160px}.af-card-title{display:block;font-size:16px;line-height:23px}.af-pet-row{height:145px;display:flex;align-items:flex-start;gap:15px;padding-top:20px;box-sizing:border-box}.af-pet{width:49px;text-align:center}.af-pet image{display:block;width:48px;height:48px;border-radius:50%}.af-pet text{display:block;margin-top:4px;font-size:14px;line-height:20px;white-space:nowrap}.af-owner-line{display:flex;align-items:center;height:36px}.af-owner-line image{width:34px;height:34px;border-radius:50%}.af-owner-line>text{font-size:14px;margin-left:6px}.af-yard-tag{height:16px;line-height:16px;padding:0 5px;margin-left:6px;border-radius:3px;background:#fff463;font-size:10px}
-.af-location-card{position:relative;height:50px;display:flex;align-items:center;padding:0 14px;font-size:14px}.af-location-card>view{display:flex;align-items:center;gap:3px}.af-location-card>text{margin-left:9px}.af-location-card .af-distance{position:absolute;right:16px;color:#777}.af-location-copy{height:151px;padding:8px 10px}.af-location-copy text{display:block;font-size:15px;line-height:15px;height:132px;overflow:hidden;color:#8b8b8b}.af-contact-card{height:201px;padding:8px 10px}.af-contact-head{height:36px;display:flex;align-items:center;position:relative}.af-contact-head image{width:34px;height:34px;border-radius:50%}.af-contact-head>text{font-size:14px;margin-left:6px}.af-contact-head>view{height:15px;line-height:15px;padding:0 5px;margin-left:5px;border-radius:3px;background:#ff6683;color:#fff;font-size:10px}.af-contact-head .af-contact-link{position:absolute;right:17px;font-size:13px;color:#888}.af-contact-head .uni-icons{position:absolute;right:0}.af-contact-copy{display:block;margin-top:11px;font-size:16px;font-weight:500;line-height:16px;height:115px;overflow:hidden}
+.af-location-card{position:relative;height:50px;display:flex;align-items:center;padding:0 14px;font-size:14px}.af-location-card>view{display:flex;align-items:center;gap:3px}.af-location-card>text{margin-left:9px}.af-location-card .af-distance{position:absolute;right:16px;color:#777}.af-location-copy{height:151px;padding:8px 10px}.af-location-copy text{display:block;font-size:15px;line-height:15px;height:132px;overflow:hidden;color:#8b8b8b}.af-contact-card{height:201px;padding:8px 10px}.af-contact-head{height:36px;display:flex;align-items:center;position:relative}.af-contact-head image{width:34px;height:34px;border-radius:50%}.af-contact-head>text{font-size:14px;margin-left:6px}.af-contact-owner{height:15px;line-height:15px;padding:0 5px;margin-left:5px;border-radius:3px;background:#ff6683;color:#fff;font-size:10px;--paw-owner-bg:#ff6683;--paw-owner-text:#fff}.af-contact-head .af-contact-link{position:absolute;right:17px;font-size:13px;color:#888}.af-contact-head .uni-icons{position:absolute;right:0}.af-contact-copy{display:block;margin-top:11px;font-size:16px;font-weight:500;line-height:16px;height:115px;overflow:hidden}
 .af-proof-card{height:250px;padding:19px 18px 10px}.af-proof-photos{display:flex;gap:45px;justify-content:center}.af-proof-photos>view{width:106px;text-align:center}.af-proof-photos image{display:block;width:106px;height:106px;border-radius:3px}.af-proof-date,.af-proof-label{display:block;font-size:12px;line-height:16px}.af-proof-label{color:#999}.af-proof-copy{display:block;margin-top:8px;font-size:14px;line-height:20.27px;height:61px;overflow:hidden}
 .af-link-row{height:50px;padding:0 17px;display:flex;align-items:center;justify-content:space-between;font-size:16px}.af-link-row>view{display:flex;align-items:center;gap:3px;color:#999}.af-link-row>view text{font-size:16px}
 .af-progress-card{height:72px;margin-bottom:10px;padding:25px 17px 0;background:#fff;border-radius:6px;box-sizing:border-box}.af-progress-track{height:12px;position:relative;background:#dedede;border-radius:8px}.af-progress-fill{position:absolute;left:0;top:0;height:12px;background:#ffea00;border-radius:8px}.af-progress-dot{position:absolute;top:-2px;width:16px;height:16px;border-radius:50%;background:#dedede;transform:translateX(-50%);display:flex;align-items:center;justify-content:center}.af-progress-dot.active{background:#ffea00}.af-progress-percent{position:absolute;right:0;top:-5px;font-size:10px;color:#999}.af-progress-labels{position:relative;height:16px;margin-top:3px;font-size:11px;color:#777}.af-progress-labels text{position:absolute;white-space:nowrap}.af-progress-labels text:nth-child(1){left:3px}.af-progress-labels text:nth-child(2){left:77px}.af-progress-labels text:nth-child(3){left:175px;color:#ff6b00}.af-progress-labels text:nth-child(4){right:6px}
@@ -226,4 +238,7 @@ export default {
 .af-page .af-contact-copy{font-weight:400}
 .af-frame-48 .af-contact-head,.af-frame-48 .af-contact-copy{transform:translateY(2px)}
 .af-frame-48 .af-contact-copy{font-weight:500}
+/* #ifdef MP-WEIXIN */
+.af-top{height:calc(44px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);box-sizing:border-box}.af-statusbar{display:none}.af-nav{height:44px}.af-nav-side{top:6px}.af-mini-menu{display:none}
+/* #endif */
 </style>

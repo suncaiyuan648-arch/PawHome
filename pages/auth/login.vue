@@ -83,10 +83,10 @@ export default {
 .button-icon-label { margin-left: 8rpx; }
 .dialog-mask { position: fixed; inset: 0; z-index: 99; display: flex; align-items: center; justify-content: center; padding: 40rpx; box-sizing: border-box; background: rgba(0, 0, 0, 0.45); }
 .agreement-dialog { width: 100%; overflow: hidden; border-radius: 28rpx; background: #ffffff; }
-.dialog-title { display: block; padding: 42rpx 32rpx 20rpx; color: #222222; font-size: 34rpx; font-weight: 600; text-align: center; }
+.dialog-title { display: block; padding: 42rpx 32rpx 20rpx; color: #222222; font-size: 34rpx; font-weight: 500; text-align: center; }
 .dialog-copy { display: block; padding: 0 40rpx 36rpx; color: #666666; font-size: 26rpx; line-height: 40rpx; text-align: center; }
 .dialog-actions { display: flex; border-top: 1rpx solid #eeeeee; }
 .dialog-action { display: flex; flex: 1; align-items: center; justify-content: center; min-height: 92rpx; font-size: 28rpx; }
 .dialog-action--cancel { color: #888888; }
-.dialog-action--confirm { background: #ffdd00; color: #111111; font-weight: 600; }
+.dialog-action--confirm { background: #ffdd00; color: #111111; font-weight: 500; }
 </style>

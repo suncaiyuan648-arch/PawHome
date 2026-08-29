@@ -14,8 +14,8 @@ export default { name: 'FeedCard', components: { PawAvatar, FeedCardLocation }, 
 
 <style scoped>
 .feed-card { width: 100%; overflow: hidden; border-radius: 4px; background: #feffff; }
-.feed-card__image-wrap { position: relative; }
-.feed-card__image { display: block; width: 100%; height: 240px; background: #f0f0f0; }
+.feed-card__image-wrap { position: relative; width: 100%; height: 0; padding-top: 133.333333%; overflow: hidden; }
+.feed-card__image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; background: #f0f0f0; }
 .feed-card__title { display: -webkit-box; min-height: 19px; margin: 8px 9px 0; overflow: hidden; color: #333; font-size: 13px; font-weight: 500; line-height: 19px; text-overflow: ellipsis; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .feed-card--single .feed-card__title { -webkit-line-clamp: 1; }
 .feed-card__footer { display: flex; align-items: center; justify-content: space-between; padding: 7px 9px 10px; }

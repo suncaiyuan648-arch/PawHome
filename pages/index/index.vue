@@ -112,12 +112,16 @@
 				<FeedCard v-for="entry in column" :key="'fc-' + entry.index" :item="entry.item" @click="goDetail" @user-click="openAuthorProfile" @like="toggleFeedCardLike(entry.index)" />
 				</view>
 			</view>
-			<view v-if="!isDynamicEmpty && activeFeedTab !== 'yard'" class="load-more-indicator">
+			<view
+				v-if="!isDynamicEmpty && activeFeedTab !== 'yard' && (isLoadingMore || !hasMore)"
+				id="qa-home-load-more"
+				class="load-more-indicator"
+			>
 				<view v-if="isLoadingMore" class="load-more-loading">
-					<view class="spinner"></view>
+					<view id="qa-home-load-more-spinner" class="spinner"></view>
 					<text class="load-more-text">加载中...</text>
 				</view>
-				<text v-else class="load-more-text">{{ hasMore ? '上拉加载更多' : '已经到底啦' }}</text>
+				<text v-else class="load-more-text">已经到底了</text>
 			</view>
 			</view>
 		</scroll-view>
@@ -138,6 +142,28 @@
 	import FeedCard from "@/components/dynamic/FeedCard.vue"
 	import YardSummaryCard from "@/components/yard/YardSummaryCard.vue"
 	import { openUserProfile } from "@/utils/profileNav.js"
+
+	const FEED_PAGE_SIZE = 10
+	const FEED_MOCK_TOTAL = 50
+	const FEED_MOCK_TEMPLATES = [
+		{ cover: '/static/figma/home/dynamic-left.png', distance: '3.2km', district: '金水区', title: '小猫吃的好开心', liked: false, likes: 37 },
+		{ cover: '/static/figma/home/dynamic-right.png', distance: '2.6km', district: '天河区', title: '小猫吃得好开心啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊', liked: true, likes: 32 },
+		{ cover: '/static/figma/home/dynamic-left.png', distance: '1.8km', district: '越秀区', title: '今天也有认真吃饭的小猫咪', liked: false, likes: 24 },
+		{ cover: '/static/figma/home/dynamic-right.png', distance: '4.1km', district: '海珠区', title: '投喂完成，猫猫们已经排队开饭啦', liked: false, likes: 18 }
+	]
+
+	function createMockFeedCards() {
+		return Array.from({ length: FEED_MOCK_TOTAL }, (_, index) => {
+			const template = FEED_MOCK_TEMPLATES[index % FEED_MOCK_TEMPLATES.length]
+			return {
+				...template,
+				id: `mock-feed-${index + 1}`,
+				title: `${template.title} · ${index + 1}`,
+				likes: template.likes + (index % 9)
+			}
+		})
+	}
+
 	export default {
 		components: {
 			CustomTabber,
@@ -163,6 +189,8 @@
 			// #endif
 		},
 	data() {
+			const mockFeedCards = createMockFeedCards()
+			const initialFeedCards = mockFeedCards.slice(0, FEED_PAGE_SIZE)
 			return {
 				pageState: 'dynamic',
 				zan1:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAeCAYAAAA/xX6fAAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAF+SURBVEiJvZdbtoMgDEVPWJ3XpUOqDqA6gMiQpBMz/bjElVK10JaeL1FwmwcJEioVQvAicgXgAUBERudcvFwusWQ91cCYeSCi6+aLiM4lUFcDNLBIRGcRGQFEAEhWv9SpFMbMg153XXdWcHKxR3LxKxVbSER/wH/M7P3S2FUDkSxwzj0AQgj+60DrztyiZVkU+HD/I6AmS+5OKxG5fQVorev7fsifa2xLdQgMIfgC6zzwHNtqIDMPIjKnYdyyziZMabaedOGyLN64x5s50ey7B6U1AIBpmuatORpb/eBT2rizLswmj1uWqbL4+Z05HgCYGX3fD2TqY0wTRqDcRTapDj5szQOapkl0cGTNJ7JGrUlTmmXvyLzbV3WLd2Wr0U+ApvDffgKEKQ7NgXnhbw7MS2NToC19uuWaArd6ZVOgcefaK5sB9/poM+BeH3UoPIvU6OiUsJ5LRWRm5vGTmmp/AdL46ZRAAKAd45va6z4OALquo6MTWYUi0m/AXqu7A58a2QJRlyArAAAAAElFTkSuQmCC',
@@ -206,25 +234,17 @@
 				isRefreshing: false,
 				pullingDistance: 0,
 				isLoadingMore: false,
-				hasMore: true,
+				refreshRequestTimer: null,
+				loadMoreRequestTimer: null,
+				hasMore: initialFeedCards.length < mockFeedCards.length,
+				feedPageSize: FEED_PAGE_SIZE,
+				mockFeedCards,
 				noMoreHintVisible: false,
 				noMoreHintTimer: null,
 				showBackTopBtn: false,
 				scrollIntoViewId: '',
 				yardCards: [{ id: 1, variant: 'badges' }, { id: 2, variant: 'org' }],
-				feedCards: [
-					{ cover: '/static/figma/home/dynamic-left.png', distance: '3.2km', district: '金水区', title: '小猫吃的好开心', liked: false, likes: 37 },
-					{
-						cover: '/static/figma/home/dynamic-right.png',
-						distance: '3.2km',
-						district: '金水区',
-						title: '小猫吃的好开心啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊',
-						liked: true,
-						likes: 32
-					},
-					{ cover: '/static/figma/home/dynamic-left.png', distance: '3.2km', district: '金水区', title: '小猫吃的好开心', liked: false, likes: 37 },
-					{ cover: '/static/figma/home/dynamic-right.png', distance: '3.2km', district: '金水区', title: '小猫吃的好开心', liked: false, likes: 37 }
-				]
+				feedCards: initialFeedCards
 			}
 		},
 		computed: {
@@ -421,24 +441,34 @@
 			},
 			onPullRefresh() {
 				if (this.isRefreshing) return
+				if (this.loadMoreRequestTimer) clearTimeout(this.loadMoreRequestTimer)
+				this.loadMoreRequestTimer = null
+				this.isLoadingMore = false
+				this.hasMore = true
 				this.refresherTriggered = true
 				this.isRefreshing = true
 				this.pullingDistance = 0
 
-				setTimeout(() => {
-					this.hasMore = true
+				this.refreshRequestTimer = setTimeout(() => {
+					this.feedCards = this.mockFeedCards.slice(0, this.feedPageSize)
+					this.hasMore = this.feedCards.length < this.mockFeedCards.length
 					this.isRefreshing = false
 					this.refresherTriggered = false
+					this.refreshRequestTimer = null
 				}, 900)
 			},
 			onReachBottom() {
+				if (this.isRefreshing) return
 				if (this.isLoadingMore) return
 				if (!this.hasMore) return
 				this.isLoadingMore = true
 
-				setTimeout(() => {
+				this.loadMoreRequestTimer = setTimeout(() => {
+					const nextCount = Math.min(this.feedCards.length + this.feedPageSize, this.mockFeedCards.length)
+					this.feedCards = this.mockFeedCards.slice(0, nextCount)
+					this.hasMore = nextCount < this.mockFeedCards.length
 					this.isLoadingMore = false
-					this.hasMore = false
+					this.loadMoreRequestTimer = null
 				}, 900)
 			},
 			showNoMoreHint() {
@@ -467,6 +497,8 @@
 		beforeDestroy() {
 			if (this.noMoreHintTimer) clearTimeout(this.noMoreHintTimer)
 			if (this.topActionsIntentTimer) clearTimeout(this.topActionsIntentTimer)
+			if (this.refreshRequestTimer) clearTimeout(this.refreshRequestTimer)
+			if (this.loadMoreRequestTimer) clearTimeout(this.loadMoreRequestTimer)
 		}
 	}
 </script>
@@ -480,7 +512,7 @@
 		display: flex;
 		flex-direction: column;
 		box-sizing: border-box;
-		font-family: "Source Han Sans CN", "PingFang SC", sans-serif;
+		font-family: var(--paw-font-family, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif);
 
 		.h5-status-bar {
 			position: absolute;
@@ -626,7 +658,6 @@
 		&.state-scrolled .container1-bg { height: 83px; }
 		&.state-scrolled .title { height: 54px; }
 
-		&.state-scrolled .load-more-indicator{display:none}
 		&.state-scrolled .back-top-btn { bottom: 131px; }
 		&.state-scrolled .container2-bg { opacity: 0; }
 		&.state-scrolled .feed-scroll { border-top: 0; }
@@ -967,6 +998,7 @@
 			align-items: center;
 			justify-content: center;
 			padding: 8px 0 4px;
+			background: #f9fafa;
 		}
 
 		::-webkit-scrollbar {
@@ -981,7 +1013,7 @@
 			justify-content: center;
 			align-items: center;
 			padding: 14px 0 20px;
-			background: #fff;
+			background: #f9fafa;
 		}
 
 		.load-more-loading {
@@ -994,6 +1026,10 @@
 		.load-more-text {
 			font-size: 12px;
 			color: rgba(140, 140, 140, 1);
+		}
+
+		.refresh-text,
+		.load-more-loading .load-more-text {
 			margin-left: 6px;
 		}
 
@@ -1065,7 +1101,8 @@
 		}
 
 		.paw-column {
-			width: calc((100% - 5px) / 2);
+			flex: 1;
+			width: 0;
 			min-width: 0;
 		}
 
@@ -1187,10 +1224,8 @@
 
 		.card:nth-child(2n) .card-img { height: 240px; }
 
-		/* Figma feed grid geometry: 5 / 180 / 5 / 180 / 5. */
+		/* 375px baseline: 5 / 180 / 5 / 180 / 5; wider viewports expand both columns evenly. */
 		.paw-list { gap: 5px; margin-top: 0; }
-		.paw-column { width: 180px; flex: none; }
-		.paw-column:last-child { width: 180px; }
 		.card .card-label,
 		.card.single-line-card .card-label { padding: 8px 9px 0; }
 		.card .card-label .card-label-text {

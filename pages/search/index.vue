@@ -232,11 +232,11 @@ export default {
 .empty-subtext { margin-top: 5px; font-size: 13px; line-height: 18px; color: #aaa; }
 .mask { position: fixed; inset: 0; background: #5b5b5b; z-index: 1000; display: flex; align-items: center; justify-content: center; }
 .sheet { width: 251px; border-radius: 12px; background: #fff; overflow: hidden; }
-.sheet-title { height: 64px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; color: #333; border-bottom: 1px solid #efefef; }
+.sheet-title { height: 64px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 500; color: #333; border-bottom: 1px solid #efefef; }
 .sheet-actions { display: flex; align-items: center; }
 .sheet-btn { flex: 1; height: 45px; display: flex; align-items: center; justify-content: center; }
 .sheet-btn text { font-size: 14px; color: #999; }
 .sheet-btn.danger { border-left: 1rpx solid #efefef; }
-.sheet-btn.danger text { color: #333; font-weight: 600; }
+.sheet-btn.danger text { color: #333; font-weight: 500; }
 .nav-cap-spacer { height: 100%; }
 </style>

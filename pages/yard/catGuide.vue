@@ -131,7 +131,7 @@ export default {
 .intro-card { min-height: 142px; background: #fff; border-radius: 10px; padding: 16px 15px 12px; box-sizing: border-box; }
 .intro-text { font-size: 14px; color: #202020; line-height: 18px; }
 .intro-btn { margin-top: 16rpx; margin-left: auto; width: 196rpx; height: 64rpx; border-radius: 32rpx; background: #d4f08a; display: flex; align-items: center; justify-content: center; }
-.intro-btn text { font-size: 32rpx; font-weight: 600; color: #1f1f1f; }
+.intro-btn text { font-size: 32rpx; font-weight: 500; color: #1f1f1f; }
 .intro-btn-arrow { width: 18rpx; height: 18rpx; margin-left: 8rpx; }
 .sec-title { display: block; margin: 18px 10px 12px; font-size: 18px; font-weight: 700; color: #1f1f1f; line-height: 24px; }
 .rule-card { background: #fff; border-radius: 10px; padding: 15px; box-sizing: border-box; }
@@ -142,7 +142,7 @@ export default {
 .dot--green { color: #49c579; }
 .dot--red { color: #ef6b6b; }
 .rule-txt { flex: 1; min-width: 0; font-size: 14px; color: #303030; line-height: 20px; }
-.warn-text { display: block; margin-top: 8px; text-align: center; color: #e45454; font-size: 14px; font-weight: 600; line-height: 20px; }
+.warn-text { display: block; margin-top: 8px; text-align: center; color: #e45454; font-size: 14px; font-weight: 500; line-height: 20px; }
 
 .auth-mask {
 	position: fixed;

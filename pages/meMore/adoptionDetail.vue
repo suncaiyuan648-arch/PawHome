@@ -129,11 +129,11 @@ export default {
 .page{height:100vh;display:flex;flex-direction:column;background:#f5f5f5}
 .nav-wrap{flex-shrink:0;background:#f5f5f5}.nav-row{height:88rpx;display:flex;align-items:center;padding:0 8rpx}
 .nav-side{width:88rpx;height:88rpx;display:flex;align-items:center;justify-content:center}.nav-back-icon{width:48rpx;height:48rpx}
-.nav-title{flex:1;text-align:center;font-size:34rpx;font-weight:600}.main-scroll{flex:1;height:0;padding:24rpx;box-sizing:border-box}
+.nav-title{flex:1;text-align:center;font-size:34rpx;font-weight: 500}.main-scroll{flex:1;height:0;padding:24rpx;box-sizing:border-box}
 .status-row{padding:8rpx 8rpx 18rpx}.status-title{font-size:42rpx;font-weight:700}
 .card{background:#fff;border-radius:20rpx;padding:28rpx;margin-bottom:20rpx}.apply-body{font-size:28rpx;line-height:1.6}
-.card-title{font-size:30rpx;font-weight:600;margin-bottom:16rpx}
-.contact-mask{position:fixed;inset:0;z-index:900;background:#5b5b5b;display:flex;align-items:center;justify-content:center}.contact-mask:after{content:'';position:fixed;left:335px;top:443px;width:40px;height:54px;background:#ffe000}.contact-dialog{width:295px;height:256px;border-radius:18px;background:#fff;overflow:hidden;transform:translateY(-38px)}.contact-title{display:block;margin-top:18px;text-align:center;font-size:20px;font-weight:600}.contact-number{height:73px;margin:40px 30px 44px;border-radius:10px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600}.contact-actions{display:flex;height:53px;border-top:1px solid #eee}.contact-actions text{flex:1;display:flex;align-items:center;justify-content:center;color:#888;font-size:15px}.contact-actions text+text{color:#222;border-left:1px solid #eee;background:#5b5b5b}
+.card-title{font-size:30rpx;font-weight: 500;margin-bottom:16rpx}
+.contact-mask{position:fixed;inset:0;z-index:900;background:#5b5b5b;display:flex;align-items:center;justify-content:center}.contact-mask:after{content:'';position:fixed;left:335px;top:443px;width:40px;height:54px;background:#ffe000}.contact-dialog{width:295px;height:256px;border-radius:18px;background:#fff;overflow:hidden;transform:translateY(-38px)}.contact-title{display:block;margin-top:18px;text-align:center;font-size:20px;font-weight: 500}.contact-number{height:73px;margin:40px 30px 44px;border-radius:10px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight: 500}.contact-actions{display:flex;height:53px;border-top:1px solid #eee}.contact-actions text{flex:1;display:flex;align-items:center;justify-content:center;color:#888;font-size:15px}.contact-actions text+text{color:#222;border-left:1px solid #eee;background:#5b5b5b}
 .pet-row{display:flex;flex-direction:row;flex-wrap:wrap;align-items:flex-end;gap:28rpx 32rpx}
 .pet-cell{display:flex;flex-direction:column;align-items:center;width:120rpx}
 .pet-av{width:112rpx;height:112rpx;border-radius:50%;background:#eee;display:block}

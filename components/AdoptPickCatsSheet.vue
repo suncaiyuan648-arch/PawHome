@@ -355,7 +355,7 @@ export default {
   background: #ffdd00;
   color: #111;
   font-size: 32rpx;
-  font-weight: 600;
+  font-weight: 500;
   border: none;
 }
 

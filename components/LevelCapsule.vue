@@ -30,7 +30,7 @@
 
 <style scoped>
 	.level-capsule {
-		display: flex;
+		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		width: 28px;
@@ -45,7 +45,7 @@
 	.level-capsule__txt {
 		font-size: 11px;
 		font-weight: 500;
-		line-height: 7px;
+		line-height: 13px;
 		color: var(--paw-level-text, #f6e1b8);
 	}
 

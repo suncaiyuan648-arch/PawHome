@@ -20,6 +20,7 @@ export default {
     fallback: { type: String, default: '/static/user.png' },
     shape: { type: String, default: 'circle' },
     border: { type: Boolean, default: false },
+    ringColor: { type: String, default: '' },
     clickable: { type: Boolean, default: false }
   },
   emits: ['click'],
@@ -27,7 +28,11 @@ export default {
     safeSrc() { return safeImgSrc(this.src, this.fallback) },
     avatarStyle() {
       const size = typeof this.size === 'number' ? `${this.size}px` : this.size
-      return { width: size, height: size }
+      return {
+        width: size,
+        height: size,
+        boxShadow: this.ringColor ? `inset 0 0 0 1px ${this.ringColor}` : 'none'
+      }
     }
   },
   methods: { onClick(event) { if (this.clickable) this.$emit('click', event) } }

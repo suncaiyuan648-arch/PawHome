@@ -16,7 +16,7 @@
       >
         <view class="info">
           <view class="info-avatarlog">
-            <image class="avatar" :src="resolveAvatar(item)" mode="aspectFill"></image>
+            <PawAvatar class="avatar" :src="resolveAvatar(item)" :fallback="avatarFallback" :size="30" />
           </view>
           <view class="info-name">
             <text>{{ item.text }}</text>
@@ -34,10 +34,11 @@
 <script>
 import { safeImgSrc } from "@/utils/safeImgSrc.js";
 import LevelCapsule from "@/components/LevelCapsule.vue";
+import PawAvatar from "@/components/identity/PawAvatar.vue";
 
 export default {
   name: "SeamlessScroll",
-  components: { LevelCapsule },
+  components: { LevelCapsule, PawAvatar },
   props: {
     /** 项可为 { text, level?, avatar?, rankTitle?, pawId? }；数据由页面传入。 */
     items: {
@@ -153,6 +154,7 @@ export default {
     line-height: 20px;
     display: flex;
     align-items: center;
+    column-gap: 3px;
   }
 }
 .ranking {

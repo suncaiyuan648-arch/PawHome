@@ -171,7 +171,7 @@ export default {
 }
 .notice-mask { position: fixed; inset: 0; z-index: 100; display: flex; align-items: flex-start; justify-content: center; background: #5b5b5b; }
 .notice-panel { width: 316px; margin-top: 241px; overflow: visible; border-radius: 20px; background: #fff; }
-.notice-title { display: block; padding: 20px 20px 0; text-align: center; font-size: 16px; line-height: 22px; font-weight: 600; color: #222; }
+.notice-title { display: block; padding: 20px 20px 0; text-align: center; font-size: 16px; line-height: 22px; font-weight: 500; color: #222; }
 .notice-body { display: block; min-height: 185px; padding: 38px 27px 24px; box-sizing: border-box; font-size: 13px; line-height: 15px; color: #7c7c7c; }
 .notice-actions { position:relative; display: flex; height:51px; border-top: 1px solid #eee; }
 .notice-actions:after{content:'';position:absolute;left:316px;top:-1px;width:30px;height:52px;background:#ffe600}
@@ -181,5 +181,5 @@ export default {
 .notice-btn.primary { background: #5b5b5b; }
 .notice-btn.primary text { color: #222; }
 .notice-panel--privacy{width:317px;margin-top:325px;border-radius:20px}.notice-panel--privacy .notice-title{padding-top:18px}.notice-panel--privacy .notice-body{min-height:72px;padding:20px 27px 16px}.notice-panel--privacy .notice-actions{height:52px}.notice-panel--privacy .notice-actions:after{left:317px}
-.verify-btn text { font-size: 14px; font-weight: 600; color: #1d1d1d; line-height: 20px; }
+.verify-btn text { font-size: 14px; font-weight: 500; color: #1d1d1d; line-height: 20px; }
 </style>

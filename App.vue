@@ -18,6 +18,7 @@
 	@import '@/uni_modules/uni-scss/index.scss';
 	@import '@/styles/lv-cap.scss';
 	@import '@/styles/yard-tag-pill.scss';
+	@import '@/styles/paw-typography.scss';
 	@import '@/styles/paw-design-system.scss';
 	/* #ifndef APP-NVUE */
 	@import '@/static/customicons.css';

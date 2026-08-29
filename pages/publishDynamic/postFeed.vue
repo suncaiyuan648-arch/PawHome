@@ -91,42 +91,50 @@
 			</view>
 		</scroll-view>
 
-		<view v-if="showOrderSheet" class="sheet-mask" @click="closeOrderSheet"></view>
-		<view v-if="showOrderSheet" class="order-sheet" @click.stop>
-			<view class="sheet-head">
-				<text class="sheet-title">选择订单</text>
-				<view class="sheet-x" @click="closeOrderSheet"><text>×</text></view>
-			</view>
-			<scroll-view class="sheet-scroll" scroll-y :show-scrollbar="false" :bounces="false" :enable-flex="true">
-				<view
-					v-for="(o, i) in mockOrders"
-					:key="o.id"
-					class="order-card"
-					:class="{ 'order-card--on': tempOrderId === o.id }"
-					@click.stop="selectOrder(o)"
-				>
-					<view class="oc-radio">
-						<view v-if="tempOrderId === o.id" class="oc-dot"><text class="oc-check">✓</text></view>
-						<view v-else class="oc-ring"></view>
-					</view>
-					<view class="oc-body">
-						<view class="oc-top">
-							<view class="oc-name-row" @click.stop="openOrderUser(o)">
-								<text class="oc-name">{{ o.userName }}</text>
-								<LevelCapsule :level="o.level" />
-							</view>
-							<text v-if="o.timedOut" class="oc-timeout">已超时</text>
-							<text v-else class="oc-countdown">{{ o.countdown }}</text>
-						</view>
-						<text class="oc-kg">投粮{{ o.kg }}斤</text>
-						<view class="oc-foot">
-							<text class="oc-time">{{ o.time }}</text>
-							<view class="oc-tag"><text>{{ o.feedbackTag }}</text></view>
-						</view>
-					</view>
+		<PawBottomSheet
+			:model-value="showOrderSheet"
+			variant="selection-order"
+			height="70vh"
+			:close-on-mask="true"
+			:safe-area="true"
+			@update:model-value="setOrderSheetVisible"
+		>
+			<view class="order-sheet-body">
+				<view class="sheet-head">
+					<text class="sheet-title">选择订单</text>
+					<view class="sheet-x" @tap.stop="closeOrderSheet"><text>×</text></view>
 				</view>
-			</scroll-view>
-		</view>
+				<scroll-view class="sheet-scroll" scroll-y :show-scrollbar="false" :bounces="false" :enable-flex="true">
+					<view
+						v-for="o in mockOrders"
+						:key="o.id"
+						class="order-card"
+						:class="{ 'order-card--on': tempOrderId === o.id }"
+						@tap.stop="selectOrder(o)"
+					>
+						<view class="oc-radio">
+							<view v-if="tempOrderId === o.id" class="oc-dot"><text class="oc-check">✓</text></view>
+							<view v-else class="oc-ring"></view>
+						</view>
+						<view class="oc-body">
+							<view class="oc-top">
+								<view class="oc-name-row" @tap.stop="openOrderUser(o)">
+									<text class="oc-name">{{ o.userName }}</text>
+									<LevelCapsule :level="o.level" />
+								</view>
+								<text v-if="o.timedOut" class="oc-timeout">已超时</text>
+								<text v-else class="oc-countdown">{{ o.countdown }}</text>
+							</view>
+							<text class="oc-kg">投粮{{ o.kg }}斤</text>
+							<view class="oc-foot">
+								<text class="oc-time">{{ o.time }}</text>
+								<view class="oc-tag"><text>{{ o.feedbackTag }}</text></view>
+							</view>
+						</view>
+					</view>
+				</scroll-view>
+			</view>
+		</PawBottomSheet>
 	</view>
 </template>
 
@@ -135,6 +143,7 @@ import { goBackSmart } from '@/utils/navBack.js'
 import { openUserProfile } from '@/utils/profileNav.js'
 import LevelCapsule from '@/components/LevelCapsule.vue'
 import PawUploadTile from '@/components/form/PawUploadTile.vue'
+import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 
 const MOCK_ORDERS = () => [
 	{
@@ -161,7 +170,7 @@ const MOCK_ORDERS = () => [
 ]
 
 export default {
-	components: { LevelCapsule, PawUploadTile },
+	components: { LevelCapsule, PawUploadTile, PawBottomSheet },
 	data() {
 		return {
 			statusBarHeight: 20,
@@ -234,6 +243,9 @@ export default {
 			this.tempOrderId = this.selectedOrder ? this.selectedOrder.id : this.mockOrders[0].id
 			this.showOrderSheet = true
 		},
+		setOrderSheetVisible(value) {
+			this.showOrderSheet = value
+		},
 		closeOrderSheet() {
 			this.showOrderSheet = false
 		},
@@ -273,6 +285,7 @@ export default {
 	padding-bottom: 12rpx;
 }
 .nav-row {
+	position: relative;
 	height: 44px;
 	display: flex;
 	align-items: center;
@@ -292,12 +305,15 @@ export default {
 	height: 36rpx;
 }
 .nav-title {
-	flex: 1;
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
 	text-align: center;
 	font-size: 34rpx;
-	font-weight: 700;
-	color: #111;
+	font-weight: 500;
+	color: #333;
 	line-height: 48rpx;
+	white-space: nowrap;
 }
 .nav-cap {
 	height: 64rpx;
@@ -315,15 +331,21 @@ export default {
 	line-height: 44rpx;
 }
 .btn-post {
-	padding: 12rpx 36rpx;
-	border-radius: 999rpx;
+	width: 57px;
+	height: 30px;
+	padding: 0;
+	border-radius: 4px;
 	background: #ffe60f;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
 }
 .btn-post text {
-	font-size: 30rpx;
-	font-weight: 700;
-	color: #111;
-	line-height: 42rpx;
+	font-size: 14px;
+	font-weight: 500;
+	color: #333;
+	line-height: 20px;
 }
 .main {
 	flex: 1;
@@ -498,7 +520,7 @@ export default {
 }
 .cat-title {
 	font-size: 28rpx;
-	font-weight: 600;
+	font-weight: 500;
 	color: #333;
 	line-height: 40rpx;
 }
@@ -551,73 +573,69 @@ export default {
 	line-height: 38rpx;
 }
 
-.sheet-mask {
-	position: fixed;
-	left: 0;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	z-index: 300;
-	background: rgba(0, 0, 0, 0.45);
+:deep(.paw-bottom-sheet--selection-order) {
+	background: #f1f1f1;
+	border-radius: 13px 13px 0 0;
 }
-.order-sheet {
-	position: fixed;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	z-index: 310;
-	max-height: 85vh;
-	background: #f2f2f2;
-	border-radius: 28rpx 28rpx 0 0;
-	padding: 20rpx 0 0;
-	padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+:deep(.paw-bottom-sheet__body) {
+	height: 100%;
+	min-height: 0;
 	display: flex;
 	flex-direction: column;
-	box-sizing: border-box;
+}
+.order-sheet-body {
+	height: 100%;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
 }
 .sheet-head {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: center;
 	position: relative;
-	padding: 8rpx 24rpx 20rpx;
+	height: 66px;
+	flex: 0 0 66px;
+	padding-top: 26px;
+	box-sizing: border-box;
 }
 .sheet-title {
-	font-size: 34rpx;
+	font-size: 16px;
 	font-weight: 700;
 	color: #111;
-	line-height: 48rpx;
+	line-height: 22px;
 }
 .sheet-x {
 	position: absolute;
-	right: 28rpx;
-	top: 4rpx;
-	width: 48rpx;
-	height: 48rpx;
+	right: 13px;
+	top: 13px;
+	width: 32px;
+	height: 32px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 .sheet-x text {
-	font-size: 40rpx;
+	font-size: 24px;
+	font-weight: 400;
 	color: #333;
 	line-height: 1;
 }
 .sheet-scroll {
 	flex: 1;
 	min-height: 0;
-	max-height: 56vh;
-	padding: 0 20rpx;
+	padding: 0 15px;
 	box-sizing: border-box;
 }
 .order-card {
 	display: flex;
+	height: 98px;
 	background: #fff;
-	border-radius: 20rpx;
-	padding: 24rpx 20rpx;
-	margin-bottom: 16rpx;
+	border-radius: 15px;
+	padding: 0 10px 0 16px;
+	margin-bottom: 9px;
 	box-sizing: border-box;
-	column-gap: 16rpx;
+	column-gap: 8px;
 }
 .order-card--on {
 	box-shadow: 0 0 0 3rpx #ffe60f;
@@ -627,8 +645,8 @@ export default {
 	padding-top: 6rpx;
 }
 .oc-dot {
-	width: 40rpx;
-	height: 40rpx;
+	width: 20px;
+	height: 20px;
 	border-radius: 50%;
 	background: #ffe60f;
 	display: flex;
@@ -636,16 +654,16 @@ export default {
 	justify-content: center;
 }
 .oc-check {
-	font-size: 22rpx;
+	font-size: 11px;
 	color: #111;
 	font-weight: 700;
 	line-height: 1;
 }
 .oc-ring {
-	width: 40rpx;
-	height: 40rpx;
+	width: 20px;
+	height: 20px;
 	border-radius: 50%;
-	border: 3rpx solid #ddd;
+	border: 1.5px solid #ddd;
 	box-sizing: border-box;
 }
 .oc-body {
@@ -656,64 +674,64 @@ export default {
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-start;
-	gap: 12rpx;
+	gap: 6px;
 }
 .oc-name-row {
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
-	gap: 10rpx;
+	gap: 3px;
 }
 .oc-name {
-	font-size: 30rpx;
+	font-size: 15px;
 	font-weight: 700;
 	color: #222;
-	line-height: 42rpx;
+	line-height: 20px;
 }
 .oc-name-row .lv-cap {
 	flex-shrink: 0;
 	margin-left: 10rpx;
 }
 .oc-timeout {
-	font-size: 24rpx;
+	font-size: 12px;
 	color: #ff4d4f;
 	flex-shrink: 0;
 }
 .oc-countdown {
-	font-size: 22rpx;
+	font-size: 14px;
 	color: #ff4d4f;
 	text-align: right;
-	max-width: 260rpx;
-	line-height: 30rpx;
+	max-width: 146px;
+	line-height: 18px;
 }
 .oc-kg {
 	display: block;
-	margin-top: 8rpx;
-	font-size: 28rpx;
+	margin-top: 4px;
+	font-size: 14px;
 	color: #555;
-	line-height: 40rpx;
+	line-height: 18px;
 }
 .oc-foot {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	margin-top: 12rpx;
+	margin-top: 5px;
 }
 .oc-time {
-	font-size: 24rpx;
+	font-size: 12px;
 	color: #b0b0b0;
-	line-height: 34rpx;
+	line-height: 16px;
 }
 .oc-tag {
-	padding: 4rpx 12rpx;
-	border-radius: 8rpx;
+	padding: 2px 5px;
+	border-radius: 0;
 	background: #e8f2ff;
 	border: 1rpx solid #b3d4ff;
 }
 .oc-tag text {
-	font-size: 22rpx;
+	font-size: 12px;
 	color: #2b7de9;
-	line-height: 30rpx;
+	line-height: 15px;
 }
 .page:not(.page--alternate) .ta-wrap { height:108px; min-height:0; padding-bottom:0; }
 .page:not(.page--alternate) .ta { height:90px; min-height:0; }

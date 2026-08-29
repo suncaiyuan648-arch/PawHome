@@ -335,7 +335,7 @@
 
 	.progress-lv-tip {
 		font-size: 24rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #5d4037;
 		line-height: 34rpx;
 	}
@@ -382,7 +382,7 @@
 
 	.stat-val {
 		font-size: 50rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #6d5344;
 		line-height: 42rpx;
 	}

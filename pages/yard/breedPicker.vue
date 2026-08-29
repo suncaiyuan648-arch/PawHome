@@ -354,7 +354,7 @@ export default {
 	text-align: center;
 	padding: 27px 16px 18px;
 	font-size: 32rpx;
-	font-weight: 600;
+	font-weight: 500;
 	color: #333;
 	line-height: 44rpx;
 }
@@ -401,7 +401,7 @@ export default {
 }
 .sup-btn--ok text {
 	color: #222;
-	font-weight: 600;
+	font-weight: 500;
 }
 .sup-btn--disabled text {
 	color: #c8c8c8;

@@ -115,7 +115,7 @@
 		flex: 1;
 		text-align: center;
 		font-size: 34rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #111;
 	}
 	.main-scroll {
@@ -138,7 +138,7 @@
 	}
 	.applicant-name {
 		font-size: 30rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #111;
 	}
 	.applicant-tag {
@@ -158,7 +158,7 @@
 	}
 	.card-title {
 		font-size: 30rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #111;
 		margin-bottom: 16rpx;
 	}

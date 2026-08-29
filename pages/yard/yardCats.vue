@@ -388,7 +388,7 @@ export default {
 }
 .nav-yard-name {
 	font-size: 28rpx;
-	font-weight: 600;
+	font-weight: 500;
 	color: #111;
 	line-height: 48rpx;
 	max-width: 150rpx;
@@ -427,7 +427,7 @@ export default {
 }
 .add-btn text {
 	font-size: 28rpx;
-	font-weight: 600;
+	font-weight: 500;
 	color: #111;
 	line-height: 40rpx;
 }
@@ -450,7 +450,7 @@ export default {
 }
 .cat-badge text {
 	font-size: 26rpx;
-	font-weight: 600;
+	font-weight: 500;
 	line-height: 36rpx;
 }
 .cat-badge--pending {
@@ -620,7 +620,7 @@ export default {
 }
 .pop-status-tag text {
 	font-size: 22rpx;
-	font-weight: 600;
+	font-weight: 500;
 	color: #111;
 	line-height: 30rpx;
 }
@@ -677,7 +677,7 @@ export default {
 }
 .pop-foot-yard {
 	font-size: 28rpx;
-	font-weight: 600;
+	font-weight: 500;
 	color: #111;
 	line-height: 40rpx;
 }
@@ -798,7 +798,7 @@ export default {
 }
 .add-card-txt {
 	font-size: 34rpx;
-	font-weight: 600;
+	font-weight: 500;
 	color: #222;
 	line-height: 46rpx;
 }

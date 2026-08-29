@@ -1,27 +1,27 @@
-<template><view class="paw-chevron" :class="`paw-chevron--${direction}`" :style="chevronStyle" aria-hidden="true"></view></template>
+<template><image class="paw-chevron" :class="`paw-chevron--${direction}`" :src="asset" :style="chevronStyle" mode="aspectFit" aria-hidden="true" /></template>
 
 <script>
 export default {
   name: 'PawChevron',
   props: {
     direction: { type: String, default: 'right' },
-    size: { type: [Number, String], default: 6 },
-    color: { type: String, default: '#999' },
-    weight: { type: [Number, String], default: 1.5 }
+    size: { type: [Number, String], default: 4 }
   },
   computed: {
+    asset() { return '/static/figma/dynamic-detail/chevron-right.svg' },
     chevronStyle() {
-      const size = typeof this.size === 'number' ? `${this.size}px` : this.size
-      const weight = typeof this.weight === 'number' ? `${this.weight}px` : this.weight
-      return { width: size, height: size, borderColor: this.color, borderWidth: `0 ${weight} ${weight} 0` }
+      const width = typeof this.size === 'number' ? `${this.size}px` : this.size
+      const height = typeof this.size === 'number' ? `${this.size * 2}px` : '8px'
+      return { width, height }
     }
   }
 }
 </script>
 
 <style scoped>
-.paw-chevron { display: inline-block; box-sizing: border-box; transform: rotate(-45deg); }
-.paw-chevron--left { transform: rotate(135deg); }
-.paw-chevron--up { transform: rotate(-135deg); }
-.paw-chevron--down { transform: rotate(45deg); }
+.paw-chevron { display: block; flex: 0 0 auto; }
+.paw-chevron--right { transform: rotate(180deg); }
+.paw-chevron--left { transform: rotate(0deg); }
+.paw-chevron--up { transform: rotate(90deg); }
+.paw-chevron--down { transform: rotate(-90deg); }
 </style>

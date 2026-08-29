@@ -266,7 +266,7 @@
 
 	.wechat-icon-glyph {
 		font-size: 30rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #ffffff;
 	}
 

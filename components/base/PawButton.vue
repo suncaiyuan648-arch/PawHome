@@ -54,7 +54,7 @@ export default {
   box-sizing: border-box;
   border: 0;
   color: #333;
-  font-family: "Source Han Sans CN", "PingFang SC", sans-serif;
+  font-family: var(--paw-font-family, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif);
   font-size: 15px;
   font-weight: 500;
   line-height: 1;

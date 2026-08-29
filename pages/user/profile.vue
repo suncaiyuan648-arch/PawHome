@@ -1074,7 +1074,7 @@
 
 	.follow-pill-text {
 		font-size: 26rpx;
-		font-weight: 600;
+		font-weight: 500;
 		line-height: 36rpx;
 		color: #111111;
 	}
@@ -1149,7 +1149,7 @@
 	.tab-item--active .tab-label,
 	.tab-item--active .tab-count {
 		color: rgba(0, 0, 0, 1);
-		font-weight: 600;
+		font-weight: 500;
 	}
 
 	.tab-underline {
@@ -1352,7 +1352,7 @@
 	.adopt-name {
 		margin-left: 12rpx;
 		font-size: 28rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #111111;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -1461,7 +1461,7 @@
 
 	.donate-name {
 		font-size: 28rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #111111;
 	}
 
@@ -1539,7 +1539,7 @@
 
 	.donate-notify-txt {
 		font-size: 20rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #ffffff;
 		line-height: 1;
 	}
@@ -1597,7 +1597,7 @@
 
 	.joined-nickname {
 		font-size: 30rpx;
-		font-weight: 600;
+		font-weight: 500;
 		color: #111111;
 		line-height: 42rpx;
 	}
@@ -1897,7 +1897,7 @@
 	}
 
 	.unfollow-btn-txt--ok {
-		font-weight: 600;
+		font-weight: 500;
 		color: #111111;
 	}
 
@@ -1995,8 +1995,8 @@
 	.profile-timeline-row:last-child .timeline-line { bottom:0; }
 	.timeline-content { flex:1; min-width:0; padding:8rpx 0 25rpx; }
 	.timeline-date { display:flex; align-items:baseline; height:62rpx; }
-	.timeline-day { color:#333; font-size:48rpx; line-height:56rpx; font-weight:600; }
-	.timeline-month { margin-left:10rpx; color:#333; font-size:20rpx; font-weight:600; }
+	.timeline-day { color:#333; font-size:48rpx; line-height:56rpx; font-weight: 500; }
+	.timeline-month { margin-left:10rpx; color:#333; font-size:20rpx; font-weight: 500; }
 	.timeline-year { margin-left:auto; color:#666; font-size:20rpx; }
 	.timeline-action { display:block; margin-top:15rpx; color:#999; font-size:24rpx; line-height:34rpx; }
 	.timeline-copy-row { display:flex; align-items:flex-start; margin-top:18rpx; color:#666; font-size:28rpx; line-height:40rpx; white-space:nowrap; overflow:hidden; }
