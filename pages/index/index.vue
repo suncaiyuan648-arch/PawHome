@@ -571,11 +571,11 @@
 				left: 8px;
 				z-index: 80;
 				display: flex;
-				align-items: center;
+				align-items: flex-end;
 				font-size: 15px;
 				font-weight: 700;
 				letter-spacing: 0px;
-				line-height: 20px;
+				line-height: 15px;
 				color: rgba(40, 40, 39, 1);
 				vertical-align: top;
 
@@ -583,6 +583,7 @@
 					margin-left: 3px;
 					width: 6px;
 					height: 6px;
+					flex-shrink: 0;
 				}
 			}
 
@@ -999,6 +1000,7 @@
 			justify-content: center;
 			padding: 8px 0 4px;
 			background: #f9fafa;
+			transform: translateY(-8px);
 		}
 
 		::-webkit-scrollbar {

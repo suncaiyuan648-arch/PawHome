@@ -1,26 +1,18 @@
 <template>
   <view class="dynamic-page" :class="{ 'comments-empty-state': commentsEmpty }">
-    <!-- #ifndef MP-WEIXIN -->
-    <image class="h5-status-bar" src="/static/figma/status-bar-white.png" mode="aspectFit" />
-    <!-- #endif -->
-    <PawPageNav background="#ffffff" back-icon="/static/figma/dynamic-detail/back-icon.svg" fallback-url="/pages/index/index">
-      <template #right>
-        <view class="dynamic-nav-menu">
-          <image class="dynamic-nav-menu__more" src="/static/figma/dynamic-detail/nav-more.svg" mode="aspectFit" />
-          <view class="dynamic-nav-menu__divider"></view>
-          <image class="dynamic-nav-menu__close" src="/static/figma/dynamic-detail/nav-close.svg" mode="aspectFit" />
+    <PawPageNav background="#ffffff" back-icon="/static/figma/dynamic-detail/back-icon.svg" fallback-url="/pages/index/index" @layout="onNavLayout">
+      <!-- 作者信息与返回按钮共用原生导航行，右侧胶囊由微信原生渲染。 -->
+      <template #content>
+        <view id="qa-dynamic-detail-nav-author" class="author-row" @tap.stop="openProfile">
+          <PawAvatar :src="author.avatar" :size="34" />
+          <text class="author-name">{{ author.name }}</text>
+          <PawOwnerBadge v-if="!commentsEmpty" class="author-owner-badge" />
         </view>
       </template>
     </PawPageNav>
 
-    <view class="author-row" :style="authorRowStyle" @tap.stop="openProfile">
-      <PawAvatar :src="author.avatar" :size="34" />
-      <text class="author-name">{{ author.name }}</text>
-      <PawOwnerBadge v-if="!commentsEmpty" class="author-owner-badge" />
-    </view>
-
     <view class="notice-line" :style="{ top: contentTop + 'px' }">
-      <PawAnnouncementMarquee :items="announcementItems" :height="20" :speed="82" :gap="1000" background-color="#fffbdc" color="#333333" />
+      <PawAnnouncementMarquee :items="announcementItems" :height="20" :speed="82" :gap="1000" color="#333333" />
     </view>
 
     <scroll-view class="dynamic-scroll" :style="scrollStyle" scroll-y :show-scrollbar="false">
@@ -138,20 +130,15 @@ export default {
   computed: {
     contentTop() {
       const nav = this.navLayout || {}
-      const measuredTop = Number(nav.statusBarHeight || 44) + Number(nav.navRowOffsetTop || 0) + Number(nav.navRowHeight || 58) + 11
-      return Math.max(113, measuredTop)
-    },
-    authorRowStyle() {
-      const nav = this.navLayout || {}
-      const statusBarHeight = Number(nav.statusBarHeight || 44)
-      const navRowOffsetTop = Number(nav.navRowOffsetTop || 0)
-      const navRowHeight = Number(nav.navRowHeight || 58)
-      const avatarSize = 34
-      const top = statusBarHeight + navRowOffsetTop + Math.max(0, (navRowHeight - avatarSize) / 2)
-      return { top: `${top}px` }
+      const measuredTop = Number(nav.totalHeight || (Number(nav.statusBarHeight || 44) + Number(nav.navBarHeight || 54)))
+      // 动态区域紧跟 PawPageNav；公告只在动态内容顶部悬浮，不参与内容排版。
+      return measuredTop
     },
     scrollStyle() {
-      return { top: `${this.contentTop}px`, height: `calc(100vh - ${this.contentTop}px)` }
+      return {
+        top: `${this.contentTop}px`,
+        height: `calc(100vh - ${this.contentTop}px)`
+      }
     },
     footerActions() {
       return [
@@ -171,6 +158,7 @@ export default {
     this.author.name = this.commentsEmpty ? '我就是要喂猫' : '芝'
   },
   methods: {
+    onNavLayout(layout) { this.navLayout = layout },
     toggleLike() { this.liked = !this.liked; this.likes = Math.max(0, this.likes + (this.liked ? 1 : -1)) },
     openProfile() { openUserProfile({ pawId: 'owner-1', nickname: this.author.name, avatar: this.author.avatar }) },
     openYard() { uni.navigateTo({ url: `/pages/commodityDetails/index?id=${encodeURIComponent(this.yardId)}` }) },
@@ -195,15 +183,10 @@ export default {
 </script>
 
 <style scoped>
-.dynamic-page { position: relative; width: 100%; height: 100vh; overflow: hidden; background: var(--paw-color-background, #f5f5f5); color: #252525; font-family: var(--paw-font-family, -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif); }
-.h5-status-bar { position: absolute; top: 0; left: 0; z-index: 220; width: 100%; height: 44px; pointer-events: none; }
-.dynamic-nav-menu { display: flex; align-items: center; justify-content: center; width: 87px; height: 32px; border-radius: 16px; background: #fff; }
-.dynamic-nav-menu__more { width: 19px; height: 7px; }
-.dynamic-nav-menu__divider { width: 1px; height: 16px; margin: 0 13px; background: #e4e4e4; }
-.dynamic-nav-menu__close { width: 18px; height: 18px; }
+.dynamic-page { position: relative; width: 100%; height: 100vh; overflow: hidden; background: #fff; color: #252525; font-family: var(--paw-font-family, -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif); }
 :deep(.paw-nav__back) { justify-content: flex-start; padding-left: 6px; }
 :deep(.paw-nav__back-icon) { width: 24px; height: 24px; }
-.author-row { position: absolute; top: 56px; left: 37px; z-index: 210; display: flex; align-items: center; column-gap: 5px; height: 34px; box-sizing: border-box; }
+.author-row { display: flex; align-items: center; flex: 0 1 auto; min-width: 0; height: 34px; margin-left: -7px; column-gap: 5px; box-sizing: border-box; }
 .author-name { margin-left: 4px; color: #333; font-size: 14px; font-weight: 500; line-height: 16px; }
 .author-owner-badge { display: block; flex: 0 0 auto; width: 30px; height: 16px; line-height: 0; }
 .notice-line { position: absolute; right: 0; left: 0; z-index: 30; height: 20px; overflow: hidden; pointer-events: none; }

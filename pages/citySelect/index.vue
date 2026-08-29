@@ -25,7 +25,7 @@
 
 			<view class="current-row">
 				<view class="current-left">
-					<uni-icons type="paperplane-filled" color="#2f8bff" :size="10"></uni-icons>
+					<image class="current-location-icon" src="/static/figma/city-current-location.svg" mode="aspectFit"></image>
 					<text class="current-city">{{ currentCity }}</text>
 				</view>
 				<text class="relocate" @click="resetLocation">重新定位</text>
@@ -183,12 +183,13 @@ export default {
 .mini-split { width: 0.5px; height: 20px; background: #e2e2e2; }
 .mini-circle { width: 18px; height: 18px; border-radius: 50%; border: 1px solid #222; box-sizing: border-box; }
 .search-box { width: 216px; height: 34px; border-radius: 25px; background: #fff; display: flex; align-items: center; padding: 0 13px; box-sizing: border-box; }
-.top-search { position: absolute; left: 32px; top: 5px; }
+.top-search { position: absolute; left: 32px; top: 50%; transform: translateY(-50%); margin-left: 12px; }
 .search-input { flex: 1; min-width: 0; margin-left: 8px; font-size: 14px; color: #333; line-height: 20px; }
 .search-placeholder { color: #999; font-size: 14px; line-height: 20px; }
-.current-row { height: 46px; margin: 0 14px 0 12px; display: flex; align-items: center; justify-content: space-between; }
+.current-row { height: 46px; margin: 10px 14px 0 12px; display: flex; align-items: center; justify-content: space-between; }
 .current-left { display: inline-flex; align-items: center; }
-.current-city { margin-left: 6px; font-size: 15px; font-weight: 500; color: #333; line-height: 22px; }
+.current-location-icon { width: 17px; height: 17px; flex-shrink: 0; }
+.current-city { margin-left: 5px; font-size: 15px; font-weight: 500; color: #333; line-height: 22px; }
 .relocate { font-size: 11px; color: #0a77f5; line-height: 16px; }
 .panel { margin: 0 8px; flex: 1; min-height: 0; border-radius: 10px 10px 0 0; background: #fff; display: flex; overflow: hidden; }
 .city-scroll { flex: 1; height: 100%; min-height: 0; }

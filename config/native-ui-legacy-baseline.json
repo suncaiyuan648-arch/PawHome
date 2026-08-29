@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "generatedFrom": "legacy repository state; freeze only, do not expand during feature work",
+  "allowances": {
+    "pages/adoption/adoptApply.vue": {
+      "fake-status-bar": 3,
+      "page-local-native-nav-layout": 1
+    },
+    "pages/adoption/adoptApplySuccess.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/auth/bindPhone.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/auth/realName.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/auth/smsVerify.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/auth/verifyResult.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/index/index.vue": {
+      "fake-status-bar": 2
+    },
+    "pages/leaderboard/index.vue": {
+      "fake-status-bar": 2
+    },
+    "pages/me/index.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/meMore/adoptionApplyContent.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/meMore/adoptionDetail.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/meMore/annualReport.vue": {
+      "fake-status-bar": 2,
+      "figma-native-chrome-asset": 1,
+      "page-local-native-nav-layout": 1
+    },
+    "pages/meMore/browsingHistory.vue": {
+      "fake-status-bar": 2,
+      "figma-native-chrome-asset": 1,
+      "page-local-native-nav-layout": 1
+    },
+    "pages/meMore/feedingDetail.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/meMore/helpedAnimals.vue": {
+      "fake-status-bar": 2,
+      "figma-native-chrome-asset": 1,
+      "page-local-native-nav-layout": 1
+    },
+    "pages/meMore/level.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/meMore/levelRules.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/meMore/myAdoption.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/meMore/myFeedings.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/meMore/regionSelector.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/meMore/shippingAddress.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/meMore/yardFeedOrders.vue": {
+      "fake-status-bar": 2,
+      "figma-native-chrome-asset": 1,
+      "page-local-native-nav-layout": 1
+    },
+    "pages/message/index.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/publishDynamic/postFeed.vue": {
+      "fake-status-bar": 2,
+      "figma-native-chrome-asset": 1,
+      "page-local-native-nav-layout": 1
+    },
+    "pages/publishDynamic/postSuccess.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/search/index.vue": {
+      "fake-status-bar": 3,
+      "figma-native-chrome-asset": 1
+    },
+    "pages/user/profile.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/yard/addKitten.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/yard/adoptionAudit.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/yard/breedPicker.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/yard/catGuide.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/yard/juryDetail.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/yard/juryPanel.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/yard/yardCats.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "pages/yard/yardCertify.vue": {
+      "fake-status-bar": 2,
+      "figma-native-chrome-asset": 1,
+      "page-local-native-nav-layout": 1
+    },
+    "pages/yard/yardCertifyDone.vue": {
+      "page-local-native-nav-layout": 1
+    },
+    "components/PawAdoptionFlowFigma.vue": {
+      "fake-home-indicator": 2
+    },
+    "components/PawYardDetailFigma.vue": {
+      "fake-status-bar": 2
+    },
+    "components/address/PawAddressForm.vue": {
+      "page-local-native-nav-layout": 1
+    }
+  },
+  "note": "Current repository legacy violations are frozen. New violations and new files fail. pages/dynamicDetail/index.vue is intentionally excluded and must be clean."
+}

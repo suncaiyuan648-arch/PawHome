@@ -15,7 +15,7 @@
           class="paw-announcement__bubble"
           :style="{
             height: height + 'px',
-            backgroundColor: backgroundColor,
+            background: backgroundColor,
             color: color
           }"
         >{{ currentItem.text }}</text>
@@ -54,7 +54,7 @@ export default {
     height: { type: Number, default: 20 },
     speed: { type: Number, default: 82 },
     gap: { type: Number, default: 900 },
-    backgroundColor: { type: String, default: '#fffbdc' },
+    backgroundColor: { type: String, default: 'linear-gradient(90deg, #fff385 0%, #fffbdc 100%)' },
     color: { type: String, default: '#505050' },
     // 传入接口地址后自动轮询；不传则不发起网络请求。
     pollUrl: { type: String, default: '' },

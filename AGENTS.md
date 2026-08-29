@@ -71,7 +71,11 @@ Do not commit temporary Figma MCP asset URLs into production code.
 - Do not solve structural differences by appending duplicate selectors at the end of a page.
 - Photos should use proportional crop/fill behavior; do not use `scaleToFill` unless distortion is explicitly intended by design.
 - Prefer exact local assets when their glyph matches Figma.
-- Do not draw fake WeChat status bars, capsule controls, or Home Indicators in MP runtime.
+- **CRITICAL — native WeChat/OS chrome is reference-only and must never be reimplemented.** In `MP-WEIXIN`, the OS owns the status bar and bottom Home Indicator/system gesture bar, and WeChat owns the top-right operation capsule. Never render time, signal, Wi-Fi, battery, notch/Dynamic Island, capsule dots/circle/divider/border/background, Home Indicator, system gesture bar, or bottom drag bar from business code. “It matches the Figma screenshot” is not an exception.
+- Application code may only read native geometry, reserve space, and avoid overlap. `components/PawPageNav.vue` + `utils/navLayout.js` are the only top-navigation geometry source of truth. Pages/components must not call `getMenuButtonBoundingClientRect()` directly, must not position navigation business content from `statusBarHeight + N`, and must put top avatar/name/identity content in `PawPageNav`'s `#content` slot.
+- `PawPageNav` is always `position: fixed` and must provide its own flow placeholder with height exactly equal to the runtime navigation height. It must not own page content spacing or expose `bottomGap`, `designBottomGap`, `contentOffset`, or `pageTopPadding`; page-level padding/margins belong to the page.
+- The right side of `PawPageNav` is a transparent native-capsule reserve only. Do not use a right/default slot, CSS rounded rectangle, dots/circle glyphs, or Figma device-chrome assets to redraw it. `env(safe-area-inset-bottom)` is a layout inset for business bottom bars; it is never a reason to draw a black rounded system drag bar.
+- Read [`docs/AGENTS-native-ui-rules.md`](docs/AGENTS-native-ui-rules.md) and [`docs/pages-design/PawPageNav.md`](docs/pages-design/PawPageNav.md) before changing navigation or bottom safe-area behavior.
 - Preserve real safe-area behavior.
 
 Identity labels are semantically distinct:
@@ -81,6 +85,20 @@ Owner != Verified != Level != YardTag != Status
 ```
 
 Do not substitute one component for another.
+
+Before claiming a UI task complete, run:
+
+```bash
+npm run check:native-ui
+```
+
+For navigation, native-chrome, or bottom-safe-area changes, also run:
+
+```bash
+npm run verify:ui
+```
+
+If the native UI guard fails, fix the implementation. Do not delete/disable the guard, rename a fake-native class to evade it, or add/increase `config/native-ui-legacy-baseline.json` allowances during ordinary feature work. The baseline freezes historical debt only; new violations must fail.
 
 ## 5. WeChat DevTools runtime workflow
 
@@ -99,6 +117,16 @@ Codex
 → WeChat Developer Tools Nightly / wechatide
 → simulator / console / network / automation / screenshot
 ```
+
+### DevTools window reuse rule
+
+Codex/coder must only operate on an already-open WeChat Developer Tools project window.
+Do not call `open_project_window`, use an auto-open/auto-reopen flow, or launch another
+DevTools instance for testing. Before simulator, console, network, automation, or
+screenshot actions, verify that the existing window is available and points to the
+compiled project at `unpackage/dist/dev/mp-weixin`. If no usable window is open, stop
+and ask the user to open it manually; do not create a new window or silently recover by
+starting another process.
 
 After meaningful UI changes, runtime verification is required when the environment supports it.
 

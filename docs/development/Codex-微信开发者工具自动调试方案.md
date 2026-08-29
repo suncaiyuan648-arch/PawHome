@@ -82,6 +82,11 @@ wechatide / automation
 
 **DevTools 应打开编译产物，而不是直接打开 PawHome Vue 源码根目录。**
 
+**窗口复用约束：** Codex/coder 只允许复用用户已经打开的微信开发者工具项目窗口。
+不得调用 `open_project_window`、自动拉起/重开项目窗口，或启动第二个开发者工具进程。
+如果没有可用的已打开窗口，暂停运行时测试并请用户手动打开
+`unpackage/dist/dev/mp-weixin`；不得自行新建窗口恢复。
+
 ---
 
 ## 3. 推荐两级方案

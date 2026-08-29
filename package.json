@@ -7,7 +7,10 @@
     "build:mp-weixin": "node scripts/run-uni.cjs build",
     "check:typography": "node scripts/check-typography.cjs",
     "check:ui-governance": "node scripts/check-ui-governance.cjs",
-    "check:ui": "npm run check:typography && npm run check:ui-governance"
+    "check:native-ui": "node scripts/check-native-ui-reimplementation.cjs",
+    "check:native-ui:strict": "node scripts/check-native-ui-reimplementation.cjs --strict",
+    "check:ui": "npm run check:typography && npm run check:ui-governance && npm run check:native-ui",
+    "verify:ui": "npm run check:ui && npm run build:mp-weixin"
   },
   "dependencies": {
     "@dcloudio/uni-app": "3.0.0-5020420260813003",
