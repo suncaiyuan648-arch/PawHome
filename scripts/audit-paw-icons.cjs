@@ -2,13 +2,13 @@ const fs = require('fs')
 const path = require('path')
 const sharp = require('sharp')
 const manifest = require('../config/paw-icons.cjs')
+const { DESIGN_CANVAS, LIVE_AREA_MAX_EDGE } = require('./paw-icon-normalize.cjs')
 
 const ROOT = path.resolve(__dirname, '..')
 const REGISTRY_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-registry.js')
 const REPORT_DIR = path.join(ROOT, '.artifacts/paw-icon-audit')
 const REPORT_FILE = path.join(REPORT_DIR, 'icon-design-audit.json')
 const MARKDOWN_FILE = path.join(REPORT_DIR, 'icon-design-audit.md')
-const DESIGN_CANVAS = 24
 const RASTER_SCALE = 8
 const ALPHA_THRESHOLD = 8
 const SIZES = [16, 17.5, 19, 20, 21, 23, 24, 25.5, 28, 31, 32, 37.5]
@@ -519,7 +519,7 @@ async function audit() {
       normalizedBoundsTolerance: '2%',
       normalizedCenterTolerance: '1.5%',
       transformCases: '0/45/90/135/180/270° plus horizontal/vertical/both flip',
-      liveAreaGuidance: 'approximately 20 × 20; optical keyline is form-dependent'
+      liveAreaGuidance: `painted max edge targets ${LIVE_AREA_MAX_EDGE} × ${LIVE_AREA_MAX_EDGE} design units with ${(DESIGN_CANVAS - LIVE_AREA_MAX_EDGE) / 2} unit safety margin per side`
     },
     scope: { exclusions: SCOPE_EXCLUSIONS },
     remediations: SOURCE_REMEDIATIONS,

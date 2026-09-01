@@ -42,9 +42,10 @@ function roundPx(value) {
 
 /**
  * PawIcon.size is the CSS edge of the canonical 24×24 design canvas.
- * Optical normalization happens in the icon build, never in page CSS or
- * per-size runtime branches. Every icon therefore owns a square layout box;
- * the artwork's natural proportions live inside the canonical SVG viewBox.
+ * Build-time normalization fits each painted glyph's longest edge to the
+ * shared live area, leaving proportional safety margin in the SVG viewBox.
+ * Runtime never adds per-size corrections: every icon owns a square layout
+ * box and the artwork's natural proportions remain inside it.
  */
 export function resolvePawIconDimensions(size, definition) {
   const target = resolvePawIconSize(size)

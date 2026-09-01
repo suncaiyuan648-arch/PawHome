@@ -1,13 +1,13 @@
 const fs = require('fs')
 const path = require('path')
 const manifest = require('../config/paw-icons.cjs')
+const { DESIGN_CANVAS, normalizeAndFitSvg, readViewBox } = require('./paw-icon-normalize.cjs')
 
 const ROOT = path.resolve(__dirname, '..')
 const REGISTRY_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-registry.js')
 const NAMES_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-names.js')
 const COLOR_ROOT = path.join(ROOT, 'static/paw-icons/color')
 const CATEGORIES = new Set(['navigation', 'actions', 'status', 'common', 'badges', 'brand'])
-const DESIGN_CANVAS = 24
 
 function fail(message) {
   throw new Error(`[PawIcon] ${message}`)
@@ -30,15 +30,6 @@ function readSource(relativePath) {
   return source
 }
 
-function readViewBox(source, relativePath) {
-  const match = source.match(/\bviewBox\s*=\s*["']([^"']+)["']/i)
-  const values = match ? match[1].trim().split(/[\s,]+/).map(Number) : []
-  if (values.length !== 4 || values.some(value => !Number.isFinite(value)) || values[2] <= 0 || values[3] <= 0) {
-    fail(`source must have a valid positive viewBox: ${relativePath}`)
-  }
-  return { x: values[0], y: values[1], width: values[2], height: values[3] }
-}
-
 function readOpticalMetadata(name, relativePath) {
   const configured = (manifest.optical && manifest.optical[name]) || {}
   const scale = configured.scale === undefined ? 1 : Number(configured.scale)
@@ -56,39 +47,7 @@ function readOpticalMetadata(name, relativePath) {
   return { scale, offsetX, offsetY }
 }
 
-function formatNumber(value) {
-  return Number(value.toFixed(6)).toString()
-}
-
-function normalizeSvg(source, sourceViewBox, optical) {
-  const normalized = source.replace(/\r\n?/g, '\n')
-  const root = normalized.match(/^(\s*<svg\b[^>]*>)([\s\S]*?)(<\/svg>\s*)$/i)
-  if (!root) fail('source must contain a complete <svg> element')
-
-  // Map the complete source frame into the one canonical 24 × 24 design
-  // space. A single uniform scale preserves wide/tall artwork proportions;
-  // the unused axis is intentional live-area padding, not a runtime size.
-  const edge = Math.max(sourceViewBox.width, sourceViewBox.height)
-  const scale = DESIGN_CANVAS / edge
-  const translateX = (DESIGN_CANVAS - sourceViewBox.width * scale) / 2 - sourceViewBox.x * scale
-  const translateY = (DESIGN_CANVAS - sourceViewBox.height * scale) / 2 - sourceViewBox.y * scale
-  const sourceMatrix = `matrix(${formatNumber(scale)} 0 0 ${formatNumber(scale)} ${formatNumber(translateX)} ${formatNumber(translateY)})`
-  const hasOpticalCorrection = optical.scale !== 1 || optical.offsetX !== 0 || optical.offsetY !== 0
-  const opticalTransform = `translate(${formatNumber(DESIGN_CANVAS / 2 + optical.offsetX)} ${formatNumber(DESIGN_CANVAS / 2 + optical.offsetY)}) scale(${formatNumber(optical.scale)}) translate(${formatNumber(-DESIGN_CANVAS / 2)} ${formatNumber(-DESIGN_CANVAS / 2)})`
-  const opening = root[1]
-    .replace(/(\bviewBox\s*=\s*["'])[^"']+(["'])/i, (_, prefix, suffix) => `${prefix}0 0 ${DESIGN_CANVAS} ${DESIGN_CANVAS}${suffix}`)
-    // Only normalize root SVG attributes. Nested rect/clipPath/frame
-    // width/height attributes are part of the Figma glyph and must remain.
-    .replace(/\s(width|height|style|overflow|preserveAspectRatio)\s*=\s*["'][^"']*["']/gi, '')
-  const sourceContent = scale === 1 && translateX === 0 && translateY === 0
-    ? root[2]
-    : `<g transform="${sourceMatrix}">${root[2]}</g>`
-  return hasOpticalCorrection
-    ? `${opening}<g transform="${opticalTransform}">${sourceContent}</g>${root[3]}`
-    : `${opening}${sourceContent}${root[3]}`
-}
-
-function build() {
+async function build() {
   const all = {}
   const entries = [
     ...Object.entries(manifest.mono || {}).map(([name, source]) => [name, 'mono', source]),
@@ -100,7 +59,7 @@ function build() {
     const source = readSource(sourcePath)
     const sourceViewBox = readViewBox(source, sourcePath)
     const optical = readOpticalMetadata(name, sourcePath)
-    const normalized = normalizeSvg(source, sourceViewBox, optical)
+    const normalized = await normalizeAndFitSvg(source, sourceViewBox, optical)
     if (kind === 'mono') {
       if (!/currentColor/i.test(source)) fail(`mono icon must use currentColor: ${sourcePath}`)
       const template = encodeURIComponent(normalized.replace(/currentColor/g, '__PAW_ICON_COLOR__'))
@@ -125,4 +84,7 @@ function build() {
   console.log(`[PawIcon] generated ${names.length} icons on a ${DESIGN_CANVAS}×${DESIGN_CANVAS} design canvas`)
 }
 
-build()
+build().catch(error => {
+  console.error(error.stack || error.message)
+  process.exitCode = 1
+})

@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const manifest = require('../config/paw-icons.cjs')
+const { DESIGN_CANVAS, LIVE_AREA_MAX_EDGE } = require('./paw-icon-normalize.cjs')
 
 const ROOT = path.resolve(__dirname, '..')
 const component = fs.readFileSync(path.join(ROOT, 'components/PawIcon/PawIcon.vue'), 'utf8')
@@ -39,6 +40,21 @@ if (!metricsMatch) fail('generated audit metrics are invalid; run npm run icons:
 const metrics = JSON.parse(metricsMatch[1])
 if (JSON.stringify(Object.keys(metrics).sort()) !== JSON.stringify(Object.keys(registry).sort())) {
   fail('generated audit metrics are stale; run npm run icons:analyze')
+}
+const expectedLiveAreaRatio = LIVE_AREA_MAX_EDGE / DESIGN_CANVAS
+for (const [name, metadata] of Object.entries(metrics)) {
+  for (const [size, measured] of Object.entries(metadata.sizes || {})) {
+    const maxEdgeRatio = Math.max(Number(measured.paintedWidthRatio), Number(measured.paintedHeightRatio))
+    if (!Number.isFinite(maxEdgeRatio) || Math.abs(maxEdgeRatio - expectedLiveAreaRatio) > 0.02 * expectedLiveAreaRatio) {
+      fail(`${name} at ${size}px does not honor the ${LIVE_AREA_MAX_EDGE}-unit max-edge live-area contract`)
+    }
+    if (measured.leftRatio <= 0 || measured.topRatio <= 0 || measured.rightRatio >= 1 || measured.bottomRatio >= 1) {
+      fail(`${name} at ${size}px touches the square layout edge; keep the normalized safety margin`)
+    }
+    if (Math.abs(Number(measured.centerXRatio) - 0.5) > 0.03 || Math.abs(Number(measured.centerYRatio) - 0.5) > 0.03) {
+      fail(`${name} at ${size}px is not centered in the square layout box`)
+    }
+  }
 }
 for (const [name, metadata] of Object.entries(manifest.optical || {})) {
   if (Object.prototype.hasOwnProperty.call(metadata, 'viewBox')) fail(`${name} still has source-space optical.viewBox metadata`)

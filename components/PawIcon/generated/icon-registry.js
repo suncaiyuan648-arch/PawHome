@@ -4,7 +4,7 @@ export const PAW_ICON_REGISTRY = Object.freeze({
     "kind": "mono",
     "width": 24,
     "height": 24,
-    "template": "%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%3E%0A%20%20%3Cpath%20d%3D%22M16%2020L8%2012L16%204%22%20stroke%3D%22__PAW_ICON_COLOR__%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%3C%2Fsvg%3E%0A"
+    "template": "%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%3E%3Cg%20transform%3D%22matrix(1.222222%200%200%201.222222%20-2.666667%20-2.666667)%22%3E%0A%20%20%3Cpath%20d%3D%22M16%2020L8%2012L16%204%22%20stroke%3D%22__PAW_ICON_COLOR__%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%3C%2Fg%3E%3C%2Fsvg%3E%0A"
   },
   "navigation/close": {
     "kind": "color",

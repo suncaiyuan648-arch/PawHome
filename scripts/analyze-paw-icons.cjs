@@ -1,13 +1,13 @@
 const fs = require('fs')
 const path = require('path')
 const manifest = require('../config/paw-icons.cjs')
+const { DESIGN_CANVAS, LIVE_AREA_MAX_EDGE } = require('./paw-icon-normalize.cjs')
 
 const ROOT = path.resolve(__dirname, '..')
 const REGISTRY_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-registry.js')
 const METRICS_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-metrics.js')
 const REPORT_DIR = path.join(ROOT, '.artifacts/paw-icon-v2')
 const REPORT_FILE = path.join(REPORT_DIR, 'optical-report.json')
-const DESIGN_CANVAS = 24
 const DESIGN_CENTER = DESIGN_CANVAS / 2
 const TARGET_SIZE = DESIGN_CANVAS
 const RASTER_SCALE = 12
@@ -278,6 +278,7 @@ function assessSize(measured, size) {
       centered: true,
       normalizedStable: true,
       centerStable: true,
+      liveAreaStable: true,
       strokeStable: true,
       noPaddingExpansion: true,
       noAbruptChange: true
@@ -424,6 +425,9 @@ async function analyze() {
         Math.abs(normalized.centerOffsetXRatio),
         Math.abs(normalized.centerOffsetYRatio)
       )
+      const liveAreaTargetRatio = LIVE_AREA_MAX_EDGE / DESIGN_CANVAS
+      const paintedMaxEdgeRatio = Math.max(normalized.paintedWidthRatio, normalized.paintedHeightRatio)
+      const liveAreaDeviation = relativeDeviation(paintedMaxEdgeRatio, liveAreaTargetRatio)
       result.scaleReferenceSize = scaleReferenceSize
       result.audit = {
         normalizedBoundsDeviation: percentage(boundsDeviation),
@@ -436,12 +440,20 @@ async function analyze() {
         centerOffsetRatio: {
           x: normalized.centerOffsetXRatio,
           y: normalized.centerOffsetYRatio
+        },
+        liveArea: {
+          targetMaxEdgeRatio: round(liveAreaTargetRatio, 6),
+          actualMaxEdgeRatio: paintedMaxEdgeRatio,
+          targetMaxEdge: round(size * liveAreaTargetRatio, 4),
+          actualMaxEdge: round(size * paintedMaxEdgeRatio, 4),
+          deviation: percentage(liveAreaDeviation)
         }
       }
       result.checks.withinLayout = Object.values(result.overflow).every(value => value <= 0.01)
       result.checks.centered = centeredDeviation <= CENTER_WARNING_THRESHOLD
       result.checks.normalizedStable = boundsDeviation <= RATIO_WARNING_THRESHOLD
       result.checks.centerStable = centerDeviation <= CENTER_WARNING_THRESHOLD
+      result.checks.liveAreaStable = liveAreaDeviation <= RATIO_WARNING_THRESHOLD
       result.checks.noPaddingExpansion = paddingDeviation <= PADDING_WARNING_THRESHOLD
       result.checks.strokeStable = !entry.source.hasNonScalingStroke
       if (!result.measured.painted) addFinding(result, 'unrendered', 'error', 'artwork produced no detectable alpha pixels')
@@ -450,6 +462,7 @@ async function analyze() {
       addFinding(result, 'normalized-bounds-deviation', severityFor(boundsDeviation, RATIO_WARNING_THRESHOLD, RATIO_ERROR_THRESHOLD), `normalized bounds deviate ${percentage(boundsDeviation)}% from ${scaleReferenceSize}px`)
       addFinding(result, 'center-drift', severityFor(centerDeviation, CENTER_WARNING_THRESHOLD, CENTER_ERROR_THRESHOLD), `normalized center deviates ${percentage(centerDeviation)}% from ${scaleReferenceSize}px`)
       addFinding(result, 'center-offset', severityFor(centeredDeviation, CENTER_WARNING_THRESHOLD, CENTER_ERROR_THRESHOLD), `artwork center offset is ${percentage(centeredDeviation)}% from the square box center`)
+      addFinding(result, 'live-area-normalization', severityFor(liveAreaDeviation, RATIO_WARNING_THRESHOLD, RATIO_ERROR_THRESHOLD), `painted max edge deviates ${percentage(liveAreaDeviation)}% from the ${LIVE_AREA_MAX_EDGE}-unit live-area target`)
       addFinding(result, 'svg-padding-expansion', severityFor(paddingDeviation, PADDING_WARNING_THRESHOLD, PADDING_ERROR_THRESHOLD), `normalized padding changes ${percentage(paddingDeviation)}% across sizes`)
       if (entry.source.hasNonScalingStroke) addFinding(result, 'stroke-anomaly', 'error', 'vector-effect="non-scaling-stroke" prevents proportional stroke scaling')
       const previous = ANALYZE_SIZES[ANALYZE_SIZES.indexOf(size) - 1]
@@ -530,6 +543,7 @@ async function analyze() {
       scaleInconsistent: results.filter(result => !result.checks.normalizedStable).length,
       centerDrift: results.filter(result => !result.checks.centerStable).length,
       paddingExpansion: results.filter(result => !result.checks.noPaddingExpansion).length,
+      liveArea: results.filter(result => !result.checks.liveAreaStable).length,
       strokeAnomaly: results.filter(result => !result.checks.strokeStable).length,
       abruptChange: results.filter(result => !result.checks.noAbruptChange).length,
       unrendered: results.filter(result => !result.checks.rendered).length
@@ -553,6 +567,7 @@ async function analyze() {
       sizes: ANALYZE_SIZES,
       comparisonSizes: COMPARISON_SIZES,
       designCanvas: '24 × 24',
+      liveArea: `${LIVE_AREA_MAX_EDGE} × ${LIVE_AREA_MAX_EDGE} painted max edge with ${(DESIGN_CANVAS - LIVE_AREA_MAX_EDGE) / 2} design unit margin per side`,
       runtimeLayout: 'size × size CSS px; no rotation expansion',
       thresholds: {
         normalizedBoundsWarning: '2%',

@@ -197,6 +197,8 @@ import { PAW_ICON_REGISTRY } from '@/components/PawIcon/generated/icon-registry.
 import { PAW_ICON_AUDIT_METRICS } from '@/components/PawIcon/generated/icon-metrics.js'
 import { resolvePawIconDimensions } from '@/components/PawIcon/PawIcon.utils.js'
 
+const PAW_ICON_LIVE_AREA_RATIO = 22 / 24
+
 const CATEGORY_LABELS = {
   navigation: 'Navigation',
   actions: 'Actions',
@@ -229,7 +231,7 @@ export default {
         { value: 'comparison', label: 'Size Comparison' },
         { value: 'transform', label: 'Transform' }
       ],
-      sizes: [16, 17.5, 20, 23, 24, 28, 32, 37.5],
+      sizes: [16, 17.5, 19, 20, 21, 23, 24, 25.5, 28, 31, 32, 37.5],
       comparisonSizes: [16, 20, 24, 28, 32, 37.5],
       colorModes: [
         { value: 'optical', label: 'Optical #666' },
@@ -260,7 +262,7 @@ export default {
       return this.colorMode === 'actual' ? 'Actual color' : 'Optical color'
     },
     opticalGuideSize() {
-      return Math.max(1, Math.round(this.renderSize * 0.83 * 10) / 10)
+      return Math.max(1, this.renderSize * PAW_ICON_LIVE_AREA_RATIO)
     },
     iconStageStyle() {
       const minimum = this.mode === 'transform' ? 86 : 62
@@ -422,7 +424,7 @@ export default {
 .lab-toolbar__row,
 .lab-category-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   min-height: 32px;
   margin-bottom: 7px;
 }
@@ -443,6 +445,12 @@ export default {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.lab-toolbar__options {
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
 }
 
 .lab-category-options .lab-chip {
