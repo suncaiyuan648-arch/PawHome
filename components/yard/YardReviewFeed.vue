@@ -1,24 +1,14 @@
 <template>
   <view class="yard-review-feed" :class="{ 'yard-review-feed--flat': hideStatusTab }">
-    <YardCommentComposer
-      v-if="showCommentBar"
-      :comment-total-text="commentTotalText"
-      :avatar-src="composerAvatar"
-      :placeholder="composerPlaceholder"
-      @voice="onComposerVoice"
-      @pick-image="onComposerPickImage"
-    />
+    <YardCommentComposer v-if="showCommentBar" :comment-total-text="commentTotalText" :avatar-src="composerAvatar"
+      :placeholder="composerPlaceholder" @voice="onComposerVoice" @pick-image="onComposerPickImage" />
     <view v-else-if="hideStatusTab && commentTotalText" class="comment-cap">
       <text class="comment-cap-txt">{{ commentTotalText }}</text>
     </view>
     <view class="review">
       <view v-if="!hideStatusTab" class="status-tab">
-        <view
-          class="status-item"
-          :class="{ active: activeTab === 'dynamic' }"
-          style="margin-right: 32px"
-          @click="changeReview('dynamic')"
-        >
+        <view class="status-item" :class="{ active: activeTab === 'dynamic' }" style="margin-right: 32px"
+          @click="changeReview('dynamic')">
           <view class="tab-text">动态</view>
           <image v-if="activeTab === 'dynamic'" class="tab-icon" src="/static/tiao.png"></image>
         </view>
@@ -39,12 +29,8 @@
             </view>
             <view class="review-text">
               <view class="avatar-group">
-                <view
-                  v-for="n in 4"
-                  :key="'ag-' + n"
-                  :style="{ left: `${(n - 1) * 15}px`, 'z-index': n }"
-                  class="avatar-box"
-                >
+                <view v-for="n in 4" :key="'ag-' + n" :style="{ left: `${(n - 1) * 15}px`, 'z-index': n }"
+                  class="avatar-box">
                   <image class="avatar-img" src="/static/avatarlog.png"></image>
                 </view>
               </view>
@@ -55,34 +41,19 @@
                 <text>{{
                   isReviewExpanded(reviewRowKey) || !isReviewLong ? reviewText : reviewPreview
                 }}</text>
-                <text
-                  v-if="isReviewLong && !isReviewExpanded(reviewRowKey)"
-                  class="review-toggle"
-                  @click.stop="toggleReview(reviewRowKey)"
-                  ><text>...</text><text class="review-toggle-word">全文</text></text
-                >
-                <text
-                  v-if="isReviewLong && isReviewExpanded(reviewRowKey)"
-                  class="review-toggle"
-                  @click.stop="toggleReview(reviewRowKey)"
-                  >收起</text
-                >
+                <text v-if="isReviewLong && !isReviewExpanded(reviewRowKey)" class="review-toggle"
+                  @click.stop="toggleReview(reviewRowKey)"><text>...</text><text
+                    class="review-toggle-word">全文</text></text>
+                <text v-if="isReviewLong && isReviewExpanded(reviewRowKey)" class="review-toggle"
+                  @click.stop="toggleReview(reviewRowKey)">收起</text>
               </view>
             </view>
-            <view
-              class="voice-msg"
-              :class="{ 'voice-msg--playing': mainVoicePlaying }"
-              @click.stop="toggleMainVoice"
-            >
+            <view class="voice-msg" :class="{ 'voice-msg--playing': mainVoicePlaying }" @click.stop="toggleMainVoice">
               <view class="voice-msg__inner">
                 <uni-icons type="sound" :size="18" color="#384d7b"></uni-icons>
                 <view class="voice-msg__wave">
-                  <view
-                    v-for="(h, wi) in mainVoiceBars"
-                    :key="'wb-' + wi"
-                    class="voice-msg__bar"
-                    :style="{ height: h + 'px' }"
-                  ></view>
+                  <view v-for="(h, wi) in mainVoiceBars" :key="'wb-' + wi" class="voice-msg__bar"
+                    :style="{ height: h + 'px' }"></view>
                 </view>
               </view>
               <text class="voice-msg__dur">{{ mainVoiceDuration }}</text>
@@ -91,10 +62,9 @@
               <NineGridLayout :NineGridList="list9" containerWidth="300" BorderRadiusSize="0" />
             </view>
             <view class="reply">
-              <view class="reply-info"
-                ><text>昨天 20:45 江西</text>
-                <view class="reply-btn" @tap.stop="openReplySheet('main')">回复</view></view
-              >
+              <view class="reply-info"><text>昨天 20:45 江西</text>
+                <view class="reply-btn" @tap.stop="openReplySheet('main')">回复</view>
+              </view>
               <view class="reply-num" @tap.stop="toggleMainReviewLike">
                 <image class="reply-icon" :src="safeImgSrc(mainReviewLiked ? zan2 : zan1)" mode="aspectFit" />
                 <text>{{ mainReviewLikes }}</text>
@@ -102,12 +72,8 @@
             </view>
             <view class="comment-list">
               <view v-for="r in visibleReplies" :key="'r-' + r.id" class="comment-item">
-                <image
-                  class="comment-avatar-img"
-                  :src="safeImgSrc(r.avatar)"
-                  mode="aspectFill"
-                  @click.stop="openReplyUser(r)"
-                ></image>
+                <image class="comment-avatar-img" :src="safeImgSrc(r.avatar)" mode="aspectFill"
+                  @click.stop="openReplyUser(r)"></image>
                 <view class="comment-body">
                   <view class="comment-header">
                     <view class="comment-name" @click.stop="openReplyUser(r)">
@@ -119,12 +85,8 @@
                     <view class="comment-voice__inner" :class="{ 'comment-voice__inner--on': playingReplyId === r.id }">
                       <uni-icons type="sound" :size="16" color="#384d7b"></uni-icons>
                       <view class="comment-voice__wave">
-                        <view
-                          v-for="(h, vi) in r.voiceBars"
-                          :key="r.id + '-v-' + vi"
-                          class="comment-voice__bar"
-                          :style="{ height: h + 'px' }"
-                        ></view>
+                        <view v-for="(h, vi) in r.voiceBars" :key="r.id + '-v-' + vi" class="comment-voice__bar"
+                          :style="{ height: h + 'px' }"></view>
                       </view>
                     </view>
                     <text class="comment-voice__dur">{{ r.duration }}</text>
@@ -142,18 +104,12 @@
                   </view>
                 </view>
               </view>
-              <view
-                v-if="hiddenReplyCount > 0 && !replyExpanded"
-                class="comment-expand"
-                @click.stop="replyExpanded = true"
-              >
+              <view v-if="hiddenReplyCount > 0 && !replyExpanded" class="comment-expand"
+                @click.stop="replyExpanded = true">
                 <text>展开 {{ hiddenReplyCount }} 条回复</text>
               </view>
-              <view
-                v-if="hiddenReplyCount > 0 && replyExpanded"
-                class="comment-expand comment-expand--collapse"
-                @click.stop="replyExpanded = false"
-              >
+              <view v-if="hiddenReplyCount > 0 && replyExpanded" class="comment-expand comment-expand--collapse"
+                @click.stop="replyExpanded = false">
                 <text>收起</text>
               </view>
             </view>
@@ -163,12 +119,8 @@
 
       <view v-if="!hideStatusTab && activeTab === 'throw'" class="throw-records">
         <view v-for="item in throwRecords" :key="item.id" class="throw-row">
-          <image
-            class="throw-row__avatar"
-            :src="safeImgSrc(item.avatar)"
-            mode="aspectFill"
-            @click.stop="openThrowUser(item)"
-          ></image>
+          <image class="throw-row__avatar" :src="safeImgSrc(item.avatar)" mode="aspectFill"
+            @click.stop="openThrowUser(item)"></image>
           <view class="throw-row__grow">
             <view class="throw-row__name-lv" @click.stop="openThrowUser(item)">
               <text class="throw-row__name">{{ item.name }}</text>
@@ -183,12 +135,8 @@
       </view>
     </view>
 
-    <ReplyComposerSheet
-      v-model:visible="replySheetVisible"
-      @send="onReplySheetSend"
-      @voice="onReplySheetVoice"
-      @pick-image="onReplySheetPickImage"
-    />
+    <ReplyComposerSheet v-model:visible="replySheetVisible" :reply-to-name="replyTargetName" @send="onReplySheetSend"
+      @voice="onReplySheetVoice" @pick-image="onReplySheetPickImage" />
   </view>
 </template>
 
@@ -380,6 +328,11 @@ export default {
     },
     hiddenReplyCount() {
       return Math.max(0, this.mockReplies.length - this.previewReplyCount);
+    },
+    replyTargetName() {
+      if (this.replySheetTarget === "main") return "姜栋";
+      const reply = this.mockReplies.find((item) => String(item.id) === String(this.replySheetTarget));
+      return reply ? reply.name : "";
     },
   },
   beforeUnmount() {
@@ -795,6 +748,7 @@ export default {
         transform: scaleY(0.45);
         opacity: 0.65;
       }
+
       to {
         transform: scaleY(1);
         opacity: 1;

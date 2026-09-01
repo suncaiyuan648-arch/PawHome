@@ -1,10 +1,8 @@
 <template>
-  <view
-    v-if="rendered"
-    class="paw-overlay"
-    :class="{ 'paw-overlay--open': opened, 'paw-overlay--closing': closing }"
-    :style="{ zIndex: zIndex }"
-  >
+  <view v-if="rendered" class="paw-overlay" :class="[
+    `paw-overlay--${placement}`,
+    { 'paw-overlay--open': opened, 'paw-overlay--closing': closing }
+  ]" :style="{ zIndex: zIndex }">
     <view class="paw-overlay__mask" @tap="onMaskTap" @touchmove.stop.prevent="noop"></view>
     <view class="paw-overlay__content" @tap.stop @touchmove.stop="noop">
       <slot :opened="opened" :closing="closing" />
@@ -19,6 +17,11 @@ export default {
     modelValue: { type: Boolean, default: undefined },
     visible: { type: Boolean, default: undefined },
     closeOnMask: { type: Boolean, default: true },
+    placement: {
+      type: String,
+      default: 'center',
+      validator: value => ['top', 'center', 'bottom'].includes(value)
+    },
     zIndex: { type: [Number, String], default: 10000 },
     enterDuration: { type: Number, default: 180 },
     exitDuration: { type: Number, default: 160 }
@@ -81,18 +84,56 @@ export default {
       this.$emit('mask-click')
       if (this.closeOnMask) this.emitValue(false)
     },
-    noop() {}
+    noop() { }
   }
 }
 </script>
 
 <style scoped>
-.paw-overlay { position: fixed; inset: 0; pointer-events: auto; }
-.paw-overlay__mask, .paw-overlay__content { position: absolute; inset: 0; }
-.paw-overlay__mask { background: rgba(0, 0, 0, .65); opacity: 0; transition: opacity 160ms ease; }
-.paw-overlay__content { pointer-events: none; }
-/* WXSS 不支持通配子选择器；uni-app 会将具名插槽包成 view。 */
-.paw-overlay__content > view { pointer-events: auto; }
-.paw-overlay--open .paw-overlay__mask { opacity: 1; }
-.paw-overlay--closing .paw-overlay__mask { opacity: 0; }
+.paw-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: auto;
+}
+
+.paw-overlay__mask,
+.paw-overlay__content {
+  position: absolute;
+  inset: 0;
+}
+
+.paw-overlay__mask {
+  background: rgba(0, 0, 0, .65);
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.paw-overlay__content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+/* slot 包裹层由 uni-app 生成且没有 PawOverlay 的作用域属性。 */
+:global(.paw-overlay__content > view) {
+  pointer-events: auto;
+}
+
+.paw-overlay--top .paw-overlay__content {
+  align-items: flex-start;
+}
+
+.paw-overlay--bottom .paw-overlay__content {
+  align-items: flex-end;
+}
+
+.paw-overlay--open .paw-overlay__mask {
+  opacity: 1;
+}
+
+.paw-overlay--closing .paw-overlay__mask {
+  opacity: 0;
+}
 </style>

@@ -1,5 +1,7 @@
 # AGENTS.md — PawHome Agent Development Guide
 
+DO NOT send optional commentary
+
 ## 1. Repository
 
 PawHome is a Vue 3 + uni-app WeChat Mini Program.

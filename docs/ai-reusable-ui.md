@@ -64,7 +64,7 @@
 | 评论流 | `components/dynamic/CommentThread.vue`、`CommentItem.vue`、`VoiceComment.vue` |
 | 投粮榜条 | `components/yard/YardFeedRankStrip.vue` |
 | 小院摘要卡片 | `components/yard/YardSummaryCard.vue`；旧 `YardInfoSummaryCard` 为兼容薄封装 |
-| 小院宠物状态卡片 / 列表区 | `components/yard/YardPetStatusCard.vue`、`components/yard/YardPetStatusListBlock.vue` | 待领养 / 已领养 / 失踪 / 死亡分组：顶胶囊、横向头像+名+品种、右下「n只」。列表页 `pages/yard/yardPetStatusList.vue`；小院详情 `commodityDetails` 六头像后 `>` 跳转。 |
+| 小院宠物状态卡片 / 列表区 | `components/PawPetRoster.vue`（`variant="status"`） | 待云养 / 已云养 / 已领养 / 失踪 / 死亡分组：顶胶囊、横向头像+名、右下「n只」。列表页 `pages/yard/yardCats.vue?state=status`；小院详情 `commodityDetails` 六头像后 `>` 跳转。 |
 | 详情底栏 | `components/layout/PawFixedActionBar.vue`；`DetailTabber` 保留业务事件兼容层 |
 
 ## 其它

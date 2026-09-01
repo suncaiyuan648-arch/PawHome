@@ -51,9 +51,9 @@ export default {
         { id: 4, time: '08-25  04:31', title: '下单成功', copy: '您已下单成功，等待接单中' }
       ],
       interactionItems: [
-        { id: 1, name: '仔仔熊', copy: '评论了你：不要灰心，不要灰心，不要灰心', time: '1小时前', avatar: '/static/figma/interaction-avatar-1.jpg', thumb: '/static/figma/interaction-thumb-1.jpg' },
-        { id: 2, name: '青苹果味雪饼', copy: '点赞了你的动态', time: '1小时前', avatar: '/static/avatarlog.png', thumb: '/static/figma/interaction-thumb-1.jpg' },
-        { id: 3, name: '青苹果味雪饼', copy: '关注了你', time: '1小时前', avatar: '/static/avatarlog.png', thumb: '' }
+		{ id: 1, name: '仔仔熊', copy: '评论了你：不要灰心，不要灰心，不要灰心', time: '1小时前', avatar: '/static/figma/message/interaction-avatar-1.png', thumb: '/static/figma/interaction-thumb-1.jpg' },
+		{ id: 2, name: '青苹果味雪饼', copy: '点赞了你的动态', time: '1小时前', avatar: '/static/figma/message/interaction-avatar-2.png', thumb: '/static/figma/interaction-thumb-1.jpg' },
+		{ id: 3, name: '青苹果味雪饼', copy: '关注了你', time: '1小时前', avatar: '/static/figma/message/interaction-avatar-2.png', thumb: '' }
       ],
       activityItems: [
         { id: 1, title: '合肥！明珠广场线下领养活动5月27号开始！', time: '1小时前', image: '/static/figma/activity-hefei.jpg' },

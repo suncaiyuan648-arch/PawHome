@@ -1,84 +1,630 @@
 <template>
   <view class="pet-detail-figma" :class="'pet-detail-figma--' + variant">
-    <view class="hero-wrap">
-      <image class="hero-exact" src="/static/figma/pet-detail/hero-exact.png" mode="aspectFill" />
-      <view class="hero-back" @click="$emit('back')" />
-      <view class="hero-album" @click="$emit('album')" />
-    </view>
-
-    <view class="pet-strip">
-      <image v-for="(x, i) in stripItems" :key="i" :class="['strip-avatar', { active: i === 3 }]" :style="{ left: x + 'px' }" :src="i === 3 ? '/static/figma/pet-detail/strip-active.png' : '/static/figma/pet-detail/strip-orange.png'" mode="aspectFill" />
-      <view class="strip-triangle" />
-    </view>
-
-    <view class="pet-card">
-      <view class="pet-heading">
-        <view class="pet-title-row"><text class="pet-name">小黄</text><text class="cloud-tag">已云养</text></view>
-        <text class="pet-order">4/12</text>
-      </view>
-      <view class="pet-tags">
-        <text>中华田园犬</text><text>男生</text><text>已绝育</text><text>2岁3个月</text>
-      </view>
-      <text class="pet-copy">小黄是我见过最乖最帅最萌的小猫，饭量很大，<br />希望可以多多投喂猫粮给它</text>
-      <view class="yard-row">
-        <image class="yard-avatar" src="/static/figma/pet-detail/yard-avatar.png" mode="aspectFill" />
-        <text class="yard-name">我就是要喂猫</text>
-        <text class="yard-tag">小院</text>
-      </view>
-    </view>
-
-    <view class="info-card">
-      <view class="info-row"><text>心情</text><text>开心</text></view>
-      <view class="info-row"><text>状态</text><text>极度饥饿</text></view>
-      <view class="info-row"><text>云家长</text><view class="parent-value"><image src="/static/figma/adoption-flow/pet-owner.png" mode="aspectFill" /><text>姜栋</text></view></view>
-      <view class="info-row"><text>剩余云养天数</text><text>16/30天</text></view>
-      <view class="info-row"><text>剩余粮食</text><text class="link">点击查看图片</text></view>
-      <view v-if="variant === 37" class="info-row"><text>投粮详情</text><text class="link">点击查看</text></view>
-      <text class="continuous">已连续云养25天</text>
-    </view>
-
-    <view class="message-card">
-      <text class="message-title">云家长寄语留言板</text>
-      <view class="message-row">
-        <image class="message-avatar" src="/static/figma/pet-detail/message-avatar.png" mode="aspectFill" />
-        <view class="message-body">
-          <view class="message-author"><text>姜栋</text><LevelCapsule level="1" /><text class="role">小黄的第3任云家长</text></view>
-          <text class="message-copy">给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞</text>
-          <view class="message-meta"><text>昨天 20:45&nbsp;&nbsp;江西&nbsp;&nbsp;回复</text><view class="like"><image src="/static/figma/pet-detail/icon-like.png" mode="scaleToFill" /><text>32</text></view></view>
+    <PawPageNav background="transparent" :auto-back="false" @back="$emit('back')" @layout="onNavLayout" />
+    <view class="detail-scroll-stage" :style="{ marginTop: `-${navOverlayOffset}px` }">
+      <scroll-view class="detail-scroll" scroll-y :show-scrollbar="false" :bounces="false" :enable-flex="true">
+        <view class="hero-wrap">
+          <image class="hero-exact" :src="heroSource" mode="aspectFill" @tap="onHeroTap" />
+          <view class="hero-album" :class="{ 'hero-album--readonly': !canManage }" @tap="onAlbumTap">
+            <PawIcon name="actions/album" :size="13" />
+            <text>相册</text>
+            <PawChevron v-if="canManage" class="hero-album-chevron" :size="8" />
+          </view>
         </view>
-      </view>
+
+        <scroll-view class="pet-strip" scroll-x :show-scrollbar="false" :enable-flex="true">
+          <view class="strip-inner">
+            <view v-for="(item, i) in stripItems" :key="item.id || i" class="strip-item"
+              :class="{ active: i === petIndex }" @tap.stop="onStripTap(i)">
+              <image class="strip-avatar" :src="item.avatar || '/static/figma/pet-detail/strip-orange.png'"
+                mode="aspectFill" />
+              <view v-if="i === petIndex" class="strip-triangle" />
+            </view>
+          </view>
+        </scroll-view>
+
+        <view class="pet-card">
+          <view class="pet-heading">
+            <view class="pet-title-row"><text class="pet-name">{{ displayPet.name }}</text><text class="cloud-tag">{{
+              displayPet.statusLabel }}</text></view>
+            <text class="pet-order">{{ petIndex + 1 }}/{{ petTotal }}</text>
+          </view>
+          <view class="pet-tags">
+            <text v-for="(tag, index) in displayPet.tags" :key="index">{{ tag }}</text>
+          </view>
+          <text class="pet-copy">{{ displayPet.desc }}</text>
+          <view class="yard-row">
+            <image class="yard-avatar" :src="displayYard.avatar" mode="aspectFill" />
+            <text class="yard-name">{{ displayYard.name }}</text>
+            <text class="yard-tag">小院</text>
+            <text class="yard-stat">来到小院已经<text class="yard-stat-emphasis">32天</text>了</text>
+          </view>
+        </view>
+
+        <view class="info-card">
+          <view class="info-row"><text>心情</text><text>开心</text></view>
+          <view class="info-row"><text>状态</text><text>极度饥饿</text></view>
+          <view class="info-row"><text>云家长</text><text>姜栋</text></view>
+          <view class="info-row"><text>剩余云养天数</text><text>16/30天</text></view>
+          <view class="info-row"><text>剩余粮食</text><text class="link">点击查看图片</text></view>
+          <view v-if="variant === 37" class="info-row"><text>投粮详情</text><text class="link">点击查看</text></view>
+          <text class="continuous">已连续云养25天</text>
+        </view>
+
+        <view class="message-card">
+          <text class="message-title">云家长寄语留言板</text>
+          <view class="message-row">
+            <image class="message-avatar" src="/static/figma/pet-detail/message-avatar.png" mode="aspectFill" />
+            <view class="message-body">
+              <view class="message-author"><text>姜栋</text>
+                <LevelCapsule level="1" /><text class="role">{{ displayPet.name }}的第3任云家长</text>
+              </view>
+              <text class="message-copy">给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞</text>
+              <view class="message-meta"><text>昨天 20:45&nbsp;&nbsp;江西&nbsp;&nbsp;回复</text>
+                <view class="like">
+                  <PawIcon name="actions/like" :size="15" /><text>32</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class="detail-scroll-bottom"
+          :class="{ 'detail-scroll-bottom--fixed-footer': variant === 35 || variant === 36 }" />
+      </scroll-view>
     </view>
 
-    <view v-if="variant === 35" class="adopt-footer">
-      <view class="footer-mini"><image class="footer-icon" src="/static/figma/pet-detail/icon-share.png" mode="scaleToFill" /><text>分享</text></view>
-      <view class="footer-mini"><image class="footer-icon" src="/static/figma/pet-detail/icon-join.png" mode="scaleToFill" /><text>入驻</text></view>
-      <view class="footer-mini"><image class="footer-icon" src="/static/figma/pet-detail/icon-heart.png" mode="scaleToFill" /><text>领养</text></view>
-      <view class="cloud-button"><image class="bowl" src="/static/figma/pet-detail/icon-bowl.png" mode="scaleToFill" /><text>云养一只</text></view>
-    </view>
+    <PawFixedActionBar v-if="variant === 35" :actions="footerActions" :primary-action="primaryAction"
+      @action="onFooterAction" @primary="onFooterPrimary" />
     <view v-else-if="variant === 36" class="manage-footer">
-      <view><image class="manage-icon" src="/static/figma/pet-detail/icon-edit.png" mode="scaleToFill" /><text>修改信息</text></view>
-      <view><image class="manage-icon" src="/static/figma/pet-detail/icon-manage-pet.png" mode="scaleToFill" /><text>管理宠物</text></view>
-      <view><image class="manage-icon" src="/static/figma/pet-detail/icon-album.png" mode="scaleToFill" /><text>管理相册</text></view>
-      <view class="danger"><image class="manage-icon" src="/static/figma/pet-detail/icon-delete.png" mode="scaleToFill" /><text>删除宠物</text></view>
+      <view data-qa="pet-detail-footer-edit" @tap="emitManageAction('edit')">
+        <PawIcon name="actions/edit" :size="16" /><text>修改信息</text>
+      </view>
+      <view data-qa="pet-detail-footer-manage-pet" @tap="emitManageAction('manage-pet')">
+        <PawIcon name="actions/manage-pet" :size="16" />
+        <text>管理宠物</text>
+      </view>
+      <view data-qa="pet-detail-footer-album" @tap="emitManageAction('album')">
+        <PawIcon name="actions/manage-album" :size="16" /><text>管理相册</text>
+      </view>
+      <view class="danger" data-qa="pet-detail-footer-delete" @tap="emitManageAction('delete')">
+        <PawIcon name="actions/delete" :size="16" /><text>删除宠物</text>
+      </view>
     </view>
   </view>
 </template>
 
 <script>
 import LevelCapsule from '@/components/LevelCapsule.vue'
+import PawPageNav from '@/components/PawPageNav.vue'
+import PawFixedActionBar from '@/components/layout/PawFixedActionBar.vue'
+import PawChevron from '@/components/base/PawChevron.vue'
+import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import { getWechatNavLayout } from '@/utils/navLayout.js'
+import { getPawHomeYardMock } from '@/utils/yardMock.js'
 
 export default {
   name: 'PawPetDetailFigma',
-  components: { LevelCapsule },
+  components: { LevelCapsule, PawPageNav, PawFixedActionBar, PawChevron, PawIcon },
+  emits: ['back', 'album', 'preview-image', 'select-pet', 'footer-action', 'footer-primary'],
   props: {
     variant: { type: Number, default: 35 },
+    pet: { type: Object, default: () => ({}) },
+    pets: { type: Array, default: () => [] },
+    petIndex: { type: Number, default: 3 },
+    petTotal: { type: Number, default: 12 },
+    joined: { type: Boolean, default: false },
+    yard: { type: Object, default: () => getPawHomeYardMock() },
+    managed: { type: Boolean, default: false },
   },
   data() {
-    return { stripItems: [8, 59, 110, 161, 220, 271, 322] };
+    return { navOverlayOffset: getWechatNavLayout().totalHeight };
+  },
+  computed: {
+    heroSource() {
+      const gallery = this.displayPet.gallery;
+      return (Array.isArray(gallery) && gallery[0]) || this.displayPet.avatar || '/static/figma/adoption-flow/pet-hero.png';
+    },
+    stripItems() {
+      const fallback = Array.from({ length: 8 }, (_, index) => ({
+        id: `pet-strip-${index + 1}`,
+        avatar: '/static/figma/pet-detail/strip-orange.png',
+      }));
+      const source = this.pets.length ? this.pets : fallback;
+      return Array.from({ length: Math.max(8, source.length) }, (_, index) => source[index] || fallback[index % fallback.length]);
+    },
+    displayPet() {
+      return {
+        name: '小黄',
+        statusLabel: '已云养',
+        tags: ['中华田园犬', '男生', '已绝育', '2岁3个月'],
+        desc: '小黄是我见过最乖最帅最萌的小猫，饭量很大，希望可以多多投喂猫粮给它',
+        ...this.pet,
+      };
+    },
+    displayYard() {
+      return { ...getPawHomeYardMock(), ...this.yard };
+    },
+    footerActions() {
+      return [
+        { key: 'share', label: '分享', image: '/static/fenxiang.png' },
+        { key: 'join', label: this.joined ? '已入驻' : '入驻', image: this.joined ? '/static/yard-joined-checked.png' : '/static/ruzhu.png' },
+        { key: 'adopt', label: '领养', image: '/static/lingyang.png' },
+      ];
+    },
+    primaryAction() {
+      return { key: 'feed', label: '云养一只', iconName: 'actions/feed', iconSize: 32, size: 'md' };
+    },
+    canManage() {
+      return this.managed || this.variant === 36;
+    },
+  },
+  methods: {
+    onHeroTap() {
+      this.$emit('preview-image', {
+        current: this.heroSource,
+        urls: Array.isArray(this.displayPet.gallery) && this.displayPet.gallery.length
+          ? this.displayPet.gallery
+          : [this.heroSource],
+      });
+    },
+    onAlbumTap() {
+      if (this.canManage) this.$emit('album');
+    },
+    emitManageAction(key) {
+      if (this.canManage) this.$emit('footer-action', { key });
+    },
+    onStripTap(index) {
+      if (index !== this.petIndex) this.$emit('select-pet', index);
+    },
+    onNavLayout(layout) {
+      if (layout && Number.isFinite(Number(layout.totalHeight))) this.navOverlayOffset = Number(layout.totalHeight);
+    },
+    onFooterAction(action) {
+      this.$emit('footer-action', action);
+    },
+    onFooterPrimary(action) {
+      this.$emit('footer-primary', action);
+    },
   },
 };
 </script>
 
 <style lang="less" scoped>
-.pet-detail-figma{position:relative;width:375px;height:1232px;overflow:hidden;background:#f5f5f5;color:#333;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif;box-sizing:border-box}.hero-wrap{position:relative;width:375px;height:375px}.hero-exact{display:block;width:375px;height:375px}.hero-back{position:absolute;left:4px;top:40px;width:46px;height:48px}.hero-album{position:absolute;right:8px;bottom:0;width:72px;height:48px}.pet-strip{position:relative;width:375px;height:96px;background:#fff}.strip-avatar{position:absolute;top:29px;width:40px;height:40px;border-radius:50%}.strip-avatar.active{top:22px;width:56px;height:56px}.strip-triangle{position:absolute;left:180px;bottom:3px;width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:11px solid #fff;filter:drop-shadow(0 -1px 0 rgba(0,0,0,.02))}.pet-card{position:absolute;left:15px;top:471px;width:345px;height:220px;padding:13px 22px 14px;border-radius:19px;background:#fff;box-sizing:border-box}.pet-heading{height:31px;display:flex;align-items:flex-start;justify-content:space-between}.pet-title-row{display:flex;align-items:center}.pet-name{font-size:19px;line-height:25px;font-weight:700;color:#262626}.cloud-tag{margin-left:9px;margin-top:1px;padding:2px 7px;border-radius:5px;background:#c9ff69;color:#274b00;font-size:10px;line-height:17px}.pet-order{padding-top:7px;color:#999;font-size:11px}.pet-tags{height:31px;display:flex;align-items:flex-start;gap:5px}.pet-tags text{height:19px;padding:1px 12px;border-radius:10px;background:#ccff71;color:#1b3600;font-size:11px;line-height:17px;box-sizing:border-box}.pet-copy{display:block;height:76px;padding-top:3px;color:#4a4a4a;font-size:13px;line-height:22px;box-sizing:border-box}.yard-row{height:55px;display:flex;align-items:center}.yard-avatar{width:31px;height:31px;border-radius:50%}.yard-name{margin-left:10px;color:#333;font-size:13px}.yard-tag{margin-left:7px;padding:2px 6px;border-radius:5px;background:#fff231;color:#5c5100;font-size:9px}.info-card{position:absolute;left:15px;top:699px;width:345px;height:203px;padding:14px 22px 29px;border-radius:19px;background:#fff;box-sizing:border-box}.pet-detail-figma--37 .info-card{height:237px}.info-row{height:32px;display:flex;align-items:center;justify-content:space-between;color:#777;font-size:13px}.info-row>text:last-child{color:#555}.info-row .link{color:#087cff!important}.parent-value{display:flex;align-items:center;color:#555}.parent-value image{width:22px;height:22px;margin-right:6px;border-radius:50%}.continuous{position:absolute;right:22px;bottom:9px;padding:1px 5px;border-radius:3px;background:#c98d55;color:#fff;font-size:9px;line-height:15px}.message-card{position:absolute;left:15px;top:912px;width:345px;height:200px;padding:27px 15px 18px;border-radius:19px;background:#fff;box-sizing:border-box}.pet-detail-figma--37 .message-card{top:946px;height:201px}.message-title{display:block;text-align:center;color:#333;font-size:15px;line-height:22px}.message-row{display:flex;margin-top:16px}.message-avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0}.message-body{flex:1;min-width:0;margin-left:6px}.message-author{height:18px;display:flex;align-items:center;color:#555;font-size:11px}.level{margin-left:4px;padding:0 4px;border-radius:4px;background:#503500;color:#fff;font-size:8px;line-height:14px}.role{margin-left:4px;padding:0 5px;border-radius:5px;background:#fff03a;color:#5a5100;font-size:8px;line-height:14px}.message-copy{display:block;height:36px;overflow:hidden;color:#333;font-size:11px;line-height:12px}.message-meta{display:flex;align-items:center;justify-content:space-between;margin-top:8px;color:#999;font-size:10px}.like{display:flex;align-items:center;gap:6px;padding-right:1px;color:#666}.like image{width:16px;height:16px}.adopt-footer,.manage-footer{position:absolute;left:0;right:0;bottom:0;height:88px;background:#fff;border-top:1px solid #eee;box-sizing:border-box}.adopt-footer{display:flex;align-items:flex-start;padding:8px 18px}.footer-mini{width:48px;display:flex;flex-direction:column;align-items:center;color:#888;font-size:10px}.footer-icon{width:22px;height:22px;margin-bottom:2px}.cloud-button{width:188px;height:43px;margin-left:7px;border-radius:24px;background:#ffe000;display:flex;align-items:center;justify-content:center;gap:9px;color:#222;font-size:15px;font-weight:700}.bowl{width:27px;height:22px}.manage-footer{display:flex;align-items:flex-start;justify-content:space-between;padding:22px 20px;color:#777;font-size:11px}.manage-footer view{display:flex;align-items:center;white-space:nowrap}.manage-icon{width:16px;height:16px;margin-right:5px}.manage-footer .danger{color:#ff334d}
+.pet-detail-figma {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+  background: #f5f5f5;
+  color: #333;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  box-sizing: border-box;
+}
+
+.detail-scroll-stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: 0;
+  overflow: hidden;
+}
+
+.detail-scroll {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.hero-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  height: 100vw;
+  min-height: 375px;
+  max-height: 375px;
+}
+
+.hero-exact {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-album {
+  position: absolute;
+  display: flex;
+  right: 9px;
+  bottom: 12px;
+  width: 61px;
+  height: 17px;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, .3);
+  color: #fff;
+  font-size: 12px;
+  line-height: 11px;
+}
+
+.hero-album .hero-album-chevron {
+  margin-left: 1px;
+}
+
+.pet-strip {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  height: 96px;
+  background: #f5f5f5;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.strip-inner {
+  display: flex;
+  width: max-content;
+  min-width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 21px 15px;
+  flex-wrap: nowrap;
+  box-sizing: border-box;
+}
+
+.strip-item {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.strip-avatar {
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.strip-item.active .strip-avatar {
+  width: 55px;
+  height: 55px;
+}
+
+.strip-triangle {
+  width: 0;
+  height: 0;
+  margin-top: 3px;
+  border-bottom: 11px solid #fff;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  position: absolute;
+  bottom: -15px;
+}
+
+.pet-card {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  width: auto;
+  min-height: 219px;
+  margin: 0 15px;
+  padding: 14px 22px;
+  gap: 12px;
+  border-radius: 20px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.pet-heading {
+  display: flex;
+  min-height: 25px;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.pet-title-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pet-name {
+  font-size: 20px;
+  line-height: 25px;
+  font-weight: 700;
+  color: #282827;
+}
+
+.cloud-tag {
+  display: inline-flex;
+  width: 46px;
+  height: 19px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: #c9ff69;
+  color: #333;
+  font-size: 11px;
+  line-height: 17px;
+  box-sizing: border-box;
+}
+
+.pet-order {
+  padding-top: 3px;
+  color: #999;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.pet-tags {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.pet-tags text {
+  display: inline-flex;
+  min-height: 19px;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 14px;
+  border-radius: 22px;
+  background: #e0ff89;
+  color: #000;
+  font-size: 12px;
+  line-height: 15px;
+  box-sizing: border-box;
+}
+
+.pet-copy {
+  display: block;
+  min-height: 42px;
+  flex: 1 1 auto;
+  color: #282827;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.yard-row {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  flex-shrink: 0;
+  margin: 0 -4px;
+}
+
+.yard-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+}
+
+.yard-name {
+  margin-left: 6px;
+  color: #333;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.yard-tag {
+  margin-left: 6px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: #fff463;
+  color: #333;
+  font-size: 10px;
+  line-height: 14px;
+}
+
+.yard-stat {
+  margin-left: auto;
+  color: #999;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.yard-stat-emphasis {
+  color: #666;
+}
+
+.info-card {
+  display: flex;
+  min-height: 203px;
+  flex: 0 0 auto;
+  flex-direction: column;
+  width: auto;
+  margin: 9px 15px 0;
+  padding: 24px 20px 13px;
+  gap: 9px;
+  border-radius: 20px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.pet-detail-figma--37 .info-card {
+  min-height: 237px;
+}
+
+.info-row {
+  display: flex;
+  min-height: 21px;
+  align-items: center;
+  justify-content: space-between;
+  color: #777;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.info-row>text:last-child {
+  color: #333;
+}
+
+.info-row .link {
+  color: #0a77f5 !important;
+}
+
+.continuous {
+  align-self: flex-end;
+  margin-top: auto;
+  padding: 0 5px;
+  border-radius: 3px;
+  background: #cc9a66;
+  color: #fff;
+  font-size: 10px;
+  line-height: 14px;
+}
+
+.message-card {
+  display: flex;
+  min-height: 201px;
+  flex: 0 0 auto;
+  flex-direction: column;
+  width: auto;
+  margin: 9px 15px 0;
+  padding: 25px 15px 18px;
+  gap: 16px;
+  border-radius: 20px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.message-title {
+  display: block;
+  color: #333;
+  font-size: 15px;
+  line-height: 22px;
+  text-align: center;
+}
+
+.message-row {
+  display: flex;
+  min-height: 34px;
+  align-items: flex-start;
+}
+
+.message-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex-shrink: 0
+}
+
+.message-body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  margin-left: 6px;
+}
+
+.message-author {
+  display: inline-flex;
+  min-height: 18px;
+  align-items: center;
+  gap: 4px;
+  color: #555;
+  font-size: 13px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.role {
+  padding: 0 5px;
+  border-radius: 8px;
+  background: #fff463;
+  color: #333;
+  font-size: 10px;
+  line-height: 16px;
+}
+
+.message-copy {
+  display: block;
+  min-height: 36px;
+  color: #333;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.message-meta {
+  display: flex;
+  min-height: 18px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  color: #8c8c8c;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.like {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 1px;
+  color: #666
+}
+
+.detail-scroll-bottom {
+  height: 32px;
+  flex: 0 0 auto;
+}
+
+.detail-scroll-bottom--fixed-footer {
+  height: 88px;
+}
+
+.pet-detail-figma--36 .detail-scroll-bottom--fixed-footer {
+  height: 74px;
+}
+
+.manage-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 300;
+  width: 100%;
+  height: 74px;
+  min-height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px env(safe-area-inset-bottom);
+  border-radius: 20px 20px 0 0;
+  background: rgba(255, 255, 255, .9);
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, .04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-sizing: border-box;
+}
+
+.manage-footer view {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: #777;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.manage-footer .danger {
+  color: #ff334d
+}
 </style>

@@ -1,28 +1,17 @@
 <template>
-  <PawOverlay
-    :model-value="openValue"
-    :close-on-mask="closeOnMask"
-    :z-index="zIndex"
-    :enter-duration="180"
-    :exit-duration="200"
-    @update:model-value="setValue"
-    @update:visible="setValue"
-    @after-open="$emit('after-open')"
-    @after-close="$emit('after-close')"
-  >
+  <PawOverlay :model-value="openValue" :close-on-mask="closeOnMask" :z-index="zIndex" :enter-duration="180"
+    :exit-duration="200" @update:model-value="setValue" @update:visible="setValue" @after-open="$emit('after-open')"
+    @after-close="$emit('after-close')">
     <template #default="{ opened, closing }">
-      <PawSafeArea
-        class="paw-bottom-sheet"
-        :class="[
-          `paw-bottom-sheet--${variant}`,
-          { 'paw-bottom-sheet--open': opened, 'paw-bottom-sheet--closing': closing, 'paw-bottom-sheet--safe': safeArea }
-        ]"
-        :style="sheetStyle"
-        @tap.stop
-      >
+      <PawSafeArea class="paw-bottom-sheet" :enabled="safeArea" :class="[
+        `paw-bottom-sheet--${variant}`,
+        { 'paw-bottom-sheet--open': opened, 'paw-bottom-sheet--closing': closing, 'paw-bottom-sheet--safe': safeArea }
+      ]" :style="sheetStyle" @tap.stop>
         <view v-if="showHandle" class="paw-bottom-sheet__handle"></view>
         <slot name="header" />
-        <view class="paw-bottom-sheet__body"><slot /></view>
+        <view class="paw-bottom-sheet__body">
+          <slot />
+        </view>
         <slot name="footer" />
       </PawSafeArea>
     </template>
@@ -78,8 +67,38 @@ export default {
   transform: translateY(100%);
   transition: transform var(--paw-motion-sheet, 260ms) var(--paw-ease-standard, ease);
 }
-.paw-bottom-sheet--open { transform: translateY(0); }
-.paw-bottom-sheet--closing { transform: translateY(100%); transition-duration: 200ms; transition-timing-function: var(--paw-ease-exit, ease-in); }
-.paw-bottom-sheet__body { min-height: 0; }
-.paw-bottom-sheet__handle { width: 36px; height: 4px; margin: 8px auto 0; border-radius: 2px; background: #ddd; }
+
+.paw-bottom-sheet.paw-bottom-sheet--composer {
+  padding: 15px;
+}
+
+.paw-bottom-sheet.paw-bottom-sheet--form-selection {
+  background: #f5f5f5;
+}
+
+.paw-bottom-sheet.paw-bottom-sheet--value-selection {
+  background: #f8f8f8;
+}
+
+.paw-bottom-sheet--open {
+  transform: translateY(0);
+}
+
+.paw-bottom-sheet--closing {
+  transform: translateY(100%);
+  transition-duration: 200ms;
+  transition-timing-function: var(--paw-ease-exit, ease-in);
+}
+
+.paw-bottom-sheet__body {
+  min-height: 0;
+}
+
+.paw-bottom-sheet__handle {
+  width: 36px;
+  height: 4px;
+  margin: 8px auto 0;
+  border-radius: 2px;
+  background: #ddd;
+}
 </style>

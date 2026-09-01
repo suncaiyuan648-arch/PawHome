@@ -44,7 +44,7 @@
 		<view class="customTabberItem" :class="{'active':activeItem === 2}" @click="changeTabber(2)">
 			<view class="tab-label-wrap">
 				<text>消息</text>
-				<view class="message"><text>99+</text></view>
+				<view v-if="messageUnreadCount > 0" class="message"><text>{{ formatUnreadCount(messageUnreadCount) }}</text></view>
 			</view>
 		</view>
 		<view class="customTabberItem" :class="{'active':activeItem === 3}" @click="changeTabber(3)"><text>我</text>
@@ -54,6 +54,7 @@
 
 <script>
 	import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
+	import { getTotalMessageUnreadCount } from '@/utils/messageUnread.js'
 
 	export default {
 		name: "CustomBabber",
@@ -70,6 +71,11 @@
 				showPublishPanel: false
 			};
 		},
+		computed: {
+			messageUnreadCount() {
+				return getTotalMessageUnreadCount()
+			}
+		},
 		watch: {
 			tabIndex: {
 				immediate: true,
@@ -79,6 +85,9 @@
 			}
 		},
 		methods: {
+			formatUnreadCount(count) {
+				return count > 99 ? '99+' : count
+			},
 			openPublishPanel() {
 				this.showPublishPanel = !this.showPublishPanel
 			},

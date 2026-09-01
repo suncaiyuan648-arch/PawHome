@@ -1,27 +1,41 @@
-<template><image class="paw-chevron" :class="`paw-chevron--${direction}`" :src="asset" :style="chevronStyle" mode="aspectFit" aria-hidden="true" /></template>
+<template>
+  <PawIcon class="paw-chevron" :class="`paw-chevron--${direction}`" name="navigation/chevron-right" :size="size"
+    aria-hidden="true" />
+</template>
 
 <script>
+import PawIcon from '@/components/PawIcon/PawIcon.vue'
+
 export default {
   name: 'PawChevron',
+  components: { PawIcon },
   props: {
     direction: { type: String, default: 'right' },
-    size: { type: [Number, String], default: 4 }
+    size: { type: [Number, String], default: 8 }
   },
-  computed: {
-    asset() { return '/static/figma/dynamic-detail/chevron-right.svg' },
-    chevronStyle() {
-      const width = typeof this.size === 'number' ? `${this.size}px` : this.size
-      const height = typeof this.size === 'number' ? `${this.size * 2}px` : '8px'
-      return { width, height }
-    }
-  }
+  computed: {}
 }
 </script>
 
 <style scoped>
-.paw-chevron { display: block; flex: 0 0 auto; }
-.paw-chevron--right { transform: rotate(180deg); }
-.paw-chevron--left { transform: rotate(0deg); }
-.paw-chevron--up { transform: rotate(90deg); }
-.paw-chevron--down { transform: rotate(-90deg); }
+.paw-chevron {
+  display: block;
+  flex: 0 0 auto;
+}
+
+.paw-chevron--right {
+  transform: rotate(180deg);
+}
+
+.paw-chevron--left {
+  transform: rotate(0deg);
+}
+
+.paw-chevron--up {
+  transform: rotate(90deg);
+}
+
+.paw-chevron--down {
+  transform: rotate(-90deg);
+}
 </style>

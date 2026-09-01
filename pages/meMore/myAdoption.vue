@@ -472,7 +472,7 @@
 		box-sizing: border-box;
 	}
 
-	/* 与小院 YardPetStatusCard 一致：从左向右排布，多只时可横向滑动 */
+	/* 与小院 PawPetRoster 的状态头像行一致：从左向右排布，多只时可横向滑动 */
 	.card-pets-scroll {
 		width: 100%;
 		padding-top: 16rpx;

@@ -113,6 +113,7 @@ navCenterY       = capsuleTop + capsuleHeight / 2
 
 - `content-inset-left`：只调整业务内容的水平起点，必须有页面设计依据。
 - `back-hit-width`：只调整返回按钮点击区域，必须有组件/交互依据。
+- `title-centered`：仅当 Figma 标题要求以整屏中心线对齐时使用；不改变 placeholder 或导航几何。
 
 事件：
 

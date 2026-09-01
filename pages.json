@@ -36,6 +36,14 @@
       "style": {
         "navigationStyle": "custom"
       }
+    },
+    {
+      // PawIcon 开发验收页：自动枚举注册表，验证尺寸、光学边界与变换。
+      "path": "pages/dev/paw-icon-lab",
+      "style": {
+        "navigationStyle": "custom",
+        "backgroundColor": "#F5F5F5"
+      }
     }
   ],
   // 分包页面：按业务域拆分，在用户进入对应功能时按需加载。
@@ -504,7 +512,7 @@
           "path": "addKitten",
           "style": {
             "navigationStyle": "custom",
-            "backgroundColor": "#F0F0F0"
+            "backgroundColor": "#F6F8FA"
           }
         },
         {
@@ -550,14 +558,6 @@
         {
           // 陪审详情：查看单个陪审事项的证据和详情。
           "path": "juryDetail",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F5F5F5"
-          }
-        },
-        {
-          // 小院宠物状态列表：按状态查看小院动物。
-          "path": "yardPetStatusList",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F5F5F5"

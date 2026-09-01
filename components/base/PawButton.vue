@@ -65,6 +65,7 @@ export default {
 .paw-button--flush { padding-right: 0; padding-left: 0; }
 .paw-button--nowrap { white-space: nowrap; }
 .paw-button--xs { height: 30px; min-height: 30px; font-size: 13px; }
+.paw-button--search { height: 28px; min-height: 28px; padding: 0; font-size: 12px; line-height: 28px; }
 .paw-button--sm { height: 33px; min-height: 33px; font-size: 13px; }
 .paw-button--md { height: 42px; min-height: 42px; font-size: 15px; }
 .paw-button--lg { height: 46px; min-height: 46px; font-size: 16px; }
@@ -73,6 +74,7 @@ export default {
 .paw-button--brand { background: var(--paw-color-brand, #ffe60f); color: #333; }
 .paw-button--brand-soft { background: var(--paw-color-brand-soft, #fff463); color: #333; }
 .paw-button--secondary { background: #eee; color: #333; }
+.paw-button--dark { background: #1f1f1f; color: #fff; }
 .paw-button--ghost { border: 1px solid var(--paw-color-border-strong, #d9d9d9); background: #fff; color: #333; }
 .paw-button--wechat { background: #18c267; color: #fff; }
 .paw-button--danger { background: var(--paw-color-danger, #ff3d3d); color: #fff; }

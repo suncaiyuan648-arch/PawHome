@@ -1,22 +1,16 @@
 <template>
   <view class="css-scroll-container">
-    <view
-      class="scroll-content"
-      :style="{
-        transform: `translateY(${translateY}px)`,
-        transition: enableTransition ? 'transform var(--paw-motion-ticker, 350ms) var(--paw-ease-standard, ease)' : 'none'
-      }"
-    >
-      <view
-        v-for="(item, index) in renderList"
-        :key="'ss-' + index + '-' + (item.text || '') + '-' + (item.rankTitle || '')"
-        class="scroll-item"
-        hover-class="scroll-item--tap"
-        @tap.stop="onUserTap(item)"
-      >
+    <view class="scroll-content" :style="{
+      transform: `translateY(${translateY}px)`,
+      transition: enableTransition ? 'transform var(--paw-motion-ticker, 350ms) var(--paw-ease-standard, ease)' : 'none'
+    }">
+      <view v-for="(item, index) in renderList"
+        :key="'ss-' + index + '-' + (item.text || '') + '-' + (item.rankTitle || '')" class="scroll-item"
+        hover-class="scroll-item--tap" @tap.stop="onUserTap(item)">
         <view class="info">
           <view class="info-avatarlog">
-            <PawAvatar class="avatar" :src="resolveAvatar(item)" :fallback="avatarFallback" :size="30" />
+            <PawAvatar class="avatar" :src="resolveAvatar(item)" :fallback="avatarFallback" :size="30" :clickable="true"
+              @click="onUserTap(item)" />
           </view>
           <view class="info-name">
             <text>{{ item.text }}</text>
@@ -131,22 +125,25 @@ export default {
   height: 40px;
   overflow: hidden;
   position: relative;
-  padding: 0 10px;
 }
+
 .info {
   display: flex;
   justify-content: flex-start;
   align-items: center;
+
   .info-avatarlog {
     width: 30px;
     height: 30px;
     border-radius: 50%;
     margin-right: 5px;
+
     .avatar {
       width: 30px;
       height: 30px;
     }
   }
+
   .info-name {
     font-size: 14px;
     font-weight: 400;
@@ -157,6 +154,7 @@ export default {
     column-gap: 3px;
   }
 }
+
 .ranking {
   font-size: 14px;
   font-weight: 500;
@@ -165,17 +163,30 @@ export default {
   color: rgba(251, 200, 0, 1);
   vertical-align: top;
 }
-.scroll-content { will-change: transform; }
+
+.scroll-content {
+  will-change: transform;
+}
 
 .scroll-item {
   height: 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 5px;
   box-sizing: border-box;
   position: relative;
   z-index: 1;
+
+  .info {
+    display: flex;
+    align-items: center;
+
+    .info-name {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+  }
 }
 
 .scroll-item--tap {

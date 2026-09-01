@@ -42,7 +42,7 @@
 | --- | --- | --- |
 | `62:24439`、`62:24587` 发布-创建小院；`62:24722` 发布-创建小院-已录音状态 | `pages/yard/createCatYard.vue`：默认表单、`state=recorded` | 已实现（同一路由多状态） |
 | `62:24878` 发布-添加猫咪；`62:37295` 添加猫咪；`62:37659` 添加狗狗；`62:37815` 添加猫咪-更多；`62:38365` 添加狗狗-更多 | `pages/yard/addKitten.vue`：`kind=cat/dog`、`state=more` | 已实现（同一路由多类型/状态） |
-| `62:25026` 小院-查看猫咪列表 | `pages/yard/yardPetStatusList.vue`：小院宠物状态列表 | 已实现 |
+| `62:25026` 小院-查看猫咪列表 | `pages/yard/yardCats.vue?state=status`：小院宠物状态列表 | 已实现 |
 | `62:25204` 我帮助过的动物 | `pages/meMore/helpedAnimals.vue` | 已实现 |
 | `62:25866` 流浪猫小院介绍 | `pages/yard/catGuide.vue` | 已实现 |
 | `62:26000` 院子详情-动态；`62:26418` 院子详情-动态空状态；`62:26677` 院子详情-投喂记录；`62:26947` 院子详情-动态展开 | `pages/commodityDetails/index.vue` + `components/PawYardDetailFigma.vue`：`dynamic`、`dynamic-empty`、`feeding`、`dynamic-expanded` | 已实现（共享详情组件） |

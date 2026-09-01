@@ -1,111 +1,116 @@
 <template>
   <view class="pd-page" :class="{ 'pd-page--figma': figmaVariant }">
-    <PawPetDetailFigma v-if="figmaVariant" :variant="figmaVariant" @back="goBack" @album="openAlbum" />
+    <PawPetDetailFigma v-if="figmaVariant" :variant="figmaVariant" :managed="managedPet" :pet="currentPet"
+      :pets="adoptablePets" :pet-index="activeIndex" :pet-total="adoptablePets.length" :yard="yard" :joined="yardJoined"
+      @back="goBack" @album="openAlbum" @preview-image="previewPetImage" @select-pet="selectPet"
+      @footer-action="onFigmaFooterAction" @footer-primary="onFigmaFooterPrimary" />
     <template v-else>
-    <!-- 顶部大图轮播 + 状态栏渐变 + 返回 -->
-    <view class="pd-hero">
-      <swiper
-        :key="'sw-' + currentPet.id"
-        class="pd-swiper"
-        :style="{ height: galleryHeightPx + 'px' }"
-        :current="galleryIndex"
-        :circular="galleryUrls.length > 1"
-        :indicator-dots="galleryUrls.length > 1"
-        indicator-color="rgba(255,255,255,0.35)"
-        indicator-active-color="rgba(255,255,255,0.95)"
-        :autoplay="false"
-        @change="onGalleryChange"
-      >
-        <swiper-item v-for="(src, gi) in galleryUrls" :key="currentPet.id + '-g-' + gi" class="pd-swiper-item">
-          <image class="pd-swiper-img" :src="src" mode="aspectFill" />
-        </swiper-item>
-      </swiper>
-      <view class="pd-hero-grad" />
-      <view class="pd-nav" :style="{ paddingTop: statusBarHeight + 'px' }">
-        <view class="pd-nav-hit" @click="goBack">
-          <image class="pd-nav-back" src="/static/nav-back-arrow.png" mode="aspectFit" />
+      <!-- 顶部大图轮播 + 状态栏渐变 + 返回 -->
+      <view class="pd-hero">
+        <swiper :key="'sw-' + currentPet.id" class="pd-swiper" :style="{ height: galleryHeightPx + 'px' }"
+          :current="galleryIndex" :circular="galleryUrls.length > 1" :indicator-dots="galleryUrls.length > 1"
+          indicator-color="rgba(255,255,255,0.35)" indicator-active-color="rgba(255,255,255,0.95)" :autoplay="false"
+          @change="onGalleryChange">
+          <swiper-item v-for="(src, gi) in galleryUrls" :key="currentPet.id + '-g-' + gi" class="pd-swiper-item">
+            <image class="pd-swiper-img" :src="src" mode="aspectFill" @tap="previewPetImage(src)" />
+          </swiper-item>
+        </swiper>
+        <view class="pd-hero-grad" />
+        <view class="pd-nav" :style="{ paddingTop: statusBarHeight + 'px' }">
+          <view class="pd-nav-hit" @click="goBack">
+            <image class="pd-nav-back" src="/static/nav-back-arrow.png" mode="aspectFit" />
+          </view>
+          <view class="pd-album-hit" @click="openAlbum"><uni-icons type="images" color="#ffffff"
+              :size="20" /><text>相册</text></view>
         </view>
-        <view class="pd-album-hit" @click="openAlbum"><uni-icons type="images" color="#ffffff" :size="20" /><text>相册</text></view>
       </view>
-    </view>
 
-    <scroll-view class="pd-scroll" scroll-y :show-scrollbar="false" :enable-flex="true">
-      <!-- 待领养横向头像：点击切换当前宠物 -->
-      <view class="pd-strip-wrap">
-        <scroll-view class="pd-strip-scroll" scroll-x :show-scrollbar="false" :enable-flex="true">
-          <view class="pd-strip-inner">
-            <view
-              v-for="(p, pi) in adoptablePets"
-              :key="p.id"
-              class="pd-strip-item"
-              :class="{ 'pd-strip-item--on': pi === activeIndex }"
-              @click="selectPet(pi)"
-            >
-              <image class="pd-strip-av" :src="p.avatar" mode="aspectFill" />
-              <view v-if="pi === activeIndex" class="pd-strip-tri" />
+      <scroll-view class="pd-scroll" scroll-y :show-scrollbar="false" :enable-flex="true">
+        <!-- 待领养横向头像：点击切换当前宠物 -->
+        <view class="pd-strip-wrap">
+          <scroll-view class="pd-strip-scroll" scroll-x :show-scrollbar="false" :enable-flex="true">
+            <view class="pd-strip-inner">
+              <view v-for="(p, pi) in adoptablePets" :key="p.id" class="pd-strip-item"
+                :class="{ 'pd-strip-item--on': pi === activeIndex }" @click="selectPet(pi)">
+                <image class="pd-strip-av" :src="p.avatar" mode="aspectFill" />
+                <view v-if="pi === activeIndex" class="pd-strip-tri" />
+              </view>
             </view>
-          </view>
-        </scroll-view>
-      </view>
-
-      <view class="pd-card">
-        <view class="pd-card-head">
-          <view class="pd-card-head-left">
-            <text class="pd-name">{{ currentPet.name }}</text>
-            <view class="pd-status"><text>{{ currentPet.statusLabel }}</text></view>
-          </view>
-          <text class="pd-seq">{{ positionText }}</text>
+          </scroll-view>
         </view>
-        <view class="pd-tags">
-          <view v-for="(t, ti) in currentPet.tags" :key="'t-' + ti" class="pd-tag"><text>{{ t }}</text></view>
-        </view>
-        <text class="pd-desc">{{ currentPet.desc }}</text>
 
-        <view class="pd-yard" @click="openYardDetail">
-          <image class="pd-yard-av" :src="yard.avatar" mode="aspectFill" />
-          <view class="pd-yard-mid">
-            <view class="pd-yard-name-row">
-              <text class="pd-yard-name">{{ yard.name }}</text>
-              <YardTagPill />
+        <view class="pd-card">
+          <view class="pd-card-head">
+            <view class="pd-card-head-left">
+              <text class="pd-name">{{ currentPet.name }}</text>
+              <view class="pd-status"><text>{{ currentPet.statusLabel }}</text></view>
             </view>
+            <text class="pd-seq">{{ positionText }}</text>
           </view>
-          <text class="pd-yard-stat">已在小院获得猫粮{{ yard.foodJin }}斤</text>
+          <view class="pd-tags">
+            <view v-for="(t, ti) in currentPet.tags" :key="'t-' + ti" class="pd-tag"><text>{{ t }}</text></view>
+          </view>
+          <text class="pd-desc">{{ currentPet.desc }}</text>
+
+          <view class="pd-yard" @click="openYardDetail">
+            <image class="pd-yard-av" :src="yard.avatar" mode="aspectFill" />
+            <view class="pd-yard-mid">
+              <view class="pd-yard-name-row">
+                <text class="pd-yard-name">{{ yard.name }}</text>
+                <YardTagPill />
+              </view>
+            </view>
+            <text class="pd-yard-stat">已在小院获得猫粮{{ yard.foodJin }}斤</text>
+          </view>
         </view>
+
+        <view v-if="!figmaVariant" class="pd-yard-intro">
+          <text class="pd-yard-intro-txt">{{ yard.intro }}</text>
+        </view>
+
+        <view v-if="figmaVariant" class="pd-info-card">
+          <view><text>心情</text><text>开心</text></view>
+          <view><text>状态</text><text>极度饥饿</text></view>
+          <view><text>云家长</text><text class="pd-parent">
+              <image src="/static/figma/adoption-flow/pet-owner.png" mode="aspectFill"></image>姜栋
+            </text></view>
+          <view><text>剩余云养天数</text><text>16/30天</text></view>
+          <view><text>剩余粮食</text><text class="pd-link">点击查看图片</text></view>
+          <view v-if="figmaVariant === 37"><text>投粮详情</text><text class="pd-link">点击查看</text></view>
+          <text class="pd-remain-badge">已连续云养25天</text>
+        </view>
+        <view v-if="figmaVariant" class="pd-message-card">
+          <text class="pd-message-title">云家长寄语留言板</text>
+          <view class="pd-message-row">
+            <image src="/static/figma/adoption-flow/pet-owner.png" mode="aspectFill"></image>
+            <view>
+              <view class="pd-message-name"><text>姜栋</text>
+                <LevelCapsule level="1" /><text class="pd-role">小黄的第3任云家长</text>
+              </view><text class="pd-message-copy">给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞</text><text
+                class="pd-message-meta">昨天 20:45　江西　回复</text>
+            </view>
+            <view class="pd-like"><uni-icons type="hand-up-filled" color="#ff334d"
+                :size="15"></uni-icons><text>32</text></view>
+          </view>
+        </view>
+
+        <view class="pd-pad-bottom" />
+      </scroll-view>
+
+      <view v-if="!figmaVariant" class="pd-tabber-wrap">
+        <DetailTabber :joined="yardJoined" @adopt="openAdoptFlow" @join="onYardJoin" @leave="onYardLeave"
+          @feed-order="openFeedOrders" @learn-food="showLearnFood" />
       </view>
 
-      <view v-if="!figmaVariant" class="pd-yard-intro">
-        <text class="pd-yard-intro-txt">{{ yard.intro }}</text>
-      </view>
-
-	  <view v-if="figmaVariant" class="pd-info-card">
-		<view><text>心情</text><text>开心</text></view>
-		<view><text>状态</text><text>极度饥饿</text></view>
-		<view><text>云家长</text><text class="pd-parent"><image src="/static/figma/adoption-flow/pet-owner.png" mode="aspectFill"></image>姜栋</text></view>
-		<view><text>剩余云养天数</text><text>16/30天</text></view>
-		<view><text>剩余粮食</text><text class="pd-link">点击查看图片</text></view>
-		<view v-if="figmaVariant === 37"><text>投粮详情</text><text class="pd-link">点击查看</text></view>
-		<text class="pd-remain-badge">已连续云养25天</text>
-	  </view>
-	  <view v-if="figmaVariant" class="pd-message-card">
-		<text class="pd-message-title">云家长寄语留言板</text>
-		<view class="pd-message-row"><image src="/static/figma/adoption-flow/pet-owner.png" mode="aspectFill"></image><view><view class="pd-message-name"><text>姜栋</text><LevelCapsule level="1" /><text class="pd-role">小黄的第3任云家长</text></view><text class="pd-message-copy">给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞</text><text class="pd-message-meta">昨天 20:45　江西　回复</text></view><view class="pd-like"><uni-icons type="hand-up-filled" color="#ff334d" :size="15"></uni-icons><text>32</text></view></view>
-	  </view>
-
-      <view class="pd-pad-bottom" />
-    </scroll-view>
-
-    <view v-if="!figmaVariant" class="pd-tabber-wrap">
-      <DetailTabber :joined="yardJoined" @adopt="openAdoptFlow" @join="onYardJoin" @leave="onYardLeave" @feed-order="openFeedOrders" @learn-food="showLearnFood" />
-    </view>
-
-    <AdoptEntryHintModal v-model:visible="showAdoptEntryHint" :message="pawAdoptEntryMsg" @confirm="onAdoptEntryHintConfirm" />
-    <AdoptPickCatsSheet
-      v-model="adoptPickVisible"
-      :yard-name="yard.name"
-      :yard-id="yardId"
-      :owner-avatar="yard.avatar"
-    />
     </template>
+
+    <AdoptEntryHintModal v-model:visible="showAdoptEntryHint" :message="pawAdoptEntryMsg"
+      @confirm="onAdoptEntryHintConfirm" />
+    <AdoptPickCatsSheet v-model="adoptPickVisible" :yard-name="yard.name" :yard-id="yardId"
+      :owner-avatar="yard.avatar" />
+    <YardFeedPopup v-if="figmaVariant === 35" v-model:visible="figmaFeedPopupVisible" @learn-food="showLearnFood"
+      @feed-order="openFeedOrders" />
+    <ShareActionSheet v-if="figmaVariant === 35" v-model:visible="figmaShareSheetVisible" />
   </view>
 </template>
 
@@ -117,12 +122,13 @@ import AdoptPickCatsSheet from "@/components/AdoptPickCatsSheet.vue";
 import YardTagPill from "@/components/YardTagPill.vue";
 import PawPetDetailFigma from "@/components/PawPetDetailFigma.vue";
 import LevelCapsule from "@/components/LevelCapsule.vue";
+import YardFeedPopup from "@/components/YardFeedPopup.vue";
+import ShareActionSheet from "@/components/ShareActionSheet.vue";
 import { shouldShowAdoptEntryHint, dismissAdoptEntryHint } from "@/utils/adoptEntryGate.js";
 import { PAW_MSG_ADOPT_DAY_LIMIT } from "@/utils/pawNoticeMessages.js";
+import { getPawHomeYardMock } from "@/utils/yardMock.js";
 
 const IMG_A = "/static/home-feed-1.png";
-const IMG_B = "/static/home-feed-2.png";
-const IMG_C = "/static/avatarlog.png";
 
 export default {
   components: {
@@ -131,184 +137,29 @@ export default {
     YardTagPill,
     PawPetDetailFigma,
     LevelCapsule,
+    YardFeedPopup,
+    ShareActionSheet,
   },
   data() {
+    const yard = getPawHomeYardMock();
     return {
       statusBarHeight: 20,
       galleryHeightPx: 375,
       galleryIndex: 0,
       activeIndex: 0,
-      yardId: "1",
-      yardName: "我就是要喂猫",
+      yardId: yard.id,
+      yardName: yard.name,
       yardJoined: false,
       showAdoptEntryHint: false,
       pendingOpenAdoptSheetAfterHint: false,
       pawAdoptEntryMsg: PAW_MSG_ADOPT_DAY_LIMIT,
       adoptPickVisible: false,
-	  figmaVariant: 0,
-      /** 前 6 条与选猫页 idx 对应；其后为小院「全部宠物状态」列表 petId（p1…d2） */
-      adoptablePets: [
-        {
-          id: "pet-1",
-          name: "小黄",
-          avatar: IMG_A,
-          gallery: [IMG_A, IMG_B, IMG_A, IMG_B],
-          statusLabel: "待领养",
-          tags: ["中华田园犬", "男生", "已绝育", "2岁3个月"],
-          desc: "小黄是我见过最乖最帅最萌的小猫，饭量很大，希望可以多多投喂猫粮给它。",
-        },
-        {
-          id: "pet-2",
-          name: "小灰灰",
-          avatar: IMG_C,
-          gallery: [IMG_C, IMG_B, IMG_C],
-          statusLabel: "待领养",
-          tags: ["英国短毛猫", "女生", "已绝育", "1岁"],
-          desc: "性格温顺，喜欢晒太阳，适合安静家庭领养。",
-        },
-        {
-          id: "pet-3",
-          name: "奥利奥",
-          avatar: IMG_B,
-          gallery: [IMG_B, IMG_A],
-          statusLabel: "待领养",
-          tags: ["金毛", "男生", "未绝育", "3岁"],
-          desc: "活泼好动，需要一定活动空间。",
-        },
-        {
-          id: "pet-4",
-          name: "小灰灰",
-          avatar: IMG_C,
-          gallery: [IMG_C],
-          statusLabel: "待领养",
-          tags: ["橘猫", "女生", "已绝育", "8个月"],
-          desc: "与选猫列表占位同序，对接接口后由后端返回。",
-        },
-        {
-          id: "pet-5",
-          name: "小灰灰",
-          avatar: IMG_A,
-          gallery: [IMG_A, IMG_C],
-          statusLabel: "待领养",
-          tags: ["混血", "男生", "已绝育", "2岁"],
-          desc: "亲人粘人，已适应室内生活。",
-        },
-        {
-          id: "pet-6",
-          name: "小灰灰",
-          avatar: IMG_B,
-          gallery: [IMG_B],
-          statusLabel: "待领养",
-          tags: ["待补充", "女生", "未绝育", "1岁2个月"],
-          desc: "等待志愿者补充档案。",
-        },
-        {
-          id: "p1",
-          name: "奥利奥",
-          avatar: IMG_A,
-          gallery: [IMG_A, IMG_C],
-          statusLabel: "待领养",
-          tags: ["加菲猫", "男生", "已绝育", "2岁"],
-          desc: "圆脸大眼，性格慵懒亲人，适合室内陪伴。",
-        },
-        {
-          id: "p2",
-          name: "呗呗",
-          avatar: IMG_C,
-          gallery: [IMG_C, IMG_A],
-          statusLabel: "待领养",
-          tags: ["金毛", "女生", "已绝育", "1岁"],
-          desc: "温顺活泼，已完成基础免疫与驱虫。",
-        },
-        {
-          id: "p3",
-          name: "呗呗",
-          avatar: IMG_C,
-          gallery: [IMG_C],
-          statusLabel: "待领养",
-          tags: ["金毛", "男生", "未绝育", "8个月"],
-          desc: "精力充沛，正在社会化训练中。",
-        },
-        {
-          id: "p4",
-          name: "呗呗",
-          avatar: IMG_C,
-          gallery: [IMG_C, IMG_B],
-          statusLabel: "待领养",
-          tags: ["金毛", "女生", "已绝育", "2岁"],
-          desc: "亲人黏人，适应小院集体生活。",
-        },
-        {
-          id: "p5",
-          name: "呗呗",
-          avatar: IMG_C,
-          gallery: [IMG_C],
-          statusLabel: "待领养",
-          tags: ["金毛", "男生", "已绝育", "3岁"],
-          desc: "稳重听话，适合有经验家庭。",
-        },
-        {
-          id: "a1",
-          name: "奥利奥",
-          avatar: IMG_A,
-          gallery: [IMG_A],
-          statusLabel: "已领养",
-          tags: ["加菲猫", "男生", "已绝育", "2岁"],
-          desc: "已由爱心人士领养，感谢每一份善意。",
-        },
-        {
-          id: "a2",
-          name: "呗呗",
-          avatar: IMG_C,
-          gallery: [IMG_C],
-          statusLabel: "已领养",
-          tags: ["金毛", "女生", "已绝育", "1岁"],
-          desc: "已进入新家，小院会持续关注回访。",
-        },
-        {
-          id: "m1",
-          name: "奥利奥",
-          avatar: IMG_A,
-          gallery: [IMG_A],
-          statusLabel: "失踪",
-          tags: ["加菲猫", "男生", "已绝育", "2岁"],
-          desc: "走失记录归档中，若有线索请联系小院志愿者。",
-        },
-        {
-          id: "m2",
-          name: "呗呗",
-          avatar: IMG_C,
-          gallery: [IMG_C],
-          statusLabel: "失踪",
-          tags: ["金毛", "女生", "已绝育", "1岁"],
-          desc: "走失记录归档中，若有线索请联系小院志愿者。",
-        },
-        {
-          id: "d1",
-          name: "奥利奥",
-          avatar: IMG_A,
-          gallery: [IMG_A],
-          statusLabel: "死亡",
-          tags: ["加菲猫", "男生", "已绝育", "2岁"],
-          desc: "感谢曾经的陪伴，愿在喵星无病无痛。",
-        },
-        {
-          id: "d2",
-          name: "呗呗",
-          avatar: IMG_C,
-          gallery: [IMG_C],
-          statusLabel: "死亡",
-          tags: ["金毛", "女生", "已绝育", "1岁"],
-          desc: "感谢曾经的陪伴，小院会铭记每一位毛孩子。",
-        },
-      ],
-      yard: {
-        avatar: "/static/avatar.png",
-        name: "我就是要喂猫",
-        foodJin: 32,
-        intro:
-          "小院专注救助周边流浪动物，定时投喂、绝育与领养对接。欢迎常来看看毛孩子们，您的每一次投喂都是一份善意。",
-      },
+      figmaFeedPopupVisible: false,
+      figmaShareSheetVisible: false,
+      figmaVariant: 0,
+      managedPet: false,
+      adoptablePets: yard.pets.map((pet) => ({ ...pet })),
+      yard,
     };
   },
   computed: {
@@ -319,7 +170,7 @@ export default {
       return (this.currentPet && this.currentPet.gallery) || [IMG_A];
     },
     positionText() {
-	  if (this.figmaVariant) return '4/12';
+      if (this.figmaVariant) return `${this.activeIndex + 1}/${this.adoptablePets.length}`;
       const n = this.adoptablePets.length;
       return `${this.activeIndex + 1}/${n}`;
     },
@@ -338,38 +189,55 @@ export default {
       this.yard.name = this.yardName;
     }
     if (query && query.yardId) this.yardId = String(query.yardId);
-    if (query && query.petId !== undefined && query.petId !== "") {
+    const requestedPetId = query && query.petId !== undefined && query.petId !== ""
+      ? decodeURIComponent(String(query.petId))
+      : '';
+    const requestedIndex = query && query.idx !== undefined && query.idx !== ""
+      ? parseInt(String(query.idx), 10)
+      : Number.NaN;
+    if (requestedPetId) {
       try {
-        const pid = decodeURIComponent(String(query.petId));
-        const pi = this.adoptablePets.findIndex((x) => x.id === pid);
+        const pi = this.adoptablePets.findIndex((x) => x.id === requestedPetId);
         if (pi >= 0) this.activeIndex = pi;
       } catch (e) {
         /* ignore */
       }
-    } else if (query && query.idx !== undefined && query.idx !== "") {
-      const idx = parseInt(String(query.idx), 10);
-      if (!Number.isNaN(idx) && idx >= 0) {
-        const max = this.adoptablePets.length - 1;
-        this.activeIndex = Math.min(idx, max);
-      }
+    } else if (!Number.isNaN(requestedIndex) && requestedIndex >= 0) {
+      const max = this.adoptablePets.length - 1;
+      this.activeIndex = Math.min(requestedIndex, max);
     }
     this.galleryIndex = 0;
-	this.figmaVariant = Number(query && query.state) || 0;
-	if (this.figmaVariant >= 35 && this.figmaVariant <= 37) {
-	  this.adoptablePets = this.adoptablePets.slice(0, 7).map((pet, index) => ({
-		...pet,
-		avatar: index === 3 ? '/static/figma/adoption-flow/pet-hero.png' : '/static/figma/adoption-flow/pet-orange.png',
-		gallery: ['/static/figma/adoption-flow/pet-hero.png'],
-		statusLabel: '已云养',
-		tags: ['中华田园犬', '男生', '已绝育', '2岁3个月']
-	  }));
-	  this.activeIndex = 3;
-	  this.yard.avatar = '/static/figma/adoption-flow/pet-owner.png';
-	}
+    this.managedPet = String(query && query.managed || '') === '1' || Number(query && query.state) === 36;
+    this.figmaVariant = Number(query && query.state) || (this.managedPet ? 36 : 0);
+    if (this.figmaVariant >= 35 && this.figmaVariant <= 37) {
+      this.adoptablePets = this.adoptablePets.map((pet, index) => ({
+        ...pet,
+        avatar: index === 3 ? '/static/figma/adoption-flow/pet-hero.png' : '/static/figma/adoption-flow/pet-orange.png',
+        gallery: [index === 3 ? '/static/figma/adoption-flow/pet-hero.png' : '/static/figma/adoption-flow/pet-orange.png'],
+        statusLabel: '已云养',
+        tags: ['中华田园犬', '男生', '已绝育', '2岁3个月']
+      }));
+      const requestedPetIndex = requestedPetId
+        ? this.adoptablePets.findIndex((pet) => pet.id === requestedPetId)
+        : requestedIndex;
+      this.activeIndex = requestedPetIndex >= 0 && requestedPetIndex < this.adoptablePets.length
+        ? requestedPetIndex
+        : 3;
+      this.yard.avatar = '/static/figma/adoption-flow/pet-owner.png';
+    }
     if (query && query.popup === 'adopt-limit') this.showAdoptEntryHint = true;
   },
   methods: {
-    openAlbum() { uni.navigateTo({ url: '/pages/feature/index?mode=album' }) },
+    openAlbum() {
+      if (!this.managedPet) return;
+      const petId = this.currentPet && this.currentPet.id ? encodeURIComponent(this.currentPet.id) : '';
+      uni.navigateTo({ url: `/pages/feature/index?mode=album&managed=1&petId=${petId}&yardId=${encodeURIComponent(this.yardId)}` });
+    },
+    previewPetImage(payload) {
+      const urls = Array.isArray(payload?.urls) && payload.urls.length ? payload.urls : this.galleryUrls;
+      const current = typeof payload === 'string' ? payload : payload?.current;
+      uni.previewImage({ current: current || urls[0], urls });
+    },
     goBack() {
       goBackSmart({ fallbackUrl: "/pages/index/index" });
     },
@@ -418,6 +286,19 @@ export default {
     showLearnFood() {
       uni.showToast({ title: '猫粮说明', icon: 'none' });
     },
+    onFigmaFooterAction(action) {
+      if (!action) return;
+      if (action.key === 'share') this.figmaShareSheetVisible = true;
+      if (action.key === 'join') this.yardJoined ? this.onYardLeave() : this.onYardJoin();
+      if (action.key === 'adopt') this.openAdoptFlow();
+      if (this.managedPet && action.key === 'album') this.openAlbum();
+      if (this.managedPet && action.key === 'edit') uni.showToast({ title: '修改信息', icon: 'none' });
+      if (this.managedPet && action.key === 'manage-pet') uni.showToast({ title: '管理宠物', icon: 'none' });
+      if (this.managedPet && action.key === 'delete') uni.showToast({ title: '删除宠物', icon: 'none' });
+    },
+    onFigmaFooterPrimary() {
+      this.figmaFeedPopupVisible = true;
+    },
   },
 };
 </script>
@@ -462,12 +343,10 @@ export default {
   top: 0;
   height: 200px;
   pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(30, 28, 26, 0.55) 0%,
-    rgba(30, 28, 26, 0.22) 45%,
-    rgba(30, 28, 26, 0) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(30, 28, 26, 0.55) 0%,
+      rgba(30, 28, 26, 0.22) 45%,
+      rgba(30, 28, 26, 0) 100%);
 }
 
 .pd-nav {
@@ -492,13 +371,24 @@ export default {
 }
 
 .pd-page--figma {
-  width: 375px;
-  height: 1232px;
-  min-height: 1232px;
-  display: block;
-  overflow: visible;
+  width: 100%;
+  height: calc(100vh + 20px);
+  min-height: calc(100vh + 20px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
-.pd-album-hit { display: flex; align-items: center; gap: 6rpx; height: 44px; margin-left: auto; margin-right: 28rpx; color: #fff; font-size: 22rpx; }
+
+.pd-album-hit {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  height: 44px;
+  margin-left: auto;
+  margin-right: 28rpx;
+  color: #fff;
+  font-size: 22rpx;
+}
 
 .pd-nav-back {
   width: 22px;
@@ -609,23 +499,135 @@ export default {
   background: #d8ff7a;
 }
 
-.pd-info-card { position:relative; margin:10px 12px 0; padding:16px 20px 38px; background:#fff; border-radius:16px; box-sizing:border-box; }
-.pd-info-card > view { min-height:32px; display:flex; align-items:center; justify-content:space-between; color:#666; font-size:14px; }
-.pd-parent { display:flex; align-items:center; color:#555; }
-.pd-parent image { width:22px; height:22px; border-radius:50%; margin-right:7px; }
-.pd-link { color:#1686ff; }
-.pd-remain-badge { position:absolute; right:22px; bottom:12px; padding:2px 7px; border-radius:4px; background:#c8884a; color:#fff; font-size:11px; }
-.pd-message-card { margin:10px 12px 24px; padding:20px 16px 28px; min-height:200px; background:#fff; border-radius:16px; box-sizing:border-box; }
-.pd-message-title { display:block; text-align:center; font-size:16px; color:#333; }
-.pd-message-row { position:relative; display:flex; margin-top:20px; }
-.pd-message-row > image { width:36px; height:36px; border-radius:50%; flex-shrink:0; margin-right:9px; }
-.pd-message-row > view:nth-child(2) { flex:1; min-width:0; }
-.pd-message-name { display:flex; align-items:center; gap:4px; font-size:12px; color:#555; }
-.pd-level { padding:1px 5px; background:#4b3100; border-radius:5px; color:#fff; font-size:9px; }
-.pd-role { padding:1px 5px; background:#ffec3a; border-radius:6px; font-size:9px; color:#333; }
-.pd-message-copy { display:block; font-size:12px; line-height:14px; color:#333; }
-.pd-message-meta { display:block; margin-top:10px; color:#999; font-size:11px; }
-.pd-like { position:absolute; right:0; bottom:0; display:flex; align-items:center; gap:5px; color:#666; font-size:12px; }
+.pd-info-card {
+  position: relative;
+  margin: 10px 12px 0;
+  padding: 16px 20px 38px;
+  background: #fff;
+  border-radius: 16px;
+  box-sizing: border-box;
+}
+
+.pd-info-card>view {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #666;
+  font-size: 14px;
+}
+
+.pd-parent {
+  display: flex;
+  align-items: center;
+  color: #555;
+}
+
+.pd-parent image {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  margin-right: 7px;
+}
+
+.pd-link {
+  color: #1686ff;
+}
+
+.pd-remain-badge {
+  position: absolute;
+  right: 22px;
+  bottom: 12px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: #c8884a;
+  color: #fff;
+  font-size: 11px;
+}
+
+.pd-message-card {
+  margin: 10px 12px 24px;
+  padding: 20px 16px 28px;
+  min-height: 200px;
+  background: #fff;
+  border-radius: 16px;
+  box-sizing: border-box;
+}
+
+.pd-message-title {
+  display: block;
+  text-align: center;
+  font-size: 16px;
+  color: #333;
+}
+
+.pd-message-row {
+  position: relative;
+  display: flex;
+  margin-top: 20px;
+}
+
+.pd-message-row>image {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-right: 9px;
+}
+
+.pd-message-row>view:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.pd-message-name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #555;
+}
+
+.pd-level {
+  padding: 1px 5px;
+  background: #4b3100;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 9px;
+}
+
+.pd-role {
+  padding: 1px 5px;
+  background: #ffec3a;
+  border-radius: 6px;
+  font-size: 9px;
+  color: #333;
+}
+
+.pd-message-copy {
+  display: block;
+  font-size: 12px;
+  line-height: 14px;
+  color: #333;
+}
+
+.pd-message-meta {
+  display: block;
+  margin-top: 10px;
+  color: #999;
+  font-size: 11px;
+}
+
+.pd-like {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #666;
+  font-size: 12px;
+}
 
 .pd-status text {
   font-size: 12px;

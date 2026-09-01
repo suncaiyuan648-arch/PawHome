@@ -1,7 +1,16 @@
+
+const { getTotalMessageUnreadCount } = require('../utils/messageUnread.js')
+
 Component({
 	data: {
 		selected: 0,
-		showPublishPanel: false
+		showPublishPanel: false,
+		unreadCount: getTotalMessageUnreadCount()
+	},
+	pageLifetimes: {
+		show() {
+			this.setData({ unreadCount: getTotalMessageUnreadCount() })
+		}
 	},
 	methods: {
 		onFabTap() {

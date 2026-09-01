@@ -1,22 +1,21 @@
 <template>
 	<view class="city-page">
 		<view class="nav-wrap" :style="{ paddingTop: statusBarHeight + 'px' }">
-			<view
-				class="top-row"
-				:style="{
-					marginTop: navRowOffsetTop + 'px',
-					height: navRowHeight + 'px',
-					paddingRight: menuRightInset + 'px'
-				}"
-			>
+			<view class="top-row" :style="{
+				marginTop: navRowOffsetTop + 'px',
+				height: navRowHeight + 'px',
+				paddingRight: menuRightInset + 'px'
+			}">
 				<view class="back-hit" @click.stop="goBack">
 					<image class="nav-back-icon" src="/static/nav-back-arrow.png" mode="aspectFit"></image>
 				</view>
 				<view class="search-box top-search">
 					<uni-icons type="search" color="#CFCFCF" :size="14"></uni-icons>
-					<input class="search-input" v-model="keyword" type="text" placeholder="输入城市名称" placeholder-class="search-placeholder" />
+					<input class="search-input" v-model="keyword" type="text" placeholder="输入城市名称"
+						placeholder-class="search-placeholder" />
 				</view>
-				<view class="mini-btn" :style="{ width: menuWidth + 'px', height: navRowHeight + 'px', borderRadius: navRowHeight / 2 + 'px' }">
+				<view class="mini-btn"
+					:style="{ width: menuWidth + 'px', height: navRowHeight + 'px', borderRadius: navRowHeight / 2 + 'px' }">
 					<text class="dots">···</text>
 					<view class="mini-split"></view>
 					<view class="mini-circle"></view>
@@ -25,7 +24,7 @@
 
 			<view class="current-row">
 				<view class="current-left">
-					<image class="current-location-icon" src="/static/figma/city-current-location.svg" mode="aspectFit"></image>
+					<PawIcon class="current-location-icon" name="actions/current-location" :size="17" />
 					<text class="current-city">{{ currentCity }}</text>
 				</view>
 				<text class="relocate" @click="resetLocation">重新定位</text>
@@ -45,12 +44,8 @@
 
 				<view v-for="group in filteredGroups" :key="group.letter" class="group-wrap">
 					<text class="group-letter">{{ group.letter }}</text>
-					<view
-					v-for="(name, cityIndex) in group.cities"
-					:key="group.letter + name + cityIndex"
-						class="city-item"
-						@click="selectCity(name)"
-					>
+					<view v-for="(name, cityIndex) in group.cities" :key="group.letter + name + cityIndex"
+						class="city-item" @click="selectCity(name)">
 						<text>{{ name }}</text>
 					</view>
 				</view>
@@ -61,13 +56,8 @@
 			</scroll-view>
 
 			<view class="index-col">
-				<text
-					v-for="letter in sideLetters"
-					:key="letter"
-					class="index-item"
-					:class="{ active: letter === selectedIndex }"
-					@click="selectedIndex = letter"
-				>
+				<text v-for="letter in sideLetters" :key="letter" class="index-item"
+					:class="{ active: letter === selectedIndex }" @click="selectedIndex = letter">
 					{{ letter }}
 				</text>
 			</view>
@@ -77,6 +67,7 @@
 
 <script>
 import { getWechatNavLayout } from '@/utils/navLayout.js'
+import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
 const CITY_GROUPS = [
 	{ letter: 'A', cities: ['阿坝', '阿坝', '阿坝', '阿坝', '阿坝', '阿坝', '阿坝', '阿坝', '阿坝'] },
@@ -104,6 +95,7 @@ const CITY_GROUPS = [
 ]
 
 export default {
+	components: { PawIcon },
 	data() {
 		return {
 			statusBarHeight: 20,
@@ -173,38 +165,259 @@ export default {
 </script>
 
 <style scoped>
-.city-page { height: 100vh; background: #f5f5f5; display: flex; flex-direction: column; }
-.nav-wrap { flex-shrink: 0; background: #f5f5f5; padding: 0 8px; box-sizing: border-box; }
-.top-row { position: relative; display: flex; align-items: center; justify-content: space-between; padding-left: 6px; box-sizing: border-box; }
-.back-hit { width: 34px; height: 100%; display: flex; align-items: center; justify-content: center; }
-.nav-back-icon { width: 9px; height: 17px; }
-.mini-btn { border: 0.5px solid #e9e9e9; display: flex; align-items: center; justify-content: space-around; box-sizing: border-box; background: #f5f5f5; }
-.dots { font-size: 13px; line-height: 1; color: #333; margin-top: -2px; }
-.mini-split { width: 0.5px; height: 20px; background: #e2e2e2; }
-.mini-circle { width: 18px; height: 18px; border-radius: 50%; border: 1px solid #222; box-sizing: border-box; }
-.search-box { width: 216px; height: 34px; border-radius: 25px; background: #fff; display: flex; align-items: center; padding: 0 13px; box-sizing: border-box; }
-.top-search { position: absolute; left: 32px; top: 50%; transform: translateY(-50%); margin-left: 12px; }
-.search-input { flex: 1; min-width: 0; margin-left: 8px; font-size: 14px; color: #333; line-height: 20px; }
-.search-placeholder { color: #999; font-size: 14px; line-height: 20px; }
-.current-row { height: 46px; margin: 10px 14px 0 12px; display: flex; align-items: center; justify-content: space-between; }
-.current-left { display: inline-flex; align-items: center; }
-.current-location-icon { width: 17px; height: 17px; flex-shrink: 0; }
-.current-city { margin-left: 5px; font-size: 15px; font-weight: 500; color: #333; line-height: 22px; }
-.relocate { font-size: 11px; color: #0a77f5; line-height: 16px; }
-.panel { margin: 0 8px; flex: 1; min-height: 0; border-radius: 10px 10px 0 0; background: #fff; display: flex; overflow: hidden; }
-.city-scroll { flex: 1; height: 100%; min-height: 0; }
-.hot-card { padding: 10px 12px 6px; }
-.section-title { font-size: 12px; color: #999; line-height: 17px; }
-.hot-grid { margin-top: 10px; display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 10px; row-gap: 9px; }
-.hot-chip { height: 33px; border-radius: 16.5px; background: #f5f5f5; display: inline-flex; align-items: center; justify-content: center; }
-.hot-chip text { font-size: 12px; font-weight: 400; color: #333; line-height: 17px; }
-.group-wrap { padding: 0; }
-.group-letter { display: block; height: 54px; line-height: 54px; padding-left: 12px; font-size: 14px; font-weight: 400; color: #999; background:#fff; }
-.city-item { height: 48px; border-bottom: 0.3px solid #f0f0f0; display: flex; align-items: center; padding-left: 14px; box-sizing: border-box; }
-.city-item text { font-size: 14px; color: #333; line-height: 20px; }
-.index-col { width: 20px; padding-top: 38px; padding-right: 4px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; }
-.index-item { width: 20px; height: 14px; line-height: 14px; text-align: center; font-size: 10px; font-weight: 400; color: #999; margin-bottom: 4px; }
-.index-item.active { width: 17px; height: 17px; line-height: 17px; border-radius: 50%; background: #ffdd00; color: #333; font-weight: 500; margin-bottom: 2px; }
-.empty-row { min-height: 180px; display: flex; align-items: center; justify-content: center; color: #bbb; font-size: 14px; }
-.bottom-space { height: 20px; }
+.city-page {
+	height: 100vh;
+	background: #f5f5f5;
+	display: flex;
+	flex-direction: column;
+}
+
+.nav-wrap {
+	flex-shrink: 0;
+	background: #f5f5f5;
+	padding: 0 8px;
+	box-sizing: border-box;
+}
+
+.top-row {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding-left: 6px;
+	box-sizing: border-box;
+}
+
+.back-hit {
+	width: 34px;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.nav-back-icon {
+	width: 9px;
+	height: 17px;
+}
+
+.mini-btn {
+	border: 0.5px solid #e9e9e9;
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	box-sizing: border-box;
+	background: #f5f5f5;
+}
+
+.dots {
+	font-size: 13px;
+	line-height: 1;
+	color: #333;
+	margin-top: -2px;
+}
+
+.mini-split {
+	width: 0.5px;
+	height: 20px;
+	background: #e2e2e2;
+}
+
+.mini-circle {
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	border: 1px solid #222;
+	box-sizing: border-box;
+}
+
+.search-box {
+	width: 216px;
+	height: 34px;
+	border-radius: 25px;
+	background: #fff;
+	display: flex;
+	align-items: center;
+	padding: 0 13px;
+	box-sizing: border-box;
+}
+
+.top-search {
+	position: absolute;
+	left: 32px;
+	top: 50%;
+	transform: translateY(-50%);
+	margin-left: 12px;
+}
+
+.search-input {
+	flex: 1;
+	min-width: 0;
+	margin-left: 8px;
+	font-size: 14px;
+	color: #333;
+	line-height: 20px;
+}
+
+.search-placeholder {
+	color: #999;
+	font-size: 14px;
+	line-height: 20px;
+}
+
+.current-row {
+	height: 46px;
+	margin: 10px 14px 0 12px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.current-left {
+	display: inline-flex;
+	align-items: center;
+}
+
+.current-location-icon {
+	flex-shrink: 0;
+}
+
+.current-city {
+	margin-left: 5px;
+	font-size: 15px;
+	font-weight: 500;
+	color: #333;
+	line-height: 22px;
+}
+
+.relocate {
+	font-size: 11px;
+	color: #0a77f5;
+	line-height: 16px;
+}
+
+.panel {
+	margin: 0 8px;
+	flex: 1;
+	min-height: 0;
+	border-radius: 10px 10px 0 0;
+	background: #fff;
+	display: flex;
+	overflow: hidden;
+}
+
+.city-scroll {
+	flex: 1;
+	height: 100%;
+	min-height: 0;
+}
+
+.hot-card {
+	padding: 10px 12px 6px;
+}
+
+.section-title {
+	font-size: 12px;
+	color: #999;
+	line-height: 17px;
+}
+
+.hot-grid {
+	margin-top: 10px;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	column-gap: 10px;
+	row-gap: 9px;
+}
+
+.hot-chip {
+	height: 33px;
+	border-radius: 16.5px;
+	background: #f5f5f5;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.hot-chip text {
+	font-size: 12px;
+	font-weight: 400;
+	color: #333;
+	line-height: 17px;
+}
+
+.group-wrap {
+	padding: 0;
+}
+
+.group-letter {
+	display: block;
+	height: 54px;
+	line-height: 54px;
+	padding-left: 12px;
+	font-size: 14px;
+	font-weight: 400;
+	color: #999;
+	background: #fff;
+}
+
+.city-item {
+	height: 48px;
+	border-bottom: 0.3px solid #f0f0f0;
+	display: flex;
+	align-items: center;
+	padding-left: 14px;
+	box-sizing: border-box;
+}
+
+.city-item text {
+	font-size: 14px;
+	color: #333;
+	line-height: 20px;
+}
+
+.index-col {
+	width: 20px;
+	padding-top: 38px;
+	padding-right: 4px;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.index-item {
+	width: 20px;
+	height: 14px;
+	line-height: 14px;
+	text-align: center;
+	font-size: 10px;
+	font-weight: 400;
+	color: #999;
+	margin-bottom: 4px;
+}
+
+.index-item.active {
+	width: 17px;
+	height: 17px;
+	line-height: 17px;
+	border-radius: 50%;
+	background: #ffdd00;
+	color: #333;
+	font-weight: 500;
+	margin-bottom: 2px;
+}
+
+.empty-row {
+	min-height: 180px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #bbb;
+	font-size: 14px;
+}
+
+.bottom-space {
+	height: 20px;
+}
 </style>
