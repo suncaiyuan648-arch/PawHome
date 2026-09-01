@@ -36,14 +36,6 @@
       "style": {
         "navigationStyle": "custom"
       }
-    },
-    {
-      // PawIcon 开发验收页：自动枚举注册表，验证尺寸、光学边界与变换。
-      "path": "pages/dev/paw-icon-lab",
-      "style": {
-        "navigationStyle": "custom",
-        "backgroundColor": "#F5F5F5"
-      }
     }
   ],
   // 分包页面：按业务域拆分，在用户进入对应功能时按需加载。
@@ -558,6 +550,19 @@
         {
           // 陪审详情：查看单个陪审事项的证据和详情。
           "path": "juryDetail",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        }
+      ]
+    },
+    {
+      // PawIcon 开发验收分包：开发者工具仍可直接打开，生产首包不再加载验收数据。
+      "root": "pages/dev",
+      "pages": [
+        {
+          "path": "paw-icon-lab",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F5F5F5"
