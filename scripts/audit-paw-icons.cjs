@@ -11,9 +11,11 @@ const MARKDOWN_FILE = path.join(REPORT_DIR, 'icon-design-audit.md')
 const DESIGN_CANVAS = 24
 const RASTER_SCALE = 8
 const ALPHA_THRESHOLD = 8
-const SIZES = [10, 12, 16, 17, 17.5, 18.5, 20, 23, 24, 25.5, 28, 32, 37.5]
+const SIZES = [16, 17.5, 19, 20, 21, 23, 24, 25.5, 28, 31, 32, 37.5]
 const SCALE_TOLERANCE_PX = 0.75
 const CENTER_DRIFT_TOLERANCE_PX = 0.75
+const NORMALIZED_BOUNDS_TOLERANCE = 0.02
+const NORMALIZED_CENTER_TOLERANCE = 0.015
 const CENTER_ADJUSTMENT_THRESHOLD = 0.5
 const CLASSIFICATIONS = [
   'PASS',
@@ -131,7 +133,7 @@ async function measureSvg(source, viewBox) {
 }
 
 function measureAtRuntimeSize(source, size) {
-  const canvas = Math.max(1, Math.round(size * RASTER_SCALE))
+  const canvas = Math.max(128, Math.ceil(size * RASTER_SCALE))
   return sharp(Buffer.from(source))
     .resize(canvas, canvas, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .ensureAlpha()
@@ -153,14 +155,14 @@ function measureAtRuntimeSize(source, size) {
         }
       }
       if (maxX < 0) return { painted: false, width: 0, height: 0, cx: size / 2, cy: size / 2 }
-      const width = (maxX - minX + 1) / RASTER_SCALE
-      const height = (maxY - minY + 1) / RASTER_SCALE
+      const width = (maxX - minX + 1) * size / canvas
+      const height = (maxY - minY + 1) * size / canvas
       return {
         painted: true,
         width: Number(width.toFixed(3)),
         height: Number(height.toFixed(3)),
-        cx: Number((((minX + maxX + 1) / 2) / RASTER_SCALE).toFixed(3)),
-        cy: Number((((minY + maxY + 1) / 2) / RASTER_SCALE).toFixed(3))
+        cx: Number((((minX + maxX + 1) / 2) * size / canvas).toFixed(3)),
+        cy: Number((((minY + maxY + 1) / 2) * size / canvas).toFixed(3))
       }
     })
 }
@@ -382,6 +384,26 @@ async function audit() {
       const measured = await measureAtRuntimeSize(generatedSource, size)
       const expectedWidth = reference.width * size / DESIGN_CANVAS
       const expectedHeight = reference.height * size / DESIGN_CANVAS
+      const normalizedBounds = {
+        widthRatio: Number((measured.width / size).toFixed(6)),
+        heightRatio: Number((measured.height / size).toFixed(6)),
+        centerXRatio: Number((measured.cx / size).toFixed(6)),
+        centerYRatio: Number((measured.cy / size).toFixed(6))
+      }
+      const referenceNormalized = {
+        widthRatio: reference.width / DESIGN_CANVAS,
+        heightRatio: reference.height / DESIGN_CANVAS,
+        centerXRatio: reference.cx / DESIGN_CANVAS,
+        centerYRatio: reference.cy / DESIGN_CANVAS
+      }
+      const normalizedBoundsDeviation = Math.max(
+        Math.abs(normalizedBounds.widthRatio - referenceNormalized.widthRatio) / Math.max(referenceNormalized.widthRatio, 0.0001),
+        Math.abs(normalizedBounds.heightRatio - referenceNormalized.heightRatio) / Math.max(referenceNormalized.heightRatio, 0.0001)
+      )
+      const normalizedCenterDeviation = Math.max(
+        Math.abs(normalizedBounds.centerXRatio - referenceNormalized.centerXRatio),
+        Math.abs(normalizedBounds.centerYRatio - referenceNormalized.centerYRatio)
+      )
       const scaleDelta = {
         width: Number((measured.width - expectedWidth).toFixed(3)),
         height: Number((measured.height - expectedHeight).toFixed(3))
@@ -394,10 +416,13 @@ async function audit() {
         size,
         painted: measured.painted,
         measured,
+        normalizedBounds,
+        normalizedBoundsDeviation: Number((normalizedBoundsDeviation * 100).toFixed(3)),
+        normalizedCenterDeviation: Number((normalizedCenterDeviation * 100).toFixed(3)),
         scaleDelta,
         centerDrift,
-        scalesWithSize: measured.painted && Math.abs(scaleDelta.width) <= SCALE_TOLERANCE_PX && Math.abs(scaleDelta.height) <= SCALE_TOLERANCE_PX,
-        centerStable: measured.painted && Math.abs(centerDrift.x) <= CENTER_DRIFT_TOLERANCE_PX && Math.abs(centerDrift.y) <= CENTER_DRIFT_TOLERANCE_PX
+        scalesWithSize: measured.painted && normalizedBoundsDeviation <= NORMALIZED_BOUNDS_TOLERANCE,
+        centerStable: measured.painted && normalizedCenterDeviation <= NORMALIZED_CENTER_TOLERANCE
       })
     }
     const source = sourceFlags(rawSource, sourceViewBox)
@@ -409,7 +434,7 @@ async function audit() {
     source.hasStrokeMismatch = source.stroke.mismatch
     source.strokeMismatchDetail = source.stroke.mismatchDetail
     const transformCases = [
-      [0, false, false], [90, false, false], [180, false, false], [270, false, false],
+      [0, false, false], [45, false, false], [90, false, false], [135, false, false], [180, false, false], [270, false, false],
       [0, true, false], [0, false, true], [0, true, true]
     ]
     const transformBounds = transformCases.map(([rotate, flipX, flipY]) => ({
@@ -491,6 +516,9 @@ async function audit() {
       sizes: SIZES,
       scaleTolerancePx: SCALE_TOLERANCE_PX,
       centerDriftTolerancePx: CENTER_DRIFT_TOLERANCE_PX,
+      normalizedBoundsTolerance: '2%',
+      normalizedCenterTolerance: '1.5%',
+      transformCases: '0/45/90/135/180/270° plus horizontal/vertical/both flip',
       liveAreaGuidance: 'approximately 20 × 20; optical keyline is form-dependent'
     },
     scope: { exclusions: SCOPE_EXCLUSIONS },

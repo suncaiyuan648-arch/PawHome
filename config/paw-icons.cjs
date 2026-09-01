@@ -7,9 +7,9 @@
  */
 module.exports = {
   version: 1,
-  // Every checked-in PawIcon source is already normalized to this canonical
-  // canvas. Keep this hook for future, design-approved optical metadata, but
-  // never use it for page-specific size compensation.
+  // Optional design-approved optical metadata. scale is a ratio; offsets are
+  // 24-unit design coordinates and are baked into the generated SVG. Never
+  // use this hook for page-specific or runtime-size compensation.
   optical: {},
   mono: {
     'navigation/back': 'assets/paw-icons/mono/navigation/back.svg'

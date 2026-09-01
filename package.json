@@ -5,15 +5,16 @@
   "scripts": {
     "icons:build": "node scripts/build-paw-icons.cjs",
     "icons:analyze": "node scripts/analyze-paw-icons.cjs",
-    "icons:audit": "npm run icons:build && node scripts/audit-paw-icons.cjs",
-    "icons:check": "node scripts/check-paw-icons.cjs",
-    "dev:mp-weixin": "npm run icons:build && node scripts/run-uni.cjs dev",
+    "icons:test": "node scripts/check-paw-icon-size-chain.cjs",
+    "icons:audit": "npm run icons:build && npm run icons:analyze && node scripts/audit-paw-icons.cjs",
+    "icons:check": "node scripts/check-paw-icons.cjs && npm run icons:test",
+    "dev:mp-weixin": "npm run icons:build && npm run icons:analyze && node scripts/run-uni.cjs dev",
     "build:mp-weixin": "npm run icons:build && node scripts/run-uni.cjs build",
     "check:typography": "node scripts/check-typography.cjs",
     "check:ui-governance": "node scripts/check-ui-governance.cjs",
     "check:native-ui": "node scripts/check-native-ui-reimplementation.cjs",
     "check:native-ui:strict": "node scripts/check-native-ui-reimplementation.cjs --strict",
-    "check:ui": "npm run check:typography && npm run check:ui-governance && npm run check:native-ui",
+    "check:ui": "npm run icons:test && npm run check:typography && npm run check:ui-governance && npm run check:native-ui",
     "verify:ui": "npm run check:ui && npm run build:mp-weixin"
   },
   "dependencies": {

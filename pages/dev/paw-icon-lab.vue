@@ -74,10 +74,45 @@
 
       <view v-if="mode !== 'transform'" class="lab-summary">
         <text>{{ filteredCount }} 个图标</text>
-        <text>当前 {{ renderSize }}px · {{ colorModeLabel }}</text>
+        <text v-if="mode === 'comparison'">对比 {{ comparisonSizes.join(' / ') }}px · {{ colorModeLabel }}</text>
+        <text v-else>当前 {{ renderSize }}px · {{ colorModeLabel }}</text>
       </view>
 
-      <view v-if="mode !== 'transform'" class="lab-sections" data-qa="paw-icon-lab-grid">
+      <view v-if="mode === 'comparison'" class="lab-comparison" data-qa="paw-icon-lab-comparison">
+        <text class="lab-comparison__hint">同一基线排列；布局框始终是 size × size，百分比用于确认不会把宽图误判成小图。</text>
+        <scroll-view class="lab-comparison-scroll" scroll-x>
+          <view class="lab-comparison__body">
+            <view class="lab-comparison__header">
+              <view class="lab-comparison__name">Icon</view>
+              <view v-for="size in comparisonSizes" :key="`comparison-head-${size}`" class="lab-comparison__cell">
+                <text>{{ size }}px</text>
+              </view>
+            </view>
+            <view v-for="group in groupedIcons" :key="`comparison-${group.value}`" class="lab-comparison__group">
+              <view class="lab-section__title">
+                <text>{{ group.label }}</text>
+                <text class="lab-section__count">{{ group.names.length }}</text>
+              </view>
+              <view v-for="name in group.names" :key="`comparison-${name}`" class="lab-comparison__row"
+                :data-qa="`paw-icon-comparison-${name}`">
+                <view class="lab-comparison__name lab-comparison__name--row">
+                  <text>{{ name }}</text>
+                  <text class="lab-comparison__kind">{{ registry[name].kind === 'mono' ? 'mono' : 'color' }}</text>
+                </view>
+                <view v-for="size in comparisonSizes" :key="`${name}-${size}`" class="lab-comparison__cell">
+                  <view class="lab-comparison__stage">
+                    <view v-if="showBounds" class="lab-guide lab-guide--layout" :style="guideStyle(size)" />
+                    <PawIcon :name="name" :size="size" :color="iconColor(name)" />
+                  </view>
+                  <text class="lab-comparison__ratio">{{ comparisonLabel(name, size) }}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+
+      <view v-else-if="mode !== 'transform'" class="lab-sections" data-qa="paw-icon-lab-grid">
         <view v-for="group in groupedIcons" :key="group.value" class="lab-section">
           <view class="lab-section__title">
             <text>{{ group.label }}</text>
@@ -159,6 +194,7 @@ import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import { PAW_ICON_DEFAULT_COLOR } from '@/components/PawIcon/PawIcon.tokens.js'
 import { PAW_ICON_NAMES } from '@/components/PawIcon/generated/icon-names.js'
 import { PAW_ICON_REGISTRY } from '@/components/PawIcon/generated/icon-registry.js'
+import { PAW_ICON_AUDIT_METRICS } from '@/components/PawIcon/generated/icon-metrics.js'
 import { resolvePawIconDimensions } from '@/components/PawIcon/PawIcon.utils.js'
 
 const CATEGORY_LABELS = {
@@ -176,6 +212,7 @@ export default {
   data() {
     return {
       registry: PAW_ICON_REGISTRY,
+      metrics: PAW_ICON_AUDIT_METRICS,
       names: PAW_ICON_NAMES,
       mode: 'optical',
       currentSize: 24,
@@ -189,9 +226,11 @@ export default {
       modes: [
         { value: 'optical', label: 'Optical' },
         { value: 'regression', label: 'Size Regression' },
+        { value: 'comparison', label: 'Size Comparison' },
         { value: 'transform', label: 'Transform' }
       ],
-      sizes: [10, 12, 16, 17, 17.5, 18.5, 20, 23, 24, 25.5, 28, 32, 37.5],
+      sizes: [16, 17.5, 20, 23, 24, 28, 32, 37.5],
+      comparisonSizes: [16, 20, 24, 28, 32, 37.5],
       colorModes: [
         { value: 'optical', label: 'Optical #666' },
         { value: 'actual', label: 'Actual' }
@@ -202,7 +241,9 @@ export default {
       ],
       transformCases: [
         { label: 'Normal', rotate: 0, flip: 'none' },
+        { label: 'Rotate 45', rotate: 45, flip: 'none' },
         { label: 'Rotate 90', rotate: 90, flip: 'none' },
+        { label: 'Rotate 135', rotate: 135, flip: 'none' },
         { label: 'Rotate 180', rotate: 180, flip: 'none' },
         { label: 'Rotate 270', rotate: 270, flip: 'none' },
         { label: 'Flip H', rotate: 0, flip: 'horizontal' },
@@ -246,7 +287,7 @@ export default {
       return this.filteredNames.length
     },
     transformCandidates() {
-      const preferred = this.names.filter(name => /(?:arrow|chevron|edit|share|refresh|pet)/i.test(name))
+      const preferred = this.names.filter(name => /(?:arrow|chevron|edit|share|refresh|close|pet)/i.test(name))
       return preferred.length ? preferred : this.names
     },
     transformIndex() {
@@ -269,7 +310,7 @@ export default {
     },
     applyCustomSize() {
       const size = Number(String(this.customSizeInput).trim())
-      if (!Number.isFinite(size) || size <= 0 || size > 512) return
+      if (!Number.isFinite(size) || size <= 0 || size > 96) return
       this.customSize = size
       this.currentSize = size
     },
@@ -292,7 +333,17 @@ export default {
     },
     dimensionsLabel(name) {
       const dimensions = resolvePawIconDimensions(this.renderSize, this.registry[name])
-      return `${dimensions.width} × ${dimensions.height}px`
+      return `layout ${dimensions.width} × ${dimensions.height}px · paint ${this.paintRatioLabel(name, this.renderSize)}`
+    },
+    comparisonLabel(name, size) {
+      const dimensions = resolvePawIconDimensions(size, this.registry[name])
+      return `${dimensions.width} × ${dimensions.height}px · paint ${this.paintRatioLabel(name, size)}`
+    },
+    paintRatioLabel(name, size) {
+      const sizes = this.metrics[name] && this.metrics[name].sizes
+      const metric = sizes && (sizes[String(size)] || sizes['24'])
+      if (!metric) return 'audit pending'
+      return `${(metric.widthRatio * 100).toFixed(2)}% × ${(metric.heightRatio * 100).toFixed(2)}%`
     },
     guideStyle(size) {
       return { width: `${size}px`, height: `${size}px` }
@@ -576,6 +627,103 @@ export default {
   color: #9aa0a8;
   font-size: 13px;
   text-align: center;
+}
+
+.lab-comparison {
+  padding: 10px;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.lab-comparison__hint {
+  display: block;
+  margin-bottom: 9px;
+  color: #7a7f87;
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.lab-comparison-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.lab-comparison__body {
+  width: 100%;
+  min-width: 0;
+}
+
+.lab-comparison__header,
+.lab-comparison__row {
+  display: flex;
+  align-items: stretch;
+  min-height: 76px;
+  border-bottom: 1px solid #f0f1f3;
+}
+
+.lab-comparison__header {
+  min-height: 28px;
+  border-bottom-color: #dfe2e6;
+}
+
+.lab-comparison__name {
+  display: flex;
+  flex: 0 0 84px;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0 6px 0 2px;
+  box-sizing: border-box;
+  color: #626873;
+  font-size: 10px;
+  line-height: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lab-comparison__name--row {
+  color: #343a40;
+}
+
+.lab-comparison__cell {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 43px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  color: #7a7f87;
+  font-size: 9px;
+  line-height: 13px;
+  text-align: center;
+}
+
+.lab-comparison__stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 48px;
+}
+
+.lab-comparison__ratio {
+  color: #a0a5ac;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 7px;
+  line-height: 12px;
+}
+
+.lab-comparison__kind {
+  color: #b0b5bc;
+  font-size: 9px;
+  line-height: 13px;
+}
+
+.lab-comparison__group .lab-section__title {
+  margin-top: 10px;
 }
 
 .lab-transform__picker {

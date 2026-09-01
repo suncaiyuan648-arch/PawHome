@@ -10,7 +10,7 @@ import { PAW_ICON_REGISTRY } from './generated/icon-registry.js'
 import {
   normalizePawIconRotate,
   resolveMonoIconUri,
-  resolvePawIconDimensions,
+  resolvePawIconSize,
   resolvePawIconTransform,
   warnColorOverride,
   warnUnknownIcon
@@ -18,6 +18,14 @@ import {
 
 export default {
   name: 'PawIcon',
+  // The WeChat custom-component host otherwise participates in the parent
+  // line box and can report a font-derived height (for example 19.29px for
+  // a 16px icon) even though the actual PawIcon root is 16px × 16px.
+  options: {
+    // #ifdef MP-WEIXIN
+    virtualHost: true,
+    // #endif
+  },
   props: {
     name: { type: String, required: true },
     size: { type: [String, Number], default: 'md' },
@@ -34,36 +42,22 @@ export default {
     definition() {
       return PAW_ICON_REGISTRY[this.name] || null
     },
-    baseDimensions() {
-      return resolvePawIconDimensions(this.size, this.definition)
+    resolvedSize() {
+      return resolvePawIconSize(this.size)
     },
     rotation() {
       return normalizePawIconRotate(this.rotate)
     },
-    resolvedDimensions() {
-      const angle = this.rotation * Math.PI / 180
-      const cos = Math.abs(Math.cos(angle))
-      const sin = Math.abs(Math.sin(angle))
-      return {
-        width: Math.round((this.baseDimensions.width * cos + this.baseDimensions.height * sin) * 1000) / 1000,
-        height: Math.round((this.baseDimensions.width * sin + this.baseDimensions.height * cos) * 1000) / 1000
-      }
-    },
     rootStyle() {
       return {
-        width: `${this.resolvedDimensions.width}px`,
-        height: `${this.resolvedDimensions.height}px`
+        width: `${this.resolvedSize}px`,
+        height: `${this.resolvedSize}px`
       }
     },
     imageStyle() {
-      const dimensions = this.baseDimensions
-      const box = this.resolvedDimensions
       return {
-        position: 'absolute',
-        left: `${(box.width - dimensions.width) / 2}px`,
-        top: `${(box.height - dimensions.height) / 2}px`,
-        width: `${dimensions.width}px`,
-        height: `${dimensions.height}px`,
+        width: `${this.resolvedSize}px`,
+        height: `${this.resolvedSize}px`,
         ...resolvePawIconTransform(this.rotation, this.flip)
       }
     },
@@ -95,5 +89,6 @@ export default {
 
 .paw-icon__image {
   display: block;
+  flex: 0 0 auto;
 }
 </style>

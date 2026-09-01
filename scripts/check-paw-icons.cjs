@@ -47,63 +47,45 @@ function hasRootExportAttributes(source) {
     .some(attribute => new RegExp(`(?:^|\\s)${attribute}\\s*=`, 'i').test(opening))
 }
 
-function readOpticalViewBox(name, sourceViewBox, relativePath) {
+function readOpticalMetadata(name, relativePath) {
   const configured = (manifest.optical && manifest.optical[name]) || {}
-  const configuredBox = configured.viewBox || sourceViewBox
-  const values = [configuredBox.x, configuredBox.y, configuredBox.width, configuredBox.height].map(Number)
-  if (values.some(value => !Number.isFinite(value)) || values[2] <= 0 || values[3] <= 0) {
-    fail(`optical.viewBox must have finite positive dimensions: ${name} (${relativePath})`)
-  }
-  if (
-    values[0] < sourceViewBox.x ||
-    values[1] < sourceViewBox.y ||
-    values[0] + values[2] > sourceViewBox.x + sourceViewBox.width ||
-    values[1] + values[3] > sourceViewBox.y + sourceViewBox.height
-  ) {
-    fail(`optical.viewBox must be inside the source viewBox: ${name} (${relativePath})`)
-  }
-
   const scale = configured.scale === undefined ? 1 : Number(configured.scale)
   const offsetX = configured.offsetX === undefined ? 0 : Number(configured.offsetX)
   const offsetY = configured.offsetY === undefined ? 0 : Number(configured.offsetY)
   if (!Number.isFinite(scale) || scale < 0.92 || scale > 1.08) fail(`optical.scale out of range: ${name}`)
-  if (!Number.isFinite(offsetX) || Math.abs(offsetX) > 1 || !Number.isFinite(offsetY) || Math.abs(offsetY) > 1) {
-    fail(`optical offset out of range: ${name}`)
+  if (!Number.isFinite(offsetX) || Math.abs(offsetX) > 2 || !Number.isFinite(offsetY) || Math.abs(offsetY) > 2) {
+    fail(`optical offset out of range in 24-unit design space: ${name} (${relativePath})`)
   }
-
-  const width = values[2] * scale
-  const height = values[3] * scale
-  const x = values[0] + (values[2] - width) / 2 + offsetX
-  const y = values[1] + (values[3] - height) / 2 + offsetY
-  if (
-    x < sourceViewBox.x ||
-    y < sourceViewBox.y ||
-    x + width > sourceViewBox.x + sourceViewBox.width ||
-    y + height > sourceViewBox.y + sourceViewBox.height
-  ) {
-    fail(`optical correction outside source viewBox: ${name}`)
+  if (Object.prototype.hasOwnProperty.call(configured, 'viewBox')) {
+    fail(`optical.viewBox is no longer supported; use 24-unit scale/offset metadata: ${name}`)
   }
-  return { x, y, width, height }
+  return { scale, offsetX, offsetY }
 }
 
 function formatNumber(value) {
   return Number(value.toFixed(6)).toString()
 }
 
-function normalizeSvg(source, sourceViewBox, opticalViewBox) {
+function normalizeSvg(source, sourceViewBox, optical) {
   const normalized = source.replace(/\r\n?/g, '\n')
   const root = normalized.match(/^(\s*<svg\b[^>]*>)([\s\S]*?)(<\/svg>\s*)$/i)
   if (!root) fail('source must contain a complete <svg> element')
-  const edge = Math.max(opticalViewBox.width, opticalViewBox.height)
+  const edge = Math.max(sourceViewBox.width, sourceViewBox.height)
   const scale = DESIGN_CANVAS / edge
-  const translateX = (DESIGN_CANVAS - opticalViewBox.width * scale) / 2 - opticalViewBox.x * scale
-  const translateY = (DESIGN_CANVAS - opticalViewBox.height * scale) / 2 - opticalViewBox.y * scale
-  const matrix = `matrix(${formatNumber(scale)} 0 0 ${formatNumber(scale)} ${formatNumber(translateX)} ${formatNumber(translateY)})`
+  const translateX = (DESIGN_CANVAS - sourceViewBox.width * scale) / 2 - sourceViewBox.x * scale
+  const translateY = (DESIGN_CANVAS - sourceViewBox.height * scale) / 2 - sourceViewBox.y * scale
+  const sourceMatrix = `matrix(${formatNumber(scale)} 0 0 ${formatNumber(scale)} ${formatNumber(translateX)} ${formatNumber(translateY)})`
+  const hasOpticalCorrection = optical.scale !== 1 || optical.offsetX !== 0 || optical.offsetY !== 0
+  const opticalTransform = `translate(${formatNumber(DESIGN_CANVAS / 2 + optical.offsetX)} ${formatNumber(DESIGN_CANVAS / 2 + optical.offsetY)}) scale(${formatNumber(optical.scale)}) translate(${formatNumber(-DESIGN_CANVAS / 2)} ${formatNumber(-DESIGN_CANVAS / 2)})`
   const opening = root[1]
     .replace(/(\bviewBox\s*=\s*["'])[^"']+(["'])/i, (_, prefix, suffix) => `${prefix}0 0 ${DESIGN_CANVAS} ${DESIGN_CANVAS}${suffix}`)
     .replace(/\s(width|height|style|overflow|preserveAspectRatio)\s*=\s*["'][^"']*["']/gi, '')
-  const isIdentity = scale === 1 && translateX === 0 && translateY === 0
-  return isIdentity ? `${opening}${root[2]}${root[3]}` : `${opening}<g transform="${matrix}">${root[2]}</g>${root[3]}`
+  const sourceContent = scale === 1 && translateX === 0 && translateY === 0
+    ? root[2]
+    : `<g transform="${sourceMatrix}">${root[2]}</g>`
+  return hasOpticalCorrection
+    ? `${opening}<g transform="${opticalTransform}">${sourceContent}</g>${root[3]}`
+    : `${opening}${sourceContent}${root[3]}`
 }
 
 function attributeValues(source, attribute) {
@@ -160,10 +142,13 @@ function checkGenerated() {
     if (hasRootExportAttributes(source)) {
       fail(`source contains export-only root dimensions or overflow attributes: ${sourcePath}`)
     }
+    if (/vector-effect\s*=\s*["']non-scaling-stroke/i.test(source)) {
+      fail(`source must not use vector-effect="non-scaling-stroke": ${sourcePath}`)
+    }
     if (/<(clipPath|mask)\b[^>]*>\s*<\/\1>/i.test(source)) {
       fail(`source contains an empty clipPath/mask: ${sourcePath}`)
     }
-    const opticalViewBox = readOpticalViewBox(name, sourceViewBox, sourcePath)
+    const optical = readOpticalMetadata(name, sourcePath)
     const definition = definitions[name]
     if (definition.width !== DESIGN_CANVAS || definition.height !== DESIGN_CANVAS) {
       fail(`generated registry dimensions are stale for ${name}; run npm run icons:build`)
@@ -172,7 +157,7 @@ function checkGenerated() {
       const target = path.join(COLOR_ROOT, `${name}.svg`)
       if (!fs.existsSync(target)) fail(`generated color asset is missing: ${name}`)
       const generatedSource = fs.readFileSync(target, 'utf8')
-      if (generatedSource !== normalizeSvg(source, sourceViewBox, opticalViewBox)) {
+      if (generatedSource !== normalizeSvg(source, sourceViewBox, optical)) {
         fail(`generated color asset is stale for ${name}; run npm run icons:build`)
       }
       if (/\bcurrentColor\b/i.test(generatedSource)) fail(`color icon must not use currentColor: ${name}`)
