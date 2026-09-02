@@ -3,7 +3,8 @@
     <PawPetDetailFigma v-if="figmaVariant" :variant="figmaVariant" :managed="managedPet" :pet="currentPet"
       :pets="adoptablePets" :pet-index="activeIndex" :pet-total="adoptablePets.length" :yard="yard" :joined="yardJoined"
       @back="goBack" @album="openAlbum" @preview-image="previewPetImage" @select-pet="selectPet"
-      @footer-action="onFigmaFooterAction" @footer-primary="onFigmaFooterPrimary" />
+      @footer-action="onFigmaFooterAction" @footer-primary="onFigmaFooterPrimary"
+      @message-user-click="openMessageUser" />
     <template v-else>
       <!-- 顶部大图轮播 + 状态栏渐变 + 返回 -->
       <view class="pd-hero">
@@ -89,8 +90,9 @@
               </view><text class="pd-message-copy">给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞</text><text
                 class="pd-message-meta">昨天 20:45　江西　回复</text>
             </view>
-            <view class="pd-like"><uni-icons type="hand-up-filled" color="#ff334d"
-                :size="15"></uni-icons><text>32</text></view>
+            <view class="pd-like">
+              <PawLikeIcon :liked="true" /><text>32</text>
+            </view>
           </view>
         </view>
 
@@ -98,8 +100,8 @@
       </scroll-view>
 
       <view v-if="!figmaVariant" class="pd-tabber-wrap">
-        <DetailTabber :joined="yardJoined" @adopt="openAdoptFlow" @join="onYardJoin" @leave="onYardLeave"
-          @feed-order="openFeedOrders" @learn-food="showLearnFood" />
+        <DetailTabber :joined="yardJoined" :pet-id="currentPet && currentPet.id" @adopt="openAdoptFlow"
+          @join="onYardJoin" @leave="onYardLeave" @feed-order="openFeedOrders" @learn-food="showLearnFood" />
       </view>
 
     </template>
@@ -108,8 +110,8 @@
       @confirm="onAdoptEntryHintConfirm" />
     <AdoptPickCatsSheet v-model="adoptPickVisible" :yard-name="yard.name" :yard-id="yardId"
       :owner-avatar="yard.avatar" />
-    <YardFeedPopup v-if="figmaVariant === 35" v-model:visible="figmaFeedPopupVisible" @learn-food="showLearnFood"
-      @feed-order="openFeedOrders" />
+    <YardFeedPopup v-if="figmaVariant === 35" v-model:visible="figmaFeedPopupVisible"
+      :pet-id="currentPet && currentPet.id" @learn-food="showLearnFood" @feed-order="openFeedOrders" />
     <ShareActionSheet v-if="figmaVariant === 35" v-model:visible="figmaShareSheetVisible" />
   </view>
 </template>
@@ -127,6 +129,8 @@ import ShareActionSheet from "@/components/ShareActionSheet.vue";
 import { shouldShowAdoptEntryHint, dismissAdoptEntryHint } from "@/utils/adoptEntryGate.js";
 import { PAW_MSG_ADOPT_DAY_LIMIT } from "@/utils/pawNoticeMessages.js";
 import { getPawHomeYardMock } from "@/utils/yardMock.js";
+import PawLikeIcon from "@/components/base/PawLikeIcon.vue";
+import { openUserProfile } from "@/utils/profileNav.js";
 
 const IMG_A = "/static/home-feed-1.png";
 
@@ -139,6 +143,7 @@ export default {
     LevelCapsule,
     YardFeedPopup,
     ShareActionSheet,
+    PawLikeIcon,
   },
   data() {
     const yard = getPawHomeYardMock();
@@ -213,7 +218,17 @@ export default {
       this.adoptablePets = this.adoptablePets.map((pet, index) => ({
         ...pet,
         avatar: index === 3 ? '/static/figma/adoption-flow/pet-hero.png' : '/static/figma/adoption-flow/pet-orange.png',
-        gallery: [index === 3 ? '/static/figma/adoption-flow/pet-hero.png' : '/static/figma/adoption-flow/pet-orange.png'],
+        gallery: index === 3
+          ? [
+            '/static/figma/adoption-flow/pet-hero.png',
+            '/static/figma/adoption-flow/pet-orange.png',
+            '/static/figma/pets/pet-black-white.png'
+          ]
+          : [
+            '/static/figma/adoption-flow/pet-orange.png',
+            '/static/figma/pets/pet-black-white.png',
+            '/static/figma/adoption-flow/pet-hero.png'
+          ],
         statusLabel: '已云养',
         tags: ['中华田园犬', '男生', '已绝育', '2岁3个月']
       }));
@@ -298,6 +313,15 @@ export default {
     },
     onFigmaFooterPrimary() {
       this.figmaFeedPopupVisible = true;
+    },
+    openMessageUser(comment) {
+      const author = comment && (comment.author || comment);
+      if (!author || !author.name) return;
+      openUserProfile({
+        pawId: author.pawId || `yard-comment-${comment.id || author.name}`,
+        nickname: author.name,
+        avatar: author.avatar || '/static/avatarlog.png',
+      });
     },
   },
 };

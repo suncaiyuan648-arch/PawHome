@@ -1,5 +1,5 @@
 <template>
-  <view class="yfp-host">
+  <view class="yfp-host" :data-pet-id="petId">
     <PawBottomSheet v-model:visible="visibleProxy" variant="feed" height="599px" :close-on-mask="true"
       :safe-area="false" :z-index="10050">
       <view class="yfp-sheet" @tap.stop>
@@ -36,7 +36,7 @@
         <view class="yfp-rules">
           <text class="yfp-rules-title">云养300天权益：</text>
           <text v-for="(right, index) in feedRights" :key="index" class="yfp-rule-line">{{ index + 1 }}.{{ right
-          }}</text>
+            }}</text>
         </view>
 
         <PawButton class="yfp-pay-btn" size="md" tone="brand" block @click="onPay">
@@ -73,6 +73,7 @@ export default {
   components: { PawBottomSheet, PawResultSheet, PawButton, PawCheckbox, PawIcon },
   props: {
     visible: { type: Boolean, default: false },
+    petId: { type: String, default: '' },
     heroCount: { type: Number, default: 1199999 },
     paymentParams: { type: Object, default: null }
   },
@@ -130,7 +131,13 @@ export default {
       }
 
       const pkg = this.selectedPkg
-      const payload = { key: pkg.key, jin: pkg.jin, price: pkg.price, feedbackTimes: 1 }
+      const payload = {
+        petId: this.petId,
+        key: pkg.key,
+        jin: pkg.jin,
+        price: pkg.price,
+        feedbackTimes: 1
+      }
       this.$emit('pay', payload)
 
       const params = this.paymentParams || {}

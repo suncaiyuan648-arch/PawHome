@@ -9,7 +9,7 @@
 			<PawPetRoster :variant="pageState === 'managed' || pageState === 'status' ? 'status' : 'yard'"
 				:managed="pageState === 'managed'" :yard-name="yardName" :yard-avatar="yard.avatar"
 				:owner-paw-id="ownerPawId" @back="goBack" @add-pet="onAdd" @pet-click="openPetDetail"
-				@owner-click="openPetOwner" />
+				@owner-click="openPetOwner" @feed-click="openFeedPopup" />
 		</view>
 		<template v-else>
 			<view v-if="pageState === 'publish-entry'" class="publish-nav"
@@ -112,16 +112,20 @@
 		<PawSelectionSheet v-model="showAddPetSheet" title="请选择要添加的宠物类型" :items="addPetOptions" :value="addPetKind"
 			layout="cards" variant="pet-type" :show-close="true" confirm-text="添加进小院" @update:value="onAddPetKindChange"
 			@confirm="onAddPetConfirm" />
+		<YardFeedPopup v-if="feedPopupVisible" v-model:visible="feedPopupVisible" :pet-id="feedPetId"
+			@feed-order="openFeedOrders" />
 
 		<!-- 完成创建：前往认证（图3） -->
-		<view v-if="showCreateSheet" class="create-mask" @click="closeCreateSheet"></view>
-		<view v-if="showCreateSheet" class="create-sheet" @click.stop>
-			<view class="create-drag"></view>
-			<text class="create-title">小院创建完成</text>
-			<text class="create-desc">为保障小院信息真实有效，需完成小院认证后再正式发布内容。</text>
-			<view class="create-btn" @click="goYardCertify"><text>前往认证</text></view>
-			<view class="create-later" @click="closeCreateSheet"><text>稍后再说</text></view>
-		</view>
+		<PawBottomSheet v-model="showCreateSheet" variant="yard-created" :close-on-mask="true" :safe-area="true"
+			:show-handle="false" :z-index="10060">
+			<view class="create-sheet" @tap.stop>
+				<view class="create-drag"></view>
+				<text class="create-title">小院创建完成</text>
+				<text class="create-desc">为保障小院信息真实有效，需完成小院认证后再正式发布内容。</text>
+				<view class="create-btn" @tap="goYardCertify"><text>前往认证</text></view>
+				<view class="create-later" @tap="closeCreateSheet"><text>稍后再说</text></view>
+			</view>
+		</PawBottomSheet>
 
 		<!-- 删除宠物确认 -->
 		<view v-if="showDeleteConfirm" class="del-overlay" @click="closeDeleteConfirm">
@@ -145,9 +149,11 @@ import YardTagPill from '@/components/YardTagPill.vue'
 import PawPetRoster from '@/components/PawPetRoster.vue'
 import PawSearchBar from '@/components/navigation/PawSearchBar.vue'
 import PawSelectionSheet from '@/components/overlay/PawSelectionSheet.vue'
+import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
+import YardFeedPopup from '@/components/YardFeedPopup.vue'
 import { getPawHomeYardMock } from '@/utils/yardMock.js'
 export default {
-	components: { YardTagPill, PawPetRoster, PawSearchBar, PawSelectionSheet },
+	components: { YardTagPill, PawPetRoster, PawSearchBar, PawSelectionSheet, PawBottomSheet, YardFeedPopup },
 	data() {
 		const yard = getPawHomeYardMock()
 		return {
@@ -172,7 +178,9 @@ export default {
 			showAddPetSheet: false,
 			addPetKind: 'cat',
 			showDeleteConfirm: false,
-			showCreateSheet: false
+			showCreateSheet: false,
+			feedPopupVisible: false,
+			feedPetId: ''
 		}
 	},
 	computed: {
@@ -215,6 +223,7 @@ export default {
 			const n = decodeURIComponent(query.name)
 			if (n) this.yardName = n
 		}
+		if (query && query.yardId) this.yardId = String(query.yardId)
 	},
 	methods: {
 		onSearch(value) {
@@ -242,6 +251,15 @@ export default {
 				nickname: owner.name,
 				avatar: owner.avatar
 			})
+		},
+		openFeedPopup(pet) {
+			const petId = pet && pet.id ? String(pet.id) : ''
+			if (!petId) return
+			this.feedPetId = petId
+			this.feedPopupVisible = true
+		},
+		openFeedOrders() {
+			uni.navigateTo({ url: '/pages/meMore/yardFeedOrders' })
 		},
 		openYardOwner() {
 			openUserProfile({
@@ -933,28 +951,10 @@ export default {
 	line-height: 42rpx;
 }
 
-.create-mask {
-	position: fixed;
-	left: 0;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	z-index: 250;
-	background: rgba(0, 0, 0, 0.45);
-}
-
 .create-sheet {
-	position: fixed;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	z-index: 260;
-	background: #fff;
-	border-radius: 28rpx 28rpx 0 0;
+	width: 100%;
 	padding: 16rpx 32rpx 32rpx;
-	padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
 	box-sizing: border-box;
-	box-shadow: 0 -8rpx 32rpx rgba(0, 0, 0, 0.08);
 }
 
 .create-drag {

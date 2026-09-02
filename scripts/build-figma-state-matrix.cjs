@@ -46,7 +46,7 @@ function target(index, name) {
     11: ['/pages/index/index?state=yard-tab', 'yard-tab'], 12: ['/pages/index/index?state=dynamic-scrolled', 'dynamic-scrolled'],
     13: ['/pages/yard/catGuide', 'default'], 18: ['/pages/dynamicDetail/index?yardId=1', 'comments'],
     19: ['/pages/dynamicDetail/index?yardId=1&state=comments-empty', 'comments-empty'], 20: ['/pages/citySelect/index', 'default'],
-    28: ['/pages/publishDynamic/index', 'default'], 32: ['/pages/meMore/yardFeedOrders?state=owner', 'owner'],
+    28: ['/pages/index/index', 'publish-entry-sheet'], 32: ['/pages/meMore/yardFeedOrders?state=owner', 'owner'],
     33: ['/pages/user/profile?nickname=%E5%B0%A7%E5%B0%A7&state=dynamic-long', 'dynamic-long'], 34: ['/pages/user/profile?nickname=%E5%B0%A7%E5%B0%A7', 'review'],
     41: ['/pages/publishDynamic/postFeed', 'default'], 58: ['/pages/yard/juryDetail?id=jury-1', 'pending'],
     59: ['/pages/feature/index?mode=rescue-detail', 'default'], 60: ['/pages/yard/juryDetail?id=jury-1&state=voted', 'voted'],

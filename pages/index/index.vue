@@ -96,9 +96,7 @@
 			<view class="back-top-arrow"></view>
 			<text class="back-top-text">TOP</text>
 		</view>
-		<!-- #ifndef MP-WEIXIN -->
 		<CustomTabber :tab-index="0" />
-		<!-- #endif -->
 	</view>
 </template>
 

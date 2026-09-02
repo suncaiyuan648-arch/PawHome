@@ -82,8 +82,8 @@ pages:
 
   publish_dynamic:
     name: "发布动态"
-    route: "/pages/publishDynamic/index"
-    source: "pages/publishDynamic/index.vue"
+    route: "/pages/publishDynamic/postFeed"
+    source: "pages/publishDynamic/postFeed.vue"
     design_doc: null
     states:
       default:
@@ -256,3 +256,10 @@ components:
     source: "pages/yard/createCatYard.vue"
     adoption_status: "page-composition"
     layout_semantics: "business card, not a primitive"
+  publish_entry_sheet:
+    semantic_name: "PublishEntrySheet"
+    node_id: "62:29176"
+    figma_name: "发布"
+    source: "components/PawPublishSheetContent.vue"
+    adoption_status: "adopted"
+    layout_semantics: "bottom-sheet content mounted by the custom tab bar; no standalone route"

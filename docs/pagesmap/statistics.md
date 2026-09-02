@@ -53,7 +53,7 @@
 
 | Figma 画板 | 源码映射 | 结果 |
 | --- | --- | --- |
-| `62:29176` 发布 | `pages/publishDynamic/index.vue` | 已实现 |
+| `62:29176` 发布 | `components/PawPublishSheetContent.vue`（由 `CustomTabber` / `custom-tab-bar` 以底部弹窗承载） | 已实现；无独立发布入口路由 |
 | `62:29253`、`62:29358` 我的投粮 | `pages/meMore/myFeedings.vue`：列表与 `state=30` 空状态 | 已实现（同一路由多状态） |
 | `62:29416` 投粮订单；`62:29504` 院主-投粮订单 | `pages/meMore/yardFeedOrders.vue`：普通模式与 `state=owner` | 已实现（同一路由多角色） |
 | `62:29619`、`62:29769` 个人主页-动态 | `pages/user/profile.vue`：默认与 `state=dynamic-long` | 已实现（同一路由多状态） |

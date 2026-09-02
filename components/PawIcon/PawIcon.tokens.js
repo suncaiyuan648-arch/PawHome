@@ -8,3 +8,7 @@ export const PAW_ICON_SIZE = Object.freeze({
 
 export const PAW_ICON_DEFAULT_SIZE = 'md'
 export const PAW_ICON_DEFAULT_COLOR = '#1F2329'
+
+// The like icon uses the 18px outer box from the approved filled-like state.
+// Both outline and filled states share this value through PawLikeIcon.
+export const PAW_ICON_LIKE_SIZE = 18

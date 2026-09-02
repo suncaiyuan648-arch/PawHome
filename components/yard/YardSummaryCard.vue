@@ -3,18 +3,18 @@
     <view class="yard-summary-card__top">
       <PawAvatar :src="yard.avatar" :size="50" :clickable="true" @click="$emit('click', yard)" />
       <view class="yard-summary-card__main">
-        <view class="yard-summary-card__name-row"><text class="yard-summary-card__name">{{ yard.name }}</text>
-          <PawVerifiedBadge v-if="yard.verified !== false" />
+        <view class="yard-summary-card__name-row">
+          <view class="yard-summary-card__identity">
+            <text class="yard-summary-card__name">{{ yard.name }}</text>
+            <PawVerifiedBadge v-if="yard.verified !== false" />
+          </view>
+          <text v-if="showDistance && distanceLabel" class="yard-summary-card__distance">{{ distanceLabel }}</text>
         </view>
         <YardLocationLine v-if="yard.location && variant !== 'detail'" :text="yard.location" />
         <view v-if="yard.tags && yard.tags.length" class="yard-summary-card__tags"><text
             v-for="(tag, index) in yard.tags" :key="index" class="yard-summary-card__tag">{{ tag }}</text></view>
       </view>
-      <text v-if="showDistance && variant !== 'detail' && yard.distance" class="yard-summary-card__distance">{{
-        yard.distance }}</text>
     </view>
-    <text v-if="variant === 'detail' && yard.distance" class="yard-summary-card__detail-distance">{{ yard.distance }} {{
-      yard.location }}</text>
     <text v-if="yard.description" class="yard-summary-card__description">{{ yard.description }}</text>
     <scroll-view v-if="showGallery && gallery.length" class="yard-summary-card__gallery" scroll-x
       :show-scrollbar="false">
@@ -45,6 +45,12 @@ export default {
   },
   emits: ['click', 'pet-click', 'gallery-scroll-end'],
   computed: {
+    distanceLabel() {
+      if (!this.yard.distance) return ''
+      return this.variant === 'detail' && this.yard.location
+        ? `${this.yard.distance} ${this.yard.location}`
+        : this.yard.distance
+    },
     gallery() { return (this.yard.gallery || this.yard.thumbUrls || []).map(item => typeof item === 'string' ? { src: safeImgSrc(item, '/static/avatarlog.png') } : { ...item, src: safeImgSrc(item.src || item.url, '/static/avatarlog.png') }) }
   }
 }
@@ -69,7 +75,8 @@ export default {
 .yard-summary-card__top {
   position: relative;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .yard-summary-card__main {
@@ -81,7 +88,16 @@ export default {
 .yard-summary-card__name-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   min-height: 20px;
+  min-width: 0;
+  gap: 12px;
+}
+
+.yard-summary-card__identity {
+  display: flex;
+  align-items: center;
+  min-width: 0;
   gap: 3px;
 }
 
@@ -96,30 +112,22 @@ export default {
 }
 
 .yard-summary-card__distance {
-  position: absolute;
-  top: 1px;
-  right: 0;
+  flex: 0 0 auto;
+  max-width: 160px;
+  overflow: hidden;
   color: #999;
   font-size: 11px;
   line-height: 16px;
-  white-space: nowrap;
-}
-
-.yard-summary-card__detail-distance {
-  position: absolute;
-  top: 6px;
-  right: 0;
-  color: #999;
-  font-size: 11px;
-  line-height: 16px;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .yard-summary-card__tags {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 7px;
   margin-top: 9px;
+  overflow: hidden;
 }
 
 .yard-summary-card__tag {

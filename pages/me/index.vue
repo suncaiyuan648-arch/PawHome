@@ -137,9 +137,7 @@
 				</view>
 			</view>
 		</scroll-view>
-		<!-- #ifndef MP-WEIXIN -->
 		<CustomTabber :tab-index="3" />
-		<!-- #endif -->
 
 		<view v-if="drawerOpen" class="drawer-backdrop" @click="closeDrawer"></view>
 		<view v-if="drawerOpen" class="drawer-shell" :class="{ 'drawer-shell--show': drawerAnim }" @click.stop>
@@ -160,16 +158,19 @@
 				</view>
 			</scroll-view>
 		</view>
-		<view v-if="pageState === 'profile-upload'" class="profile-upload-mask"></view>
-		<view v-if="pageState === 'profile-upload'" class="profile-upload-sheet">
-			<text class="profile-upload-skip">晚点再填</text>
-			<image class="profile-upload-avatar" src="/static/figma/profile-upload-avatar.png" mode="scaleToFill">
-			</image>
-			<text class="profile-upload-title">上传头像</text>
-			<text class="profile-upload-copy">逢猫新用户5119</text>
-			<view class="profile-upload-divider"></view>
-			<view class="profile-upload-btn"><text>完成</text></view>
-		</view>
+		<PawBottomSheet :model-value="pageState === 'profile-upload'" variant="profile-upload" height="379px"
+			:close-on-mask="true" :safe-area="false" :z-index="10060"
+			@update:model-value="onProfileUploadVisibleChange">
+			<view class="profile-upload-sheet" @tap.stop>
+				<text class="profile-upload-skip" @tap="closeProfileUpload">晚点再填</text>
+				<image class="profile-upload-avatar" src="/static/figma/profile-upload-avatar.png" mode="scaleToFill">
+				</image>
+				<text class="profile-upload-title">上传头像</text>
+				<text class="profile-upload-copy">逢猫新用户5119</text>
+				<view class="profile-upload-divider"></view>
+				<view class="profile-upload-btn" @tap="closeProfileUpload"><text>完成</text></view>
+			</view>
+		</PawBottomSheet>
 	</view>
 </template>
 
@@ -177,9 +178,10 @@
 import CustomTabber from '@/components/CustomTabber/index.vue'
 import LevelCapsule from '@/components/LevelCapsule.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 
 export default {
-	components: { CustomTabber, LevelCapsule, PawIcon },
+	components: { CustomTabber, LevelCapsule, PawIcon, PawBottomSheet },
 	data() {
 		return {
 			pageState: 'default',
@@ -274,6 +276,12 @@ export default {
 			setTimeout(() => {
 				this.drawerOpen = false
 			}, 300)
+		},
+		onProfileUploadVisibleChange(value) {
+			if (!value) this.pageState = 'default'
+		},
+		closeProfileUpload() {
+			this.onProfileUploadVisibleChange(false)
 		},
 		onMenuRow(label) {
 			this.closeDrawer()
@@ -1016,13 +1024,6 @@ export default {
 	line-height: 34rpx;
 }
 
-.profile-upload-mask {
-	position: fixed;
-	inset: 0;
-	z-index: 300;
-	background: rgba(0, 0, 0, .58);
-}
-
 .profile-underlay {
 	position: fixed;
 	inset: 0;
@@ -1053,26 +1054,9 @@ export default {
 }
 
 .profile-upload-sheet {
-	position: fixed;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	z-index: 99999;
+	width: 100%;
 	height: 379px;
-	border-radius: 20px 20px 0 0;
-	background: #fff;
 	box-sizing: border-box;
-}
-
-.profile-upload-sheet:before {
-	content: '';
-	position: absolute;
-	left: 0;
-	right: 0;
-	top: -11px;
-	height: 22px;
-	border-radius: 20px 20px 0 0;
-	background: #fff
 }
 
 .profile-upload-skip {

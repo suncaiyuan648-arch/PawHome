@@ -1,5 +1,5 @@
 <template>
-  <view class="paw-album-tag"><text>{{ text }}</text></view>
+  <view class="paw-album-tag" :class="{ 'paw-album-tag--hidden': tone === 'hidden' }"><text>{{ text }}</text></view>
 </template>
 
 <script>
@@ -7,6 +7,7 @@ export default {
   name: 'PawAlbumTag',
   props: {
     text: { type: String, default: '置顶' },
+    tone: { type: String, default: 'pinned' },
   },
 }
 </script>
@@ -29,5 +30,10 @@ export default {
 .paw-album-tag text {
   font-size: 11px;
   line-height: 18px;
+}
+
+.paw-album-tag--hidden {
+  background: #999;
+  color: #fff;
 }
 </style>

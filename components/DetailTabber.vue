@@ -2,7 +2,7 @@
   <view class="detail-tabber">
     <PawFixedActionBar :actions="footerActions" :primary-action="primaryAction" @action="onFooterAction"
       @primary="openFeed" />
-    <YardFeedPopup v-model:visible="feedPopupVisible" :payment-params="paymentParams" @pay="onFeedPay"
+    <YardFeedPopup v-model:visible="feedPopupVisible" :pet-id="petId" :payment-params="paymentParams" @pay="onFeedPay"
       @payment-success="$emit('feed-success', $event)" @learn-food="$emit('learn-food')"
       @agreement="$emit('agreement', $event)" @feed-order="$emit('feed-order')" />
     <ShareActionSheet v-model:visible="shareSheetVisible" @select="onShareSheetSelect" />
@@ -20,6 +20,7 @@ export default {
   props: {
     joined: { type: Boolean, default: false },
     shareUrl: { type: String, default: '' },
+    petId: { type: String, default: '' },
     paymentParams: { type: Object, default: null }
   },
   emits: ['adopt', 'join', 'leave', 'share-action', 'feed-pay', 'feed-success', 'learn-food', 'agreement', 'feed-order'],

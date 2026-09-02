@@ -33,9 +33,7 @@
 				</view>
 			</view>
 		</scroll-view>
-		<!-- #ifndef MP-WEIXIN -->
 		<CustomTabber :tab-index="2" />
-		<!-- #endif -->
 	</view>
 </template>
 

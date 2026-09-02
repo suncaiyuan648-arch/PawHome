@@ -20,11 +20,12 @@
         <text :class="{ active: speciesFilter === 'all' }" @tap="selectSpecies('all')">全部({{ pets.length }})</text>
         <text :class="{ active: speciesFilter === 'cat' }" @tap="selectSpecies('cat')">猫咪({{ catCount }})</text>
         <text :class="{ active: speciesFilter === 'dog' }" @tap="selectSpecies('dog')">狗狗({{ dogCount }})</text>
-        <view class="sort">智能排序
-          <PawIcon class="sort-arrow" name="navigation/sort-arrow" :size="8" />
+        <view class="sort">
+          <text>智能排序</text>
+          <PawIcon name="navigation/sort-arrow" :size="8" :rotate="-90" />
         </view>
         <view class="layout-toggle" data-qa="yard-pet-layout-toggle" @tap="toggleLayout">
-          <PawIcon class="layout-toggle__icon" name="navigation/list" :size="19" />
+          <PawIcon name="navigation/list" :size="19" />
         </view>
       </view>
     </view>
@@ -96,11 +97,16 @@
                 <text v-if="cardOwnerTag(pet)" class="yard-owner__tag">{{ cardOwnerTag(pet) }}</text>
               </view>
             </view>
-            <view class="yard-pet-card__action" :class="{ disabled: pet.state !== 'pending' }">
+            <view class="yard-pet-card__action" :class="{
+              disabled: pet.state !== 'pending',
+              'yard-pet-card__action--pending': pet.state === 'pending'
+            }" @tap.stop="onCardAction(pet)">
               <text>{{ cardActionLabel(pet) }}</text>
-              <PawIcon v-if="pet.state === 'pending' || pet.state === 'cloud'" class="yard-pet-card__action-icon"
-                :class="{ 'yard-pet-card__action-icon--arrow': pet.state === 'pending' }"
-                :name="pet.state === 'pending' ? 'navigation/action-arrow' : 'navigation/clock-disabled'" :size="14" />
+              <view v-if="pet.state === 'pending' || pet.state === 'cloud'" class="yard-pet-card__action-icon"
+                :class="{ 'yard-pet-card__action-icon--pending': pet.state === 'pending' }">
+                <PawIcon :name="pet.state === 'pending' ? 'navigation/action-arrow' : 'navigation/clock-disabled'"
+                  :size="14" :rotate="pet.state === 'pending' ? 180 : 0" />
+              </view>
             </view>
           </view>
         </view>
@@ -132,8 +138,10 @@
               <text class="yard-tag">小毛毛球的第3任云家长</text>
             </view>
             <text v-else>剩余云养天数：16/30天</text>
-            <view class="pet-action" :class="{ disabled: variant === 'mine' && index === 1 }">{{ index === 0 ? '前往云养' :
-              '云养中' }}</view>
+            <view class="pet-action" :class="{ disabled: variant === 'mine' && index === 1 }"
+              @tap.stop="onCardAction(pet)">
+              {{ index === 0 ? '前往云养' :
+                '云养中' }}</view>
           </view>
         </view>
       </view>
@@ -158,7 +166,7 @@ export default {
     yardName: { type: String, default: '小院成员' },
     yardAvatar: { type: String, default: '/static/figma/yard-cover-exact.png' }
   },
-  emits: ['back', 'add-pet', 'pet-click', 'owner-click'],
+  emits: ['back', 'add-pet', 'pet-click', 'owner-click', 'feed-click'],
   data() {
     const yardMock = getPawHomeYardMock()
     const statusCatAvatar = '/static/figma/pets/pet-orange.png'
@@ -253,6 +261,10 @@ export default {
     onOwnerClick(owner) {
       if (!owner || !owner.pawId) return
       this.$emit('owner-click', owner)
+    },
+    onCardAction(pet) {
+      if (!pet || pet.state !== 'pending' || !pet.id) return
+      this.$emit('feed-click', pet)
     },
     cardOwnerTag(pet) {
       return pet.state === 'cloud' || pet.state === 'adopted' ? '小毛毛球的第3任云家长' : ''
@@ -408,13 +420,8 @@ export default {
   align-items: center;
   color: #333;
   font-size: 12px;
-  white-space: nowrap
-}
-
-.sort-arrow {
-	margin-left: 6px;
-	flex: none;
-  transform: rotate(-90deg);
+  white-space: nowrap;
+  gap: 4px;
 }
 
 .layout-toggle {
@@ -863,12 +870,17 @@ export default {
 }
 
 .yard-pet-card__action-icon {
-	margin-left: 3px;
-	flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-left: 3px;
+  flex: none;
 }
 
-.yard-pet-card__action-icon--arrow {
-  transform: scaleX(-1);
+.yard-pet-card__action-icon--pending {
+  margin-left: 4px;
 }
 
 .yard-pet-card__action.disabled {

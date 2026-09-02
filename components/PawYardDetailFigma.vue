@@ -103,7 +103,7 @@
                 <view class="post-time">
                   <view class="post-time-info"><text>昨天 20:45　江西</text><text class="post-reply">回复</text></view>
                   <view class="post-like">
-                    <PawIcon name="actions/like" :size="15" /><text>32</text>
+                    <PawLikeIcon :liked="false" /><text>32</text>
                   </view>
                 </view>
                 <CommentThread class="yard-comment-thread" :comments="yardComments.slice(0, commentCount)"
@@ -117,9 +117,7 @@
     </view>
 
     <PawFixedActionBar :actions="footerActions" :primary-action="primaryAction" @action="onFooterAction"
-      @primary="feed" />
-    <YardFeedPopup v-model:visible="feedPopupVisible" @learn-food="onLearnFood" @agreement="onAgreement"
-      @feed-order="onFeedOrder" />
+      @primary="openPetList" />
     <ShareActionSheet v-model:visible="shareSheetVisible" />
     <ReplyComposerSheet v-model:visible="replySheetVisible" :reply-to-name="replyTargetName" @send="onReplySend"
       @voice="onComposerVoice" @pick-image="onComposerPickImage" />
@@ -142,14 +140,13 @@ import CommentThread from '@/components/dynamic/CommentThread.vue'
 import PawTabs from '@/components/navigation/PawTabs.vue'
 import ReplyComposerSheet from '@/components/ReplyComposerSheet.vue'
 import ShareActionSheet from '@/components/ShareActionSheet.vue'
-import YardFeedPopup from '@/components/YardFeedPopup.vue'
-import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import PawLikeIcon from '@/components/base/PawLikeIcon.vue'
 import { openUserProfile } from '@/utils/profileNav.js'
 import { getPawHomeYardMock } from '@/utils/yardMock.js'
 
 export default {
   name: 'PawYardDetailFigma',
-  components: { PawPageNav, PawAnnouncementMarquee, PawAvatar, PawOwnerBadge, PawVerifiedBadge, YardLocationLine, LevelCapsule, FeedingSourceRow, YardFeedRankStrip, PawFixedActionBar, CommentThread, PawTabs, ReplyComposerSheet, ShareActionSheet, YardFeedPopup, PawIcon },
+  components: { PawPageNav, PawAnnouncementMarquee, PawAvatar, PawOwnerBadge, PawVerifiedBadge, YardLocationLine, LevelCapsule, FeedingSourceRow, YardFeedRankStrip, PawFixedActionBar, CommentThread, PawTabs, ReplyComposerSheet, ShareActionSheet, PawLikeIcon },
   props: {
     state: { type: String, default: 'dynamic' },
     yardData: { type: Object, default: () => getPawHomeYardMock() }
@@ -162,7 +159,6 @@ export default {
       expandedIntro: this.state === 'dynamic-expanded',
       joined: this.state === 'feeding',
       tabContentMinHeight: 0,
-      feedPopupVisible: false,
       shareSheetVisible: false,
       replySheetVisible: false,
       replySheetTarget: null,
@@ -222,10 +218,6 @@ export default {
       this.$nextTick(() => this.captureTabContentHeight())
     },
     toggleJoin() { this.joined = !this.joined },
-    feed() { this.feedPopupVisible = true },
-    onLearnFood() { uni.showToast({ title: '了解猫粮功能暂未开放', icon: 'none' }) },
-    onAgreement(which) { uni.showToast({ title: which === 'required' ? '请先阅读并同意投喂协议' : '阅读弹窗暂未开放', icon: 'none' }) },
-    onFeedOrder() { uni.navigateTo({ url: '/pages/meMore/yardFeedOrders' }) },
     share() { this.shareSheetVisible = true },
     showRemind() { uni.showToast({ title: '已提醒院主', icon: 'none' }) },
     openPetDetail(pet) { this.$emit('pet-click', pet) },

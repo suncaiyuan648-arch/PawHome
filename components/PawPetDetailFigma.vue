@@ -4,11 +4,19 @@
     <view class="detail-scroll-stage" :style="{ marginTop: `-${navOverlayOffset}px` }">
       <scroll-view class="detail-scroll" scroll-y :show-scrollbar="false" :bounces="false" :enable-flex="true">
         <view class="hero-wrap">
-          <image class="hero-exact" :src="heroSource" mode="aspectFill" @tap="onHeroTap" />
+          <swiper class="hero-swiper" :current="heroIndex" :duration="250" :circular="false" :indicator-dots="false"
+            @change="onHeroChange">
+            <swiper-item v-for="(src, index) in heroGallery" :key="`${displayPet.id || 'pet'}-hero-${index}`"
+              class="hero-swiper-item">
+              <image class="hero-exact" :src="src" mode="aspectFill" @tap.stop="onHeroTap(index)" />
+            </swiper-item>
+          </swiper>
+          <PawCarouselDots data-qa="pet-detail-hero-dots" :count="heroGallery.length" :current="heroIndex" />
           <view class="hero-album" :class="{ 'hero-album--readonly': !canManage }" @tap="onAlbumTap">
-            <PawIcon name="actions/album" :size="13" />
+            <image class="hero-album__icon" src="/static/figma/pet-detail/icon-album-figma.svg" mode="aspectFit" />
             <text>相册</text>
-            <PawChevron v-if="canManage" class="hero-album-chevron" :size="8" />
+            <image v-if="canManage" class="hero-album__chevron"
+              src="/static/figma/pet-detail/icon-chevron-right-figma.svg" mode="aspectFit" />
           </view>
         </view>
 
@@ -51,22 +59,12 @@
           <text class="continuous">已连续云养25天</text>
         </view>
 
-        <view class="message-card">
+        <view id="qa-pet-detail-message-board" class="message-card">
           <text class="message-title">云家长寄语留言板</text>
-          <view class="message-row">
-            <image class="message-avatar" src="/static/figma/pet-detail/message-avatar.png" mode="aspectFill" />
-            <view class="message-body">
-              <view class="message-author"><text>姜栋</text>
-                <LevelCapsule level="1" /><text class="role">{{ displayPet.name }}的第3任云家长</text>
-              </view>
-              <text class="message-copy">给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞</text>
-              <view class="message-meta"><text>昨天 20:45&nbsp;&nbsp;江西&nbsp;&nbsp;回复</text>
-                <view class="like">
-                  <PawIcon name="actions/like" :size="15" /><text>32</text>
-                </view>
-              </view>
-            </view>
-          </view>
+          <CommentThread class="message-thread" :comments="messageCommentsForDisplay" :comment-preview-count="1"
+            :reply-preview-count="2" @user-click="onMessageUserClick" @reply="onMessageReply" @like="onMessageLike" />
+          <ReplyComposerSheet v-model:visible="replySheetVisible" :reply-to-name="replyTargetName"
+            @send="onReplySheetSend" @voice="onReplySheetVoice" @pick-image="onReplySheetPickImage" />
         </view>
         <view class="detail-scroll-bottom"
           :class="{ 'detail-scroll-bottom--fixed-footer': variant === 35 || variant === 36 }" />
@@ -94,18 +92,23 @@
 </template>
 
 <script>
-import LevelCapsule from '@/components/LevelCapsule.vue'
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawFixedActionBar from '@/components/layout/PawFixedActionBar.vue'
-import PawChevron from '@/components/base/PawChevron.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import PawCarouselDots from '@/components/base/PawCarouselDots.vue'
+import CommentThread from '@/components/dynamic/CommentThread.vue'
+import ReplyComposerSheet from '@/components/ReplyComposerSheet.vue'
 import { getWechatNavLayout } from '@/utils/navLayout.js'
 import { getPawHomeYardMock } from '@/utils/yardMock.js'
 
+function cloneComments(comments) {
+  return JSON.parse(JSON.stringify(Array.isArray(comments) ? comments : []))
+}
+
 export default {
   name: 'PawPetDetailFigma',
-  components: { LevelCapsule, PawPageNav, PawFixedActionBar, PawChevron, PawIcon },
-  emits: ['back', 'album', 'preview-image', 'select-pet', 'footer-action', 'footer-primary'],
+  components: { PawPageNav, PawFixedActionBar, PawIcon, PawCarouselDots, CommentThread, ReplyComposerSheet },
+  emits: ['back', 'album', 'preview-image', 'select-pet', 'footer-action', 'footer-primary', 'message-user-click'],
   props: {
     variant: { type: Number, default: 35 },
     pet: { type: Object, default: () => ({}) },
@@ -117,12 +120,28 @@ export default {
     managed: { type: Boolean, default: false },
   },
   data() {
-    return { navOverlayOffset: getWechatNavLayout().totalHeight };
+    const yardComments = this.yard && Array.isArray(this.yard.comments)
+      ? this.yard.comments
+      : getPawHomeYardMock().comments;
+    return {
+      navOverlayOffset: getWechatNavLayout().totalHeight,
+      messageComments: cloneComments(yardComments),
+      replySheetVisible: false,
+      replySheetTargetId: '',
+      heroIndex: 0,
+    };
   },
   computed: {
+    heroGallery() {
+      const gallery = Array.isArray(this.displayPet.gallery)
+        ? this.displayPet.gallery
+          .map((item) => typeof item === 'string' ? item : item && (item.src || item.url))
+          .filter(Boolean)
+        : [];
+      return gallery.length ? gallery : [this.displayPet.avatar || '/static/figma/adoption-flow/pet-hero.png'];
+    },
     heroSource() {
-      const gallery = this.displayPet.gallery;
-      return (Array.isArray(gallery) && gallery[0]) || this.displayPet.avatar || '/static/figma/adoption-flow/pet-hero.png';
+      return this.heroGallery[0];
     },
     stripItems() {
       const fallback = Array.from({ length: 8 }, (_, index) => ({
@@ -157,14 +176,40 @@ export default {
     canManage() {
       return this.managed || this.variant === 36;
     },
+    messageCommentsForDisplay() {
+      const comments = this.messageComments || [];
+      return comments.slice(0, 1).map((comment) => ({
+        ...comment,
+        author: {
+          ...(comment.author || {}),
+          avatar: comment.id === 'yard-c-1'
+            ? '/static/figma/pet-detail/message-avatar.png'
+            : (comment.author && comment.author.avatar),
+          owner: false,
+          tag: `${this.displayPet.name || '小黄'}的第3任云家长`,
+        },
+      }));
+    },
+    replyTargetName() {
+      const target = this.findMessageComment(this.replySheetTargetId);
+      return target && target.author ? target.author.name || '' : '';
+    },
+  },
+  watch: {
+    petIndex() {
+      this.heroIndex = 0;
+    },
   },
   methods: {
-    onHeroTap() {
+    onHeroChange(event) {
+      const index = Number(event && event.detail && event.detail.current);
+      if (Number.isInteger(index) && index >= 0 && index < this.heroGallery.length) this.heroIndex = index;
+    },
+    onHeroTap(index = this.heroIndex) {
+      const currentIndex = Number.isInteger(index) && index >= 0 && index < this.heroGallery.length ? index : 0;
       this.$emit('preview-image', {
-        current: this.heroSource,
-        urls: Array.isArray(this.displayPet.gallery) && this.displayPet.gallery.length
-          ? this.displayPet.gallery
-          : [this.heroSource],
+        current: this.heroGallery[currentIndex] || this.heroSource,
+        urls: this.heroGallery,
       });
     },
     onAlbumTap() {
@@ -184,6 +229,53 @@ export default {
     },
     onFooterPrimary(action) {
       this.$emit('footer-primary', action);
+    },
+    findMessageComment(id, comments = this.messageComments) {
+      if (!id || !Array.isArray(comments)) return null;
+      for (const comment of comments) {
+        if (String(comment.id) === String(id)) return comment;
+        const nested = this.findMessageComment(id, comment.children);
+        if (nested) return nested;
+      }
+      return null;
+    },
+    onMessageUserClick(comment) {
+      this.$emit('message-user-click', comment);
+    },
+    onMessageReply(comment) {
+      if (!comment || !comment.id) return;
+      this.replySheetTargetId = String(comment.id);
+      this.replySheetVisible = true;
+    },
+    onMessageLike(comment) {
+      const target = this.findMessageComment(comment && comment.id);
+      if (!target) return;
+      target.liked = !target.liked;
+      target.likes = Math.max(0, Number(target.likes) + (target.liked ? 1 : -1));
+    },
+    onReplySheetSend(text) {
+      const target = this.findMessageComment(this.replySheetTargetId);
+      const value = String(text || '').trim();
+      if (!target || !value) return;
+      const replies = Array.isArray(target.children) ? target.children : [];
+      target.children = [...replies, {
+        id: `pet-detail-reply-${Date.now()}`,
+        author: { name: '我', avatar: '/static/user.png', pawId: '2876598765' },
+        replyTo: {
+          name: target.author && target.author.name ? target.author.name : '',
+          level: target.author && target.author.level ? target.author.level : 1,
+        },
+        copy: value,
+        meta: '刚刚',
+        likes: 0,
+        liked: false,
+      }];
+    },
+    onReplySheetVoice() {
+      uni.showToast({ title: '暂不支持语音回复', icon: 'none' });
+    },
+    onReplySheetPickImage() {
+      uni.showToast({ title: '暂不支持图片回复', icon: 'none' });
     },
   },
 };
@@ -226,6 +318,13 @@ export default {
   max-height: 375px;
 }
 
+.hero-swiper,
+.hero-swiper-item {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .hero-exact {
   display: block;
   width: 100%;
@@ -241,16 +340,32 @@ export default {
   height: 17px;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 4px;
   border-radius: 5px;
   background: rgba(0, 0, 0, .3);
-  color: #fff;
+  color: #f6f8fa;
   font-size: 12px;
+  font-weight: 500;
   line-height: 11px;
 }
 
-.hero-album .hero-album-chevron {
-  margin-left: 1px;
+.hero-album--readonly {
+  right: 15px;
+  width: 53px;
+}
+
+.hero-album__icon {
+  display: block;
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+}
+
+.hero-album__chevron {
+  display: block;
+  width: 4px;
+  height: 8px;
+  flex: 0 0 4px;
 }
 
 .pet-strip {
@@ -508,72 +623,26 @@ export default {
   text-align: center;
 }
 
-.message-row {
-  display: flex;
-  min-height: 34px;
-  align-items: flex-start;
-}
-
-.message-avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  flex-shrink: 0
-}
-
-.message-body {
-  display: flex;
+.message-thread {
+  flex: 1 1 auto;
   min-width: 0;
-  flex: 1;
-  flex-direction: column;
-  margin-left: 6px;
 }
 
-.message-author {
-  display: inline-flex;
-  min-height: 18px;
-  align-items: center;
-  gap: 4px;
-  color: #555;
-  font-size: 13px;
-  line-height: 18px;
-  white-space: nowrap;
+.message-card :deep(.comment-thread) {
+  gap: 0;
 }
 
-.role {
-  padding: 0 5px;
-  border-radius: 8px;
-  background: #fff463;
-  color: #333;
-  font-size: 10px;
-  line-height: 16px;
+.message-card :deep(.comment-item),
+.message-card :deep(.comment-item--first) {
+  min-height: 0;
 }
 
-.message-copy {
-  display: block;
-  min-height: 36px;
-  color: #333;
-  font-size: 13px;
-  line-height: 18px;
+.message-card :deep(.paw-user-identity__name-row) {
+  column-gap: 4px;
 }
 
-.message-meta {
-  display: flex;
-  min-height: 18px;
-  align-items: center;
-  justify-content: space-between;
+.message-card :deep(.comment-item__children) {
   margin-top: 8px;
-  color: #8c8c8c;
-  font-size: 12px;
-  line-height: 18px;
-}
-
-.like {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding-right: 1px;
-  color: #666
 }
 
 .detail-scroll-bottom {
@@ -601,7 +670,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px env(safe-area-inset-bottom);
+  padding: 0 20px 34px;
   border-radius: 20px 20px 0 0;
   background: rgba(255, 255, 255, .9);
   box-shadow: 0 -2px 12px rgba(0, 0, 0, .04);
@@ -609,6 +678,16 @@ export default {
   -webkit-backdrop-filter: blur(20px);
   box-sizing: border-box;
 }
+
+/* Keep the management footer's business area and safe-area treatment aligned
+ * with CustomTabber and PawFixedActionBar on WeChat devices. */
+/* #ifdef MP-WEIXIN */
+.manage-footer {
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* #endif */
 
 .manage-footer view {
   display: flex;

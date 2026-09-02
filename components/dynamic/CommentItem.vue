@@ -1,8 +1,9 @@
 <template>
   <view class="comment-item" :class="{ 'comment-item--reply': !!comment.replyTo }">
-    <PawUserIdentity class="comment-item__identity" :avatar="author.avatar" :name="author.name" :level="author.level"
-      :owner="author.owner || comment.owner" block @avatar-click="onUserAvatarClick(comment)"
-      @name-click="onUserNameClick(comment)" @membership-click="onMembershipClick" @badge-click="onBadgeClick">
+    <PawUserIdentity class="comment-item__identity" :avatar="author.avatar" :avatar-size="33" :name="author.name"
+      :level="author.level" :owner="author.owner || comment.owner" :tag="author.tag || comment.authorTag || ''" block
+      @avatar-click="onUserAvatarClick(comment)" @name-click="onUserNameClick(comment)"
+      @membership-click="onMembershipClick" @badge-click="onBadgeClick">
       <VoiceComment v-if="comment.kind === 'voice'" :duration="comment.duration" :playing="playing"
         :bars="comment.voiceBars" @toggle="$emit('voice-play', comment)" />
       <view v-else-if="comment.replyTo" class="comment-item__copy comment-item__copy--reply">
@@ -17,16 +18,16 @@
         <view class="comment-item__meta-left"><text>{{ comment.meta }}</text><text class="comment-item__reply"
             @tap.stop="$emit('reply', comment)">回复</text></view>
         <view class="comment-item__like" @tap.stop="$emit('like', comment)">
-          <PawIcon :name="comment.liked ? 'actions/like-filled' : 'actions/like'" :size="18" /><text>{{ comment.likes ||
+          <PawLikeIcon :liked="comment.liked" /><text>{{ comment.likes ||
             0 }}</text>
         </view>
       </view>
       <view v-if="comment.children && comment.children.length" class="comment-item__children">
         <view v-for="child in visibleReplies" :key="child.id" class="comment-item comment-item--reply">
           <PawUserIdentity class="comment-item__identity" :avatar="child.author.avatar" :name="child.author.name"
-            :level="child.author.level" :owner="child.author.owner || child.owner" block
-            @avatar-click="onUserAvatarClick(child)" @name-click="onUserNameClick(child)"
-            @membership-click="onMembershipClick" @badge-click="onBadgeClick">
+            :avatar-size="33" :level="child.author.level" :owner="child.author.owner || child.owner"
+            :tag="child.author.tag || child.authorTag || ''" block @avatar-click="onUserAvatarClick(child)"
+            @name-click="onUserNameClick(child)" @membership-click="onMembershipClick" @badge-click="onBadgeClick">
             <VoiceComment v-if="child.kind === 'voice'" :duration="child.duration" :playing="playing"
               :bars="child.voiceBars" @toggle="$emit('voice-play', child)" />
             <view v-else-if="child.replyTo" class="comment-item__copy comment-item__copy--reply">
@@ -41,7 +42,7 @@
               <view class="comment-item__meta-left"><text>{{ child.meta }}</text><text class="comment-item__reply"
                   @tap.stop="$emit('reply', child)">回复</text></view>
               <view class="comment-item__like" @tap.stop="$emit('like', child)">
-                <PawIcon :name="child.liked ? 'actions/like-filled' : 'actions/like'" :size="18" /><text>{{ child.likes
+                <PawLikeIcon :liked="child.liked" /><text>{{ child.likes
                   || 0 }}</text>
               </view>
             </view>
@@ -61,12 +62,12 @@
 import PawUserIdentity from '@/components/identity/PawUserIdentity.vue'
 import VoiceComment from '@/components/dynamic/VoiceComment.vue'
 import LevelCapsule from '@/components/LevelCapsule.vue'
-import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import PawLikeIcon from '@/components/base/PawLikeIcon.vue'
 import PawDivider from '@/components/base/PawDivider.vue'
 
 export default {
   name: 'CommentItem',
-  components: { PawUserIdentity, VoiceComment, LevelCapsule, PawIcon, PawDivider },
+  components: { PawUserIdentity, VoiceComment, LevelCapsule, PawLikeIcon, PawDivider },
   props: {
     comment: { type: Object, default: () => ({}) },
     playing: { type: Boolean, default: false },

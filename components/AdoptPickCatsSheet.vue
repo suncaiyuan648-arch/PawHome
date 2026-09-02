@@ -1,36 +1,24 @@
 <template>
-  <view v-if="modelValue" class="aps-wrap">
-    <view class="aps-mask" @tap="onMaskClose" @touchmove.stop.prevent="noop"></view>
-    <view class="aps-sheet" @tap.stop>
-      <view class="aps-sheet-inner">
+  <view class="aps-host">
+    <PawBottomSheet v-model="modelValueProxy" variant="adoption-pick" height="495px" :close-on-mask="true"
+      :safe-area="false" :z-index="10060" @after-close="onAfterClose">
+      <view class="aps-sheet-inner" @tap.stop>
         <view class="aps-head">
           <view class="aps-head-side"></view>
           <text class="aps-title">唯有以领养终止流浪</text>
-          <view class="aps-close-hit" @tap="onMaskClose">
-            <text class="aps-close-x">×</text>
+          <view class="aps-close-hit" @tap="close">
+            <PawIcon name="navigation/close" :size="16" label="关闭" />
           </view>
         </view>
         <text class="aps-sub">选择您想要领走的小咪</text>
         <scroll-view class="aps-scroll" scroll-y :show-scrollbar="false" :enable-flex="true">
           <view class="aps-grid">
-            <view
-              v-for="(c, i) in cats"
-              :key="i"
-              class="aps-cell"
-              :class="{ 'aps-cell--disabled': c.disabled }"
-            >
-              <view
-                v-if="!c.disabled"
-                class="aps-av-hit"
-                @tap.stop="openPetDetail(i)"
-              >
-                <view
-                  class="aps-ring"
-                  :class="{
-                    'aps-ring--on': selectedIds.includes(i),
-                    'aps-ring--off': !selectedIds.includes(i),
-                  }"
-                >
+            <view v-for="(c, i) in cats" :key="i" class="aps-cell" :class="{ 'aps-cell--disabled': c.disabled }">
+              <view v-if="!c.disabled" class="aps-av-hit" @tap.stop="openPetDetail(i)">
+                <view class="aps-ring" :class="{
+                  'aps-ring--on': selectedIds.includes(i),
+                  'aps-ring--off': !selectedIds.includes(i),
+                }">
                   <image v-if="!figmaMode" class="aps-img" :src="c.avatar" mode="aspectFill" />
                 </view>
               </view>
@@ -48,26 +36,25 @@
         </scroll-view>
         <text class="aps-balance">我的剩余领养额度：￥234</text>
         <view class="aps-footer">
-          <button
-            class="aps-btn"
-            :disabled="selectedIds.length === 0"
-            @tap="onConfirm"
-          >
+          <button class="aps-btn" :disabled="selectedIds.length === 0" @tap="onConfirm">
             我选好了
           </button>
         </view>
       </view>
-    </view>
+    </PawBottomSheet>
   </view>
 </template>
 
 <script>
 import { setAdoptionPick } from '@/utils/adoptionStorage.js'
+import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
+import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
 const DEFAULT_IMG = '/static/home-feed-1.png'
 
 export default {
   name: 'AdoptPickCatsSheet',
+  components: { PawBottomSheet, PawIcon },
   props: {
     modelValue: {
       type: Boolean,
@@ -100,6 +87,16 @@ export default {
     },
   },
   emits: ['update:modelValue', 'close', 'confirmed'],
+  computed: {
+    modelValueProxy: {
+      get() {
+        return this.modelValue
+      },
+      set(value) {
+        this.$emit('update:modelValue', value)
+      },
+    },
+  },
   data() {
     return {
       cats: [
@@ -120,17 +117,15 @@ export default {
     },
   },
   methods: {
-    noop() {},
     resetLocalState() {
       this.selectedIds = [0, 1]
       // 接入接口后可在此按 yardId 拉取猫咪列表替换 cats
     },
     close() {
       this.$emit('update:modelValue', false)
-      this.$emit('close')
     },
-    onMaskClose() {
-      this.close()
+    onAfterClose() {
+      this.$emit('close')
     },
     openPetDetail(i) {
       const c = this.cats[i]
@@ -184,40 +179,17 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.aps-wrap {
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  z-index: 10060;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-}
-
-.aps-mask {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.45);
-}
-
-.aps-sheet {
-  position: relative;
-  max-height: 82vh;
-  flex-shrink: 0;
+.aps-host {
+  min-height: 100vh;
 }
 
 .aps-sheet-inner {
-  background: #fff;
-  border-radius: 28rpx 28rpx 0 0;
-  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  width: 100%;
+  height: 100%;
+  padding-bottom: 0;
   display: flex;
   flex-direction: column;
-  max-height: 82vh;
+  box-sizing: border-box;
 }
 
 .aps-head {
@@ -248,13 +220,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.aps-close-x {
-  font-size: 48rpx;
-  line-height: 1;
-  color: #111;
-  font-weight: 300;
 }
 
 .aps-sub {
@@ -362,5 +327,80 @@ export default {
 .aps-btn[disabled] {
   opacity: 0.45;
 }
-.aps-sheet{max-height:none}.aps-sheet-inner{height:495px;max-height:none;padding-bottom:0}.aps-head{height:90px;box-sizing:border-box;align-items:flex-start;padding-top:7px}.aps-scroll{max-height:none}.aps-sub{padding:0 20px 20px}.aps-grid{padding:0 15px 8px}.aps-cell{width:16.666%;margin-bottom:26px}.aps-ring{width:44px;height:44px;padding:2px;background:#fff}.aps-ring--on,.aps-ring--off,.aps-ring--dim{border-width:3px}.aps-name-hit{margin-top:4px;min-height:16px}.aps-name,.aps-price{font-size:11px;line-height:16px}.aps-price{color:#999}.aps-balance{display:block;margin:0 0 12px;text-align:center;font-size:12px;color:#999}.aps-footer{padding:0 15px 43px}.aps-btn{height:44px;line-height:44px;border-radius:22px;font-size:14px}
+
+.aps-sheet-inner {
+  height: 495px;
+  max-height: none
+}
+
+.aps-head {
+  height: 90px;
+  box-sizing: border-box;
+  align-items: flex-start;
+  padding-top: 7px
+}
+
+.aps-scroll {
+  max-height: none
+}
+
+.aps-sub {
+  padding: 0 20px 20px
+}
+
+.aps-grid {
+  padding: 0 15px 8px
+}
+
+.aps-cell {
+  width: 16.666%;
+  margin-bottom: 26px
+}
+
+.aps-ring {
+  width: 44px;
+  height: 44px;
+  padding: 2px;
+  background: #fff
+}
+
+.aps-ring--on,
+.aps-ring--off,
+.aps-ring--dim {
+  border-width: 3px
+}
+
+.aps-name-hit {
+  margin-top: 4px;
+  min-height: 16px
+}
+
+.aps-name,
+.aps-price {
+  font-size: 11px;
+  line-height: 16px
+}
+
+.aps-price {
+  color: #999
+}
+
+.aps-balance {
+  display: block;
+  margin: 0 0 12px;
+  text-align: center;
+  font-size: 12px;
+  color: #999
+}
+
+.aps-footer {
+  padding: 0 15px 43px
+}
+
+.aps-btn {
+  height: 44px;
+  line-height: 44px;
+  border-radius: 22px;
+  font-size: 14px
+}
 </style>

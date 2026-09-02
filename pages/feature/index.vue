@@ -1,7 +1,7 @@
 <template>
   <view class="feature-page" :class="`feature-page--${mode}`">
-    <PawPageNav v-if="mode !== 'invite'" :title="title" :background="mode === 'rescue-detail' ? '#fff477' : '#f5f5f5'"
-      fallback-url="/pages/index/index" />
+    <PawPageNav v-if="mode !== 'invite'" :title="title" :title-centered="mode === 'album'"
+      :background="mode === 'rescue-detail' ? '#fff477' : '#f5f5f5'" fallback-url="/pages/index/index" />
     <scroll-view class="feature-scroll" scroll-y :show-scrollbar="false">
       <template v-if="mode === 'rescue-fund'">
         <view class="fund-card"><text class="fund-name">逢猫流浪动物救助基金池</text><text class="fund-balance">13.31</text><text
@@ -91,28 +91,30 @@
         </view>
       </template>
       <template v-else>
-        <view class="album-tabs">
-          <view v-for="filter in albumFilters" :key="filter.key" class="album-tab"
-            :class="{ active: albumFilter === filter.key }" @tap="selectAlbumFilter(filter.key)">
-            <text>{{ filter.label }}</text>
+        <view class="album-controls">
+          <view class="album-tabs">
+            <view v-for="filter in albumFilters" :key="filter.key" class="album-tab"
+              :class="{ active: albumFilter === filter.key }" @tap="selectAlbumFilter(filter.key)">
+              <text>{{ filter.label }}</text>
+            </view>
           </view>
-        </view>
-        <view class="album-meta">
-          <text>共{{ filteredAlbumItems.length }}个图片视频</text>
-          <text @tap="toggleAlbumSort">{{ albumSort === 'default' ? '默认排序' : '置顶优先' }}</text>
+          <view class="album-meta">
+            <text>共{{ filteredAlbumItems.length }}个图片视频</text>
+            <text @tap="toggleAlbumSort">{{ albumSort === 'default' ? '默认排序' : '置顶优先' }}</text>
+          </view>
         </view>
         <view class="album-grid">
           <view v-for="item in filteredAlbumItems" :key="item.id" class="album-cell" @tap="previewAlbumImage(item)"
-            @longpress.stop="openAlbumMenu(item)">
+            @longpress.stop="openAlbumMenu(item, $event)">
             <image :src="item.src" mode="aspectFill" />
-            <view v-if="item.pinned" class="album-tag-overlay">
-              <PawAlbumTag />
+            <view v-if="item.hidden || item.pinned" class="album-tag-overlay">
+              <PawAlbumTag :text="item.hidden ? '隐藏' : '置顶'" :tone="item.hidden ? 'hidden' : 'pinned'" />
             </view>
             <view v-if="item.kind === 'video'" class="album-video-mark"><text>视频</text></view>
           </view>
         </view>
         <view v-if="albumMenuVisible" class="album-menu-mask" @tap="closeAlbumMenu" />
-        <view v-if="albumMenuVisible" class="album-menu" @tap.stop>
+        <view v-if="albumMenuVisible" class="album-menu" :style="albumMenuStyle" @tap.stop>
           <view v-for="action in albumMenuActions" :key="action.key" class="album-menu-item"
             @tap.stop="handleAlbumMenuAction(action.key)">
             <PawIcon class="album-menu-icon" :name="action.iconName" :size="14" />
@@ -145,6 +147,8 @@ export default {
       albumFilter: 'all',
       albumSort: 'default',
       albumMenuVisible: false,
+      albumMenuPosition: { left: 15, top: 150 },
+      albumLongPressHandled: false,
       albumAccessDenied: false,
       selectedAlbumId: '',
       albumPetName: '豆豆',
@@ -156,7 +160,7 @@ export default {
         { id: 'album-05', src: '/static/figma/feature/album-original-05.jpeg', kind: 'image', categories: ['image', 'feeding'], pinned: false, favorite: false },
         { id: 'album-06', src: '/static/figma/feature/album-original-06.jpeg', kind: 'image', categories: ['image', 'daily'], pinned: false, favorite: true },
         { id: 'album-07', src: '/static/figma/feature/album-original-07.png', kind: 'image', categories: ['image', 'feeding'], pinned: false, favorite: false },
-        { id: 'album-08', src: '/static/figma/feature/album-original-08.jpeg', kind: 'image', categories: ['image', 'daily'], pinned: false, favorite: false },
+        { id: 'album-08', src: '/static/figma/feature/album-original-08.jpeg', kind: 'image', categories: ['image', 'daily'], pinned: false, favorite: false, hidden: true },
         { id: 'album-09', src: '/static/figma/feature/album-original-09.jpeg', kind: 'image', categories: ['image', 'feeding'], pinned: false, favorite: true },
         { id: 'album-10', src: '/static/figma/feature/album-original-10.jpeg', kind: 'image', categories: ['image', 'daily'], pinned: false, favorite: false },
         { id: 'album-11', src: '/static/figma/feature/album-original-11.jpeg', kind: 'image', categories: ['image', 'feeding'], pinned: false, favorite: false },
@@ -182,7 +186,6 @@ export default {
     },
     filteredAlbumItems() {
       const items = this.albumItems.filter((item) => {
-        if (item.hidden) return false
         if (this.albumFilter === 'favorite') return item.favorite
         if (this.albumFilter === 'video') return item.kind === 'video'
         if (this.albumFilter === 'all') return true
@@ -197,9 +200,15 @@ export default {
       return [
         { key: 'pin', label: item.pinned ? '取消置顶' : '置顶', iconName: 'actions/album-pin' },
         { key: 'favorite', label: item.favorite ? '取消收藏' : '收藏', iconName: 'actions/album-favorite' },
-        { key: 'hide', label: '隐藏', iconName: 'actions/album-hide' },
+        { key: 'hide', label: item.hidden ? '取消隐藏' : '隐藏', iconName: 'actions/album-hide' },
         { key: 'delete', label: '删除', iconName: 'actions/album-delete' },
       ]
+    },
+    albumMenuStyle() {
+      return {
+        left: `${this.albumMenuPosition.left}px`,
+        top: `${this.albumMenuPosition.top}px`,
+      }
     },
   },
   onLoad(options) {
@@ -229,13 +238,46 @@ export default {
       this.albumSort = this.albumSort === 'default' ? 'pinned' : 'default'
     },
     previewAlbumImage(item) {
+      if (this.albumMenuVisible || this.albumLongPressHandled) return
       const urls = this.filteredAlbumItems.map((entry) => entry.src)
       if (!item || !urls.length) return
       uni.previewImage({ current: item.src, urls })
     },
-    openAlbumMenu(item) {
+    openAlbumMenu(item, event) {
       this.selectedAlbumId = item && item.id ? item.id : ''
-      this.albumMenuVisible = Boolean(this.selectedAlbumId)
+      if (!this.selectedAlbumId) return
+
+      this.albumLongPressHandled = true
+      const touch = event?.changedTouches?.[0] || event?.touches?.[0]
+      const detail = event?.detail || {}
+      const pointX = Number(touch?.clientX ?? touch?.pageX ?? detail.x)
+      const pointY = Number(touch?.clientY ?? touch?.pageY ?? detail.y)
+      const systemInfo = typeof uni !== 'undefined' && uni.getSystemInfoSync ? uni.getSystemInfoSync() : {}
+      const viewportWidth = Number(systemInfo.windowWidth) || 375
+      const viewportHeight = Number(systemInfo.windowHeight) || 667
+      const menuWidth = 149
+      const menuHeight = 148
+      const x = Math.min(Math.max(Number.isFinite(pointX) ? pointX : viewportWidth / 2, 0), viewportWidth)
+      const y = Math.min(Math.max(Number.isFinite(pointY) ? pointY : viewportHeight / 2, 0), viewportHeight)
+      this.albumMenuPosition = {
+        // 默认触点是菜单左上角；右侧/底部空间不足时，分别切到右上/左下/右下角。
+        left: x + menuWidth <= viewportWidth
+          ? x
+          : x - menuWidth,
+        top: y + menuHeight <= viewportHeight
+          ? y
+          : y - menuHeight,
+      }
+      this.albumMenuVisible = true
+      try {
+        if (typeof uni !== 'undefined' && typeof uni.vibrateShort === 'function') {
+          const vibration = uni.vibrateShort({ type: 'light' })
+          if (vibration && typeof vibration.catch === 'function') vibration.catch(() => { })
+        }
+      } catch (error) {
+        // Vibration is optional on unsupported runtimes.
+      }
+      setTimeout(() => { this.albumLongPressHandled = false }, 500)
     },
     closeAlbumMenu() {
       this.albumMenuVisible = false
@@ -245,9 +287,15 @@ export default {
       const index = this.albumItems.findIndex((item) => item.id === this.selectedAlbumId)
       if (index < 0) return this.closeAlbumMenu()
       const item = this.albumItems[index]
-      if (key === 'pin') item.pinned = !item.pinned
+      if (key === 'pin') {
+        item.pinned = !item.pinned
+        this.albumItems = [
+          ...this.albumItems.filter((entry) => entry.pinned),
+          ...this.albumItems.filter((entry) => !entry.pinned),
+        ]
+      }
       if (key === 'favorite') item.favorite = !item.favorite
-      if (key === 'hide') item.hidden = true
+      if (key === 'hide') item.hidden = !item.hidden
       if (key === 'delete') this.albumItems.splice(index, 1)
       const message = key === 'pin' ? (item.pinned ? '已置顶' : '已取消置顶')
         : key === 'favorite' ? (item.favorite ? '已收藏' : '已取消收藏')
@@ -688,13 +736,22 @@ export default {
   background: #f5f5f5;
 }
 
+.feature-page--album .album-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 15px 0;
+  box-sizing: border-box;
+}
+
 .feature-page--album .album-tabs {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 0;
   height: 28px;
-  padding: 0 20px;
+  width: 100%;
+  padding: 0;
   box-sizing: border-box;
 }
 
@@ -725,8 +782,9 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 37px;
-  padding: 6px 10px 0;
+  height: 29px;
+  width: 100%;
+  padding: 0;
   box-sizing: border-box;
   background: #f5f5f5;
   color: #666;
@@ -791,8 +849,6 @@ export default {
 
 .feature-page--album .album-menu {
   position: fixed;
-  top: 382px;
-  right: 23px;
   z-index: 21;
   display: flex;
   flex-direction: column;

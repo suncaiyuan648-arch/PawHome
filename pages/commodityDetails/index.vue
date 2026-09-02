@@ -17,7 +17,7 @@
     <view v-if="overlayState === 'reply-idle' || overlayState === 'reply-input'" class="reply-mask">
       <view class="reply-panel">
         <view class="reply-input"><text>{{ overlayState === 'reply-input' ? '这是一个充满希望的季节，希望小猫今年也可以好好地' : '说点什么'
-        }}</text>
+            }}</text>
         </view>
         <view class="reply-actions"><uni-icons type="mic" color="#444" :size="20"></uni-icons><uni-icons type="image"
             color="#444" :size="20"></uni-icons>
@@ -72,7 +72,8 @@ export default {
     },
     openPetList() {
       uni.navigateTo({
-        url: '/pages/yard/yardCats?state=roster&name=' + encodeURIComponent('我就是要喂猫')
+        url: '/pages/yard/yardCats?state=roster&name=' + encodeURIComponent('我就是要喂猫') +
+          '&yardId=' + encodeURIComponent(this.yardId || '1')
       })
     },
     openRankUser(item) {

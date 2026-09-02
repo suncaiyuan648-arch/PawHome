@@ -25,7 +25,7 @@
           <view class="post-meta">
             <text>昨天 20:45　江西</text>
             <view class="like-action" @tap.stop="toggleLike">
-              <PawIcon name="actions/like" :size="15" />
+              <PawLikeIcon :liked="liked" />
               <text :class="{ liked: liked }">{{ likes }}</text>
             </view>
           </view>
@@ -55,12 +55,12 @@
     </scroll-view>
 
     <PawFixedActionBar :actions="footerActions" :primary-action="primaryAction" @action="onFooterAction"
-      @primary="feed" />
+      @primary="onPrimaryAction" />
     <ReplyComposerSheet v-model:visible="replySheetVisible" :reply-to-name="replyTargetName" @send="onReplySend"
       @voice="onComposerVoice" @pick-image="onComposerPickImage" />
     <ShareActionSheet v-model:visible="shareSheetVisible" />
-    <YardFeedPopup v-model:visible="feedPopupVisible" @learn-food="onLearnFood" @agreement="onAgreement"
-      @feed-order="onFeedOrder" />
+    <YardFeedPopup v-if="commentsEmpty" v-model:visible="feedPopupVisible" @learn-food="onLearnFood"
+      @agreement="onAgreement" @feed-order="onFeedOrder" />
   </view>
 </template>
 
@@ -79,7 +79,7 @@ import ShareActionSheet from '@/components/ShareActionSheet.vue'
 import YardFeedRankStrip from '@/components/yard/YardFeedRankStrip.vue'
 import YardSummaryCard from '@/components/yard/YardSummaryCard.vue'
 import YardFeedPopup from '@/components/YardFeedPopup.vue'
-import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import PawLikeIcon from '@/components/base/PawLikeIcon.vue'
 import { getWechatNavLayout } from '@/utils/navLayout.js'
 import { openUserProfile } from '@/utils/profileNav.js'
 import { getPawHomeYardMock } from '@/utils/yardMock.js'
@@ -145,7 +145,7 @@ const DYNAMIC_DETAIL_COMMENTS = [
 
 export default {
   name: 'DynamicDetailPage',
-  components: { PawAnnouncementMarquee, PawPageNav, PawAvatar, PawOwnerBadge, PawFixedActionBar, DynamicMediaViewer, FeedingSourceRow, CommentComposer, CommentThread, ReplyComposerSheet, ShareActionSheet, YardFeedRankStrip, YardSummaryCard, YardFeedPopup, PawIcon },
+  components: { PawAnnouncementMarquee, PawPageNav, PawAvatar, PawOwnerBadge, PawFixedActionBar, DynamicMediaViewer, FeedingSourceRow, CommentComposer, CommentThread, ReplyComposerSheet, ShareActionSheet, YardFeedRankStrip, YardSummaryCard, YardFeedPopup, PawLikeIcon },
   data() {
     const yard = getPawHomeYardMock()
     return {
@@ -232,7 +232,18 @@ export default {
       if (action.key === 'yard') this.openYard()
       if (action.key === 'adopt') uni.showToast({ title: '进入领养流程', icon: 'none' })
     },
-    feed() { this.feedPopupVisible = true },
+    onPrimaryAction() {
+      if (this.commentsEmpty) {
+        this.feedPopupVisible = true
+        return
+      }
+      this.openPetList()
+    },
+    openPetList() {
+      uni.navigateTo({
+        url: `/pages/yard/yardCats?state=roster&name=${encodeURIComponent(this.yard.name)}&yardId=${encodeURIComponent(this.yardId)}`
+      })
+    },
     onLearnFood() { uni.showToast({ title: '了解猫粮功能暂未开放', icon: 'none' }) },
     onAgreement(which) { uni.showToast({ title: which === 'required' ? '请先阅读并同意投喂协议' : '阅读弹窗暂未开放', icon: 'none' }) },
     onFeedOrder() { uni.navigateTo({ url: '/pages/meMore/yardFeedOrders' }) },

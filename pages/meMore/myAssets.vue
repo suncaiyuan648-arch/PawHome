@@ -1,7 +1,7 @@
 <template>
   <view class="assets-page" :class="['assets-page--' + mode, { 'assets-page--roster': listState === 'mine' }]">
     <template v-if="mode === 'pets' && listState === 'mine'">
-      <PawPetRoster variant="mine" @back="goBack" />
+      <PawPetRoster variant="mine" @back="goBack" @feed-click="openFeedPopup" />
     </template>
     <template v-else-if="mode === 'pets'">
       <view class="pets-header">
@@ -20,7 +20,7 @@
       <view class="pet-card">
         <view v-for="pet in pets" :key="pet.name + pet.avatar" class="pet-item">
           <image :src="pet.avatar" mode="aspectFill" /><text>{{ pet.name }}</text><text class="pet-breed">{{ pet.breed
-            }}</text>
+          }}</text>
         </view>
         <view class="pet-item" @click="addPet">
           <view class="add-circle"><uni-icons type="plusempty" color="#e5b600" :size="25" /></view><text>去添加</text>
@@ -86,6 +86,9 @@
         <view class="claim-button" @click="claimMedal">领取勋章</view>
       </view>
     </template>
+
+    <YardFeedPopup v-if="feedPopupVisible" v-model:visible="feedPopupVisible" :pet-id="feedPetId"
+      @feed-order="openFeedOrders" />
   </view>
 </template>
 
@@ -94,17 +97,31 @@ import PawPageNav from '@/components/PawPageNav.vue'
 import PawPetRoster from '@/components/PawPetRoster.vue'
 import PawSearchBar from '@/components/navigation/PawSearchBar.vue'
 import LevelCapsule from '@/components/LevelCapsule.vue'
+import YardFeedPopup from '@/components/YardFeedPopup.vue'
 export default {
-  components: { PawPageNav, PawPetRoster, PawSearchBar, LevelCapsule },
+  components: { PawPageNav, PawPetRoster, PawSearchBar, LevelCapsule, YardFeedPopup },
   data() {
     return {
-      mode: 'pets', listState: '', petKeyword: '', pets: [
+      mode: 'pets', listState: '', petKeyword: '', feedPopupVisible: false, feedPetId: '', pets: [
         { name: '奥利奥', breed: '加菲猫', avatar: '/static/figma/pets/pet-orange.png' }, { name: '煤球', breed: '奶牛猫', avatar: '/static/figma/pets/pet-black-white.png' }, { name: '呗呗', breed: '金毛', avatar: '/static/figma/pets/pet-dog.png' }, { name: '呗呗', breed: '金毛', avatar: '/static/figma/pets/pet-dog.png' }
       ]
     }
   },
   onLoad(options) { const m = String(options.mode || 'pets'); this.mode = ['pets', 'medals', 'map', 'new'].includes(m) ? m : 'pets'; this.listState = options.state === 'mine' ? 'mine' : '' },
-  methods: { goBack() { uni.navigateBack({ fail: () => uni.reLaunch({ url: '/pages/me/index' }) }) }, onPetSearch(value) { this.petKeyword = String(value || '').trim() }, addPet() { uni.navigateTo({ url: '/pages/yard/addKitten' }) }, openNewMedal() { uni.navigateTo({ url: '/pages/meMore/myAssets?mode=new' }) }, claimMedal() { uni.showToast({ title: '勋章已领取', icon: 'success' }) } }
+  methods: {
+    goBack() { uni.navigateBack({ fail: () => uni.reLaunch({ url: '/pages/me/index' }) }) },
+    onPetSearch(value) { this.petKeyword = String(value || '').trim() },
+    addPet() { uni.navigateTo({ url: '/pages/yard/addKitten' }) },
+    openNewMedal() { uni.navigateTo({ url: '/pages/meMore/myAssets?mode=new' }) },
+    claimMedal() { uni.showToast({ title: '勋章已领取', icon: 'success' }) },
+    openFeedPopup(pet) {
+      const petId = pet && pet.id ? String(pet.id) : ''
+      if (!petId) return
+      this.feedPetId = petId
+      this.feedPopupVisible = true
+    },
+    openFeedOrders() { uni.navigateTo({ url: '/pages/meMore/yardFeedOrders' }) }
+  }
 }
 </script>
 

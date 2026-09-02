@@ -333,14 +333,6 @@
       "root": "pages/publishDynamic",
       "pages": [
         {
-          // 发布入口：选择发布动态、创建小院或发起救助。
-          "path": "index",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#000000"
-          }
-        },
-        {
           // 发布动态：编辑并提交图文动态。
           "path": "postFeed",
           "style": {
@@ -571,7 +563,7 @@
       ]
     }
   ],
-  // 自定义底部 TabBar：这里只注册 Tab 页面，具体交互与视觉位于 custom-tab-bar。
+  // 自定义底部 TabBar：保留 Tab 页面注册以支持 switchTab；视觉与发布抽屉由页面内共享组件承载。
   "tabBar": {
     "custom": true,
     "color": "#8c8c8c",

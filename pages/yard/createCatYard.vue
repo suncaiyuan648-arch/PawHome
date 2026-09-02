@@ -1,152 +1,160 @@
 <template>
 	<view class="yard-page">
-		<!-- #ifndef MP-WEIXIN -->
-		<image class="create-yard-top-reference" src="/static/figma/create-yard-top.png" mode="scaleToFill"></image>
-		<!-- #endif -->
-		<view class="header-wrap" :style="{ paddingTop: statusBarHeight + 'px' }">
-			<view class="nav-row">
-				<view class="back-hit" @click.stop="goBack">
-					<image class="back-icon" src="/static/nav-back-arrow.png" mode="aspectFit"></image>
-				</view>
-				<view class="cap-holder"></view>
-			</view>
-			<view class="title-row">
-				<view class="hello-line">
-					<text class="hello-strong">Hello，</text>
-					<text class="hello-soft">欢迎创建流浪{{ animalKind === 'dog' ? '狗' : '猫' }}小院~</text>
-				</view>
-			</view>
+		<PawPageNav background="#defa93" fallback-url="/pages/yard/catGuide" />
+
+		<view class="yard-heading" data-qa="create-yard-heading">
+			<text class="hello-strong">Hello</text>
+			<text class="hello-soft">，欢迎创建流浪{{ animalKind === 'dog' ? '狗' : '猫' }}小院~</text>
 		</view>
 
-		<scroll-view class="content" scroll-y :enable-flex="true">
-			<view class="card cover-card">
-				<view class="cover-box">
-					<view class="cover-inner">
-						<uni-icons type="camera-filled" :size="27" color="#30343a"></uni-icons>
-						<text class="cover-tip">小院头像</text>
+		<scroll-view class="content" scroll-y :enable-flex="true" :show-scrollbar="false">
+			<view class="content-inner">
+				<view class="card cover-card" data-qa="create-yard-intro-card">
+					<view class="cover-top">
+						<view class="cover-inner">
+							<image class="cover-camera" src="/static/figma/create-yard/camera.svg" mode="aspectFit" />
+							<text class="cover-tip">小院头像</text>
+						</view>
+						<view v-if="voiceSavedSeconds <= 0" class="mic-btn" data-qa="create-yard-record"
+							@tap="openVoicePopup">
+							<image class="mic-icon" src="/static/figma/create-yard/mic.svg" mode="aspectFit" />
+						</view>
 					</view>
-					<view class="mic-btn" @click="openVoicePopup">
-						<uni-icons type="mic-filled" :size="24" color="#7f7f7f"></uni-icons>
+
+					<view v-if="voiceSavedSeconds > 0" class="voice-chip-row">
+						<view class="voice-chip-pill">
+							<image class="voice-chip-icon" src="/static/figma/voice/record-audio.svg"
+								mode="aspectFit" />
+							<text class="voice-chip-sec">{{ voiceSavedSeconds }}″</text>
+						</view>
+						<view class="voice-chip-del" data-qa="create-yard-record-delete" @tap.stop="clearSavedVoice">
+							<image src="/static/figma/create-yard/clear.svg" mode="aspectFit" />
+						</view>
+					</view>
+
+					<view class="intro-text-wrap">
+						<textarea class="intro-area" :value="introText" maxlength="500" placeholder="请写下小院简介"
+							placeholder-class="create-yard-placeholder" @input="onIntroInput" />
+						<text class="count">{{ introLen }}/500</text>
 					</view>
 				</view>
-				<view v-if="voiceSavedSeconds > 0" class="voice-chip-row">
-					<view class="voice-chip-pill">
-						<uni-icons type="sound-filled" :size="16" color="#2f2f2f"></uni-icons>
-						<text class="voice-chip-sec">{{ voiceSavedSeconds }}''</text>
+
+				<view class="card form-card" data-qa="create-yard-form">
+					<view class="form-row form-row--input">
+						<view class="form-row__content">
+							<text class="form-label">小院名称</text>
+							<view class="form-control">
+								<input class="form-input" :value="yardName" maxlength="40"
+									:placeholder="animalKind === 'dog' ? '地点+名字，例如：朝阳小区汪汪队' : '地点+名字，例如：朝阳小区猫猫队'"
+									placeholder-class="create-yard-placeholder" @input="onYardNameInput" />
+							</view>
+						</view>
+						<image class="row-chevron" src="/static/figma/create-yard/arrow-right.svg" mode="aspectFit" />
 					</view>
-					<view class="voice-chip-del" @click.stop="clearSavedVoice">×</view>
-				</view>
-				<view class="intro-text-wrap">
-					<textarea
-						class="intro-area"
-						:value="introText"
-						maxlength="500"
-						placeholder="请写下小院简介"
-						placeholder-class="input-placeholder"
-						@input="onIntroInput"
-					/>
-					<text class="count">{{ introLen }}/500</text>
-				</view>
-			</view>
 
-			<view class="card form-card">
-				<view class="row row-input">
-					<text class="lb">小院名称</text>
-					<PawFormField
-						class="ipt"
-						bare
-						:model-value="yardName"
-						:placeholder="animalKind === 'dog' ? '地点+名字，例如：朝阳小区汪汪队' : '地点+名字，例如：朝阳小区猫猫队'"
-						@update:model-value="onYardNameChange"
-					/>
-				</view>
-				<view class="row row-input">
-					<text class="lb">联系方式</text>
-					<PawFormField
-						class="ipt"
-						bare
-						:model-value="yardContact"
-						placeholder="请填写手机号或微信号用于领养"
-						@update:model-value="onContactChange"
-					/>
-				</view>
-				<view class="row row-yard-location">
-					<text class="lb">小院定位</text>
-					<text class="yard-location-text">{{ locDetail || '湖南省长沙市雨花区中意一路167号鼎丰前城' }}</text>
-					<view class="loc-clear" @click.stop="clearLocDetail">×</view>
-					<view class="loc-pin" @click.stop="openLocationSearch"><uni-icons type="location" color="#252525" :size="20"></uni-icons></view>
-				</view>
-			</view>
+					<view class="form-row form-row--input">
+						<view class="form-row__content">
+							<text class="form-label">联系方式</text>
+							<view class="form-control">
+								<input class="form-input" :value="yardContact" maxlength="40"
+									placeholder="请填写手机号或微信号用于领养" placeholder-class="create-yard-placeholder"
+									@input="onContactInput" />
+							</view>
+						</view>
+						<image class="row-chevron" src="/static/figma/create-yard/arrow-right.svg" mode="aspectFit" />
+					</view>
 
-			<view class="card intro-card">
-				<view class="intro-text-wrap intro-text-wrap--adopt">
-					<textarea
-						class="intro-area intro-area--small"
-						:value="adoptMsg"
-						maxlength="500"
-						placeholder="有什么想对领养人说的，将会在同意领养人的领养申请后，展示给领养人看。您可补充小流浪平时爱出没的地点、小流浪的性格等；为防止虐待或恶意领养，请您审查领养人的历史记录后再做决定。"
-						placeholder-class="input-placeholder"
-						@input="onAdoptInput"
-					/>
-					<text class="count">{{ adoptLen }}/500</text>
+					<view class="form-row form-row--location" @tap="openLocationSearch">
+						<text class="form-label">小院定位</text>
+						<text class="location-value">{{ locDetail || '湖南省长沙市雨花区中意一路167号鼎丰前城' }}</text>
+						<view class="location-actions">
+							<view class="location-clear" data-qa="create-yard-location-clear"
+								@tap.stop="clearLocDetail">
+								<image src="/static/figma/create-yard/clear.svg" mode="aspectFit" />
+							</view>
+							<view class="location-pin" data-qa="create-yard-location" @tap.stop="openLocationSearch">
+								<image src="/static/figma/create-yard/location-pin.svg" mode="aspectFit" />
+							</view>
+						</view>
+					</view>
 				</view>
-			</view>
 
-			<view v-if="!shippingPick" class="card addr-card" @click="openPickShipping">
-				<view class="dot"></view>
-				<view class="addr-main">
-					<text class="addr-title">请填写收货地址，用于接收猫粮</text>
-					<text class="addr-sub">不对外展示，可以放心填写</text>
+				<view class="card adopt-card">
+					<view class="intro-text-wrap intro-text-wrap--adopt">
+						<textarea class="intro-area intro-area--adopt" :value="adoptMsg" maxlength="500"
+							placeholder="有什么想对领养人说的，将会在您同意领养人的领养申请后，展示给领养人看。您可补充小流浪平时爱出没的地点，小流浪的性格等，为防止虐猫群体恶意领养，请您审查领养人的历史记录后再做决定。"
+							placeholder-class="create-yard-placeholder" @input="onAdoptInput" />
+						<text class="count">{{ adoptLen }}/500</text>
+					</view>
 				</view>
-				<text class="addr-add">添加 ›</text>
-			</view>
-			<view v-else class="card addr-card addr-card--picked" @click="openPickShipping">
-				<view class="dot"></view>
-				<view class="addr-main">
-					<text class="addr-line1">{{ shippingPick.detail }}</text>
-					<text class="addr-line2">{{ shippingPick.name }} {{ shippingPick.phone }}</text>
+
+				<view v-if="!shippingPick" class="card addr-card" @tap="openPickShipping">
+					<view class="address-icon">
+						<image class="address-icon__circle" src="/static/figma/create-yard/address-pin-circle.svg"
+							mode="aspectFit" />
+						<image class="address-icon__pin" src="/static/figma/create-yard/address-pin.png"
+							mode="aspectFit" />
+					</view>
+					<view class="addr-main">
+						<text class="addr-title">请填写收货地址，用于接收猫粮</text>
+						<text class="addr-sub">不对外展示，可放心填写</text>
+					</view>
+					<view class="addr-action">
+						<text>添加</text>
+						<image src="/static/figma/create-yard/arrow-right.svg" mode="aspectFit" />
+					</view>
 				</view>
-				<text class="addr-edit-link">修改 ></text>
+				<view v-else class="card addr-card addr-card--picked" @tap="openPickShipping">
+					<view class="address-icon">
+						<image class="address-icon__circle" src="/static/figma/create-yard/address-pin-circle.svg"
+							mode="aspectFit" />
+						<image class="address-icon__pin" src="/static/figma/create-yard/address-pin.png"
+							mode="aspectFit" />
+					</view>
+					<view class="addr-main">
+						<text class="addr-line1">{{ shippingPick.detail }}</text>
+						<text class="addr-line2">{{ shippingPick.name }} {{ shippingPick.phone }}</text>
+					</view>
+					<view class="addr-action addr-action--edit">
+						<text>修改</text>
+						<image src="/static/figma/create-yard/arrow-right.svg" mode="aspectFit" />
+					</view>
+				</view>
 			</view>
 		</scroll-view>
 
-		<view class="footer">
-			<view class="save-btn" @click="onSaveYard">保存去添加{{ animalKind === 'dog' ? '狗狗' : '猫咪' }}</view>
-		</view>
+		<PawSafeArea class="footer-safe">
+			<view class="footer">
+				<view class="save-btn" data-qa="create-yard-save" @tap="onSaveYard">保存去添加{{ animalKind === 'dog' ? '狗狗'
+					: '猫咪' }}</view>
+			</view>
+		</PawSafeArea>
 
-		<view v-if="showVoicePopup" class="voice-mask" @click="onVoiceMaskTap"></view>
-		<view v-if="showVoicePopup" class="voice-sheet" @click.stop>
-			<view v-if="recording" class="timer-pill">
-				<uni-icons type="sound-filled" :size="18" color="#2f2f2f"></uni-icons>
-				<text class="timer-text">{{ recordSeconds }}''</text>
-			</view>
-			<text class="voice-tip">{{ recording ? '松开结束' : '长按开始' }}</text>
-			<view
-				class="record-btn"
-				:class="{ 'record-btn--active': recording }"
-				@longpress="startRecord"
-				@touchend="endRecord"
-				@touchcancel="endRecord"
-			>
-				<view v-if="recording" class="stop-dot"></view>
-				<uni-icons v-else type="mic-filled" :size="34" color="#f5d800"></uni-icons>
-			</view>
-		</view>
+		<PawVoiceRecorderSheet :visible="showVoicePopup" :recording="recording" :duration="recordSeconds"
+			@update:visible="onVoiceSheetVisibleChange" @record-start="startRecord" @record-end="endRecord" />
+		<PawRealNamePrompt :visible="showRealNamePrompt" type="real-name" @update:visible="showRealNamePrompt = $event"
+			@confirm="goRealName" />
 		<PawNoticeModal v-model:visible="showVoiceNotice" :message="voiceNoticeMessage" />
 	</view>
 </template>
 
 <script>
+import PawPageNav from '@/components/PawPageNav.vue'
+import PawSafeArea from '@/components/base/PawSafeArea.vue'
+import PawVoiceRecorderSheet from '@/components/voice/PawVoiceRecorderSheet.vue'
 import PawNoticeModal from '@/components/PawNoticeModal.vue'
-import PawFormField from '@/components/form/PawFormField.vue'
+import PawRealNamePrompt from '@/components/auth/PawRealNamePrompt.vue'
+import { isRealNameVerified } from '@/utils/realNameMock.js'
 import { PAW_MSG_VOICE_LEVEL, PAW_MSG_VOICE_DAY_LIMIT } from '@/utils/pawNoticeMessages.js'
+
 export default {
-	components: { PawNoticeModal, PawFormField },
+	name: 'CreateCatYardPage',
+	components: { PawPageNav, PawSafeArea, PawVoiceRecorderSheet, PawNoticeModal, PawRealNamePrompt },
 	data() {
 		return {
 			animalKind: 'cat',
-			statusBarHeight: 20,
 			showVoiceNotice: false,
+			showRealNamePrompt: false,
 			voiceNoticeMessage: PAW_MSG_VOICE_LEVEL,
 			showVoicePopup: false,
 			recording: false,
@@ -164,9 +172,6 @@ export default {
 		}
 	},
 	computed: {
-		regionText() {
-			return this.regionParts.filter(Boolean).join(' ')
-		},
 		introLen() {
 			return (this.introText || '').length
 		},
@@ -178,13 +183,7 @@ export default {
 		this.clearRecordTimer()
 	},
 	onLoad(options = {}) {
-		const sys = uni.getSystemInfoSync()
-		this.statusBarHeight = sys.statusBarHeight || 20
 		this.animalKind = options.kind === 'dog' ? 'dog' : 'cat'
-		// H5 视觉验收需要与 Figma 的小程序状态栏占位一致
-		// #ifdef H5
-		this.statusBarHeight = 52
-		// #endif
 		this.locDetail = '湖南省长沙市雨花区中意一路167号鼎丰前城'
 		if (options.state === 'recorded') {
 			this.voiceSavedSeconds = 2
@@ -203,10 +202,15 @@ export default {
 			this.voiceNoticeMessage = PAW_MSG_VOICE_DAY_LIMIT
 			this.showVoiceNotice = true
 		}
+		if (options.auth === 'required' || !isRealNameVerified()) this.showRealNamePrompt = true
 	},
 	methods: {
-		goBack() {
-			uni.navigateBack()
+		doTrim(value) {
+			return (value || '').trimStart()
+		},
+		goRealName() {
+			this.showRealNamePrompt = false
+			uni.navigateTo({ url: '/pages/auth/realName' })
 		},
 		onIntroInput(e) {
 			this.introText = e.detail.value || ''
@@ -215,32 +219,10 @@ export default {
 			this.adoptMsg = e.detail.value || ''
 		},
 		onYardNameInput(e) {
-			this.yardName = (e.detail.value || '').trimStart()
-		},
-		onYardNameChange(value) {
-			this.yardName = (value || '').trimStart()
+			this.yardName = this.doTrim(e.detail.value)
 		},
 		onContactInput(e) {
-			this.yardContact = (e.detail.value || '').trimStart()
-		},
-		onContactChange(value) {
-			this.yardContact = (value || '').trimStart()
-		},
-		onLocDetailInput(e) {
-			this.locDetail = e.detail.value || ''
-		},
-		openRegionPicker() {
-			uni.navigateTo({
-				url: '/pages/meMore/regionSelector',
-				events: {
-					regionSelected: (payload = {}) => {
-						this.regionParts = Array.isArray(payload.parts) ? payload.parts.filter(Boolean) : []
-					}
-				},
-				success: (res) => {
-					res.eventChannel.emit('initRegion', { parts: this.regionParts })
-				}
-			})
+			this.yardContact = this.doTrim(e.detail.value)
 		},
 		openLocationSearch() {
 			const city = this.regionParts[1] || this.regionParts[0] || uni.getStorageSync('selectedCity') || '广州市'
@@ -248,8 +230,8 @@ export default {
 				url: '/pages/meMore/locationSearch',
 				events: {
 					locationPicked: (payload = {}) => {
-						const val = (payload.detail || '').trim()
-						if (val) this.locDetail = val
+						const value = (payload.detail || '').trim()
+						if (value) this.locDetail = value
 					}
 				},
 				success: (res) => {
@@ -285,15 +267,9 @@ export default {
 		openVoicePopup() {
 			this.showVoicePopup = true
 		},
-		closeVoicePopup() {
-			if (this.recording) this.endRecord(false)
-			this.recording = false
-			this.clearRecordTimer()
-			this.showVoicePopup = false
-		},
-		onVoiceMaskTap() {
-			if (this.recording) this.endRecord(true)
-			else this.closeVoicePopup()
+		onVoiceSheetVisibleChange(value) {
+			this.showVoicePopup = value
+			if (!value && this.recording) this.endRecord(true)
 		},
 		startRecord() {
 			if (this.recording) return
@@ -302,19 +278,18 @@ export default {
 			this.recordSeconds = 0
 			this.clearRecordTimer()
 			this.recordTimer = setInterval(() => {
-				const sec = Math.floor((Date.now() - this.recordStartAt) / 1000)
-				this.recordSeconds = Math.min(59, sec)
+				const seconds = Math.floor((Date.now() - this.recordStartAt) / 1000)
+				this.recordSeconds = Math.min(59, seconds)
 				if (this.recordSeconds >= 59) this.endRecord(true)
 			}, 200)
 		},
-		endRecord(saveToForm) {
+		endRecord(saveToForm = true) {
 			if (!this.recording) return
 			this.recording = false
 			this.clearRecordTimer()
-			const raw = Math.floor((Date.now() - this.recordStartAt) / 1000)
-			const sec = Math.min(59, Math.max(0, raw))
-			if (saveToForm !== false && sec > 0) {
-				this.voiceSavedSeconds = sec
+			const seconds = Math.min(59, Math.max(0, Math.floor((Date.now() - this.recordStartAt) / 1000)))
+			if (saveToForm !== false && seconds > 0) {
+				this.voiceSavedSeconds = seconds
 				this.showVoicePopup = false
 			}
 		},
@@ -331,133 +306,439 @@ export default {
 </script>
 
 <style scoped>
-.yard-page { position:relative;height:100vh;min-height:100vh;background:linear-gradient(180deg,#d8fa7f 0,#d8fa7f 280px,#f6f6f6 280px,#f6f6f6 100%);display:flex;flex-direction:column;box-sizing:border-box; }
-.create-yard-top-reference{position:absolute;left:0;top:0;width:375px;height:100px;z-index:20;pointer-events:none}
-.header-wrap { height:160px;background:transparent;padding-bottom:34rpx;box-sizing:border-box; }
-.nav-row { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 14rpx; }
-.back-hit { width: 64rpx; height: 64rpx; display: flex; align-items: center; justify-content: center; }
-.back-icon { width: 20rpx; height: 36rpx; }
-.cap-holder { width: 174rpx; height: 64rpx; }
-.title-row { padding: 10rpx 24rpx 0; }
-.hello-line { display: flex; align-items: flex-end; flex-wrap: nowrap; white-space: nowrap; }
-.hello-strong { font-size: 28px; font-weight: 700; color: #181818; line-height: 34px; }
-.hello-soft { font-size: 21px; font-weight: 700; color: #181818; line-height: 31px; margin-left: 4px; }
-
-.content { flex:1;min-height:0;padding:6px 10px 0;box-sizing:border-box; }
-.card { background:#fff;border-radius:9px;padding:9px;box-sizing:border-box;margin-bottom:10px; }
-.cover-card{height:278px;padding:11px 12px;overflow:hidden}
-.cover-box { height: 96px; border-radius: 7px; background: transparent; padding: 0; display: flex; align-items: center; justify-content: space-between; }
-.cover-inner { width: 94px; height: 94px; border-radius: 7px; background: #f5f6f8; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.camera-icon { width: 52rpx; height: 52rpx; }
-.cover-tip { margin-top: 8rpx; font-size: 22rpx; color: #a0a5ad; }
-.mic-btn { width: 32px; height: 32px; margin-right: 0; display: flex; align-items: center; justify-content: center; }
-.voice-chip-row { display: flex; align-items: center; margin-top: 16rpx; }
-.voice-chip-pill {
-	display: inline-flex; align-items: center; height: 56rpx; padding: 0 22rpx;
-	border-radius: 28rpx; background: #fff; box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.06);
-}
-.voice-chip-sec { margin-left: 10rpx; font-size: 28rpx; font-weight: 500; color: #2f2f2f; line-height: 1; }
-.voice-chip-del {
-	margin-left: 14rpx; width: 44rpx; height: 44rpx; border-radius: 50%; background: #e8e8e8;
-	color: #888; font-size: 32rpx; line-height: 44rpx; text-align: center;
-}
-
-.intro-text-wrap { position:relative;margin-top:16px;padding-bottom:18px;height:144px;min-height:0;box-sizing:border-box; }
-.intro-text-wrap--adopt { margin-top:0;height:188px;min-height:0; }
-.intro-area {
+.yard-page {
+	display: flex;
+	flex-direction: column;
 	width: 100%;
-	min-height: 180rpx;
-	height: 126px;
-	font-size: 28rpx;
-	color: #333;
-	line-height: 40rpx;
+	height: 100vh;
+	min-height: 100vh;
+	overflow: hidden;
+	box-sizing: border-box;
+	background: linear-gradient(180deg, #defa93 0, #defa93 279px, #f6f8fa 279px, #f6f8fa 100%);
+	color: #282827;
+}
+
+.yard-heading {
+	display: flex;
+	flex: 0 0 77px;
+	width: 100%;
+	align-items: flex-start;
+	box-sizing: border-box;
+	padding: 11px 12px 0;
+	white-space: nowrap;
+}
+
+.hello-strong {
+	color: #282827;
+	font-size: 28px;
+	font-weight: 700;
+	line-height: 34px;
+}
+
+.hello-soft {
+	margin-left: 0;
+	color: #282827;
+	font-size: 22px;
+	font-weight: 700;
+	line-height: 34px;
+}
+
+.content {
+	flex: 1 1 auto;
+	width: 100%;
+	min-height: 0;
+	box-sizing: border-box;
+	padding: 0 10px;
+}
+
+.content-inner {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	gap: 10px;
+	padding-bottom: 16px;
 	box-sizing: border-box;
 }
-.input-placeholder { color: #c2c2c2; font-size: 28rpx; }
+
+.card {
+	flex: 0 0 auto;
+	width: 100%;
+	box-sizing: border-box;
+	background: #fff;
+}
+
+.cover-card {
+	display: flex;
+	flex-direction: column;
+	height: 279px;
+	padding: 12px 12px 8px;
+	border-radius: 12px;
+}
+
+.cover-top {
+	display: flex;
+	flex: 0 0 94px;
+	width: 100%;
+	height: 94px;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+
+.cover-inner {
+	display: flex;
+	flex: 0 0 94px;
+	width: 94px;
+	height: 94px;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	border-radius: 12px;
+	background: #f6f8fa;
+}
+
+.cover-camera {
+	display: block;
+	width: 28px;
+	height: 28px;
+}
+
+.cover-tip {
+	margin-top: 4px;
+	color: #b6b6b8;
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 17px;
+	white-space: nowrap;
+}
+
+.mic-btn {
+	display: flex;
+	flex: 0 0 25px;
+	width: 25px;
+	height: 25px;
+	align-items: center;
+	align-self: flex-end;
+	justify-content: center;
+}
+
+.mic-icon {
+	display: block;
+	width: 25px;
+	height: 25px;
+}
+
+.voice-chip-row {
+	display: flex;
+	flex: 0 0 33px;
+	width: 100%;
+	height: 33px;
+	align-items: center;
+	gap: 8px;
+	margin-top: 5px;
+}
+
+.voice-chip-pill {
+	display: flex;
+	flex: 0 0 65px;
+	width: 65px;
+	height: 33px;
+	align-items: center;
+	padding: 0 0 0 11px;
+	box-sizing: border-box;
+	border: .5px solid #e6e6e6;
+	border-radius: 7px;
+	background: #fafafa;
+}
+
+.voice-chip-icon {
+	display: block;
+	width: 14px;
+	height: 14px;
+}
+
+.voice-chip-sec {
+	margin-left: 6px;
+	color: #282827;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 18px;
+}
+
+.voice-chip-del,
+.location-clear {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+}
+
+.voice-chip-del image,
+.location-clear image {
+	display: block;
+	width: 16px;
+	height: 16px;
+}
+
+.intro-text-wrap {
+	position: relative;
+	display: flex;
+	flex: 1 1 auto;
+	width: 100%;
+	min-height: 0;
+	margin-top: 5px;
+	box-sizing: border-box;
+}
+
+.intro-text-wrap--adopt {
+	height: 100%;
+	margin-top: 0;
+}
+
+.intro-area {
+	display: block;
+	width: 100%;
+	height: 100%;
+	min-height: 0;
+	padding: 10px 0 24px;
+	box-sizing: border-box;
+	color: #282827;
+	font-size: 14px;
+	line-height: 20px;
+}
+
+.intro-area--adopt {
+	padding-top: 0;
+	padding-bottom: 24px;
+}
+
 .count {
 	position: absolute;
 	right: 0;
 	bottom: 0;
-	font-size: 24rpx;
-	color: #a9a9a9;
-	line-height: 34rpx;
+	color: #b6b6b8;
+	font-size: 13px;
+	line-height: 20px;
 	text-align: right;
 }
 
-.form-card{height:211px}
-.form-card .row { display:flex;align-items:center;min-height:0;padding:10px 2px;border-bottom:1px solid #f2f2f2;box-sizing:border-box; }
-.form-card .row:nth-child(1){height:57px}.form-card .row:nth-child(2){height:58px}.form-card .row:nth-child(3){height:78px}
-.form-card .row:last-child { border-bottom: none; }
-.row-input { align-items: center; }
-.row-arrow { align-items: center; }
-.row-yard-location { align-items: center; }
-.lb { width: 148rpx; flex-shrink: 0; font-size: 32rpx; color: #2d2d2d; font-weight: 500; }
-.lb-top { padding-top: 6rpx; }
-.ipt {
-	flex: 1;
+.form-card {
+	display: flex;
+	flex-direction: column;
+	padding: 8px 12px;
+	border-radius: 8px;
+}
+
+.form-row {
+	display: flex;
+	width: 100%;
 	min-width: 0;
-	font-size: 30rpx;
+	box-sizing: border-box;
+	border-bottom: .5px solid #f6f8fa;
+}
+
+.form-row--input {
+	height: 57px;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.form-row--location {
+	min-height: 75px;
+	align-items: center;
+	gap: 26px;
+	border-bottom: 0;
+}
+
+.form-row__content {
+	display: flex;
+	flex: 1 1 auto;
+	min-width: 0;
+	align-items: center;
+	gap: 26px;
+}
+
+.form-label {
+	flex: 0 0 54px;
+	width: 54px;
+	color: #282827;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 20px;
+	white-space: nowrap;
+}
+
+.form-control {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.form-input {
+	display: block;
+	width: 100%;
+	padding: 0;
+	color: #282827;
+	font-size: 14px;
+	line-height: 20px;
+	text-align: left;
+}
+
+.create-yard-placeholder {
+	color: #a3a39f;
+	font-size: 14px;
+	font-weight: 400;
+}
+
+.row-chevron {
+	display: block;
+	flex: 0 0 16px;
+	width: 16px;
+	height: 16px;
+	margin-left: 8px;
+}
+
+.location-value {
+	flex: 1 1 auto;
+	min-width: 0;
 	color: #333;
-	line-height: 42rpx;
-	text-align: right;
+	font-size: 14px;
+	line-height: 20px;
+	word-break: break-all;
 }
-.ph { flex: 1; font-size: 30rpx; color: #c2c2c2; line-height: 40rpx; min-width: 0; }
-.ph.picked { color: #2f2f2f; }
-.ph-ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8rpx; }
 
-.yard-location-text { flex: 1; min-width: 0; padding-right: 6px; font-size: 14px; line-height: 19px; color: #333; }
-.loc-clear {
-	width: 40rpx;
-	height: 40rpx;
-	border-radius: 50%;
-	background: #e8e8e8;
-	color: #888;
-	font-size: 28rpx;
-	line-height: 40rpx;
-	text-align: center;
+.location-actions {
+	display: flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: 8px;
+	margin-left: 0;
 }
-.loc-pin { display: flex; align-items: center; justify-content: center; padding: 4rpx; }
 
-.intro-card { height:206px;padding-bottom:6px;margin-bottom:9px; }
-.intro-area--small { height:160px;min-height:160px; }
+.location-pin {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+}
 
-.addr-card { height:68px;display:flex;align-items:center;padding-top:10px;padding-bottom:10px; }
-.addr-card--picked { align-items: flex-start; }
-.dot { width: 28rpx; height: 28rpx; border-radius: 50%; background: #f8f3e8; margin-right: 12rpx; flex-shrink: 0; margin-top: 6rpx; }
-.addr-main { flex: 1; min-width: 0; }
-.addr-title { font-size: 30rpx; color: #2a2a2a; font-weight: 500; line-height: 40rpx; }
-.addr-sub { display: block; margin-top: 4rpx; font-size: 24rpx; color: #8a8a8a; line-height: 32rpx; }
-.addr-add { font-size: 30rpx; color: #f3a33f; font-weight: 500; margin-left: 12rpx; flex-shrink: 0; }
-.addr-line1 { font-size: 28rpx; color: #333; line-height: 40rpx; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
-.addr-line2 { display: block; margin-top: 8rpx; font-size: 26rpx; color: #666; line-height: 36rpx; }
-.addr-edit-link { font-size: 30rpx; color: #f3a33f; font-weight: 500; margin-left: 12rpx; flex-shrink: 0; align-self: center; }
+.location-pin image {
+	display: block;
+	width: 24px;
+	height: 24px;
+}
 
-.footer { height:93px;padding:8px 12px 42px;background:#f6f6f6;box-sizing:border-box; }
-.save-btn { height:43px;border-radius:22px;background:#d4fa83;color:#1f1f1f;font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center; }
+.adopt-card {
+	display: flex;
+	height: 206px;
+	padding: 18px 12px 5px;
+	border-radius: 12px;
+}
 
-.voice-mask {
-	position: fixed; left: 0; right: 0; top: 0; bottom: 0;
-	background: rgba(0, 0, 0, 0.18); z-index: 99;
+.addr-card {
+	display: flex;
+	height: 68px;
+	align-items: center;
+	padding: 0 8px 0 6px;
+	border-radius: 20px;
 }
-.voice-sheet {
-	position: fixed; left: 12rpx; right: 12rpx; bottom: 12rpx;
-	height: 620rpx; border-radius: 42rpx; background: #efefef;
-	z-index: 100; display: flex; flex-direction: column; align-items: center;
-	padding-top: 120rpx; box-sizing: border-box;
+
+.address-icon {
+	position: relative;
+	display: flex;
+	flex: 0 0 35px;
+	width: 35px;
+	height: 35px;
+	align-items: center;
+	justify-content: center;
 }
-.timer-pill {
-	height: 82rpx; min-width: 188rpx; border-radius: 18rpx;
-	border: 1px solid #dbdbdb; background: #f5f5f5;
-	display: flex; align-items: center; justify-content: center;
-	padding: 0 26rpx; box-sizing: border-box;
+
+.address-icon__circle {
+	display: block;
+	width: 35px;
+	height: 35px;
 }
-.timer-text { margin-left: 10rpx; font-size: 56rpx; font-weight: 500; color: #2f2f2f; line-height: 1; }
-.voice-tip { margin-top: 34rpx; font-size: 56rpx; color: #9b9b9b; line-height: 68rpx; }
-.record-btn {
-	margin-top: 94rpx; width: 198rpx; height: 198rpx; border-radius: 50%;
-	background: #f6f6f6; box-shadow: 0 0 32rpx rgba(245, 216, 0, 0.22);
-	display: flex; align-items: center; justify-content: center;
+
+.address-icon__pin {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	display: block;
+	width: 20px;
+	height: 19px;
 }
-.record-btn--active { border: 8rpx solid #f5d800; box-shadow: none; }
-.stop-dot { width: 58rpx; height: 58rpx; border-radius: 18rpx; background: #f5d800; }
+
+.addr-main {
+	display: flex;
+	flex: 1 1 auto;
+	min-width: 0;
+	flex-direction: column;
+	margin-left: 13px;
+}
+
+.addr-title,
+.addr-line1 {
+	color: #333;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 20px;
+	white-space: nowrap;
+}
+
+.addr-sub,
+.addr-line2 {
+	margin-top: 2px;
+	color: #999;
+	font-size: 13px;
+	line-height: 19px;
+	white-space: nowrap;
+}
+
+.addr-action {
+	display: flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: 2px;
+	margin-left: 8px;
+	color: #fd6302;
+	font-size: 13px;
+	line-height: 20px;
+}
+
+.addr-action image {
+	display: block;
+	width: 16px;
+	height: 16px;
+}
+
+.footer-safe {
+	flex: 0 0 auto;
+	width: 100%;
+	background: #fff;
+}
+
+.footer {
+	width: 100%;
+	height: 55px;
+	padding: 8px 12px 0;
+	box-sizing: border-box;
+	background: #fff;
+}
+
+.save-btn {
+	display: flex;
+	width: 100%;
+	height: 43px;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	border-radius: 22px;
+	background: #defa93;
+	color: #282827;
+	font-size: 16px;
+	font-weight: 700;
+	line-height: 27px;
+	white-space: nowrap;
+}
 </style>

@@ -1,11 +1,11 @@
 <template>
-  <PawOverlay :model-value="openValue" :close-on-mask="closeOnMask" :z-index="zIndex" :enter-duration="180"
-    :exit-duration="200" @update:model-value="setValue" @update:visible="setValue" @after-open="$emit('after-open')"
-    @after-close="$emit('after-close')">
+  <PawOverlay :model-value="openValue" placement="bottom" :close-on-mask="closeOnMask" :z-index="zIndex"
+    :enter-duration="180" :exit-duration="200" @update:model-value="setValue" @update:visible="setValue"
+    @after-open="$emit('after-open')" @after-close="$emit('after-close')">
     <template #default="{ opened, closing }">
       <PawSafeArea class="paw-bottom-sheet" :enabled="safeArea" :class="[
         `paw-bottom-sheet--${variant}`,
-        { 'paw-bottom-sheet--open': opened, 'paw-bottom-sheet--closing': closing, 'paw-bottom-sheet--safe': safeArea }
+        { 'paw-bottom-sheet--open': opened, 'paw-bottom-sheet--closing': closing, 'paw-bottom-sheet--safe': safeArea, 'paw-bottom-sheet--fixed': !!height }
       ]" :style="sheetStyle" @tap.stop>
         <view v-if="showHandle" class="paw-bottom-sheet__handle"></view>
         <slot name="header" />
@@ -68,6 +68,18 @@ export default {
   transition: transform var(--paw-motion-sheet, 260ms) var(--paw-ease-standard, ease);
 }
 
+.paw-bottom-sheet.paw-bottom-sheet--publish {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+}
+
+.paw-bottom-sheet.paw-bottom-sheet--publish .paw-bottom-sheet__body {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .paw-bottom-sheet.paw-bottom-sheet--composer {
   padding: 15px;
 }
@@ -91,6 +103,11 @@ export default {
 }
 
 .paw-bottom-sheet__body {
+  min-height: 0;
+}
+
+.paw-bottom-sheet--fixed .paw-bottom-sheet__body {
+  height: 100%;
   min-height: 0;
 }
 

@@ -1,6 +1,6 @@
 <template>
   <view class="paw-fixed-action-bar" :class="{ 'paw-fixed-action-bar--safe': safeArea }">
-    <view class="paw-fixed-action-bar__actions">
+    <view class="paw-fixed-action-bar__content">
       <view v-for="action in actions" :key="action.key" class="paw-fixed-action-bar__action"
         :class="{ 'paw-fixed-action-bar__action--disabled': action.disabled }"
         hover-class="paw-fixed-action-bar__action--pressed" @tap.stop="onAction(action)">
@@ -11,16 +11,18 @@
           :size="action.iconSize || 21" :color="action.iconColor || '#222'" />
         <text>{{ action.label }}</text>
       </view>
+      <PawButton v-if="primaryAction" class="paw-fixed-action-bar__primary" :text="primaryAction.label"
+        :tone="primaryAction.tone || 'brand'" :size="primaryAction.size || 'md'" block flush nowrap
+        :loading="!!primaryAction.loading" :disabled="!!primaryAction.disabled"
+        @click="$emit('primary', primaryAction)">
+        <PawIcon v-if="primaryAction.iconName" class="paw-fixed-action-bar__primary-paw-icon"
+          :name="primaryAction.iconName" :size="primaryAction.iconSize || 32"
+          :color="primaryAction.iconColor || '#282827'" />
+        <image v-else-if="primaryAction.image" class="paw-fixed-action-bar__primary-icon" :src="primaryAction.image"
+          mode="aspectFit" />
+        <text class="paw-fixed-action-bar__primary-label">{{ primaryAction.label }}</text>
+      </PawButton>
     </view>
-    <PawButton v-if="primaryAction" class="paw-fixed-action-bar__primary" :text="primaryAction.label"
-      :tone="primaryAction.tone || 'brand'" :size="primaryAction.size || 'md'" block flush nowrap
-      :loading="!!primaryAction.loading" :disabled="!!primaryAction.disabled" @click="$emit('primary', primaryAction)">
-      <PawIcon v-if="primaryAction.iconName" class="paw-fixed-action-bar__primary-paw-icon" :name="primaryAction.iconName"
-        :size="primaryAction.iconSize || 32" :color="primaryAction.iconColor || '#282827'" />
-      <image v-else-if="primaryAction.image" class="paw-fixed-action-bar__primary-icon" :src="primaryAction.image"
-        mode="aspectFit" />
-      <text class="paw-fixed-action-bar__primary-label">{{ primaryAction.label }}</text>
-    </PawButton>
   </view>
 </template>
 
@@ -50,28 +52,34 @@ export default {
   right: 0;
   bottom: 0;
   z-index: var(--paw-z-footer, 300);
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: flex-start;
+  display: block;
   height: 88px;
   min-height: 88px;
-  padding: 7px 18px 0 7px;
+  padding: 7px 18px 0 20px;
   box-sizing: border-box;
   border-top: .5px solid rgba(0, 0, 0, .05);
   background: #fff;
 }
 
 .paw-fixed-action-bar--safe {
+  padding-bottom: 34px;
+}
+
+/* #ifdef MP-WEIXIN */
+.paw-fixed-action-bar--safe {
+  padding-bottom: constant(safe-area-inset-bottom);
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-.paw-fixed-action-bar__actions {
+/* #endif */
+
+.paw-fixed-action-bar__content {
   display: flex;
-  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  height: 42px;
   align-items: flex-start;
   justify-content: space-between;
-  min-width: 156px;
-  height: 42px;
 }
 
 .paw-fixed-action-bar__action {
@@ -79,7 +87,7 @@ export default {
   align-items: center;
   justify-content: flex-start;
   flex-direction: column;
-  width: 52px;
+  min-width: 21px;
   height: 53px;
   padding-top: 5px;
   box-sizing: border-box;
@@ -87,6 +95,8 @@ export default {
   font-size: 11px;
   font-weight: 500;
   line-height: 14px;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .paw-fixed-action-bar__action--disabled {
@@ -110,6 +120,7 @@ export default {
 }
 
 .paw-fixed-action-bar__uni-icon {
+  width: 21px;
   height: 21px;
   margin-bottom: 1px;
 }
@@ -120,7 +131,7 @@ export default {
   width: 188px;
   height: 42px;
   min-height: 42px;
-  margin: 0 0 0 6px;
+  margin: 0;
   padding: 0;
   border-radius: 42px;
   background: #ffe60f;

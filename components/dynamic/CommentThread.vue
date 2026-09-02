@@ -7,8 +7,9 @@
     <template v-else>
       <CommentItem v-for="(comment, index) in visibleComments" :key="comment.id"
         :class="{ 'comment-item--first': index === 0, 'comment-item--second': index === 1, 'comment-item--voice': comment.kind === 'voice' }"
-        :comment="comment" :playing="playingId === comment.id" @user-click="$emit('user-click', $event)"
-        @reply="$emit('reply', $event)" @like="$emit('like', $event)" @voice-play="onVoicePlay" />
+        :comment="comment" :reply-preview-count="replyPreviewCount" :playing="playingId === comment.id"
+        @user-click="$emit('user-click', $event)" @reply="$emit('reply', $event)" @like="$emit('like', $event)"
+        @voice-play="onVoicePlay" />
       <view v-if="hiddenCommentCount > 0" id="qa-dynamic-detail-expand-comments" class="comment-thread__expand"
         @tap.stop="toggleComments">
         <PawDivider class="comment-thread__expand-line" :width="34" :thickness="0.3" /><text>{{
@@ -31,7 +32,8 @@ export default {
     comments: { type: Array, default: () => [] },
     total: { type: String, default: '' },
     empty: { type: Boolean, default: false },
-    commentPreviewCount: { type: Number, default: 3 }
+    commentPreviewCount: { type: Number, default: 3 },
+    replyPreviewCount: { type: Number, default: 1 }
   },
   emits: ['user-click', 'reply', 'like', 'voice-play', 'expand-comments', 'empty-action'],
   data() { return { commentsExpanded: false, playingId: null } },

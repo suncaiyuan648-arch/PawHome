@@ -11,7 +11,7 @@
           <slot name="content" />
         </view>
         <text v-else class="paw-nav__title" :class="{ 'paw-nav__title--light': light }" :style="titleStyle">{{ title
-          }}</text>
+        }}</text>
 
         <!-- Transparent reserve only. WeChat renders the native capsule itself. -->
         <view class="paw-nav__native-reserve" :style="reserveStyle" aria-hidden="true" />
@@ -171,4 +171,14 @@ export default {
   z-index: 1;
   pointer-events: none;
 }
+</style>
+
+<style>
+/* #ifdef MP-WEIXIN */
+:host {
+  display: block;
+  width: 100%;
+}
+
+/* #endif */
 </style>

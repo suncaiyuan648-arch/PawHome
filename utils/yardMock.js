@@ -33,23 +33,33 @@ const yardPet = (id, name, avatar, species, breed, state, extra = {}) => ({
 
 const cat = '/static/figma/yard-cats/cat-avatar.png'
 const dog = '/static/figma/pets/pet-dog.png'
+const catGallery = [
+  cat,
+  '/static/figma/adoption-flow/pet-orange.png',
+  '/static/figma/pets/pet-black-white.png'
+]
+const dogGallery = [
+  dog,
+  '/static/figma/pets/adoption-dog.png',
+  '/static/figma/adoption-flow/pet-hero.png'
+]
 
 const YARD_PETS = [
-  yardPet('roster-cat-1', '小毛球', cat, 'cat', '加菲猫', 'pending'),
-  yardPet('roster-cat-2', '小毛球', cat, 'cat', '加菲猫', 'cloud'),
-  yardPet('roster-cat-3', '小毛球', cat, 'cat', '奶牛猫', 'cloud'),
-  yardPet('roster-cat-4', '花春晓', cat, 'cat', '英短', 'adopted', { stateTimeLabel: '领养时间', stateTime: '2026-06-12' }),
-  yardPet('roster-cat-5', '小灰灰', cat, 'cat', '中华田园猫', 'missing', { stateTimeLabel: '失踪时间', stateTime: '2026-06-18' }),
-  yardPet('roster-cat-6', '年糕糕', cat, 'cat', '中华田园猫', 'dead', { stateTimeLabel: '死亡时间', stateTime: '2026-06-20' }),
-  yardPet('roster-cat-7', '团团儿', cat, 'cat', '英短', 'adopted', { stateTimeLabel: '领养时间', stateTime: '2026-05-23' }),
-  yardPet('roster-cat-8', '奶糖儿', cat, 'cat', '奶牛猫', 'adopted', { stateTimeLabel: '领养时间', stateTime: '2026-04-09' }),
-  yardPet('roster-cat-9', '橘子儿', cat, 'cat', '中华田园猫', 'missing', { stateTimeLabel: '失踪时间', stateTime: '2026-06-25' }),
-  yardPet('roster-cat-10', '豆包儿', cat, 'cat', '中华田园猫', 'missing', { stateTimeLabel: '失踪时间', stateTime: '2026-06-27' }),
-  yardPet('roster-cat-11', '小虎子', cat, 'cat', '英短', 'dead', { stateTimeLabel: '死亡时间', stateTime: '2026-05-14' }),
-  yardPet('roster-cat-12', '花生儿', cat, 'cat', '奶牛猫', 'dead', { stateTimeLabel: '死亡时间', stateTime: '2026-05-29' }),
-  yardPet('roster-dog-1', '呗呗儿', dog, 'dog', '金毛', 'pending'),
-  yardPet('roster-dog-2', '旺财儿', dog, 'dog', '柴犬', 'cloud'),
-  yardPet('roster-dog-3', '小黑子', dog, 'dog', '柴犬', 'dead', { stateTimeLabel: '死亡时间', stateTime: '2026-06-28' })
+  yardPet('roster-cat-1', '小毛球', cat, 'cat', '加菲猫', 'pending', { gallery: catGallery }),
+  yardPet('roster-cat-2', '小毛球', cat, 'cat', '加菲猫', 'cloud', { gallery: catGallery }),
+  yardPet('roster-cat-3', '小毛球', cat, 'cat', '奶牛猫', 'cloud', { gallery: catGallery }),
+  yardPet('roster-cat-4', '花春晓', cat, 'cat', '英短', 'adopted', { gallery: catGallery, stateTimeLabel: '领养时间', stateTime: '2026-06-12' }),
+  yardPet('roster-cat-5', '小灰灰', cat, 'cat', '中华田园猫', 'missing', { gallery: catGallery, stateTimeLabel: '失踪时间', stateTime: '2026-06-18' }),
+  yardPet('roster-cat-6', '年糕糕', cat, 'cat', '中华田园猫', 'dead', { gallery: catGallery, stateTimeLabel: '死亡时间', stateTime: '2026-06-20' }),
+  yardPet('roster-cat-7', '团团儿', cat, 'cat', '英短', 'adopted', { gallery: catGallery, stateTimeLabel: '领养时间', stateTime: '2026-05-23' }),
+  yardPet('roster-cat-8', '奶糖儿', cat, 'cat', '奶牛猫', 'adopted', { gallery: catGallery, stateTimeLabel: '领养时间', stateTime: '2026-04-09' }),
+  yardPet('roster-cat-9', '橘子儿', cat, 'cat', '中华田园猫', 'missing', { gallery: catGallery, stateTimeLabel: '失踪时间', stateTime: '2026-06-25' }),
+  yardPet('roster-cat-10', '豆包儿', cat, 'cat', '中华田园猫', 'missing', { gallery: catGallery, stateTimeLabel: '失踪时间', stateTime: '2026-06-27' }),
+  yardPet('roster-cat-11', '小虎子', cat, 'cat', '英短', 'dead', { gallery: catGallery, stateTimeLabel: '死亡时间', stateTime: '2026-05-14' }),
+  yardPet('roster-cat-12', '花生儿', cat, 'cat', '奶牛猫', 'dead', { gallery: catGallery, stateTimeLabel: '死亡时间', stateTime: '2026-05-29' }),
+  yardPet('roster-dog-1', '呗呗儿', dog, 'dog', '金毛', 'pending', { gallery: dogGallery }),
+  yardPet('roster-dog-2', '旺财儿', dog, 'dog', '柴犬', 'cloud', { gallery: dogGallery }),
+  yardPet('roster-dog-3', '小黑子', dog, 'dog', '柴犬', 'dead', { gallery: dogGallery, stateTimeLabel: '死亡时间', stateTime: '2026-06-28' })
 ]
 
 const YARD_MOCK = {
