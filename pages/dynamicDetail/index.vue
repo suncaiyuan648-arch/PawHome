@@ -150,6 +150,7 @@ export default {
     const yard = getPawHomeYardMock()
     return {
       yardId: yard.id,
+      dynamicId: 'published-dynamic-1',
       navLayout: getWechatNavLayout(),
       commentsEmpty: false,
       liked: false,
@@ -200,6 +201,7 @@ export default {
   onLoad(query = {}) {
     this.navLayout = getWechatNavLayout()
     if (query.yardId) this.yardId = String(query.yardId)
+    if (query.dynamicId) this.dynamicId = String(query.dynamicId)
     this.commentsEmpty = query.state === 'comments-empty'
     this.author.name = this.commentsEmpty ? '我就是要喂猫' : '芝'
   },
@@ -207,7 +209,7 @@ export default {
     const state = this.commentsEmpty ? '&state=comments-empty' : ''
     return {
       title: `${this.yard.name}动态`,
-      path: `/pages/dynamicDetail/index?yardId=${encodeURIComponent(this.yardId)}${state}`,
+      path: `/pages/dynamicDetail/index?yardId=${encodeURIComponent(this.yardId)}&dynamicId=${encodeURIComponent(this.dynamicId)}${state}`,
       imageUrl: this.mediaItems[0]
     }
   },
@@ -215,7 +217,7 @@ export default {
     const state = this.commentsEmpty ? '&state=comments-empty' : ''
     return {
       title: `${this.yard.name}动态`,
-      query: `yardId=${encodeURIComponent(this.yardId)}${state}`,
+      query: `yardId=${encodeURIComponent(this.yardId)}&dynamicId=${encodeURIComponent(this.dynamicId)}${state}`,
       imageUrl: this.mediaItems[0]
     }
   },

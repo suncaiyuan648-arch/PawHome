@@ -85,14 +85,6 @@
           }
         },
         {
-          // 地点搜索：搜索并选择具体位置或地址详情。
-          "path": "locationSearch",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F3F3F3"
-          }
-        },
-        {
           // 我的领养：查看用户发起或参与的领养记录。
           "path": "myAdoption",
           "style": {
@@ -513,14 +505,6 @@
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F0F0F0"
-          }
-        },
-        {
-          // 小院认证完成：展示认证提交或完成结果。
-          "path": "yardCertifyDone",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#FFFFFF"
           }
         },
         {

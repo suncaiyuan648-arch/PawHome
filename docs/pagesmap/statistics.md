@@ -87,7 +87,7 @@
 | `62:35896` 发布动态-选择订单 | `pages/publishDynamic/postFeedOrder.vue` | 已实现 |
 | `62:35942` 动态发布结果页；`62:36620` 投粮成功结果页 | `pages/publishDynamic/postSuccess.vue`：默认发布成功与 `state=feeding` 投粮成功 | 已实现（同一路由多结果状态） |
 | `62:35999` 宠物相册 | `pages/feature/index.vue`：`mode=album` | 已实现 |
-| `62:36095` 小院认证-结果页；`62:36554` 小院创建结果页 | `pages/yard/yardCertifyDone.vue`：普通提交结果与 `state=created` 创建成功结果 | 已实现（同一路由多结果状态） |
+| `62:36095` 小院认证-结果页；`62:36554` 小院创建结果页 | `pages/yard/yardCertify.vue` 提交后直接进入 `pages/yard/yardCats.vue?state=managed`；旧 `yardCertifyDone.vue` 已移除 | 已调整（创建成功统一进入小院动物管理页） |
 | `62:36152` 年度报告 | `pages/meMore/annualReport.vue` | 已实现 |
 | `62:37970`、`62:38114`、`62:38248` 小院认证 | `pages/yard/yardCertify.vue`：`figmaState=97/98/99`，表单、已通过、审核中 | 已实现（同一路由多状态） |
 | `62:37451` 我也来证实 | `pages/yard/adoptionAudit.vue?mode=proof` + `components/PawAdoptionProofForm.vue` | 已实现 |

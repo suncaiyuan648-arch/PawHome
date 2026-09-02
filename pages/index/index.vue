@@ -444,9 +444,10 @@ export default {
 				this.noMoreHintVisible = false
 			}, 700)
 		},
-		goDetail() {
+		goDetail(item) {
+			const dynamicId = item && item.id ? String(item.id) : 'mock-feed-1'
 			uni.navigateTo({
-				url: '/pages/dynamicDetail/index?yardId=1'
+				url: `/pages/dynamicDetail/index?yardId=1&dynamicId=${encodeURIComponent(dynamicId)}`
 			})
 		},
 		goYardDetail() {

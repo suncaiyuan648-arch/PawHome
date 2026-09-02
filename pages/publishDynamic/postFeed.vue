@@ -21,20 +21,22 @@
 			<view class="pad">
 				<view class="card">
 					<view class="ta-wrap">
-						<textarea
-							class="ta"
-							:value="content"
-							maxlength="500"
-							placeholder="分享喂猫过程"
-							placeholder-class="ph"
-							@input="onContentInput"
-						/>
+						<textarea class="ta" :value="content" maxlength="500" placeholder="分享喂猫过程"
+							placeholder-class="ph" @input="onContentInput" />
 						<text class="ta-count">{{ contentLen }}/500</text>
 					</view>
 					<view class="media-row">
-						<image v-for="src in mediaList" :key="src" class="media-preview" :src="src" mode="aspectFill"></image>
-						<PawUploadTile class="media-add" @select="pickMedia">
-							<uni-icons type="image" color="#b0b0b0" :size="40"></uni-icons>
+						<view v-for="(src, index) in mediaList" :key="`${src}-${index}`" class="media-item"
+							:data-qa="`publish-feed-media-item-${index}`">
+							<image class="media-preview" :src="src" mode="aspectFill"></image>
+							<view class="media-remove" :data-qa="`publish-feed-media-remove-${index}`"
+								@tap.stop="removeMedia(index)">
+								<PawIcon name="navigation/close" :size="12" label="删除图片" />
+							</view>
+						</view>
+						<PawUploadTile class="media-add" size="106px" radius="3px" @select="pickMedia">
+							<image class="media-icon" src="/static/figma/publish/upload-media.svg" mode="aspectFit">
+							</image>
 							<text class="media-txt">照片/视频</text>
 						</PawUploadTile>
 					</view>
@@ -43,18 +45,15 @@
 				<view class="card card-feed">
 					<view class="feed-head">
 						<text class="feed-lb">反馈</text>
-						<view v-if="!selectedOrder" class="feed-link" @click="openOrderSheet">
-							<text>选择投粮订单</text>
-							<text class="feed-arr">›</text>
-						</view>
-						<view v-else class="feed-link" @click="openOrderSheet">
-							<text>已选择</text>
+						<view class="feed-link" @click="openOrderSheet">
+							<text>{{ orderSelectionLabel }}</text>
 							<text class="feed-arr">›</text>
 						</view>
 					</view>
 
 					<view v-if="selectedOrder" class="order-box">
-						<image v-if="alternateMode" class="order-avatar" src="/static/figma/feeding/yard-feed-avatar.png" mode="aspectFill"></image>
+						<image v-if="alternateMode" class="order-avatar"
+							src="/static/figma/feeding/yard-feed-avatar.png" mode="aspectFill"></image>
 						<view class="order-top">
 							<view class="order-name-row" @click.stop="openOrderUser(selectedOrder)">
 								<text class="order-name">{{ selectedOrder.userName }}</text>
@@ -71,14 +70,16 @@
 					</view>
 
 					<view class="cat-block">
-						<text class="cat-title">本次投喂的小院猫咪 ({{ alternateMode ? 0 : pickedCats.length }})</text>
+						<text class="cat-title">本次投喂的小院猫咪 ({{ pickedCats.length }})</text>
 						<view class="cat-row">
-							<view v-for="cat in pickedCats" :key="cat.name" class="cat-pet"><image :src="cat.avatar" mode="aspectFill"></image><text>{{ cat.name }}</text></view>
+							<view v-for="cat in pickedCats" :key="cat.id || cat.name" class="cat-pet">
+								<image :src="cat.avatar" mode="aspectFill"></image><text>{{ cat.name }}</text>
+							</view>
 							<view class="cat-add" @click="onAddCats">
-								<view class="cat-plus"><uni-icons type="plusempty" color="#111" :size="22"></uni-icons></view>
+								<view class="cat-plus"><uni-icons type="plusempty" color="#111" :size="22"></uni-icons>
+								</view>
 								<text class="cat-add-txt">去添加</text>
 							</view>
-							<template v-if="!alternateMode"><text v-for="(n, i) in yardCatNames" :key="'c-' + i" class="cat-name">{{ n }}</text></template>
 						</view>
 					</view>
 				</view>
@@ -91,87 +92,44 @@
 			</view>
 		</scroll-view>
 
-		<PawBottomSheet
-			:model-value="showOrderSheet"
-			variant="selection-order"
-			height="70vh"
-			:close-on-mask="true"
-			:safe-area="true"
-			@update:model-value="setOrderSheetVisible"
-		>
-			<view class="order-sheet-body">
-				<view class="sheet-head">
-					<text class="sheet-title">选择订单</text>
-					<view class="sheet-x" @tap.stop="closeOrderSheet"><text>×</text></view>
-				</view>
-				<scroll-view class="sheet-scroll" scroll-y :show-scrollbar="false" :bounces="false" :enable-flex="true">
-					<view
-						v-for="o in mockOrders"
-						:key="o.id"
-						class="order-card"
-						:class="{ 'order-card--on': tempOrderId === o.id }"
-						@tap.stop="selectOrder(o)"
-					>
-						<view class="oc-radio">
-							<view v-if="tempOrderId === o.id" class="oc-dot"><text class="oc-check">✓</text></view>
-							<view v-else class="oc-ring"></view>
-						</view>
-						<view class="oc-body">
-							<view class="oc-top">
-								<view class="oc-name-row" @tap.stop="openOrderUser(o)">
-									<text class="oc-name">{{ o.userName }}</text>
-									<LevelCapsule :level="o.level" />
-								</view>
-								<text v-if="o.timedOut" class="oc-timeout">已超时</text>
-								<text v-else class="oc-countdown">{{ o.countdown }}</text>
-							</view>
-							<text class="oc-kg">投粮{{ o.kg }}斤</text>
-							<view class="oc-foot">
-								<text class="oc-time">{{ o.time }}</text>
-								<view class="oc-tag"><text>{{ o.feedbackTag }}</text></view>
-							</view>
-						</view>
-					</view>
-				</scroll-view>
-			</view>
-		</PawBottomSheet>
+		<PawOrderSelectSheet :model-value="showOrderSheet" :orders="mockOrders" :selected-ids="tempOrderIds"
+			@update:model-value="setOrderSheetVisible" @update:selected-ids="tempOrderIds = $event"
+			@order-user-click="openOrderUser" @after-close="applyOrderSelection" />
+
+		<PawPetSelectSheet :model-value="showPetSheet" :animals="animalOptions" :selected-ids="tempPetIds"
+			@update:model-value="setPetSheetVisible" @update:selected-ids="tempPetIds = $event"
+			@after-close="applyPetSelection" />
 	</view>
 </template>
 
 <script>
 import { goBackSmart } from '@/utils/navBack.js'
 import { openUserProfile } from '@/utils/profileNav.js'
+import { getPawHomeYardMock } from '@/utils/yardMock.js'
 import LevelCapsule from '@/components/LevelCapsule.vue'
+import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawUploadTile from '@/components/form/PawUploadTile.vue'
-import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
-
-const MOCK_ORDERS = () => [
-	{
-		id: '1',
-		userName: '平安是福',
-		level: 1,
-		kg: 4,
-		time: '2026-2-5 13:23:56',
-		countdown: '3天23:34:45后超时',
-		timedOut: false,
-		feedbackTag: '已反馈2/5次'
-	},
-	{
-		id: '2',
-		userName: '爱心投喂',
-		pawId: 'order-user-axtf',
-		level: 2,
-		kg: 2,
-		time: '2026-2-1 10:00:00',
-		countdown: '5天12:00:00后超时',
-		timedOut: false,
-		feedbackTag: '已反馈0/3次'
-	}
-]
+import PawOrderSelectSheet from '@/components/PawOrderSelectSheet.vue'
+import PawPetSelectSheet from '@/components/PawPetSelectSheet.vue'
 
 export default {
-	components: { LevelCapsule, PawUploadTile, PawBottomSheet },
+	components: { LevelCapsule, PawIcon, PawUploadTile, PawOrderSelectSheet, PawPetSelectSheet },
 	data() {
+		const yard = getPawHomeYardMock()
+		const mockOrders = yard.feedingOrders.map(order => ({ ...order, avatar: order.userAvatar }))
+		const animalOptions = yard.pets
+			.filter(pet => pet.state === 'cloud')
+			.map(pet => {
+				const order = mockOrders.find(item => item.petIds.some(petId => String(petId) === String(pet.id)))
+				return {
+					...pet,
+					...(order || {}),
+					id: pet.id,
+					name: pet.name,
+					avatar: pet.avatar,
+					orderId: order ? order.id : ''
+				}
+			})
 		return {
 			statusBarHeight: 20,
 			menuRightWidth: 87,
@@ -179,19 +137,24 @@ export default {
 			mediaList: ['/static/figma/adoption-flow/pet-owner.png', '/static/figma/adoption-flow/apply-room.png'],
 			selectedOrder: null,
 			showOrderSheet: false,
-			tempOrderId: '1',
-			mockOrders: MOCK_ORDERS(),
-			yardCatNames: ['奥利奥', '呗呗'],
-			pickedCats: [
-				{ name:'奥利奥', avatar:'/static/figma/adoption-flow/pet-orange.png' },
-				{ name:'呗呗', avatar:'/static/figma/adoption-flow/apply-dog.png' }
-			]
-			,alternateMode: false
+			selectedOrderIds: [],
+			tempOrderIds: [],
+			showPetSheet: false,
+			selectedPetIds: [],
+			tempPetIds: [],
+			mockOrders,
+			animalOptions,
+			yardPets: yard.pets,
+			pickedCats: [],
+			alternateMode: false
 		}
 	},
 	computed: {
 		contentLen() {
 			return (this.content || '').length
+		},
+		orderSelectionLabel() {
+			return this.selectedOrderIds.length ? `已选择${this.selectedOrderIds.length}个订单` : '选择投粮订单'
 		}
 	},
 	onLoad(options = {}) {
@@ -201,16 +164,14 @@ export default {
 		try {
 			const mb = uni.getMenuButtonBoundingClientRect()
 			if (mb && mb.left) this.menuRightWidth = Math.max(sys.windowWidth - mb.left, 87)
-		} catch (e) {}
+		} catch (e) { }
 		// #endif
 		if (options.state === 'alternate') {
 			this.alternateMode = true
 			this.mediaList = ['/static/figma/adoption-flow/pet-owner.png', '/static/figma/adoption-flow/apply-room.png']
-			this.selectedOrder = { ...this.mockOrders[0], timedOut: true, countdown: '' }
-			this.pickedCats = [
-				{ name:'奥利奥', avatar:'/static/figma/adoption-flow/pet-orange.png' },
-				{ name:'呗呗', avatar:'/static/figma/adoption-flow/apply-dog.png' }
-			]
+			this.selectedOrderIds = [this.mockOrders[0].id]
+			this.tempOrderIds = [...this.selectedOrderIds]
+			this.applyOrderSelection()
 		}
 	},
 	methods: {
@@ -239,27 +200,74 @@ export default {
 				}
 			})
 		},
+		removeMedia(index) {
+			if (!Array.isArray(this.mediaList) || index < 0 || index >= this.mediaList.length) return
+			// mediaList is also the page's album-selection source of truth. Removing
+			// here clears the preview and the corresponding selected media together.
+			this.mediaList = this.mediaList.filter((_, itemIndex) => itemIndex !== index)
+		},
 		openOrderSheet() {
-			this.tempOrderId = this.selectedOrder ? this.selectedOrder.id : this.mockOrders[0].id
+			this.tempOrderIds = this.selectedOrderIds.length
+				? [...this.selectedOrderIds]
+				: []
 			this.showOrderSheet = true
 		},
 		setOrderSheetVisible(value) {
+			if (!value) this.applyOrderSelection()
 			this.showOrderSheet = value
 		},
-		closeOrderSheet() {
-			this.showOrderSheet = false
+		applyOrderSelection() {
+			const ids = (this.tempOrderIds || []).map(id => String(id))
+			this.selectedOrderIds = ids
+			const petIds = [...new Set(this.mockOrders
+				.filter(order => ids.includes(String(order.id)))
+				.flatMap(order => this.orderPetIds(order)))]
+			this.selectedPetIds = petIds
+			this.tempPetIds = [...petIds]
+			this.syncPickedCats(petIds)
+			this.updateSelectedOrderSummary(ids)
 		},
-		selectOrder(o) {
-			this.tempOrderId = o.id
-			this.selectedOrder = { ...o }
-			if (this.selectedOrder.id === '1') {
+		openPetSheet() {
+			this.tempPetIds = [...this.selectedPetIds]
+			this.showPetSheet = true
+		},
+		setPetSheetVisible(value) {
+			if (!value) this.applyPetSelection()
+			this.showPetSheet = value
+		},
+		applyPetSelection() {
+			const petIds = (this.tempPetIds || []).map(id => String(id))
+			const orderIds = this.mockOrders
+				.filter(order => this.orderPetIds(order).some(petId => petIds.includes(String(petId))))
+				.map(order => String(order.id))
+			this.selectedPetIds = petIds
+			this.selectedOrderIds = orderIds
+			this.tempOrderIds = [...orderIds]
+			this.syncPickedCats(petIds)
+			this.updateSelectedOrderSummary(orderIds)
+		},
+		orderPetIds(order) {
+			if (!order) return []
+			if (Array.isArray(order.petIds)) return order.petIds.map(id => String(id))
+			return order.petId ? [String(order.petId)] : []
+		},
+		syncPickedCats(petIds) {
+			const ids = (petIds || []).map(id => String(id))
+			this.pickedCats = this.yardPets
+				.filter(pet => ids.includes(String(pet.id)))
+				.map(pet => ({ id: pet.id, name: pet.name, avatar: pet.avatar }))
+		},
+		updateSelectedOrderSummary(orderIds) {
+			const ids = (orderIds || []).map(id => String(id))
+			const first = this.mockOrders.find(order => String(order.id) === ids[0])
+			this.selectedOrder = first ? { ...first } : null
+			if (this.selectedOrder && this.selectedOrder.id === 'yard-order-1') {
 				this.selectedOrder.timedOut = true
 				this.selectedOrder.countdown = ''
 			}
-			this.closeOrderSheet()
 		},
 		onAddCats() {
-			uni.showToast({ title: '去添加小院猫咪', icon: 'none' })
+			this.openPetSheet()
 		},
 		onPublish() {
 			uni.navigateTo({ url: '/pages/publishDynamic/postSuccess' })
@@ -278,12 +286,23 @@ export default {
 	background: #f5f5f5;
 	box-sizing: border-box;
 }
-.h5-status-bar { position:absolute; left:0; top:0; width:100%; height:40px; z-index:100; pointer-events:none; }
+
+.h5-status-bar {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 40px;
+	z-index: 100;
+	pointer-events: none;
+}
+
 .nav-wrap {
 	flex-shrink: 0;
 	background: #fff;
 	padding-bottom: 12rpx;
 }
+
 .nav-row {
 	position: relative;
 	height: 44px;
@@ -293,6 +312,7 @@ export default {
 	padding: 0 8rpx;
 	box-sizing: border-box;
 }
+
 .nav-hit {
 	width: 64rpx;
 	height: 64rpx;
@@ -300,10 +320,12 @@ export default {
 	align-items: center;
 	justify-content: center;
 }
+
 .nav-back {
 	width: 20rpx;
 	height: 36rpx;
 }
+
 .nav-title {
 	position: absolute;
 	left: 50%;
@@ -315,9 +337,11 @@ export default {
 	line-height: 48rpx;
 	white-space: nowrap;
 }
+
 .nav-cap {
 	height: 64rpx;
 }
+
 .tool-row {
 	display: flex;
 	align-items: center;
@@ -325,11 +349,13 @@ export default {
 	padding: 8rpx 24rpx 0;
 	box-sizing: border-box;
 }
+
 .btn-cancel {
 	font-size: 30rpx;
 	color: #333;
 	line-height: 44rpx;
 }
+
 .btn-post {
 	width: 57px;
 	height: 30px;
@@ -341,22 +367,26 @@ export default {
 	justify-content: center;
 	box-sizing: border-box;
 }
+
 .btn-post text {
 	font-size: 14px;
 	font-weight: 500;
 	color: #333;
 	line-height: 20px;
 }
+
 .main {
 	flex: 1;
 	min-height: 0;
 	width: 100%;
 	box-sizing: border-box;
 }
+
 .pad {
 	padding: 26px 12px 20px;
 	box-sizing: border-box;
 }
+
 .card {
 	background: #fff;
 	border-radius: 24rpx;
@@ -364,11 +394,13 @@ export default {
 	margin-bottom: 20rpx;
 	box-sizing: border-box;
 }
+
 .ta-wrap {
 	position: relative;
 	padding-bottom: 40rpx;
 	min-height: 200rpx;
 }
+
 .ta {
 	width: 100%;
 	min-height: 200rpx;
@@ -377,10 +409,12 @@ export default {
 	line-height: 44rpx;
 	box-sizing: border-box;
 }
+
 .ph {
 	color: #c8c8c8;
 	font-size: 30rpx;
 }
+
 .ta-count {
 	position: absolute;
 	right: 0;
@@ -389,96 +423,169 @@ export default {
 	color: #b0b0b0;
 	line-height: 34rpx;
 }
+
 .media-add {
-	width: 160rpx;
-	height: 160rpx;
-	border-radius: 16rpx;
-	background: #f2f2f2;
+	width: 106px;
+	height: 106px;
+	border-radius: 3px;
+	background: #f5f5f5;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 }
-.media-row { display:flex; flex-wrap:wrap; gap:4rpx; margin-top:16rpx; }
-.media-preview { width:212rpx; height:212rpx; border-radius:6rpx; }
-.page--alternate .media-add { width:212rpx; height:212rpx; border-radius:6rpx; }
-.page--alternate .btn-post { border-radius:8rpx; padding:10rpx 28rpx; }
-.page--alternate .pad { padding-top:52rpx; }
-.page--alternate .card:first-child { padding-bottom:44rpx; }
-.page--alternate .ta-wrap { height:164rpx; min-height:0; }
-.page--alternate .ta { height:120rpx; min-height:0; }
-.media-txt {
-	margin-top: 8rpx;
-	font-size: 24rpx;
-	color: #aaa;
-	line-height: 32rpx;
+
+.media-row {
+	display: flex;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 2px;
+	margin-top: 8px;
 }
+
+.media-item {
+	position: relative;
+	width: 106px;
+	height: 106px;
+	flex: 0 0 106px;
+}
+
+.media-preview {
+	display: block;
+	width: 106px;
+	height: 106px;
+	border-radius: 3px;
+}
+
+.media-remove {
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	width: 22px;
+	height: 22px;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, .92);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, .18);
+}
+
+.page--alternate .btn-post {
+	border-radius: 8rpx;
+	padding: 10rpx 28rpx;
+}
+
+.page--alternate .pad {
+	padding-top: 52rpx;
+}
+
+.page--alternate .card:first-child {
+	padding-bottom: 44rpx;
+}
+
+.page--alternate .ta-wrap {
+	height: 164rpx;
+	min-height: 0;
+}
+
+.page--alternate .ta {
+	height: 120rpx;
+	min-height: 0;
+}
+
+.media-txt {
+	margin-top: 8px;
+	font-size: 13px;
+	color: #8d8d92;
+	line-height: 19px;
+}
+
+.media-icon {
+	width: 21px;
+	height: 21px;
+	flex: none;
+}
+
 .card-feed {
 	padding-bottom: 20rpx;
 }
+
 .feed-head {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	margin-bottom: 16rpx;
 }
+
 .feed-lb {
 	font-size: 30rpx;
 	font-weight: 700;
 	color: #222;
 	line-height: 42rpx;
 }
+
 .feed-link {
 	display: flex;
 	align-items: center;
 	column-gap: 4rpx;
 }
+
 .feed-link text:first-child {
 	font-size: 28rpx;
 	color: #999;
 	line-height: 40rpx;
 }
+
 .feed-arr {
 	font-size: 32rpx;
 	color: #c8c8c8;
 	line-height: 1;
 }
+
 .order-box {
-	position:relative;
+	position: relative;
 	background: #fafafa;
 	border-radius: 16rpx;
 	padding: 20rpx 20rpx 16rpx;
 	margin-bottom: 24rpx;
 	box-sizing: border-box;
 }
+
 .order-top {
 	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
 	gap: 12rpx;
 }
+
 .order-name-row {
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
 	gap: 10rpx;
 }
+
 .order-name {
 	font-size: 30rpx;
 	font-weight: 700;
 	color: #222;
 	line-height: 42rpx;
 }
+
 .order-name-row .lv-cap {
 	flex-shrink: 0;
 	margin-left: 10rpx;
 }
+
 .order-timeout {
 	font-size: 24rpx;
 	color: #ff4d4f;
 	line-height: 34rpx;
 	flex-shrink: 0;
 }
+
 .order-countdown {
 	font-size: 22rpx;
 	color: #ff4d4f;
@@ -486,6 +593,7 @@ export default {
 	text-align: right;
 	max-width: 280rpx;
 }
+
 .order-kg {
 	display: block;
 	margin-top: 8rpx;
@@ -493,37 +601,44 @@ export default {
 	color: #555;
 	line-height: 40rpx;
 }
+
 .order-bottom {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	margin-top: 12rpx;
 }
+
 .order-time {
 	font-size: 24rpx;
 	color: #b0b0b0;
 	line-height: 34rpx;
 }
+
 .order-tag {
 	padding: 4rpx 12rpx;
 	border-radius: 8rpx;
 	background: #e8f2ff;
 	border: 1rpx solid #b3d4ff;
 }
+
 .order-tag text {
 	font-size: 22rpx;
 	color: #2b7de9;
 	line-height: 30rpx;
 }
+
 .cat-block {
 	margin-top: 8rpx;
 }
+
 .cat-title {
 	font-size: 28rpx;
 	font-weight: 500;
 	color: #333;
 	line-height: 40rpx;
 }
+
 .cat-row {
 	display: flex;
 	flex-wrap: wrap;
@@ -532,208 +647,88 @@ export default {
 	row-gap: 12rpx;
 	margin-top: 16rpx;
 }
+
 .cat-add {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	width: 100rpx;
 }
+
 .cat-plus {
 	width: 72rpx;
 	height: 72rpx;
 	border-radius: 50%;
 	background: #ffe60f;
 	color: #111;
-	display:flex;
-	align-items:center;
-	justify-content:center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
-.order-avatar { position:absolute; left:18rpx; top:22rpx; width:58rpx; height:58rpx; border-radius:50%; }
-.page--alternate .order-box { padding-left:90rpx; }
-.cat-pet { width:92rpx; display:flex; flex-direction:column; align-items:center; font-size:22rpx; color:#444; }
-.cat-pet image { width:72rpx; height:72rpx; border-radius:50%; }
-.cat-pet text { margin-top:6rpx; }
+
+.order-avatar {
+	position: absolute;
+	left: 18rpx;
+	top: 22rpx;
+	width: 58rpx;
+	height: 58rpx;
+	border-radius: 50%;
+}
+
+.page--alternate .order-box {
+	padding-left: 90rpx;
+}
+
+.cat-pet {
+	width: 92rpx;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	font-size: 22rpx;
+	color: #444;
+}
+
+.cat-pet image {
+	width: 72rpx;
+	height: 72rpx;
+	border-radius: 50%;
+}
+
+.cat-pet text {
+	margin-top: 6rpx;
+}
+
 .cat-add-txt {
 	margin-top: 6rpx;
 	font-size: 22rpx;
 	color: #888;
 	line-height: 30rpx;
 }
+
 .cat-name {
 	font-size: 28rpx;
 	color: #333;
 	line-height: 40rpx;
 }
+
 .foot-tip {
 	padding: 8rpx 4rpx 32rpx;
 }
+
 .foot-tip text {
 	font-size: 24rpx;
 	color: #a0a0a0;
 	line-height: 38rpx;
 }
 
-:deep(.paw-bottom-sheet--selection-order) {
-	background: #f1f1f1;
-	border-radius: 13px 13px 0 0;
-}
-:deep(.paw-bottom-sheet__body) {
-	height: 100%;
+.page:not(.page--alternate) .ta-wrap {
+	height: 108px;
 	min-height: 0;
-	display: flex;
-	flex-direction: column;
+	padding-bottom: 0;
 }
-.order-sheet-body {
-	height: 100%;
+
+.page:not(.page--alternate) .ta {
+	height: 90px;
 	min-height: 0;
-	display: flex;
-	flex-direction: column;
 }
-.sheet-head {
-	display: flex;
-	align-items: flex-start;
-	justify-content: center;
-	position: relative;
-	height: 66px;
-	flex: 0 0 66px;
-	padding-top: 26px;
-	box-sizing: border-box;
-}
-.sheet-title {
-	font-size: 16px;
-	font-weight: 700;
-	color: #111;
-	line-height: 22px;
-}
-.sheet-x {
-	position: absolute;
-	right: 13px;
-	top: 13px;
-	width: 32px;
-	height: 32px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-.sheet-x text {
-	font-size: 24px;
-	font-weight: 400;
-	color: #333;
-	line-height: 1;
-}
-.sheet-scroll {
-	flex: 1;
-	min-height: 0;
-	padding: 0 15px;
-	box-sizing: border-box;
-}
-.order-card {
-	display: flex;
-	height: 98px;
-	background: #fff;
-	border-radius: 15px;
-	padding: 0 10px 0 16px;
-	margin-bottom: 9px;
-	box-sizing: border-box;
-	column-gap: 8px;
-}
-.order-card--on {
-	box-shadow: 0 0 0 3rpx #ffe60f;
-}
-.oc-radio {
-	flex-shrink: 0;
-	padding-top: 6rpx;
-}
-.oc-dot {
-	width: 20px;
-	height: 20px;
-	border-radius: 50%;
-	background: #ffe60f;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-.oc-check {
-	font-size: 11px;
-	color: #111;
-	font-weight: 700;
-	line-height: 1;
-}
-.oc-ring {
-	width: 20px;
-	height: 20px;
-	border-radius: 50%;
-	border: 1.5px solid #ddd;
-	box-sizing: border-box;
-}
-.oc-body {
-	flex: 1;
-	min-width: 0;
-}
-.oc-top {
-	display: flex;
-	justify-content: space-between;
-	align-items: flex-start;
-	gap: 6px;
-}
-.oc-name-row {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 3px;
-}
-.oc-name {
-	font-size: 15px;
-	font-weight: 700;
-	color: #222;
-	line-height: 20px;
-}
-.oc-name-row .lv-cap {
-	flex-shrink: 0;
-	margin-left: 10rpx;
-}
-.oc-timeout {
-	font-size: 12px;
-	color: #ff4d4f;
-	flex-shrink: 0;
-}
-.oc-countdown {
-	font-size: 14px;
-	color: #ff4d4f;
-	text-align: right;
-	max-width: 146px;
-	line-height: 18px;
-}
-.oc-kg {
-	display: block;
-	margin-top: 4px;
-	font-size: 14px;
-	color: #555;
-	line-height: 18px;
-}
-.oc-foot {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-top: 5px;
-}
-.oc-time {
-	font-size: 12px;
-	color: #b0b0b0;
-	line-height: 16px;
-}
-.oc-tag {
-	padding: 2px 5px;
-	border-radius: 0;
-	background: #e8f2ff;
-	border: 1rpx solid #b3d4ff;
-}
-.oc-tag text {
-	font-size: 12px;
-	color: #2b7de9;
-	line-height: 15px;
-}
-.page:not(.page--alternate) .ta-wrap { height:108px; min-height:0; padding-bottom:0; }
-.page:not(.page--alternate) .ta { height:90px; min-height:0; }
-.page:not(.page--alternate) .media-add { width:106px; height:106px; border-radius:3px; }
 </style>

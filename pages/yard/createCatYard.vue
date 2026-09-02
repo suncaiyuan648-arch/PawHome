@@ -112,7 +112,7 @@
 							mode="aspectFit" />
 					</view>
 					<view class="addr-main">
-						<text class="addr-line1">{{ shippingPick.detail }}</text>
+						<text class="addr-line1">{{ shippingDetailText }}</text>
 						<text class="addr-line2">{{ shippingPick.name }} {{ shippingPick.phone }}</text>
 					</view>
 					<view class="addr-action addr-action--edit">
@@ -132,6 +132,9 @@
 
 		<PawVoiceRecorderSheet :visible="showVoicePopup" :recording="recording" :duration="recordSeconds"
 			@update:visible="onVoiceSheetVisibleChange" @record-start="startRecord" @record-end="endRecord" />
+		<PawLocationPickerSheet :visible="showLocationPicker" :city="locationPickerCity"
+			@update:visible="onLocationPickerVisibleChange" @select="onLocationPicked"
+			@city-tap="openLocationCityPicker" />
 		<PawRealNamePrompt :visible="showRealNamePrompt" type="real-name" @update:visible="showRealNamePrompt = $event"
 			@confirm="goRealName" />
 		<PawNoticeModal v-model:visible="showVoiceNotice" :message="voiceNoticeMessage" />
@@ -142,6 +145,7 @@
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawSafeArea from '@/components/base/PawSafeArea.vue'
 import PawVoiceRecorderSheet from '@/components/voice/PawVoiceRecorderSheet.vue'
+import PawLocationPickerSheet from '@/components/location/PawLocationPickerSheet.vue'
 import PawNoticeModal from '@/components/PawNoticeModal.vue'
 import PawRealNamePrompt from '@/components/auth/PawRealNamePrompt.vue'
 import { isRealNameVerified } from '@/utils/realNameMock.js'
@@ -149,7 +153,7 @@ import { PAW_MSG_VOICE_LEVEL, PAW_MSG_VOICE_DAY_LIMIT } from '@/utils/pawNoticeM
 
 export default {
 	name: 'CreateCatYardPage',
-	components: { PawPageNav, PawSafeArea, PawVoiceRecorderSheet, PawNoticeModal, PawRealNamePrompt },
+	components: { PawPageNav, PawSafeArea, PawVoiceRecorderSheet, PawLocationPickerSheet, PawNoticeModal, PawRealNamePrompt },
 	data() {
 		return {
 			animalKind: 'cat',
@@ -157,10 +161,18 @@ export default {
 			showRealNamePrompt: false,
 			voiceNoticeMessage: PAW_MSG_VOICE_LEVEL,
 			showVoicePopup: false,
+			showLocationPicker: false,
+			locationPickerCity: '长沙市',
 			recording: false,
 			recordSeconds: 0,
 			recordTimer: null,
 			recordStartAt: 0,
+			recorderManager: null,
+			recorderStarted: false,
+			recordStartRequested: false,
+			recordStopRequested: false,
+			recordSaveRequested: true,
+			voiceFilePath: '',
 			voiceSavedSeconds: 0,
 			introText: '',
 			adoptMsg: '',
@@ -177,12 +189,23 @@ export default {
 		},
 		adoptLen() {
 			return (this.adoptMsg || '').length
+		},
+		shippingDetailText() {
+			if (!this.shippingPick) return ''
+			return [...(this.shippingPick.regionParts || []), this.shippingPick.detail || ''].filter(Boolean).join(' ')
 		}
 	},
 	onUnload() {
+		if (this.recorderManager && (this.recording || this.recorderStarted)) {
+			this.recordSaveRequested = false
+			try {
+				this.recorderManager.stop()
+			} catch (e) { }
+		}
 		this.clearRecordTimer()
 	},
 	onLoad(options = {}) {
+		this.initRecorderManager()
 		this.animalKind = options.kind === 'dog' ? 'dog' : 'cat'
 		this.locDetail = '湖南省长沙市雨花区中意一路167号鼎丰前城'
 		if (options.state === 'recorded') {
@@ -202,6 +225,7 @@ export default {
 			this.voiceNoticeMessage = PAW_MSG_VOICE_DAY_LIMIT
 			this.showVoiceNotice = true
 		}
+		if (options.popup === 'location') this.openLocationSearch()
 		if (options.auth === 'required' || !isRealNameVerified()) this.showRealNamePrompt = true
 	},
 	methods: {
@@ -225,17 +249,24 @@ export default {
 			this.yardContact = this.doTrim(e.detail.value)
 		},
 		openLocationSearch() {
-			const city = this.regionParts[1] || this.regionParts[0] || uni.getStorageSync('selectedCity') || '广州市'
+			this.locationPickerCity = this.regionParts[1] || this.regionParts[0] || uni.getStorageSync('selectedCity') || '长沙市'
+			this.showLocationPicker = true
+		},
+		onLocationPickerVisibleChange(value) {
+			this.showLocationPicker = value
+		},
+		onLocationPicked(item) {
+			const value = [item && item.name, item && item.address].filter(Boolean).join(' ').trim()
+			if (value) this.locDetail = value
+		},
+		openLocationCityPicker() {
 			uni.navigateTo({
-				url: '/pages/meMore/locationSearch',
+				url: '/pages/citySelect/index?current=' + encodeURIComponent(this.locationPickerCity),
 				events: {
-					locationPicked: (payload = {}) => {
-						const value = (payload.detail || '').trim()
-						if (value) this.locDetail = value
+					citySelected: (payload = {}) => {
+						const city = (payload.city || '').trim()
+						if (city) this.locationPickerCity = city
 					}
-				},
-				success: (res) => {
-					res.eventChannel.emit('initLocation', { city })
 				}
 			})
 		},
@@ -252,6 +283,7 @@ export default {
 							id: payload.id,
 							name: payload.name || '',
 							phone: payload.phone || '',
+							regionParts: payload.regionParts || [],
 							detail: payload.detail || ''
 						}
 					}
@@ -260,8 +292,8 @@ export default {
 		},
 		onSaveYard() {
 			const title = (this.yardName || '').trim() || '我就是要喂猫'
-			uni.navigateTo({
-				url: '/pages/yard/yardCats?name=' + encodeURIComponent(title)
+			uni.redirectTo({
+				url: '/pages/yard/yardCats?state=managed&returnHome=1&name=' + encodeURIComponent(title)
 			})
 		},
 		openVoicePopup() {
@@ -271,11 +303,111 @@ export default {
 			this.showVoicePopup = value
 			if (!value && this.recording) this.endRecord(true)
 		},
+		initRecorderManager() {
+			// #ifdef MP-WEIXIN
+			if (typeof uni.getRecorderManager !== 'function') return
+			this.recorderManager = uni.getRecorderManager()
+			this.recorderManager.onStart(() => {
+				this.recorderStarted = true
+				this.recordStartRequested = false
+				this.recordStartAt = Date.now()
+				this.recordSeconds = 0
+				if (this.recordStopRequested || !this.recording) {
+					this.stopNativeRecord()
+					return
+				}
+				this.startRecordTimer()
+			})
+			this.recorderManager.onStop((result = {}) => {
+				const elapsed = Date.now() - this.recordStartAt
+				const durationMs = Number(result.duration) || elapsed
+				const seconds = Math.min(59, Math.max(0, Math.floor(durationMs / 1000)))
+				const shouldSave = this.recordSaveRequested
+				this.recorderStarted = false
+				this.recordStartRequested = false
+				this.recordStopRequested = false
+				this.recording = false
+				this.clearRecordTimer()
+				if (shouldSave && seconds > 0) {
+					this.voiceSavedSeconds = seconds
+					this.voiceFilePath = result.tempFilePath || ''
+					this.showVoicePopup = false
+				}
+			})
+			this.recorderManager.onError(() => {
+				this.resetRecordState()
+				uni.showToast({ title: '录音失败，请重试', icon: 'none' })
+			})
+			this.recorderManager.onInterruptionBegin(() => {
+				if (!this.recording && !this.recorderStarted) return
+				this.recordSaveRequested = false
+				this.endRecord(false)
+			})
+			// #endif
+		},
 		startRecord() {
-			if (this.recording) return
+			if (this.recording || this.recordStartRequested) return
 			this.recording = true
+			this.recordStartRequested = true
+			this.recordStopRequested = false
+			this.recordSaveRequested = true
 			this.recordStartAt = Date.now()
 			this.recordSeconds = 0
+			// #ifdef MP-WEIXIN
+			if (this.recorderManager) {
+				this.requestRecordPermissionAndStart()
+				return
+			}
+			// #endif
+			this.startRecordTimer()
+		},
+		requestRecordPermissionAndStart() {
+			// #ifdef MP-WEIXIN
+			const start = () => {
+				if (!this.recording || !this.recordStartRequested) return
+				try {
+					this.recorderManager.start({
+						duration: 60000,
+						sampleRate: 16000,
+						numberOfChannels: 1,
+						encodeBitRate: 48000,
+						format: 'mp3'
+					})
+				} catch (e) {
+					this.resetRecordState()
+					uni.showToast({ title: '录音失败，请重试', icon: 'none' })
+				}
+			}
+			if (typeof uni.getSetting !== 'function' || typeof uni.authorize !== 'function') {
+				start()
+				return
+			}
+			uni.getSetting({
+				success: setting => {
+					const authSetting = setting && setting.authSetting ? setting.authSetting : {}
+					if (authSetting['scope.record'] === false) {
+						this.resetRecordState()
+						uni.showToast({ title: '请在设置中开启麦克风权限', icon: 'none' })
+						return
+					}
+					if (authSetting['scope.record'] === true) {
+						start()
+						return
+					}
+					uni.authorize({
+						scope: 'scope.record',
+						success: start,
+						fail: () => {
+							this.resetRecordState()
+							uni.showToast({ title: '需要麦克风权限才能录音', icon: 'none' })
+						}
+					})
+				},
+				fail: start
+			})
+			// #endif
+		},
+		startRecordTimer() {
 			this.clearRecordTimer()
 			this.recordTimer = setInterval(() => {
 				const seconds = Math.floor((Date.now() - this.recordStartAt) / 1000)
@@ -284,17 +416,48 @@ export default {
 			}, 200)
 		},
 		endRecord(saveToForm = true) {
-			if (!this.recording) return
+			if (!this.recording && !this.recordStartRequested && !this.recorderStarted) return
+			this.recordSaveRequested = saveToForm !== false
+			this.recordStopRequested = true
 			this.recording = false
 			this.clearRecordTimer()
+			// #ifdef MP-WEIXIN
+			if (this.recorderManager) {
+				if (this.recorderStarted) {
+					this.stopNativeRecord()
+					return
+				}
+				// Keep the stop flag until onStart arrives. The recorder can emit
+				// onStart asynchronously, and clearing it here would leave native
+				// recording active if the user releases during that short window.
+				return
+			}
+			// #endif
 			const seconds = Math.min(59, Math.max(0, Math.floor((Date.now() - this.recordStartAt) / 1000)))
 			if (saveToForm !== false && seconds > 0) {
 				this.voiceSavedSeconds = seconds
 				this.showVoicePopup = false
 			}
 		},
+		stopNativeRecord() {
+			if (!this.recorderManager) return
+			try {
+				this.recorderManager.stop()
+			} catch (e) {
+				this.resetRecordState()
+			}
+		},
+		resetRecordState() {
+			this.recording = false
+			this.recorderStarted = false
+			this.recordStartRequested = false
+			this.recordStopRequested = false
+			this.recordSaveRequested = false
+			this.clearRecordTimer()
+		},
 		clearSavedVoice() {
 			this.voiceSavedSeconds = 0
+			this.voiceFilePath = ''
 		},
 		clearRecordTimer() {
 			if (!this.recordTimer) return
@@ -679,6 +842,10 @@ export default {
 
 .addr-title,
 .addr-line1 {
+	display: block;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	color: #333;
 	font-size: 14px;
 	font-weight: 500;

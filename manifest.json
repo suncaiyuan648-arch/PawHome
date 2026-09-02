@@ -54,6 +54,11 @@
     "mp-weixin" : {
         /* 小程序特有相关 */
         "appid" : "wxb54d6738550eb956",
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "用于获取附近小区，帮助创建小院并选择准确地点"
+            }
+        },
         "setting" : {
             "urlCheck" : false
         },

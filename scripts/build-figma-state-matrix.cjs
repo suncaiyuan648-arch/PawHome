@@ -54,8 +54,8 @@ function target(index, name) {
     71: ['/pages/leaderboard/index', 'default'], 72: ['/pages/auth/verifyResult?status=success', 'face'],
     73: ['/pages/feature/index?mode=invite', 'default'], 74: ['/pages/auth/realName', 'default'],
     75: ['/pages/publishDynamic/postFeedOrder', 'order-sheet'], 76: ['/pages/publishDynamic/postSuccess', 'default'],
-    77: ['/pages/feature/index?mode=album', 'context-menu'], 78: ['/pages/yard/yardCertifyDone', 'default'],
-    79: ['/pages/meMore/annualReport', 'default'], 86: ['/pages/yard/yardCertifyDone?state=created', 'created'],
+    77: ['/pages/feature/index?mode=album', 'context-menu'], 78: ['/pages/yard/yardCertify?state=99', 'state-99'],
+    79: ['/pages/meMore/annualReport', 'default'], 86: ['/pages/yard/yardCats?state=managed&returnHome=1', 'managed-after-create'],
     87: ['/pages/publishDynamic/postSuccess?state=feeding', 'feeding-success'], 88: ['/pages/adoption/pickCats', 'sheet'],
     93: ['/pages/yard/addKitten', 'cat'], 95: ['/pages/yard/addKitten?type=dog', 'dog'],
     96: ['/pages/yard/addKitten?state=more', 'cat-more'], 100: ['/pages/yard/addKitten?type=dog&state=more', 'dog-more'],
@@ -118,7 +118,7 @@ function target(index, name) {
   if (index === 94) return ['/pages/yard/adoptionAudit?mode=proof', 'default']
   if (index >= 97 && index <= 99) return [`/pages/yard/yardCertify?state=${index}`, `state-${index}`]
   if (index >= 133 && index <= 136) return [index % 2 ? `/pages/meMore/addShippingAddress${index >= 135 ? '?state=typing' : ''}` : `/pages/meMore/addServiceAddress${index >= 135 ? '?state=typing' : ''}`, index >= 135 ? 'typing' : 'default']
-  if (index === 137) return ['/pages/meMore/locationSearch?state=figma', 'location-search']
+  if (index === 137) return ['/pages/yard/createCatYard?popup=location', 'location-picker']
   if (index === 138) return ['/pages/meMore/shippingAddress', 'shipping']
   if (index === 139) return ['/pages/meMore/shippingAddress?kind=service', 'service']
   if (index === 140) return ['/pages/meMore/shippingAddress?state=pick', 'pick']

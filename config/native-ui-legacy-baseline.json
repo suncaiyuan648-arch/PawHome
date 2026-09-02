@@ -121,9 +121,6 @@
       "figma-native-chrome-asset": 1,
       "page-local-native-nav-layout": 1
     },
-    "pages/yard/yardCertifyDone.vue": {
-      "page-local-native-nav-layout": 1
-    },
     "components/PawAdoptionFlowFigma.vue": {
       "fake-home-indicator": 2
     },

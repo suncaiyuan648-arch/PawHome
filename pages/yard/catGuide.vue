@@ -11,7 +11,7 @@
           </text>
           <view class="intro-btn" data-qa="cat-guide-create" @tap="onGoCreate">
             <text>前往创建</text>
-            <PawIcon name="navigation/action-arrow" :size="14" />
+            <PawIcon name="navigation/action-arrow" :size="14" :rotate="180" label="前往创建" />
           </view>
         </view>
 

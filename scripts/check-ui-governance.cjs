@@ -23,7 +23,6 @@ const legacyCustomNavPages = new Set([
   'pages/meMore/helpedAnimals.vue',
   'pages/meMore/level.vue',
   'pages/meMore/levelRules.vue',
-  'pages/meMore/locationSearch.vue',
   'pages/meMore/myAdoption.vue',
   'pages/meMore/myFeedings.vue',
   'pages/meMore/regionSelector.vue',
@@ -42,8 +41,7 @@ const legacyCustomNavPages = new Set([
   'pages/yard/createCatYard.vue',
   'pages/yard/juryDetail.vue',
   'pages/yard/yardCats.vue',
-  'pages/yard/yardCertify.vue',
-  'pages/yard/yardCertifyDone.vue'
+  'pages/yard/yardCertify.vue'
 ])
 
 const violations = []

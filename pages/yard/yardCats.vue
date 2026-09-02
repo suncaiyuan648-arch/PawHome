@@ -180,7 +180,8 @@ export default {
 			showDeleteConfirm: false,
 			showCreateSheet: false,
 			feedPopupVisible: false,
-			feedPetId: ''
+			feedPetId: '',
+			returnHomeOnBack: false
 		}
 	},
 	computed: {
@@ -213,6 +214,7 @@ export default {
 		this.statusBarHeight = 40
 		// #endif
 		this.pageState = ['publish-entry', 'roster', 'status', 'managed'].includes(query.state) ? query.state : 'long-list'
+		this.returnHomeOnBack = query.returnHome === '1'
 		// #ifdef MP-WEIXIN
 		try {
 			const mb = uni.getMenuButtonBoundingClientRect()
@@ -230,6 +232,10 @@ export default {
 			this.searchKeyword = String(value || '').trim()
 		},
 		goBack() {
+			if (this.returnHomeOnBack) {
+				uni.reLaunch({ url: '/pages/index/index' })
+				return
+			}
 			goBackSmart({ fallbackUrl: '/pages/index/index' })
 		},
 		openPetDetail(pet) {

@@ -62,6 +62,62 @@ const YARD_PETS = [
   yardPet('roster-dog-3', '小黑子', dog, 'dog', '柴犬', 'dead', { gallery: dogGallery, stateTimeLabel: '死亡时间', stateTime: '2026-06-28' })
 ]
 
+/**
+ * 小院投喂订单与云养中动物的一对多关系真源。
+ * 订单选择会根据 petIds 自动带出动物，动物选择也会反向带出对应订单。
+ */
+const YARD_FEEDING_ORDERS = [
+  {
+    id: 'yard-order-1',
+    yardId: '1',
+    petIds: ['roster-cat-2'],
+    pawId: 'order-user-paf',
+    userName: '平安是福',
+    userAvatar: '/static/figma/publish/order-avatar.png',
+    level: 1,
+    kg: 4,
+    time: '2026-2-5 13:23:56',
+    countdown: '3天23:34:45后超时',
+    timedOut: false,
+    feedbackTag: '已反馈2/5次'
+  },
+  {
+    id: 'yard-order-2',
+    yardId: '1',
+    petIds: ['roster-cat-3'],
+    pawId: 'order-user-axtf',
+    userName: '爱心投喂',
+    userAvatar: '/static/figma/publish/order-avatar.png',
+    level: 2,
+    kg: 2,
+    time: '2026-2-1 10:00:00',
+    countdown: '5天12:00:00后超时',
+    timedOut: false,
+    feedbackTag: '已反馈0/3次'
+  },
+  {
+    id: 'yard-order-3',
+    yardId: '1',
+    petIds: ['roster-dog-2'],
+    pawId: 'order-user-hkfg',
+    userName: '花开富贵',
+    userAvatar: '/static/figma/publish/order-avatar.png',
+    level: 1,
+    kg: 3,
+    time: '2026-2-3 09:18:00',
+    countdown: '1天06:15:00后超时',
+    timedOut: false,
+    feedbackTag: '已反馈1/5次'
+  }
+]
+
+const YARD_PETS_WITH_FEEDING = YARD_PETS.map((pet) => ({
+  ...pet,
+  feedingOrderIds: YARD_FEEDING_ORDERS
+    .filter((order) => order.petIds.some((petId) => String(petId) === String(pet.id)))
+    .map((order) => order.id)
+}))
+
 const YARD_MOCK = {
   id: '1',
   name: '我就是要喂猫',
@@ -109,7 +165,8 @@ const YARD_MOCK = {
     { id: 'yard-c-4', author: { name: '平安是福', avatar: '/static/avatarlog.png', level: 2 }, copy: '小院的猫咪都很可爱', meta: '昨天 17:30　长沙', likes: 2 }
   ],
   statusDefinitions: YARD_STATUS_DEFINITIONS,
-  pets: YARD_PETS
+  pets: YARD_PETS_WITH_FEEDING,
+  feedingOrders: YARD_FEEDING_ORDERS
 }
 
 export function getPawHomeYardMock() {
@@ -118,6 +175,10 @@ export function getPawHomeYardMock() {
 
 export function getPawHomeYardPets() {
   return getPawHomeYardMock().pets
+}
+
+export function getPawHomeYardFeedingOrders() {
+  return getPawHomeYardMock().feedingOrders
 }
 
 export function getPawHomeYardPetById(id) {
