@@ -1,10 +1,14 @@
 const fs = require('fs')
 const path = require('path')
 const sharp = require('sharp')
-const manifest = require('../config/paw-icons.cjs')
-const { DESIGN_CANVAS, LIVE_AREA_MAX_EDGE } = require('./paw-icon-normalize.cjs')
+const {
+  ROOT,
+  iconEntries,
+  sourceAbsolutePath,
+  sourceRelativePath
+} = require('./paw-icon-manifest.cjs')
+const { DESIGN_CANVAS, OPTICAL_SLOTS } = require('./paw-icon-normalize.cjs')
 
-const ROOT = path.resolve(__dirname, '..')
 const REGISTRY_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-registry.js')
 const REPORT_DIR = path.join(ROOT, '.artifacts/paw-icon-audit')
 const REPORT_FILE = path.join(REPORT_DIR, 'icon-design-audit.json')
@@ -371,8 +375,9 @@ async function audit() {
   const entries = []
   for (const name of names) {
     const definition = registry[name]
-    const rawPath = (manifest.mono || {})[name] || (manifest.color || {})[name]
-    const rawSource = fs.readFileSync(path.join(ROOT, rawPath), 'utf8')
+    const manifestEntry = iconEntries().find(item => item.name === name)
+    const rawPath = sourceRelativePath(name, manifestEntry.configuredPath)
+    const rawSource = fs.readFileSync(sourceAbsolutePath(name, manifestEntry.configuredPath), 'utf8')
     const generatedSource = sourceForIcon(name, definition)
     const sourceViewBox = readViewBox(rawSource, rawPath)
     const generatedViewBox = readViewBox(generatedSource, name)
@@ -519,7 +524,8 @@ async function audit() {
       normalizedBoundsTolerance: '2%',
       normalizedCenterTolerance: '1.5%',
       transformCases: '0/45/90/135/180/270° plus horizontal/vertical/both flip',
-      liveAreaGuidance: `painted max edge targets ${LIVE_AREA_MAX_EDGE} × ${LIVE_AREA_MAX_EDGE} design units with ${(DESIGN_CANVAS - LIVE_AREA_MAX_EDGE) / 2} unit safety margin per side`
+      opticalSlots: OPTICAL_SLOTS,
+      slotGuidance: 'Source Frame is preserved, then mapped to the selected optical slot and normalized to a 24 × 24 canonical canvas.'
     },
     scope: { exclusions: SCOPE_EXCLUSIONS },
     remediations: SOURCE_REMEDIATIONS,

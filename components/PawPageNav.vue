@@ -4,14 +4,14 @@
       <view class="paw-nav__row" :style="rowStyle" data-qa="page-nav-row">
         <view class="paw-nav__back" :class="{ 'paw-nav__back--hidden': !showBack }" :style="backStyle" role="button"
           aria-label="返回" data-qa="page-nav-back" @click.stop="onBack">
-          <PawIcon name="navigation/back" size="md" color="#282827" label="返回" />
+          <PawIcon name="navigation/back" size="base" color="#282827" label="返回" />
         </view>
 
         <view v-if="$slots.content" class="paw-nav__content" :style="contentStyle" data-qa="page-nav-content">
           <slot name="content" />
         </view>
         <text v-else class="paw-nav__title" :class="{ 'paw-nav__title--light': light }" :style="titleStyle">{{ title
-          }}</text>
+        }}</text>
 
         <!-- Transparent reserve only. WeChat renders the native capsule itself. -->
         <view class="paw-nav__native-reserve" :style="reserveStyle" aria-hidden="true" />

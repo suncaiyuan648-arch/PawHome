@@ -1,3 +1,22 @@
-<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g transform="matrix(0.916667 0 0 0.916667 1 1)"><g transform="matrix(2.399976 0 0 2.399976 3.600048 0)">
-<path id="Vector 10" d="M0.500029 0.500029L6.50003 5.00003L0.500029 9.50003" stroke="#A3A39F" stroke-linecap="round" stroke-linejoin="round"/>
-</g></g></svg>
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g transform="matrix(2 0 0 2 5 2)">
+
+<g id="&#229;&#143;&#145;&#229;&#184;&#131;-&#229;&#136;&#155;&#229;&#187;&#186;&#229;&#176;&#143;&#233;&#153;&#162;">
+
+<g id="Frame 1321318003">
+<g id="Frame 1171276761">
+
+<g id="Frame 1171276792">
+<g id="Frame 1171276758">
+<mask id="path-2-inside-1_0_1" fill="white">
+<path d="M-316.5 -24.5H10.5V33.5H-316.5V-24.5Z"/>
+</mask>
+<path d="M10.5 33.5V33H-316.5V33.5V34H10.5V33.5Z" fill="#F6F8FA" mask="url(#path-2-inside-1_0_1)"/>
+<g id="Group 1171275039">
+<path id="Vector 10" d="M0.5 0.5L6.5 5L0.5 9.5" stroke="#A3A39F" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g></svg>

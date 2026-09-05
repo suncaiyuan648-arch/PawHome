@@ -1,22 +1,16 @@
-<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g transform="matrix(0.916667 0 0 0.916667 1 1)"><g transform="matrix(0.4 0 0 0.4 0 0)">
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g transform="matrix(0.4 0 0 0.4 0 0)">
+
 <g id="&#230;&#138;&#149;&#231;&#165;&#168;-&#230;&#156;&#137;&#231;&#130;&#185;&#229;&#129;&#135;&#229;&#188;&#185;&#231;&#170;&#151;">
 <g id="Group 1321318219">
 <g id="Group 1321317620">
 <circle id="Ellipse 2594" cx="30" cy="30" r="30" fill="#1292FF"/>
-<g id="Frame" clip-path="url(#clip0_0_1)">
-<g id="Frame_2" clip-path="url(#clip1_0_1)">
+<g id="Frame">
+<g id="Frame_2">
 <path id="Vector" d="M42.2462 22.4325L27.2402 37.1861L21.0708 31.4191C19.2032 29.6731 16.3905 32.4748 18.2642 34.2258L25.8722 41.3378C26.6668 42.0808 27.8885 42.1151 28.6788 41.3378L45.0528 25.2395C46.8805 23.4428 44.0718 20.6371 42.2462 22.4325Z" fill="white"/>
 </g>
 </g>
 </g>
 </g>
 </g>
-<defs>
-<clipPath id="clip0_0_1">
-<rect width="28" height="28" fill="white" transform="translate(17.6465 17.8818)"/>
-</clipPath>
-<clipPath id="clip1_0_1">
-<rect width="28" height="28" fill="white" transform="translate(17.6465 17.8818)"/>
-</clipPath>
-</defs>
-</g></g></svg>
+
+</g></svg>

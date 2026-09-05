@@ -16,7 +16,8 @@
         </view>
         <view class="icon-copy">
           <text class="icon-size">{{ size }}px</text>
-          <text class="icon-detail">layout {{ size }} × {{ size }}px · source /static/paw-icons/color/actions/yard-feed.svg</text>
+          <text class="icon-detail">layout {{ size }} × {{ size }}px · source
+            /static/paw-icons/color/actions/yard-feed.svg</text>
         </view>
       </view>
     </view>
@@ -74,7 +75,7 @@ export default {
 
 .lab-title {
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 28px;
 }
 
@@ -108,7 +109,7 @@ export default {
 
 .section-title {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 20px;
 }
 
@@ -143,7 +144,7 @@ export default {
 
 .icon-size {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 18px;
 }
 

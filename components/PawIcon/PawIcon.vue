@@ -28,7 +28,7 @@ export default {
   },
   props: {
     name: { type: String, required: true },
-    size: { type: [String, Number], default: 'md' },
+    size: { type: [String, Number], default: 'base' },
     color: { type: String, default: PAW_ICON_DEFAULT_COLOR },
     label: { type: String, default: '' },
     rotate: { type: Number, default: 0 },

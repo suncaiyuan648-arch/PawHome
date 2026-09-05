@@ -13,7 +13,7 @@ export default {
   components: { PawIcon },
   props: {
     icon: { type: String, required: true },
-    iconSize: { type: [String, Number], default: 'md' },
+    iconSize: { type: [String, Number], default: 'base' },
     hitSize: { type: Number, default: 44 },
     color: { type: String, default: '#1F2329' },
     label: { type: String, default: '' },

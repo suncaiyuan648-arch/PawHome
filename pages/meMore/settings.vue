@@ -1,153 +1,124 @@
 <template>
 	<view class="settings-page">
-		<view class="settings-nav" :style="{ paddingTop: statusBarHeight + 'px' }">
-			<view class="settings-nav-row"><view class="settings-back" @click="goBack"><image src="/static/nav-back-arrow.png" mode="aspectFit" /></view><text>设置</text></view>
-		</view>
-		<view class="settings-body">
-			<view class="settings-card">
-				<PawOptionRow label="个人信息" @click="tapRow('个人信息')" />
-				<view class="settings-divider"></view>
-				<PawOptionRow label="收货地址" @click="tapRow('收货地址')" />
-			</view>
+		<PawPageNav title="设置" :title-centered="true" background="#f5f6f9" fallback-url="/pages/me/index" />
+		<scroll-view class="settings-scroll" scroll-y :show-scrollbar="false">
+			<view class="settings-body">
+				<view class="settings-card settings-card--account">
+					<PawOptionRow label="个人信息" :height="48" data-qa="qa-settings-profile" @click="tapRow('个人信息')" />
+					<PawOptionRow label="收货地址" :height="48" data-qa="qa-settings-address" @click="tapRow('收货地址')" />
+				</view>
 
-			<view class="settings-card">
-				<PawOptionRow label="账号与安全" @click="tapRow('账号与安全')" />
-			</view>
+				<view class="settings-card settings-card--security">
+					<PawOptionRow label="账号与安全" :height="52" data-qa="qa-settings-security" @click="tapRow('账号与安全')" />
+				</view>
 
-			<view class="settings-card">
-				<PawOptionRow label="客服帮助" @click="tapRow('客服帮助')" />
-				<view class="settings-divider"></view>
-				<PawOptionRow label="意见反馈" @click="tapRow('意见反馈')" />
-				<view class="settings-divider"></view>
-				<PawOptionRow label="平台协议" @click="tapRow('平台协议')" />
-				<view class="settings-divider"></view>
-				<PawOptionRow label="关于逢猫" @click="tapRow('关于逢猫')" />
-			</view>
+				<view class="settings-card settings-card--support">
+					<PawOptionRow label="客服帮助" :height="48" data-qa="qa-settings-help" @click="tapRow('客服帮助')" />
+					<PawOptionRow label="意见反馈" :height="44" data-qa="qa-settings-feedback" @click="tapRow('意见反馈')" />
+					<PawOptionRow label="平台协议" :height="44" data-qa="qa-settings-agreement" @click="tapRow('平台协议')" />
+					<PawOptionRow label="关于逢猫" :height="48" data-qa="qa-settings-about" @click="tapRow('关于逢猫')" />
+				</view>
 
-			<view class="settings-card settings-card--logout" @click="onLogout">
-				<text class="settings-logout-text">退出登录</text>
+				<view class="settings-card settings-card--logout" data-qa="qa-settings-logout" @tap="onLogout">
+					<text class="settings-logout-text">退出登录</text>
+				</view>
 			</view>
-		</view>
+		</scroll-view>
 	</view>
 </template>
 
 <script>
-	import PawOptionRow from '@/components/form/PawOptionRow.vue'
+import PawOptionRow from '@/components/form/PawOptionRow.vue'
+import PawPageNav from '@/components/PawPageNav.vue'
 
-	export default {
-		components: { PawOptionRow },
-		data(){return{statusBarHeight:20}},
-		onLoad(){const s=uni.getSystemInfoSync();this.statusBarHeight=s.statusBarHeight||20
-			// #ifdef H5
-			this.statusBarHeight=44
-			// #endif
-		},
-		methods: {
-			goBack(){uni.navigateBack()},
-			tapRow(name) {
-				if (name === '收货地址') {
-					uni.navigateTo({
-						url: '/pages/meMore/shippingAddress',
-						fail: (err) => {
-							uni.redirectTo({
-								url: '/pages/meMore/shippingAddress',
-								fail: () => {
-									uni.showToast({
-										title: (err && err.errMsg) || '页面打开失败',
-										icon: 'none'
-									})
-								}
-							})
-						}
-					})
-					return
-				}
-				uni.showToast({ title: name, icon: 'none' })
-			},
-			onLogout() {
-				uni.showModal({
-					title: '提示',
-					content: '确定要退出登录吗？',
-					success: (res) => {
-						if (res.confirm) {
-							uni.showToast({ title: '已退出', icon: 'none' })
-						}
+export default {
+	components: { PawOptionRow, PawPageNav },
+	methods: {
+		tapRow(name) {
+			if (name === '收货地址') {
+				uni.navigateTo({
+					url: '/pages/meMore/shippingAddress',
+					fail: (err) => {
+						uni.redirectTo({
+							url: '/pages/meMore/shippingAddress',
+							fail: () => {
+								uni.showToast({
+									title: (err && err.errMsg) || '页面打开失败',
+									icon: 'none'
+								})
+							}
+						})
 					}
 				})
+				return
 			}
+			uni.showToast({ title: name, icon: 'none' })
+		},
+		onLogout() {
+			uni.showModal({
+				title: '提示',
+				content: '确定要退出登录吗？',
+				success: (res) => {
+					if (!res.confirm) return
+					uni.removeStorageSync('PAWHOME_LOGGED_IN')
+					uni.reLaunch({ url: '/pages/auth/login' })
+				}
+			})
 		}
 	}
+}
 </script>
 
 <style scoped>
-	.settings-page {
-		min-height: 100vh;
-		background: #f7f8fa;
-		box-sizing: border-box;
-	}
-	.settings-nav{background:#f7f8fa}.settings-nav-row{position:relative;height:44px;display:flex;align-items:center;justify-content:center}.settings-nav-row>text{font-size:17px;font-weight:400}.settings-back{position:absolute;left:4px;top:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center}.settings-back image{width:10px;height:18px}
+.settings-page {
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+	min-height: 0;
+	box-sizing: border-box;
+	background: #f5f6f9;
+}
 
-	.settings-body {
-		padding: 21px 15px 48rpx;
-		padding-bottom: calc(48rpx + constant(safe-area-inset-bottom));
-		padding-bottom: calc(48rpx + env(safe-area-inset-bottom));
-		box-sizing: border-box;
-	}
+.settings-scroll {
+	flex: 1 1 auto;
+	height: 0;
+	min-height: 0;
+	width: 100%;
+	box-sizing: border-box;
+}
 
-	.settings-card {
-		background: #ffffff;
-		border-radius: 8px;
-		margin-bottom: 8px;
-		overflow: hidden;
-		box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
-		box-sizing: border-box;
-	}
+.settings-body {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 11px 16px 48px;
+}
 
-	.settings-row {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		justify-content: space-between;
-		padding: 13px 17px;
-		box-sizing: border-box;
-	}
+.settings-card {
+	width: 100%;
+	flex: 0 0 auto;
+	box-sizing: border-box;
+	border-radius: 10px;
+	background: #ffffff;
+	overflow: hidden;
+}
 
-	.settings-row-label {
-		flex: 1;
-		min-width: 0;
-		font-size: 15px;
-		font-weight: 400;
-		color: #111111;
-		line-height: 42rpx;
-	}
+.settings-card--logout {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 45px;
+	margin-top: 10px;
+	padding: 0 12px;
+}
 
-	.settings-chevron {
-		width: 22rpx;
-		height: 22rpx;
-		margin-left: 16rpx;
-		flex-shrink: 0;
-		opacity: 0.38;
-	}
-
-	.settings-divider {
-		height: 1rpx;
-		background: #f0f0f0;
-		margin-left: 12px;
-	}
-
-	.settings-card--logout {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 13px 12px;
-		margin-bottom: 0;
-	}
-
-	.settings-logout-text {
-		font-size: 13px;
-		font-weight: 400;
-		color: #888888;
-		line-height: 42rpx;
-		text-align: center;
-	}
+.settings-logout-text {
+	font-size: 15px;
+	font-weight: 400;
+	line-height: 18px;
+	color: #999999;
+	text-align: center;
+}
 </style>

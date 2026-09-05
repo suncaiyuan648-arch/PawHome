@@ -1,13 +1,6 @@
-const sharp = require('sharp')
-
 const DESIGN_CANVAS = 24
 const DESIGN_CENTER = DESIGN_CANVAS / 2
-// Keep one canonical design unit of breathing room on every side of the
-// longest painted edge. This becomes a proportional margin at every runtime
-// size, instead of a per-size CSS adjustment.
-const LIVE_AREA_MAX_EDGE = 22
-const RASTER_SIZE = 288
-const ALPHA_THRESHOLD = 8
+const OPTICAL_SLOTS = Object.freeze([12, 16, 20, 24, 28])
 
 function formatNumber(value) {
   return Number(value.toFixed(6)).toString()
@@ -22,6 +15,23 @@ function readViewBox(source, relativePath = 'SVG') {
   return { x: values[0], y: values[1], width: values[2], height: values[3] }
 }
 
+function recommendedSlotForFrame(width, height) {
+  const maxEdge = Math.max(Number(width), Number(height))
+  if (!Number.isFinite(maxEdge) || maxEdge <= 0) return null
+  if (maxEdge <= 10) return 12
+  if (maxEdge <= 14) return 16
+  if (maxEdge <= 18) return 20
+  if (maxEdge <= 22) return 24
+  if (maxEdge <= 25) return 28
+  return null
+}
+
+function isExplicitFrameSlot(slot, width, height) {
+  const numericSlot = Number(slot)
+  const maxEdge = Math.max(Number(width), Number(height))
+  return maxEdge > 25 && Number.isFinite(numericSlot) && numericSlot >= maxEdge - 0.01 && numericSlot <= 96
+}
+
 function rootParts(source) {
   const normalized = source.replace(/\r\n?/g, '\n')
   const root = normalized.match(/^(\s*<svg\b[^>]*>)([\s\S]*?)(<\/svg>\s*)$/i)
@@ -29,9 +39,24 @@ function rootParts(source) {
   return root
 }
 
-function normalizeSvg(source, sourceViewBox, optical = {}) {
+function stripFigmaExportChrome(source) {
+  // Figma's SVG export keeps the selected node's ancestor backgrounds and
+  // clip-path rectangles. They are part of the exported frame preview, not
+  // part of the icon artwork, and would otherwise become opaque pixels in
+  // the generated runtime asset. The icon library contains no rect-based
+  // glyphs, so removing these export-only rectangles is safe and keeps the
+  // source frame's coordinates intact.
+  return source
+    .replace(/<clipPath\b[^>]*>[\s\S]*?<\/clipPath>/gi, '')
+    .replace(/\sclip-path\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/<filter\b[^>]*>[\s\S]*?<\/filter>/gi, '')
+    .replace(/\sfilter\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/<rect\b[^>]*\/?>(?:<\/rect>)?/gi, '')
+}
+
+function normalizeSvg(source, sourceViewBox, optical = {}, slot = DESIGN_CANVAS) {
   const [, originalOpening, content, closing] = rootParts(source)
-  const scale = DESIGN_CANVAS / Math.max(sourceViewBox.width, sourceViewBox.height)
+  const scale = DESIGN_CANVAS / Number(slot)
   const translateX = (DESIGN_CANVAS - sourceViewBox.width * scale) / 2 - sourceViewBox.x * scale
   const translateY = (DESIGN_CANVAS - sourceViewBox.height * scale) / 2 - sourceViewBox.y * scale
   const sourceMatrix = `matrix(${formatNumber(scale)} 0 0 ${formatNumber(scale)} ${formatNumber(translateX)} ${formatNumber(translateY)})`
@@ -45,85 +70,32 @@ function normalizeSvg(source, sourceViewBox, optical = {}) {
     // Only normalize root SVG attributes. Nested frame/clip dimensions are
     // part of the Figma glyph and must remain intact.
     .replace(/\s(width|height|style|overflow|preserveAspectRatio)\s*=\s*["'][^"']*["']/gi, '')
+  const cleanedContent = stripFigmaExportChrome(content)
   const sourceContent = scale === 1 && translateX === 0 && translateY === 0
-    ? content
-    : `<g transform="${sourceMatrix}">${content}</g>`
+    ? cleanedContent
+    : `<g transform="${sourceMatrix}">${cleanedContent}</g>`
   const opticalContent = hasOpticalCorrection
     ? `<g transform="${opticalTransform}">${sourceContent}</g>`
     : sourceContent
   return `${opening}${opticalContent}${closing}`
 }
 
-function wrapContent(source, transform) {
-  const [, opening, content, closing] = rootParts(source)
-  return `${opening}<g transform="${transform}">${content}</g>${closing}`
-}
-
-async function measurePaintedBounds(source) {
-  // sharp does not need to understand currentColor for geometry, but using a
-  // concrete color also keeps the raster result consistent across versions.
-  const renderSource = source.replace(/currentColor/gi, '#666666')
-  const { data, info } = await sharp(Buffer.from(renderSource))
-    .resize(RASTER_SIZE, RASTER_SIZE, {
-      fit: 'fill',
-      background: { r: 0, g: 0, b: 0, alpha: 0 }
-    })
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true })
-  let minX = RASTER_SIZE
-  let minY = RASTER_SIZE
-  let maxX = -1
-  let maxY = -1
-  for (let y = 0; y < info.height; y += 1) {
-    for (let x = 0; x < info.width; x += 1) {
-      const alpha = data[(y * info.width + x) * info.channels + info.channels - 1]
-      if (alpha <= ALPHA_THRESHOLD) continue
-      minX = Math.min(minX, x)
-      minY = Math.min(minY, y)
-      maxX = Math.max(maxX, x)
-      maxY = Math.max(maxY, y)
-    }
-  }
-  if (maxX < 0) return null
-  return {
-    left: minX / (RASTER_SIZE / DESIGN_CANVAS),
-    top: minY / (RASTER_SIZE / DESIGN_CANVAS),
-    right: (maxX + 1) / (RASTER_SIZE / DESIGN_CANVAS),
-    bottom: (maxY + 1) / (RASTER_SIZE / DESIGN_CANVAS)
-  }
-}
-
-async function fitSvgToLiveArea(source) {
-  const painted = await measurePaintedBounds(source)
-  if (!painted) return source
-  const width = painted.right - painted.left
-  const height = painted.bottom - painted.top
-  const maxEdge = Math.max(width, height)
-  if (!Number.isFinite(maxEdge) || maxEdge <= 0) return source
-  const scale = LIVE_AREA_MAX_EDGE / maxEdge
-  const centerX = (painted.left + painted.right) / 2
-  const centerY = (painted.top + painted.bottom) / 2
-  const translateX = DESIGN_CENTER - centerX * scale
-  const translateY = DESIGN_CENTER - centerY * scale
-  const fitTransform = `matrix(${formatNumber(scale)} 0 0 ${formatNumber(scale)} ${formatNumber(translateX)} ${formatNumber(translateY)})`
-  return wrapContent(source, fitTransform)
-}
-
-async function normalizeAndFitSvg(source, sourceViewBox, optical) {
-  const normalized = normalizeSvg(source, sourceViewBox, optical)
-  return fitSvgToLiveArea(normalized)
+async function normalizeAndFitSvg(source, sourceViewBox, optical, slot) {
+  // Kept as a compatibility name for the existing build scripts. V3 must not
+  // fit against painted bounds: the exported Figma frame is the optical
+  // coordinate system, and its complete frame is mapped to the selected slot.
+  return normalizeSvg(source, sourceViewBox, optical, slot)
 }
 
 module.exports = {
-  ALPHA_THRESHOLD,
   DESIGN_CANVAS,
   DESIGN_CENTER,
-  LIVE_AREA_MAX_EDGE,
+  OPTICAL_SLOTS,
   formatNumber,
-  fitSvgToLiveArea,
-  measurePaintedBounds,
   normalizeAndFitSvg,
   normalizeSvg,
-  readViewBox
+  readViewBox,
+  isExplicitFrameSlot,
+  recommendedSlotForFrame,
+  stripFigmaExportChrome
 }

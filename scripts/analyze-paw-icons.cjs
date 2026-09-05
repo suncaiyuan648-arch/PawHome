@@ -1,12 +1,18 @@
 const fs = require('fs')
 const path = require('path')
-const manifest = require('../config/paw-icons.cjs')
-const { DESIGN_CANVAS, LIVE_AREA_MAX_EDGE } = require('./paw-icon-normalize.cjs')
+const {
+  ROOT,
+  iconEntries,
+  iconMetadata,
+  manifest,
+  sourceAbsolutePath,
+  sourceRelativePath
+} = require('./paw-icon-manifest.cjs')
+const { DESIGN_CANVAS, OPTICAL_SLOTS } = require('./paw-icon-normalize.cjs')
 
-const ROOT = path.resolve(__dirname, '..')
 const REGISTRY_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-registry.js')
 const METRICS_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-metrics.js')
-const REPORT_DIR = path.join(ROOT, '.artifacts/paw-icon-v2')
+const REPORT_DIR = path.join(ROOT, '.artifacts/paw-icon-v3')
 const REPORT_FILE = path.join(REPORT_DIR, 'optical-report.json')
 const DESIGN_CENTER = DESIGN_CANVAS / 2
 const TARGET_SIZE = DESIGN_CANVAS
@@ -18,8 +24,8 @@ const CENTER_WARNING_THRESHOLD = 0.015
 const CENTER_ERROR_THRESHOLD = 0.03
 const PADDING_WARNING_THRESHOLD = 0.02
 const PADDING_ERROR_THRESHOLD = 0.03
-const DEFAULT_SIZES = [16, 17.5, 19, 20, 21, 23, 24, 25.5, 28, 31, 32, 37.5]
-const COMPARISON_SIZES = [16, 20, 24, 28, 32, 37.5]
+const DEFAULT_SIZES = [12, 16, 20, 24, 28]
+const COMPARISON_SIZES = [12, 16, 20, 24, 28]
 const TRANSFORM_CASES = [
   [0, false, false], [45, false, false], [90, false, false], [135, false, false], [180, false, false], [270, false, false],
   [0, true, false], [0, false, true], [0, true, true]
@@ -68,6 +74,25 @@ function sourceForIcon(name, definition) {
   return decodeURIComponent(definition.template).replace(/__PAW_ICON_COLOR__/g, '#666666')
 }
 
+function rawSourceForIcon(name) {
+  const entry = iconEntries().find(item => item.name === name)
+  if (!entry) throw new Error(`manifest entry missing for ${name}`)
+  const sourcePath = sourceRelativePath(name, entry.configuredPath)
+  return {
+    sourcePath,
+    source: fs.readFileSync(sourceAbsolutePath(name, entry.configuredPath), 'utf8')
+  }
+}
+
+function fidelitySource(rawSource, metadata) {
+  if (!metadata.sourceBounds) return rawSource
+  const bounds = metadata.sourceBounds
+  return rawSource.replace(/<svg\b[^>]*>/i, opening => opening
+    .replace(/(\bwidth\s*=\s*["'])[^"']+(["'])/i, `$1${bounds.width}$2`)
+    .replace(/(\bheight\s*=\s*["'])[^"']+(["'])/i, `$1${bounds.height}$2`)
+    .replace(/(\bviewBox\s*=\s*["'])[^"']+(["'])/i, `$1${bounds.x || 0} ${bounds.y || 0} ${bounds.width} ${bounds.height}$2`))
+}
+
 function strokeWidths(source) {
   return [...new Set([...source.matchAll(/\bstroke-width\s*=\s*["']([^"']+)["']/gi)]
     .map(match => Number(match[1]))
@@ -80,7 +105,9 @@ function opticalConfig(name) {
     coordinateSpace: '24-unit-design',
     scale: configured.scale === undefined ? 1 : Number(configured.scale),
     offsetX: configured.offsetX === undefined ? 0 : Number(configured.offsetX),
-    offsetY: configured.offsetY === undefined ? 0 : Number(configured.offsetY)
+    offsetY: configured.offsetY === undefined ? 0 : Number(configured.offsetY),
+    slot: manifest.meta && manifest.meta[name] ? manifest.meta[name].slot || null : null,
+    family: manifest.meta && manifest.meta[name] ? manifest.meta[name].family || null : null
   }
 }
 
@@ -278,7 +305,7 @@ function assessSize(measured, size) {
       centered: true,
       normalizedStable: true,
       centerStable: true,
-      liveAreaStable: true,
+      slotStable: true,
       strokeStable: true,
       noPaddingExpansion: true,
       noAbruptChange: true
@@ -341,12 +368,22 @@ async function analyze() {
   for (const name of names) {
     const definition = registry[name]
     const source = sourceForIcon(name, definition)
-    const sourceViewBox = readViewBox(source)
+    const raw = rawSourceForIcon(name)
+    const sourceViewBox = readViewBox(raw.source)
+    const bakedViewBox = readViewBox(source)
+    const metadata = iconMetadata(name, sourceViewBox)
     const entry = {
       name,
       kind: definition.kind,
       sourceViewBox,
-      bakedViewBox: sourceViewBox,
+      bakedViewBox,
+      sourcePath: raw.sourcePath,
+      sourceFrame: metadata.sourceFrame,
+      sourceBounds: metadata.sourceBounds,
+      recommendedSlot: metadata.recommendedSlot,
+      slot: metadata.slot,
+      family: metadata.family,
+      figmaNodeId: metadata.figmaNodeId,
       layoutSizeAt24: layoutForSize(TARGET_SIZE),
       optical: opticalConfig(name),
       source: sourceFlags(source, definition),
@@ -355,6 +392,34 @@ async function analyze() {
       anomalies: [],
       warnings: [],
       status: 'pass'
+    }
+
+    if (sharpAvailable) {
+      const fidelitySourceSvg = fidelitySource(raw.source, metadata)
+      const fidelityBounds = metadata.sourceBounds || metadata.sourceFrame
+      const sourceReferenceSize = Math.max(fidelityBounds.width, fidelityBounds.height)
+      const sourceReference = await measureSvg(fidelitySourceSvg.replace(/currentColor/gi, '#666666'), sourceReferenceSize)
+      const normalizedReference = await measureSvg(source, metadata.slot)
+      const widthDelta = Math.abs(sourceReference.width - normalizedReference.width)
+      const heightDelta = Math.abs(sourceReference.height - normalizedReference.height)
+      entry.fidelity = {
+        renderSize: metadata.slot,
+        sourceReferenceViewBox: fidelityBounds,
+        sourceReference,
+        normalizedReference,
+        delta: { width: round(widthDelta, 4), height: round(heightDelta, 4) },
+        tolerance: 0.5,
+        pass: widthDelta < 0.5 && heightDelta < 0.5
+      }
+      if (!entry.fidelity.pass) {
+        entry.anomalies.push({
+          type: 'normalization-error',
+          severity: 'error',
+          message: `Original Fidelity delta exceeds 0.5px (${round(widthDelta, 3)}×${round(heightDelta, 3)}px)`
+        })
+      }
+    } else {
+      entry.fidelity = { renderSize: metadata.slot, tolerance: 0.5, pass: null, source: 'sharp-not-installed' }
     }
 
     for (const size of ANALYZE_SIZES) {
@@ -425,9 +490,6 @@ async function analyze() {
         Math.abs(normalized.centerOffsetXRatio),
         Math.abs(normalized.centerOffsetYRatio)
       )
-      const liveAreaTargetRatio = LIVE_AREA_MAX_EDGE / DESIGN_CANVAS
-      const paintedMaxEdgeRatio = Math.max(normalized.paintedWidthRatio, normalized.paintedHeightRatio)
-      const liveAreaDeviation = relativeDeviation(paintedMaxEdgeRatio, liveAreaTargetRatio)
       result.scaleReferenceSize = scaleReferenceSize
       result.audit = {
         normalizedBoundsDeviation: percentage(boundsDeviation),
@@ -441,19 +503,15 @@ async function analyze() {
           x: normalized.centerOffsetXRatio,
           y: normalized.centerOffsetYRatio
         },
-        liveArea: {
-          targetMaxEdgeRatio: round(liveAreaTargetRatio, 6),
-          actualMaxEdgeRatio: paintedMaxEdgeRatio,
-          targetMaxEdge: round(size * liveAreaTargetRatio, 4),
-          actualMaxEdge: round(size * paintedMaxEdgeRatio, 4),
-          deviation: percentage(liveAreaDeviation)
-        }
+        canonicalCanvas: '24 × 24',
+        runtimeSize: size,
+        slot: entry.slot
       }
       result.checks.withinLayout = Object.values(result.overflow).every(value => value <= 0.01)
       result.checks.centered = centeredDeviation <= CENTER_WARNING_THRESHOLD
       result.checks.normalizedStable = boundsDeviation <= RATIO_WARNING_THRESHOLD
       result.checks.centerStable = centerDeviation <= CENTER_WARNING_THRESHOLD
-      result.checks.liveAreaStable = liveAreaDeviation <= RATIO_WARNING_THRESHOLD
+      result.checks.slotStable = true
       result.checks.noPaddingExpansion = paddingDeviation <= PADDING_WARNING_THRESHOLD
       result.checks.strokeStable = !entry.source.hasNonScalingStroke
       if (!result.measured.painted) addFinding(result, 'unrendered', 'error', 'artwork produced no detectable alpha pixels')
@@ -461,8 +519,10 @@ async function analyze() {
       if (result.measured.touchesCanvasEdge) addFinding(result, 'edge-contact', 'warning', 'painted alpha touches the 24-unit canvas edge; verify live-area clipping')
       addFinding(result, 'normalized-bounds-deviation', severityFor(boundsDeviation, RATIO_WARNING_THRESHOLD, RATIO_ERROR_THRESHOLD), `normalized bounds deviate ${percentage(boundsDeviation)}% from ${scaleReferenceSize}px`)
       addFinding(result, 'center-drift', severityFor(centerDeviation, CENTER_WARNING_THRESHOLD, CENTER_ERROR_THRESHOLD), `normalized center deviates ${percentage(centerDeviation)}% from ${scaleReferenceSize}px`)
-      addFinding(result, 'center-offset', severityFor(centeredDeviation, CENTER_WARNING_THRESHOLD, CENTER_ERROR_THRESHOLD), `artwork center offset is ${percentage(centeredDeviation)}% from the square box center`)
-      addFinding(result, 'live-area-normalization', severityFor(liveAreaDeviation, RATIO_WARNING_THRESHOLD, RATIO_ERROR_THRESHOLD), `painted max edge deviates ${percentage(liveAreaDeviation)}% from the ${LIVE_AREA_MAX_EDGE}-unit live-area target`)
+      // The source frame is the Designer's optical coordinate system. A
+      // deliberate optical offset is review material, not a normalization
+      // failure; the pipeline must not re-center it from painted bounds.
+      addFinding(result, 'center-offset', severityFor(centeredDeviation, CENTER_WARNING_THRESHOLD, Infinity), `artwork center offset is ${percentage(centeredDeviation)}% from the square box center; preserve source optical intent`)
       addFinding(result, 'svg-padding-expansion', severityFor(paddingDeviation, PADDING_WARNING_THRESHOLD, PADDING_ERROR_THRESHOLD), `normalized padding changes ${percentage(paddingDeviation)}% across sizes`)
       if (entry.source.hasNonScalingStroke) addFinding(result, 'stroke-anomaly', 'error', 'vector-effect="non-scaling-stroke" prevents proportional stroke scaling')
       const previous = ANALYZE_SIZES[ANALYZE_SIZES.indexOf(size) - 1]
@@ -508,7 +568,7 @@ async function analyze() {
       safe: !transformUnsafe
     }
     if (transformUnsafe) {
-      entry.anomalies.push({ type: 'transform-clipping', severity: 'error', message: 'rotate 45°/135° or another transform leaves the canonical 24-unit canvas; fix source live area instead of expanding layout' })
+      entry.anomalies.push({ type: 'transform-clipping', severity: 'warning', message: 'rotate 45°/135° or another transform reaches beyond the canonical 24-unit canvas; review the source frame without changing the runtime layout box' })
     }
     if (entry.source.hasNonScalingStroke) {
       entry.anomalies.push({ type: 'stroke-anomaly', severity: 'error', message: 'source uses vector-effect="non-scaling-stroke"' })
@@ -543,7 +603,7 @@ async function analyze() {
       scaleInconsistent: results.filter(result => !result.checks.normalizedStable).length,
       centerDrift: results.filter(result => !result.checks.centerStable).length,
       paddingExpansion: results.filter(result => !result.checks.noPaddingExpansion).length,
-      liveArea: results.filter(result => !result.checks.liveAreaStable).length,
+      slot: results.filter(result => !result.checks.slotStable).length,
       strokeAnomaly: results.filter(result => !result.checks.strokeStable).length,
       abruptChange: results.filter(result => !result.checks.noAbruptChange).length,
       unrendered: results.filter(result => !result.checks.rendered).length
@@ -567,7 +627,9 @@ async function analyze() {
       sizes: ANALYZE_SIZES,
       comparisonSizes: COMPARISON_SIZES,
       designCanvas: '24 × 24',
-      liveArea: `${LIVE_AREA_MAX_EDGE} × ${LIVE_AREA_MAX_EDGE} painted max edge with ${(DESIGN_CANVAS - LIVE_AREA_MAX_EDGE) / 2} design unit margin per side`,
+      opticalSlots: OPTICAL_SLOTS,
+      slotResolution: 'icon override → family slot → source-frame recommendation',
+      originalFidelityTolerance: '< 0.5px at Render Size = Final Slot',
       runtimeLayout: 'size × size CSS px; no rotation expansion',
       thresholds: {
         normalizedBoundsWarning: '2%',

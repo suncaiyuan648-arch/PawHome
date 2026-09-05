@@ -42,10 +42,10 @@ function roundPx(value) {
 
 /**
  * PawIcon.size is the CSS edge of the canonical 24×24 design canvas.
- * Build-time normalization fits each painted glyph's longest edge to the
- * shared live area, leaving proportional safety margin in the SVG viewBox.
- * Runtime never adds per-size corrections: every icon owns a square layout
- * box and the artwork's natural proportions remain inside it.
+ * Build-time normalization maps each complete Designer source frame through
+ * its optical slot into that canvas. Runtime never adds per-size corrections:
+ * every icon owns a square layout box and the artwork's natural proportions
+ * remain inside it.
  */
 export function resolvePawIconDimensions(size, definition) {
   const target = resolvePawIconSize(size)

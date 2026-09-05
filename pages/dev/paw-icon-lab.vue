@@ -5,7 +5,7 @@
     <view class="lab-content">
       <view class="lab-heading">
         <text class="lab-heading__title">PawIcon Test Lab</text>
-      <text class="lab-heading__hint">注册表自动枚举 · 所有 glyph 使用 24 × 24 设计坐标</text>
+        <text class="lab-heading__hint">注册表自动枚举 · Figma source frame → optical slot → canonical 24 × 24</text>
       </view>
 
       <view class="lab-mode-tabs" data-qa="paw-icon-lab-mode-tabs">
@@ -20,12 +20,12 @@
         <view class="lab-toolbar__row">
           <text class="lab-toolbar__label">Size</text>
           <view class="lab-toolbar__options">
-            <view v-for="item in sizes" :key="item" class="lab-chip"
-              :class="{ 'lab-chip--active': currentSize === item }" :data-qa="`paw-icon-lab-size-${item}`"
-              role="button" @tap="selectSize(item)">
-              <text>{{ item }}</text>
+            <view v-for="item in availableSizes" :key="item" class="lab-chip"
+              :class="{ 'lab-chip--active': currentSize === item }" :data-qa="`paw-icon-lab-size-${item}`" role="button"
+              @tap="selectSize(item)">
+              <text>{{ item }}px</text>
             </view>
-            <view class="lab-size-custom">
+            <view v-if="mode !== 'uniform'" class="lab-size-custom">
               <input class="lab-size-input" data-qa="paw-icon-lab-size-custom-input" type="digit"
                 :value="customSizeInput" placeholder="36" maxlength="6" @input="onCustomSizeInput" />
               <view class="lab-chip lab-size-apply" :class="{ 'lab-chip--active': currentSize === customSize }"
@@ -39,16 +39,16 @@
           <text class="lab-toolbar__label">Color</text>
           <view class="lab-toolbar__options">
             <view v-for="item in colorModes" :key="item.value" class="lab-chip"
-              :class="{ 'lab-chip--active': colorMode === item.value }" :data-qa="`paw-icon-lab-color-${item.value}`" role="button"
-              @tap="selectColorMode(item.value)">
+              :class="{ 'lab-chip--active': colorMode === item.value }" :data-qa="`paw-icon-lab-color-${item.value}`"
+              role="button" @tap="selectColorMode(item.value)">
               <text>{{ item.label }}</text>
             </view>
           </view>
         </view>
         <view class="lab-toolbar__row">
           <text class="lab-toolbar__label">Bounds</text>
-          <view class="lab-chip" :class="{ 'lab-chip--active': showBounds }" role="button"
-            data-qa="paw-icon-lab-bounds" @tap="showBounds = !showBounds">
+          <view class="lab-chip" :class="{ 'lab-chip--active': showBounds }" role="button" data-qa="paw-icon-lab-bounds"
+            @tap="showBounds = !showBounds">
             <text>{{ showBounds ? 'ON' : 'OFF' }}</text>
           </view>
         </view>
@@ -75,11 +75,12 @@
       <view v-if="mode !== 'transform'" class="lab-summary">
         <text>{{ filteredCount }} 个图标</text>
         <text v-if="mode === 'comparison'">对比 {{ comparisonSizes.join(' / ') }}px · {{ colorModeLabel }}</text>
+        <text v-else-if="mode === 'fidelity'">每个图标使用自己的 Final Slot · {{ colorModeLabel }}</text>
         <text v-else>当前 {{ renderSize }}px · {{ colorModeLabel }}</text>
       </view>
 
       <view v-if="mode === 'comparison'" class="lab-comparison" data-qa="paw-icon-lab-comparison">
-        <text class="lab-comparison__hint">同一基线排列；布局框始终是 size × size，百分比用于确认不会把宽图误判成小图。</text>
+        <text class="lab-comparison__hint">同一基线排列；Render Size 只描述 canvas，Source Frame / Final Slot 不参与运行时尺寸计算。</text>
         <scroll-view class="lab-comparison-scroll" scroll-x>
           <view class="lab-comparison__body">
             <view class="lab-comparison__header">
@@ -120,10 +121,9 @@
           </view>
           <view class="lab-grid">
             <view v-for="name in group.names" :key="name" class="lab-card" :data-qa="`paw-icon-card-${name}`">
-            <view class="lab-stage" :style="iconStageStyle">
-                <view v-if="showBounds" class="lab-guide lab-guide--layout" :style="guideStyle(renderSize)" />
-                <view v-if="showBounds" class="lab-guide lab-guide--optical" :style="guideStyle(opticalGuideSize)" />
-                <PawIcon :name="name" :size="renderSize" :color="iconColor(name)" />
+              <view class="lab-stage" :style="iconStageStyleFor(name)">
+                <view v-if="showBounds" class="lab-guide lab-guide--layout" :style="guideStyle(renderSizeFor(name))" />
+                <PawIcon :name="name" :size="renderSizeFor(name)" :color="iconColor(name)" />
               </view>
               <text class="lab-card__name">{{ name }}</text>
               <text class="lab-card__meta">{{ dimensionsLabel(name) }}</text>
@@ -148,9 +148,9 @@
         <view class="lab-transform__controls">
           <text class="lab-toolbar__label">Size</text>
           <view v-for="item in sizes" :key="`transform-size-${item}`" class="lab-chip"
-            :class="{ 'lab-chip--active': currentSize === item }" :data-qa="`paw-icon-lab-size-${item}`"
-            role="button" @tap="selectSize(item)">
-            <text>{{ item }}</text>
+            :class="{ 'lab-chip--active': currentSize === item }" :data-qa="`paw-icon-lab-size-${item}`" role="button"
+            @tap="selectSize(item)">
+            <text>{{ item }}px</text>
           </view>
           <view class="lab-size-custom">
             <input class="lab-size-input" data-qa="paw-icon-lab-transform-size-custom-input" type="digit"
@@ -166,8 +166,8 @@
             role="button" @tap="selectColorMode(item.value)">
             <text>{{ item.label }}</text>
           </view>
-          <view class="lab-chip" :class="{ 'lab-chip--active': showBounds }"
-            data-qa="paw-icon-lab-transform-bounds" role="button" @tap="showBounds = !showBounds">
+          <view class="lab-chip" :class="{ 'lab-chip--active': showBounds }" data-qa="paw-icon-lab-transform-bounds"
+            role="button" @tap="showBounds = !showBounds">
             <text>Bounds {{ showBounds ? 'ON' : 'OFF' }}</text>
           </view>
         </view>
@@ -196,8 +196,6 @@ import { PAW_ICON_NAMES } from '@/components/PawIcon/generated/icon-names.js'
 import { PAW_ICON_REGISTRY } from '@/components/PawIcon/generated/icon-registry.js'
 import { PAW_ICON_AUDIT_METRICS } from '@/components/PawIcon/generated/icon-metrics.js'
 import { resolvePawIconDimensions } from '@/components/PawIcon/PawIcon.utils.js'
-
-const PAW_ICON_LIVE_AREA_RATIO = 22 / 24
 
 const CATEGORY_LABELS = {
   navigation: 'Navigation',
@@ -229,10 +227,12 @@ export default {
         { value: 'optical', label: 'Optical' },
         { value: 'regression', label: 'Size Regression' },
         { value: 'comparison', label: 'Size Comparison' },
+        { value: 'fidelity', label: 'Original Fidelity' },
+        { value: 'uniform', label: 'Uniform Render' },
         { value: 'transform', label: 'Transform' }
       ],
-      sizes: [16, 17.5, 19, 20, 21, 23, 24, 25.5, 28, 31, 32, 37.5],
-      comparisonSizes: [16, 20, 24, 28, 32, 37.5],
+      sizes: [12, 16, 20, 24, 28],
+      comparisonSizes: [12, 16, 20, 24, 28],
       colorModes: [
         { value: 'optical', label: 'Optical #666' },
         { value: 'actual', label: 'Actual' }
@@ -261,12 +261,16 @@ export default {
     colorModeLabel() {
       return this.colorMode === 'actual' ? 'Actual color' : 'Optical color'
     },
-    opticalGuideSize() {
-      return Math.max(1, this.renderSize * PAW_ICON_LIVE_AREA_RATIO)
-    },
     iconStageStyle() {
       const minimum = this.mode === 'transform' ? 86 : 62
       return { height: `${Math.max(minimum, this.renderSize + 8)}px` }
+    },
+    iconStageStyleFor() {
+      return name => {
+        const size = this.renderSizeFor(name)
+        const minimum = this.mode === 'transform' ? 86 : 62
+        return { height: `${Math.max(minimum, size + 8)}px` }
+      }
     },
     filteredNames() {
       const query = this.search.trim().toLowerCase()
@@ -296,6 +300,9 @@ export default {
       const index = this.transformCandidates.indexOf(this.transformName)
       return index < 0 ? 0 : index
     },
+    availableSizes() {
+      return this.mode === 'uniform' ? [20, 24, 28] : this.sizes
+    },
     transformColor() {
       return this.colorMode === 'actual' ? PAW_ICON_DEFAULT_COLOR : '#666666'
     }
@@ -303,6 +310,7 @@ export default {
   methods: {
     selectMode(mode) {
       this.mode = mode
+      if (mode === 'uniform' && ![20, 24, 28].includes(this.currentSize)) this.currentSize = 24
     },
     selectSize(size) {
       this.currentSize = size
@@ -333,9 +341,14 @@ export default {
         ? this.colorMode === 'actual' ? PAW_ICON_DEFAULT_COLOR : '#666666'
         : undefined
     },
+    renderSizeFor(name) {
+      return this.mode === 'fidelity' ? this.registry[name].slot : this.renderSize
+    },
     dimensionsLabel(name) {
-      const dimensions = resolvePawIconDimensions(this.renderSize, this.registry[name])
-      return `layout ${dimensions.width} × ${dimensions.height}px · paint ${this.paintRatioLabel(name, this.renderSize)}`
+      const definition = this.registry[name]
+      const renderSize = this.renderSizeFor(name)
+      const frame = definition.sourceFrame
+      return `source ${frame.width} × ${frame.height}px · recommend ${definition.recommendedSlot} · final ${definition.slot} · canvas 24 × 24 · render ${renderSize}px`
     },
     comparisonLabel(name, size) {
       const dimensions = resolvePawIconDimensions(size, this.registry[name])
@@ -598,10 +611,6 @@ export default {
 
 .lab-guide--layout {
   border: 1px solid rgba(69, 123, 255, 0.55);
-}
-
-.lab-guide--optical {
-  border: 1px dashed rgba(255, 126, 67, 0.7);
 }
 
 .lab-card__name,

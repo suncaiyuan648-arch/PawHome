@@ -1,9 +1,21 @@
 const fs = require('fs')
 const path = require('path')
-const manifest = require('../config/paw-icons.cjs')
-const { DESIGN_CANVAS, normalizeAndFitSvg, readViewBox } = require('./paw-icon-normalize.cjs')
+const {
+  ROOT,
+  iconEntries,
+  iconMetadata,
+  manifest,
+  sourceAbsolutePath,
+  sourceRelativePath
+} = require('./paw-icon-manifest.cjs')
+const {
+  DESIGN_CANVAS,
+  OPTICAL_SLOTS,
+  isExplicitFrameSlot,
+  normalizeAndFitSvg,
+  readViewBox
+} = require('./paw-icon-normalize.cjs')
 
-const ROOT = path.resolve(__dirname, '..')
 const REGISTRY_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-registry.js')
 const NAMES_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-names.js')
 const COLOR_ROOT = path.join(ROOT, 'static/paw-icons/color')
@@ -22,20 +34,9 @@ function walk(entry, files = []) {
   return files
 }
 
-function readSource(relativePath) {
-  const absolutePath = path.join(ROOT, relativePath)
+function readSource(absolutePath, relativePath) {
   if (!fs.existsSync(absolutePath)) fail(`source not found: ${relativePath}`)
   return fs.readFileSync(absolutePath, 'utf8')
-}
-
-function isCanonicalViewBox(viewBox) {
-  return viewBox.x === 0 && viewBox.y === 0 && viewBox.width === DESIGN_CANVAS && viewBox.height === DESIGN_CANVAS
-}
-
-function hasRootExportAttributes(source) {
-  const opening = (source.match(/<svg\b[^>]*>/i) || [''])[0]
-  return ['width', 'height', 'preserveAspectRatio', 'overflow', 'style']
-    .some(attribute => new RegExp(`(?:^|\\s)${attribute}\\s*=`, 'i').test(opening))
 }
 
 function readOpticalMetadata(name, relativePath) {
@@ -63,18 +64,30 @@ function hasHardcodedColor(source) {
 }
 
 function checkManifest() {
-  const monoNames = Object.keys(manifest.mono || {})
-  const colorNames = Object.keys(manifest.color || {})
+  const entries = iconEntries()
+  const monoNames = entries.filter(entry => entry.kind === 'mono').map(entry => entry.name)
+  const colorNames = entries.filter(entry => entry.kind === 'color').map(entry => entry.name)
   const names = [...monoNames, ...colorNames]
   if (new Set(names).size !== names.length) fail('manifest contains duplicate names')
   for (const name of names) {
     const [category, icon] = name.split('/')
     if (!CATEGORIES.has(category) || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(icon)) fail(`invalid manifest name: ${name}`)
+    const configuredPath = (manifest.mono || {})[name] || (manifest.color || {})[name]
+    if (configuredPath !== sourceRelativePath(name, configuredPath)) fail(`manifest must point ${name} to its canonical Figma source path`)
+    const metadata = (manifest.meta && manifest.meta[name]) || {}
+    if (!/^\d+:\d+$/.test(String(metadata.figmaNodeId || ''))) fail(`${name} is missing an exact Figma node ID`)
   }
   for (const name of Object.keys(manifest.optical || {})) {
     if (!names.includes(name)) fail(`optical metadata has no manifest icon: ${name}`)
     const metadata = manifest.optical[name]
     if (metadata.sizeAxis) fail(`sizeAxis is no longer supported; use max-edge size semantics: ${name}`)
+  }
+  for (const [family, config] of Object.entries(manifest.families || {})) {
+    if (!OPTICAL_SLOTS.includes(Number(config.slot))) fail(`family ${family} has an invalid slot: ${config.slot}`)
+  }
+  for (const [name, metadata] of Object.entries(manifest.meta || {})) {
+    if (!names.includes(name)) fail(`meta has no manifest icon: ${name}`)
+    if (metadata.family && !(manifest.families && manifest.families[metadata.family])) fail(`meta references unknown family: ${name} -> ${metadata.family}`)
   }
 }
 
@@ -98,14 +111,23 @@ async function checkGenerated() {
 
   for (const name of expected) {
     if (!definitions[name]) fail(`generated registry is missing ${name}`)
-    const sourcePath = (manifest.mono || {})[name] || (manifest.color || {})[name]
-    const source = readSource(sourcePath)
+    const configuredPath = (manifest.mono || {})[name] || (manifest.color || {})[name]
+    const sourcePath = sourceRelativePath(name, configuredPath)
+    const source = readSource(sourceAbsolutePath(name, configuredPath), sourcePath)
     const sourceViewBox = readViewBox(source, sourcePath)
-    if (!isCanonicalViewBox(sourceViewBox)) {
-      fail(`source must use the canonical 24 × 24 viewBox: ${sourcePath}`)
+    const metadata = iconMetadata(name, sourceViewBox)
+    const explicitFrameSlot = isExplicitFrameSlot(metadata.slot, metadata.sourceFrame.width, metadata.sourceFrame.height)
+    if ((!metadata.recommendedSlot && !explicitFrameSlot) || (!OPTICAL_SLOTS.includes(Number(metadata.slot)) && !explicitFrameSlot)) {
+      fail(`${name} must resolve to an optical slot; source frame is ${metadata.sourceFrame.width}×${metadata.sourceFrame.height}: ${sourcePath}`)
     }
-    if (hasRootExportAttributes(source)) {
-      fail(`source contains export-only root dimensions or overflow attributes: ${sourcePath}`)
+    if (Math.abs(metadata.sourceFrame.width - sourceViewBox.width) > 0.01 || Math.abs(metadata.sourceFrame.height - sourceViewBox.height) > 0.01) {
+      fail(`${name}.sourceFrame does not match the source viewBox: ${sourcePath}`)
+    }
+    if (metadata.sourceBounds && (
+      !Number.isFinite(Number(metadata.sourceBounds.width)) || Number(metadata.sourceBounds.width) <= 0 ||
+      !Number.isFinite(Number(metadata.sourceBounds.height)) || Number(metadata.sourceBounds.height) <= 0
+    )) {
+      fail(`${name}.sourceBounds must contain positive width and height: ${sourcePath}`)
     }
     if (/vector-effect\s*=\s*["']non-scaling-stroke/i.test(source)) {
       fail(`source must not use vector-effect="non-scaling-stroke": ${sourcePath}`)
@@ -114,10 +136,15 @@ async function checkGenerated() {
       fail(`source contains an empty clipPath/mask: ${sourcePath}`)
     }
     const optical = readOpticalMetadata(name, sourcePath)
-    const expectedNormalized = await normalizeAndFitSvg(source, sourceViewBox, optical)
+    const expectedNormalized = await normalizeAndFitSvg(source, sourceViewBox, optical, metadata.slot)
     const definition = definitions[name]
     if (definition.width !== DESIGN_CANVAS || definition.height !== DESIGN_CANVAS) {
       fail(`generated registry dimensions are stale for ${name}; run npm run icons:build`)
+    }
+    for (const key of ['sourceFrame', 'sourceBounds', 'recommendedSlot', 'slot', 'family', 'figmaNodeId']) {
+      if (JSON.stringify(definition[key] ?? null) !== JSON.stringify(metadata[key] ?? null)) {
+        fail(`generated metadata is stale for ${name}; run npm run icons:build`)
+      }
     }
     if (definition.kind === 'color') {
       const target = path.join(COLOR_ROOT, `${name}.svg`)
@@ -147,7 +174,10 @@ async function checkGenerated() {
 function checkDirectRefs() {
   const sourceFiles = BUSINESS_ROOTS.flatMap(entry => walk(path.join(ROOT, entry)))
   const direct = /(?:src|iconSrc|iconImage|image|bubble|icon|backIcon)\s*[:=]\s*["'`]([^"'`]*\.svg)["'`]/g
-  const manifestSources = new Set([...Object.values(manifest.mono || {}), ...Object.values(manifest.color || {})])
+  const manifestSources = new Set(iconEntries().flatMap(entry => [
+    sourceRelativePath(entry.name, entry.configuredPath),
+    entry.configuredPath
+  ]))
   for (const file of sourceFiles) {
     if (file.includes(`${path.sep}PawIcon${path.sep}`) || file.endsWith('PawIconButton.vue')) continue
     const source = fs.readFileSync(file, 'utf8')
@@ -163,7 +193,7 @@ async function check() {
   checkManifest()
   await checkGenerated()
   checkDirectRefs()
-  console.log('[PawIcon] check passed: names, viewBoxes, currentColor, max-edge live area, baked assets, and direct refs')
+  console.log('[PawIcon] check passed: source audit, optical slots, canonical assets, metadata, and direct refs')
 }
 
 check().catch(error => {

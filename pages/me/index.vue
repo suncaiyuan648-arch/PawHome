@@ -56,14 +56,14 @@
 						<text class="card-title">我的订单</text>
 						<view class="card-link" @click="toast('全部订单')">
 							<text>全部</text>
-							<PawIcon class="link-chevron" name="navigation/order-chevron-right" :size="10" />
+							<PawIcon class="link-chevron" name="navigation/order-chevron-right" size="sm" />
 						</view>
 					</view>
 					<view class="orders-grid">
 						<view v-for="(item, i) in orderEntries" :key="i" class="order-item" @click="toast(item.label)">
 							<view class="order-icon-wrap">
 								<PawBadge :count="item.badge">
-									<PawIcon class="order-icon-img" :name="item.iconName" :size="24" />
+									<PawIcon class="order-icon-img" :name="item.iconName" size="lg" />
 								</PawBadge>
 							</view>
 							<text class="order-label">{{ item.label }}</text>
@@ -76,7 +76,7 @@
 						<text class="card-title card-title--blue">我的小院</text>
 						<view class="card-link" @click="goManagedYard">
 							<text>查看</text>
-							<PawIcon class="link-chevron" name="navigation/yard-link-chevron" :size="8" :rotate="180" />
+							<PawIcon class="link-chevron" name="navigation/yard-link-chevron" size="xs" :rotate="180" />
 						</view>
 					</view>
 					<view class="yard-body">
@@ -97,7 +97,7 @@
 							<view class="yard-action" @click="goYardFeedOrders">
 								<PawBadge :count="9">
 									<view class="yard-action-content">
-										<PawIcon class="yard-icon-img" name="actions/yard-feed" :size="22" />
+										<PawIcon class="yard-icon-img" name="actions/yard-feed" size="base" />
 										<text class="yard-action-text">投喂订单</text>
 									</view>
 								</PawBadge>
@@ -105,7 +105,7 @@
 							<view class="yard-action" @click="goAdoptionAudit">
 								<PawBadge :count="9">
 									<view class="yard-action-content">
-										<PawIcon class="yard-icon-img" name="actions/yard-audit" :size="22" />
+										<PawIcon class="yard-icon-img" name="actions/yard-audit" size="base" />
 										<text class="yard-action-text">领养审核</text>
 									</view>
 								</PawBadge>
@@ -137,24 +137,28 @@
 		</scroll-view>
 		<CustomTabber :tab-index="3" />
 
-		<view v-if="drawerOpen" class="drawer-backdrop" @click="closeDrawer"></view>
-		<view v-if="drawerOpen" class="drawer-shell" :class="{ 'drawer-shell--show': drawerAnim }" @click.stop>
+		<view v-if="drawerOpen" class="drawer-backdrop" :class="{ 'drawer-backdrop--show': drawerAnim }"
+			data-qa="qa-me-drawer-backdrop" @tap.stop="closeDrawer"></view>
+		<view v-if="drawerOpen" class="drawer-shell"
+			:class="{ 'drawer-shell--show': drawerAnim, 'drawer-shell--closing': !drawerAnim }" data-qa="qa-me-drawer"
+			@tap.stop>
 			<scroll-view class="drawer-scroll" scroll-y :show-scrollbar="false">
 				<view class="drawer-pad">
-					<view v-for="(section, si) in menuSections" :key="si" class="menu-section">
-						<view v-for="(label, ri) in section" :key="ri" class="menu-row" @click="onMenuRow(label)">
+					<view v-for="(section, si) in menuSections" :key="si" class="menu-section"
+						:class="`menu-section--${si + 1}`">
+						<view v-for="(label, ri) in section" :key="ri" class="menu-row" @tap.stop="onMenuRow(label)">
 							<text class="menu-row-label">{{ label }}</text>
-							<PawChevron class="menu-row-chevron" :size="10" />
+							<PawChevron class="menu-row-chevron" :size="8" />
 						</view>
-					</view>
-					<view class="drawer-settings" @click="onMenuRow('设置')">
-						<view class="settings-icon-wrap">
-							<uni-icons type="gear" color="#555555" :size="22"></uni-icons>
-						</view>
-						<text class="settings-text">设置</text>
 					</view>
 				</view>
 			</scroll-view>
+			<view class="drawer-settings" data-qa="qa-me-drawer-settings" @tap.stop="onMenuRow('设置')">
+				<view class="settings-icon-wrap">
+					<uni-icons type="gear" color="#666666" :size="18"></uni-icons>
+				</view>
+				<text class="settings-text">设置</text>
+			</view>
 		</view>
 		<PawBottomSheet v-model:visible="avatarSheetVisible" variant="profile-upload" height="379px"
 			:close-on-mask="true" :safe-area="true" :z-index="10060" @after-close="onProfileUploadClosed">
@@ -220,21 +224,27 @@ export default {
 			],
 			drawerOpen: false,
 			drawerAnim: false,
+			drawerEnterTimer: null,
+			drawerCloseTimer: null,
 			menuSections: [
 				['我的宠物', '我的云养宠物'],
 				['我的小院', '小院宠物', '投喂订单', '领养审核'],
 				['红包卡券', '我的收藏', '历史浏览'],
-				['我的投喂订单', '我入驻的小院', '我申请的领养']
+				['我的投喂订单', '我入驻的小院', '我申请的领养'],
+				['领养评审', '我参与过的评审'],
+				['入驻宠托师']
 			]
 		}
 	},
 	onLoad(options = {}) {
 		this.pageState = String(options.state || 'default')
 		if (this.pageState === 'drawer') {
-			this.drawerOpen = true
-			this.drawerAnim = true
+			this.openDrawer()
 		}
 		if (this.pageState === 'profile-upload') this.avatarSheetVisible = true
+	},
+	beforeUnmount() {
+		this.clearDrawerTimers()
 	},
 	onShow() {
 		if (!this.ensureLogin()) return
@@ -268,14 +278,35 @@ export default {
 				this.closeDrawer()
 				return
 			}
+			this.openDrawer()
+		},
+		clearDrawerTimers() {
+			if (this.drawerEnterTimer) clearTimeout(this.drawerEnterTimer)
+			if (this.drawerCloseTimer) clearTimeout(this.drawerCloseTimer)
+			this.drawerEnterTimer = null
+			this.drawerCloseTimer = null
+		},
+		openDrawer() {
+			this.clearDrawerTimers()
 			this.drawerOpen = true
-			this.drawerAnim = true
+			// Mount in the off-canvas position first. The delayed state change gives
+			// the browser and the mini-program renderer a real transition frame.
+			this.drawerAnim = false
+			this.$nextTick(() => {
+				this.drawerEnterTimer = setTimeout(() => {
+					this.drawerEnterTimer = null
+					if (this.drawerOpen) this.drawerAnim = true
+				}, 16)
+			})
 		},
 		closeDrawer() {
+			if (!this.drawerOpen) return
+			this.clearDrawerTimers()
 			this.drawerAnim = false
-			setTimeout(() => {
+			this.drawerCloseTimer = setTimeout(() => {
 				this.drawerOpen = false
-			}, 300)
+				this.drawerCloseTimer = null
+			}, 220)
 		},
 		onProfileUploadClosed() {
 			if (this.pageState === 'profile-upload') this.pageState = 'default'
@@ -639,8 +670,6 @@ export default {
 }
 
 .card-link .link-chevron {
-	width: 10px;
-	height: 10px;
 	flex-shrink: 0;
 }
 
@@ -670,8 +699,8 @@ export default {
 
 .order-icon-wrap {
 	position: relative;
-	width: 24px;
-	height: 24px;
+	width: 28px;
+	height: 28px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -704,7 +733,7 @@ export default {
 	display: flex;
 	align-items: center;
 	min-height: 0;
-	gap: 24px;
+	gap: 12px;
 	padding: 0 8px;
 }
 
@@ -868,102 +897,138 @@ export default {
 	left: 0;
 	top: 0;
 	bottom: 0;
-	width: 287px;
+	width: 300px;
 	max-width: none;
-	z-index: 99999;
+	z-index: 10050;
 	box-sizing: border-box;
-	background: #f7f7f7;
-	box-shadow: 4px 0 16px rgba(0, 0, 0, 0.12);
+	padding-top: 73px;
+	background: #fafafa;
 	display: flex;
 	flex-direction: column;
-	transform: translateX(-102%);
-	transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.32, 1);
+	overflow: hidden;
+	transform: translate3d(-100%, 0, 0);
+	transition: transform var(--paw-motion-sheet, 260ms) var(--paw-ease-standard, cubic-bezier(.22, .61, .36, 1));
+	will-change: transform;
 }
 
 .drawer-backdrop {
 	position: fixed;
 	inset: 0;
-	z-index: 99998;
-	background: rgba(0, 0, 0, .58);
+	z-index: 10049;
+	background: rgba(0, 0, 0, .6);
+	opacity: 0;
+	transition: opacity var(--paw-motion-fast, 160ms) var(--paw-ease-enter, ease);
+	will-change: opacity;
 }
 
 .drawer-shell--show {
-	transform: translateX(0);
+	transform: translate3d(0, 0, 0);
+}
+
+.drawer-shell--closing {
+	transition-duration: var(--paw-motion-base, 220ms);
+	transition-timing-function: var(--paw-ease-exit, cubic-bezier(.4, 0, 1, 1));
+}
+
+.drawer-backdrop--show {
+	opacity: 1;
 }
 
 .drawer-scroll {
 	flex: 1;
-	height: 100%;
+	min-height: 0;
+	height: 0;
 	width: 100%;
 	box-sizing: border-box;
 }
 
 .drawer-pad {
-	padding: 73px 15px 24px;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 10px;
+	width: 100%;
+	padding: 0 15px 24px;
 	box-sizing: border-box;
 }
 
 .menu-section {
+	display: flex;
+	flex: 0 0 auto;
+	flex-direction: column;
+	align-items: stretch;
+	width: 100%;
 	background: #ffffff;
-	border-radius: 12px;
-	margin-bottom: 10px;
+	border-radius: 10px;
 	overflow: hidden;
-	box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
 }
 
 .menu-row {
 	display: flex;
+	flex: 0 0 48px;
 	flex-direction: row;
 	align-items: center;
 	justify-content: space-between;
-	padding: 13.5px 16px;
-	border-bottom: 1px solid #f0f0f0;
+	min-height: 48px;
+	padding: 0 16px;
 	box-sizing: border-box;
 }
 
-.menu-row:last-child {
-	border-bottom: none;
+.menu-section--2 .menu-row:nth-child(2),
+.menu-section--2 .menu-row:nth-child(3),
+.menu-section--3 .menu-row:nth-child(2),
+.menu-section--4 .menu-row:nth-child(2) {
+	flex-basis: 44px;
+	min-height: 44px;
+}
+
+.menu-section--6 .menu-row {
+	flex-basis: 52px;
+	min-height: 52px;
 }
 
 .menu-row-label {
 	flex: 1;
 	min-width: 0;
-	font-size: 14px;
+	font-size: 13px;
 	font-weight: 400;
-	color: #111111;
-	line-height: 21px;
+	color: #333333;
+	line-height: 18px;
 }
 
 .menu-row-chevron {
-	width: 11px;
-	height: 11px;
 	margin-left: 8px;
 	flex-shrink: 0;
-	opacity: 0.38;
+	opacity: 0.42;
 }
 
 .drawer-settings {
+	flex: 0 0 136px;
+	height: 136px;
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	padding: 12px 8px 12px;
-	margin-top: 12px;
+	box-sizing: border-box;
+	padding: 19px 0 0 30px;
+	background: #fafafa;
+	border-top: 1px solid #ffffff;
 }
 
 .settings-icon-wrap {
-	width: 44px;
-	height: 44px;
+	width: 41px;
+	height: 41px;
 	border-radius: 50%;
-	background: #ebebeb;
+	background: #f0f0f0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 
 .settings-text {
-	margin-top: 7px;
+	margin-top: 8px;
+	margin-left: 8px;
 	font-size: 12px;
-	color: #888888;
+	color: #898989;
 	line-height: 17px;
 }
 

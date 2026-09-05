@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "icons:build": "node scripts/build-paw-icons.cjs",
+    "icons:scan": "node scripts/icons/scan-icons.cjs",
+    "icons:build": "npm run icons:scan && node scripts/build-paw-icons.cjs",
     "icons:analyze": "node scripts/analyze-paw-icons.cjs",
     "icons:test": "node scripts/check-paw-icon-size-chain.cjs",
     "icons:audit": "npm run icons:build && npm run icons:analyze && node scripts/audit-paw-icons.cjs",
