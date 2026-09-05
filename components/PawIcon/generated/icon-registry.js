@@ -18,6 +18,24 @@ export const PAW_ICON_REGISTRY = Object.freeze({
     "height": 24,
     "src": "/static/paw-icons/color/navigation/chevron-right.svg"
   },
+  "navigation/member-progress-arrow": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "src": "/static/paw-icons/color/navigation/member-progress-arrow.svg"
+  },
+  "navigation/order-chevron-right": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "src": "/static/paw-icons/color/navigation/order-chevron-right.svg"
+  },
+  "navigation/yard-link-chevron": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "src": "/static/paw-icons/color/navigation/yard-link-chevron.svg"
+  },
   "navigation/search": {
     "kind": "color",
     "width": 24,
@@ -59,6 +77,24 @@ export const PAW_ICON_REGISTRY = Object.freeze({
     "width": 24,
     "height": 24,
     "src": "/static/paw-icons/color/navigation/value-close.svg"
+  },
+  "navigation/form-amount-chevron": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "src": "/static/paw-icons/color/navigation/form-amount-chevron.svg"
+  },
+  "navigation/form-chevron": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "src": "/static/paw-icons/color/navigation/form-chevron.svg"
+  },
+  "navigation/form-clear": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "src": "/static/paw-icons/color/navigation/form-clear.svg"
   },
   "navigation/clear": {
     "kind": "color",
@@ -276,6 +312,12 @@ export const PAW_ICON_REGISTRY = Object.freeze({
     "height": 24,
     "src": "/static/paw-icons/color/actions/result-close.svg"
   },
+  "actions/login-phone": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "src": "/static/paw-icons/color/actions/login-phone.svg"
+  },
   "common/message-interaction": {
     "kind": "color",
     "width": 24,
@@ -377,6 +419,12 @@ export const PAW_ICON_REGISTRY = Object.freeze({
     "width": 24,
     "height": 24,
     "src": "/static/paw-icons/color/brand/share-wechat.svg"
+  },
+  "brand/login-wechat": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "src": "/static/paw-icons/color/brand/login-wechat.svg"
   },
   "brand/share-moments": {
     "kind": "color",

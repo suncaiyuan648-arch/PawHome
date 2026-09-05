@@ -231,3 +231,65 @@ Store local QA output under:
 ```
 
 Do not commit generated screenshots/logs/reports unless the user explicitly requests a visual-baseline update.
+
+## 11. Unit / 尺寸单位规范
+
+PawHome 以 **px 作为 Design System 默认尺寸单位**。禁止因为“微信小程序”而机械地把 Figma px ×2 转成 rpx。
+
+### 强制规则
+
+- `px`：用于稳定 UI 尺度  
+  - Icon
+  - Font
+  - Border / Stroke
+  - Radius
+  - Avatar
+  - Button / Input 高度
+  - Navigation 高度
+  - Touch Target
+  - Design Token
+
+- 页面布局优先使用：
+  - `flex`
+  - `grid`
+  - `%`
+  - `auto`
+  - `min/max`
+  - `aspect-ratio`
+
+- `rpx` **仅用于明确需要随屏幕宽度同比缩放的页面级尺寸**，例如：
+  - 页面左右留白
+  - 大面积响应式容器
+  - Banner / 图片区域
+  - 特定基于 viewport 比例的布局
+
+### 禁止
+
+- 禁止全局强制统一为 `rpx`
+- 禁止全局机械迁移 `rpx → px`
+- 禁止将字体、Icon、Stroke、点击区域等稳定 UI 尺度改成 `rpx`
+- 禁止通过 `rpx` 代替正常的 Flex/Grid 响应式布局
+- 禁止无理由混用 `px / rpx`
+
+### Coder 判断原则
+
+新增或修改尺寸时必须能回答：
+
+> 该尺寸是否应该随着屏幕宽度同比变化？
+
+- **否 → 使用 `px`**
+- **是 → 才允许使用 `rpx`**
+- 能由 Flex/Grid/%/auto 表达 → 不写固定宽度
+
+### 典型标准
+
+```text
+Icon        px
+Typography  px
+Stroke      px
+Radius      px
+Touch Area  px
+Component Height px
+
+Page Layout flex / grid / % / auto
+Viewport-relative Layout rpx

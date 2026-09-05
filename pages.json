@@ -524,6 +524,14 @@
           }
         },
         {
+          // 救助评审：救助基金池同时作为救助评审列表，按救助状态筛选评审单。
+          "path": "rescueReview",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
           // 陪审详情：查看单个陪审事项的证据和详情。
           "path": "juryDetail",
           "style": {
@@ -542,6 +550,15 @@
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "yard-feed-icon-lab",
+          "style": {
+            "navigationBarTitleText": "yard-feed 图标对比",
+            "navigationBarBackgroundColor": "#F5F6F7",
+            "navigationBarTextStyle": "black",
+            "backgroundColor": "#F5F6F7"
           }
         }
       ]

@@ -19,6 +19,7 @@ const yardPet = (id, name, avatar, species, breed, state, extra = {}) => ({
   cardTags: extra.cardTags || ['极度饥饿', '非常亲人', '男生', '已绝育'],
   desc: extra.desc || '流浪的时候经常去小麦店偷吃火腿肠被打导致有点怕人',
   foodJin: extra.foodJin != null ? extra.foodJin : 32,
+  adoptionValue: extra.adoptionValue != null ? extra.adoptionValue : 15,
   statusLabel: extra.statusLabel || ({
     pending: '待领养',
     cloud: '已云养',
@@ -45,8 +46,8 @@ const dogGallery = [
 ]
 
 const YARD_PETS = [
-  yardPet('roster-cat-1', '小毛球', cat, 'cat', '加菲猫', 'pending', { gallery: catGallery }),
-  yardPet('roster-cat-2', '小毛球', cat, 'cat', '加菲猫', 'cloud', { gallery: catGallery }),
+  yardPet('roster-cat-1', '小毛球', cat, 'cat', '加菲猫', 'pending', { gallery: catGallery, adoptionValue: 20 }),
+  yardPet('roster-cat-2', '小毛球', cat, 'cat', '加菲猫', 'cloud', { gallery: catGallery, adoptionValue: 20 }),
   yardPet('roster-cat-3', '小毛球', cat, 'cat', '奶牛猫', 'cloud', { gallery: catGallery }),
   yardPet('roster-cat-4', '花春晓', cat, 'cat', '英短', 'adopted', { gallery: catGallery, stateTimeLabel: '领养时间', stateTime: '2026-06-12' }),
   yardPet('roster-cat-5', '小灰灰', cat, 'cat', '中华田园猫', 'missing', { gallery: catGallery, stateTimeLabel: '失踪时间', stateTime: '2026-06-18' }),

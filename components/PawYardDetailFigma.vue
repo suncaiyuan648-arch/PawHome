@@ -70,7 +70,7 @@
 
       <view class="yard-tabs-content" :style="tabContentStyle">
         <view v-if="activeState === 'dynamic-empty'" class="dynamic-empty">
-          <image src="/static/figma/yard-detail/empty-dynamic.png" mode="aspectFill" />
+          <image class="yard-empty-art" src="/static/figma/yard-detail/empty-dynamic.svg" mode="aspectFit" />
           <text class="empty-title">院主佛系，还没发过动态</text>
           <view class="remind-btn" @click="showRemind">催一下</view>
         </view>
@@ -188,7 +188,7 @@ export default {
     , commentCount() { return this.activeState === 'dynamic-expanded' ? 4 : 3 }
     , yardComments() { return this.yard.comments || [] }
     , gridCount() { return this.activeState === 'dynamic-expanded' ? 3 : 9 }
-    , footerActions() { return [{ key: 'share', label: '分享', image: '/static/fenxiang.png' }, { key: 'join', label: this.joined ? '已入驻' : '入驻', image: this.joined ? '/static/yard-joined-checked.png' : '/static/ruzhu.png' }, { key: 'adopt', label: '领养', image: '/static/lingyang.png' }] }
+    , footerActions() { return [{ key: 'share', label: '分享', image: '/static/fenxiang.png' }, { key: 'join', label: this.joined ? '已入驻' : '入驻', image: this.joined ? '/static/yard-joined-checked.png' : '/static/ruzhu.png' }, { key: 'adopt', label: '领养', image: '/static/lingyang.png', qa: 'qa-yard-detail-adopt' }] }
     , primaryAction() { return { key: 'feed', label: '云养一只', iconName: 'actions/feed', iconSize: 32, size: 'md' } }
     , replyTargetName() {
       const target = this.replySheetTarget
@@ -663,9 +663,9 @@ export default {
   box-sizing: border-box
 }
 
-.dynamic-empty image {
-  width: 165px;
-  height: 125px
+.yard-empty-art {
+  width: 151px;
+  height: 108px;
 }
 
 .empty-title {

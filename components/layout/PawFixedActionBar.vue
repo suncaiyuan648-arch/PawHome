@@ -1,19 +1,27 @@
 <template>
-  <view class="paw-fixed-action-bar" :class="{ 'paw-fixed-action-bar--safe': safeArea }">
+  <view class="paw-fixed-action-bar" :class="{
+    'paw-fixed-action-bar--safe': safeArea,
+    'paw-fixed-action-bar--primary-full': primaryFullWidth,
+    'paw-fixed-action-bar--stacked': stacked
+  }">
+    <view v-if="stacked" class="paw-fixed-action-bar__top">
+      <slot name="top"></slot>
+    </view>
     <view class="paw-fixed-action-bar__content">
-      <view v-for="action in actions" :key="action.key" class="paw-fixed-action-bar__action"
-        :class="{ 'paw-fixed-action-bar__action--disabled': action.disabled }"
-        hover-class="paw-fixed-action-bar__action--pressed" @tap.stop="onAction(action)">
+      <button v-for="action in actions" :key="action.key" class="paw-fixed-action-bar__action"
+        :class="{ 'paw-fixed-action-bar__action--disabled': action.disabled }" :data-qa="action.qa || null"
+        type="default" hover-class="paw-fixed-action-bar__action--pressed" @tap="onAction(action)">
         <PawIcon v-if="action.iconName" class="paw-fixed-action-bar__paw-icon" :name="action.iconName"
           :size="action.iconSize || 21" :color="action.iconColor || '#222222'" :label="action.label" />
         <image v-else-if="action.image" class="paw-fixed-action-bar__icon" :src="action.image" mode="aspectFit" />
         <uni-icons v-else-if="action.icon" class="paw-fixed-action-bar__uni-icon" :type="action.icon"
           :size="action.iconSize || 21" :color="action.iconColor || '#222'" />
         <text>{{ action.label }}</text>
-      </view>
-      <PawButton v-if="primaryAction" class="paw-fixed-action-bar__primary" :text="primaryAction.label"
-        :tone="primaryAction.tone || 'brand'" :size="primaryAction.size || 'md'" block flush nowrap
-        :loading="!!primaryAction.loading" :disabled="!!primaryAction.disabled"
+      </button>
+      <PawButton v-if="primaryAction" class="paw-fixed-action-bar__primary"
+        :class="{ 'paw-fixed-action-bar__primary--full': primaryFullWidth }" :qa="primaryAction.qa || ''"
+        :text="primaryAction.label" :tone="primaryAction.tone || 'brand'" :size="primaryAction.size || 'md'" block flush
+        nowrap :loading="!!primaryAction.loading" :disabled="!!primaryAction.disabled"
         @click="$emit('primary', primaryAction)">
         <PawIcon v-if="primaryAction.iconName" class="paw-fixed-action-bar__primary-paw-icon"
           :name="primaryAction.iconName" :size="primaryAction.iconSize || 32"
@@ -36,11 +44,15 @@ export default {
   props: {
     actions: { type: Array, default: () => [] },
     primaryAction: { type: Object, default: null },
-    safeArea: { type: Boolean, default: true }
+    safeArea: { type: Boolean, default: true },
+    primaryFullWidth: { type: Boolean, default: false },
+    stacked: { type: Boolean, default: false }
   },
   emits: ['action', 'primary'],
   methods: {
-    onAction(action) { if (!action.disabled) this.$emit('action', action) }
+    onAction(action) {
+      if (!action.disabled) this.$emit('action', action)
+    }
   }
 }
 </script>
@@ -59,6 +71,20 @@ export default {
   box-sizing: border-box;
   border-top: .5px solid rgba(0, 0, 0, .05);
   background: #fff;
+}
+
+.paw-fixed-action-bar--stacked {
+  height: 132px;
+  min-height: 132px;
+}
+
+.paw-fixed-action-bar__top {
+  display: flex;
+  flex: 0 0 48px;
+  width: 100%;
+  margin-bottom: 7px;
+  align-items: center;
+  box-sizing: border-box;
 }
 
 .paw-fixed-action-bar--safe {
@@ -89,14 +115,22 @@ export default {
   flex-direction: column;
   min-width: 21px;
   height: 53px;
-  padding-top: 5px;
   box-sizing: border-box;
   color: #999;
   font-size: 11px;
   font-weight: 500;
-  line-height: 14px;
   white-space: nowrap;
   flex: 0 0 auto;
+  margin: 0;
+  padding: 5px 0 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  line-height: 14px;
+}
+
+.paw-fixed-action-bar__action::after {
+  border: 0;
 }
 
 .paw-fixed-action-bar__action--disabled {
@@ -139,6 +173,11 @@ export default {
   font-size: 15px;
   font-weight: 500;
   white-space: nowrap;
+}
+
+.paw-fixed-action-bar__primary--full {
+  flex: 1 1 auto;
+  width: 100%;
 }
 
 .paw-fixed-action-bar__primary :deep(.paw-button) {

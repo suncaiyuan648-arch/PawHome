@@ -1,37 +1,253 @@
 <template>
-  <view class="proof-page">
-    <view class="proof-top" :style="proofTopStyle">
-      <!-- #ifndef MP-WEIXIN -->
-      <view class="proof-status"><text>9:18</text><view><uni-icons type="bars" color="#111" :size="14"/><uni-icons type="circle-filled" color="#111" :size="10"/></view></view>
-      <!-- #endif -->
-      <view class="proof-nav"><image src="/static/nav-back-arrow.png" mode="aspectFit" @click="goBack"/><!-- #ifndef MP-WEIXIN --><view class="proof-menu"><uni-icons type="more-filled" color="#333" :size="18"/><view/><uni-icons type="circle-filled" color="#111" :size="14"/></view><!-- #endif --></view>
-    </view>
-    <view class="proof-body">
-      <text class="section-title">基本信息</text>
-      <view class="form-card two-rows">
-        <label><text>您的姓名<em>*</em></text><input v-model="name" placeholder="请填写您的真实姓名"/></label>
-        <label><text>与申请人关系<em>*</em></text><input v-model="relation" placeholder="请填写您的真实姓名"/></label>
+  <view class="proof-page" :data-qa="isRescue ? 'qa-rescue-proof-form' : 'qa-adoption-proof-form'">
+    <PawPageNav :title="isRescue ? '我也来证实' : '证实领养'" :fallback-url="fallbackUrl" :auto-back="false" @back="goBack" />
+    <scroll-view class="proof-scroll" scroll-y :show-scrollbar="false">
+      <view class="proof-body">
+        <text class="section-title">基本信息</text>
+        <view class="form-card">
+          <view class="form-row">
+            <text class="form-label">您的姓名<text class="required">*</text></text>
+            <input v-model="name" class="form-input" data-qa="qa-rescue-proof-name" placeholder="请填写您的真实姓名"
+              maxlength="30" />
+          </view>
+          <view class="form-row">
+            <text class="form-label">与申请人关系<text class="required">*</text></text>
+            <input v-model="relation" class="form-input" data-qa="qa-rescue-proof-relation" placeholder="请填写您与申请人的关系"
+              maxlength="30" />
+          </view>
+        </view>
+
+        <view class="form-card note-card">
+          <textarea v-model="note" data-qa="qa-rescue-proof-note" maxlength="200" placeholder="申请人是您的……您了解的情况是……" />
+          <text class="counter">{{ note.length }}/200</text>
+        </view>
+
+        <text class="section-title real-title">实名认证</text>
+        <text class="real-hint">身份证信息仅用于实名认证，严格保密不会展示给其他人</text>
+        <view class="form-card">
+          <view class="form-row form-row--single">
+            <text class="form-label">身份证号<text class="required">*</text></text>
+            <input v-model="idNo" class="form-input" data-qa="qa-rescue-proof-id" type="idcard" placeholder="请填写您的身份证号"
+              maxlength="18" />
+          </view>
+        </view>
+
+        <view class="notice"><uni-icons type="info" color="#999"
+            :size="13" /><text>感谢您的热心参与，如果您深入了解过此申请人和动物的事件，请您如实填写真实身份、真实情况。同时提醒您，您需要对证实内容的真实性负责，如有不实，需承担相应法律责任。</text>
+        </view>
+        <view class="agreement" data-qa="qa-rescue-proof-agreement" @tap="agreementChecked = !agreementChecked">
+          <uni-icons :type="agreementChecked ? 'checkbox-filled' : 'circle'"
+            :color="agreementChecked ? '#ffe000' : '#999'" :size="14" /><text>已经阅读《<text
+              class="agreement-link">隐私政策</text>》、《<text class="agreement-link">用户协议</text>》和《<text
+              class="agreement-link">证明人承诺</text>》</text></view>
       </view>
-      <view class="form-card text-card"><textarea v-model="note" maxlength="200" placeholder="申请人是您的...您了解的情况是..."/><text>{{ note.length }}/200</text></view>
-      <text class="section-title real-title">实名认证</text>
-      <text class="real-hint">身份证信息仅用于实名认证，严格保密不会展示给其他人</text>
-      <view class="form-card id-card"><label><text>身份证号<em>*</em></text><input v-model="idNo" placeholder="请填写您的身份证号"/></label></view>
-      <view class="notice"><uni-icons type="info" color="#999" :size="13"/><text>感谢您的热心参与，如果您深入了解过此申请人和动物的事件，请您如实填写真实身份、真实情况，这将为受助人赢得更多信任。同时提醒您，您需要对证实内容的真实性负责，如有不实，需承担相应法律责任。</text></view>
-    </view>
-    <view class="proof-footer">
-      <view class="agreement"><uni-icons type="checkbox-filled" color="#ffe000" :size="14"/><text>已经阅读《<b>隐私政策</b>》、《<b>用户协议</b>》和《<b>证明人承诺</b>》</text></view>
-      <view class="submit" @click="submit">提交</view>
-    </view>
+    </scroll-view>
+    <PawFixedActionBar :primary-action="submitAction" @primary="submit" />
   </view>
 </template>
 
 <script>
-export default { name:'PawAdoptionProofForm', data(){return{name:'',relation:'',note:'',idNo:'',statusBarHeight:0}}, computed:{proofTopStyle(){if(!this.statusBarHeight)return{};return{paddingTop:`${this.statusBarHeight}px`,height:`${this.statusBarHeight+64}px`}}}, created(){const s=uni.getSystemInfoSync();this.statusBarHeight=s.statusBarHeight||0}, methods:{goBack(){uni.navigateBack()},submit(){uni.showToast({title:'已提交',icon:'none'})}} }
+import PawPageNav from '@/components/PawPageNav.vue'
+import PawFixedActionBar from '@/components/layout/PawFixedActionBar.vue'
+import { goBackSmart } from '@/utils/navBack.js'
+import { getAdoptionById, updateAdoption } from '@/utils/adoptionStorage.js'
+import { getRescueById, addRescueProof } from '@/utils/rescueStorage.js'
+
+export default {
+  name: 'PawAdoptionProofForm',
+  components: { PawPageNav, PawFixedActionBar },
+  props: {
+    recordId: { type: String, default: '' },
+    source: { type: String, default: '' },
+    sourceType: { type: String, default: 'adoption' },
+    rescueId: { type: String, default: '' }
+  },
+  emits: ['submitted'],
+  data() {
+    return { name: '', relation: '', note: '', idNo: '', agreementChecked: false }
+  },
+  created() {
+    this.agreementChecked = !this.isRescue
+  },
+  computed: {
+    contextType() {
+      const source = this.source || this.sourceType
+      return source === 'rescue' ? 'rescue' : 'adoption'
+    },
+    isRescue() { return this.contextType === 'rescue' },
+    resolvedRescueId() { return this.rescueId || this.recordId },
+    fallbackUrl() {
+      if (this.isRescue && this.resolvedRescueId) return `/pages/feature/index?mode=rescue-detail&id=${encodeURIComponent(this.resolvedRescueId)}`
+      return '/pages/me/index'
+    },
+    canSubmit() { return [this.name, this.relation, this.note, this.idNo].every(value => String(value || '').trim()) && (!this.isRescue || this.agreementChecked) },
+    submitAction() { return { key: 'submit-proof', label: '提交', qa: this.isRescue ? 'qa-rescue-proof-submit' : 'qa-adoption-proof-submit', disabled: !this.canSubmit } }
+  },
+  methods: {
+    goBack() { goBackSmart({ fallbackUrl: this.fallbackUrl }) },
+    submit() {
+      if (!this.canSubmit) {
+        uni.showToast({ title: '请完整填写证实信息并同意相关协议', icon: 'none' })
+        return
+      }
+      const submission = {
+        id: 'proof-' + Date.now(),
+        name: this.name.trim(),
+        relation: this.relation.trim(),
+        note: this.note.trim(),
+        idLast4: this.idNo.trim().slice(-4),
+        createdAt: Date.now(),
+        source: this.contextType,
+        rescueId: this.isRescue ? this.resolvedRescueId : ''
+      }
+      if (this.isRescue) {
+        if (!this.resolvedRescueId || !getRescueById(this.resolvedRescueId)) {
+          uni.showToast({ title: '救助记录不存在', icon: 'none' })
+          return
+        }
+        const updated = addRescueProof(this.resolvedRescueId, submission)
+        if (!updated || !getRescueById(this.resolvedRescueId)) {
+          uni.showToast({ title: '证实信息提交失败', icon: 'none' })
+          return
+        }
+      } else {
+        const record = this.recordId ? getAdoptionById(this.recordId) : null
+        if (record && this.recordId) {
+          const proofSubmissions = Array.isArray(record.proofSubmissions) ? record.proofSubmissions : []
+          updateAdoption(this.recordId, { proofSubmissions: [...proofSubmissions, submission] })
+        }
+      }
+      uni.showToast({ title: '已提交', icon: 'none' })
+      this.$emit('submitted', submission)
+    }
+  }
+}
 </script>
 
 <style scoped>
-.proof-page{min-height:100vh;background:#f3f3f3;color:#333;display:flex;flex-direction:column}.proof-top{height:103px;background:linear-gradient(#fffdea,#fff);box-sizing:border-box}.proof-status{height:39px;padding:12px 17px 0 28px;box-sizing:border-box;display:flex;justify-content:space-between;font-size:15px;font-weight: 500;color:#111}.proof-status>view{display:flex;gap:6px}.proof-nav{height:64px;position:relative;display:flex;align-items:center}.proof-nav>image{margin-left:14px;width:10px;height:18px}.proof-menu{position:absolute;right:8px;width:78px;height:30px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;gap:7px}.proof-menu>view{width:1px;height:18px;background:#eee}.proof-body{padding:8px 12px 110px;flex:1}.section-title{display:block;margin:0 2px 14px;font-size:15px;font-weight: 500}.form-card{background:#fff;border-radius:10px}.two-rows label,.id-card label{height:64px;padding:0 12px;display:flex;align-items:center;box-sizing:border-box}.two-rows label:first-child{border-bottom:1px solid #f1f1f1}.form-card label>text{width:150px;font-size:13px}.form-card em{font-style:normal;color:#ff3449}.form-card input{flex:1;text-align:right;font-size:13px;color:#333}.text-card{height:163px;margin-top:10px;position:relative}.text-card textarea{width:100%;height:100%;padding:12px;box-sizing:border-box;font-size:15px}.text-card>text{position:absolute;right:10px;bottom:10px;font-size:12px;color:#aaa}.real-title{margin-top:18px;margin-bottom:4px}.real-hint{display:block;margin:0 2px 12px;font-size:12px;color:#ff7b2f}.id-card{height:67px}.notice{display:flex;gap:6px;margin-top:10px;color:#999}.notice>text{font-size:11px;line-height:13px}.proof-footer{position:fixed;left:0;right:0;bottom:0;height:110px;padding:8px 12px 11px;background:#fff;box-sizing:border-box}.agreement{display:flex;align-items:center;margin:0 9px 8px}.agreement>text{font-size:11px;color:#666}.agreement b{font-weight:400;color:#3978db}.submit{height:43px;border-radius:22px;background:#ffe000;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight: 500}
-/* #ifdef MP-WEIXIN */
-.proof-status{display:none}.proof-menu{display:none}
-/* #endif */
+.proof-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f3f3f3;
+  color: #333
+}
+
+.proof-scroll {
+  flex: 1;
+  min-height: 0
+}
+
+.proof-body {
+  padding: 8px 12px 112px;
+  box-sizing: border-box
+}
+
+.section-title {
+  display: block;
+  margin: 0 2px 14px;
+  font-size: 15px;
+  font-weight: 500
+}
+
+.form-card {
+  overflow: hidden;
+  border-radius: 10px;
+  background: #fff
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  min-height: 64px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border-bottom: 1px solid #f1f1f1
+}
+
+.form-row--single {
+  border-bottom: 0
+}
+
+.form-label {
+  flex: 0 0 150px;
+  font-size: 13px
+}
+
+.required {
+  color: #ff3449
+}
+
+.form-input {
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+  font-size: 13px;
+  color: #333
+}
+
+.note-card {
+  position: relative;
+  height: 163px;
+  margin-top: 10px
+}
+
+.note-card textarea {
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+  font-size: 15px
+}
+
+.counter {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  color: #aaa;
+  font-size: 12px
+}
+
+.real-title {
+  margin-top: 18px;
+  margin-bottom: 4px
+}
+
+.real-hint {
+  display: block;
+  margin: 0 2px 12px;
+  color: #ff7b2f;
+  font-size: 12px
+}
+
+.notice {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  color: #999
+}
+
+.notice>text {
+  flex: 1;
+  font-size: 11px;
+  line-height: 15px
+}
+
+.agreement {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 14px 8px 0;
+  color: #666
+}
+
+.agreement>text {
+  flex: 1;
+  font-size: 11px;
+  line-height: 16px
+}
+
+.agreement-link {
+  color: #3978db
+}
 </style>

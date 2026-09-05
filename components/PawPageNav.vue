@@ -11,7 +11,7 @@
           <slot name="content" />
         </view>
         <text v-else class="paw-nav__title" :class="{ 'paw-nav__title--light': light }" :style="titleStyle">{{ title
-        }}</text>
+          }}</text>
 
         <!-- Transparent reserve only. WeChat renders the native capsule itself. -->
         <view class="paw-nav__native-reserve" :style="reserveStyle" aria-hidden="true" />
@@ -28,9 +28,25 @@ import PawIcon from '@/components/PawIcon/PawIcon.vue'
 export default {
   name: 'PawPageNav',
   components: { PawIcon },
+  options: {
+    // Let the placeholder be the component's flow box. Without a virtual
+    // host, WeChat may collapse the custom-component host while its fixed nav
+    // child is out of flow, which makes page content start under the nav.
+    // #ifdef MP-WEIXIN
+    virtualHost: true,
+    // #endif
+  },
   props: {
     title: { type: String, default: '' },
     titleCentered: { type: Boolean, default: false },
+    // Slot content is left-aligned by default; use center or custom when the
+    // content itself, rather than the title, needs a different anchor.
+    slotPosition: {
+      type: String,
+      default: 'left',
+      validator: value => ['left', 'center', 'custom'].includes(value)
+    },
+    slotStyle: { type: Object, default: () => ({}) },
     background: { type: String, default: 'transparent' },
     light: { type: Boolean, default: false },
     showBack: { type: Boolean, default: true },
@@ -57,9 +73,25 @@ export default {
       return { width: this.backHitWidth + 'px' }
     },
     contentStyle() {
+      if (this.slotPosition === 'center') {
+        return {
+          left: '0px',
+          right: '0px',
+          justifyContent: 'center'
+        }
+      }
+      if (this.slotPosition === 'custom') {
+        return {
+          left: '0px',
+          right: this.nav.rightReservedWidth + 'px',
+          justifyContent: 'flex-start',
+          ...this.slotStyle
+        }
+      }
       return {
         left: this.contentInsetLeft + 'px',
-        right: this.nav.rightReservedWidth + 'px'
+        right: this.nav.rightReservedWidth + 'px',
+        justifyContent: 'flex-start'
       }
     },
     titleStyle() {

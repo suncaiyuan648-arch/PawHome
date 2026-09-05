@@ -3,7 +3,8 @@
     `paw-overlay--${placement}`,
     { 'paw-overlay--open': opened, 'paw-overlay--closing': closing }
   ]" :style="{ zIndex: zIndex }">
-    <view class="paw-overlay__mask" @tap="onMaskTap" @touchmove.stop.prevent="noop"></view>
+    <view v-if="showMask" class="paw-overlay__mask" :style="maskStyle" @tap="onMaskTap" @touchmove.stop.prevent="noop">
+    </view>
     <view class="paw-overlay__content" @tap.stop @touchmove.stop="noop">
       <slot :opened="opened" :closing="closing" />
     </view>
@@ -17,6 +18,8 @@ export default {
     modelValue: { type: Boolean, default: undefined },
     visible: { type: Boolean, default: undefined },
     closeOnMask: { type: Boolean, default: true },
+    showMask: { type: Boolean, default: true },
+    maskColor: { type: String, default: '' },
     placement: {
       type: String,
       default: 'center',
@@ -33,6 +36,9 @@ export default {
   computed: {
     openValue() {
       return this.modelValue !== undefined ? this.modelValue : !!this.visible
+    },
+    maskStyle() {
+      return this.maskColor ? { background: this.maskColor } : {}
     }
   },
   watch: {

@@ -2,7 +2,7 @@
   <view class="comment-thread">
     <text v-if="total" class="comment-thread__title">{{ total }}</text>
     <slot name="before" />
-    <PawEmptyState v-if="empty" class="comment-thread__empty" image="/static/figma/dynamic-comment-empty.png"
+    <PawEmptyState v-if="empty" class="comment-thread__empty" image="/static/figma/dynamic-detail/comment-empty.svg"
       title="还没有评论" action-text="抢首评" compact @action="$emit('empty-action')" />
     <template v-else>
       <CommentItem v-for="(comment, index) in visibleComments" :key="comment.id"

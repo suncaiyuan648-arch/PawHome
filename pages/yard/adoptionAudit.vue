@@ -1,155 +1,348 @@
 <template>
-	<PawAdoptionProofForm v-if="mode==='proof'" />
-	<view v-else class="page">
-		<view class="nav-wrap" :style="{ paddingTop: statusBarHeight + 'px' }">
-			<view class="nav-row">
-				<view class="nav-side nav-left" @click.stop="goBack"><image class="nav-back-icon" src="/static/nav-back-arrow.png" mode="aspectFit"></image></view>
-				<text class="nav-title">领养申请</text>
-				<view class="nav-side nav-right" :style="{ width: menuRightWidth + 'px' }"></view>
-			</view>
-		</view>
-		<scroll-view class="main-scroll" scroll-y :show-scrollbar="false">
-			<view class="status-row"><text class="status-title">{{ titleByMode }}</text></view>
-			<view class="card"><text class="apply-body">{{ rec.applyText }}</text></view>
-			<view class="card">
-				<text class="card-title">{{ catSectionTitle }}</text>
-				<view class="pet-row">
-					<view v-for="(p, i) in displayPets" :key="i" class="pet-cell">
-						<image class="pet-av" :src="petAvatarSrc(p)" mode="aspectFill" />
-						<text class="pet-name">{{ p.name }}</text>
-					</view>
-				</view>
-				<view class="yard-foot"><image class="yard-av" :src="rec.ownerAvatar" mode="aspectFill" @click.stop="openAuditOwner"></image><text class="yard-n" @click.stop="openAuditOwner">{{ rec.ownerName }}</text><YardTagPill class="yard-tag-pill--ml" @click.stop="openAuditYard" /></view>
-			</view>
-			<view class="card card--link">
-				<text>领养信息</text>
-				<view class="adopt-link-more">
-					<text>查看</text>
-					<image class="adopt-link-more__arrow" src="/static/youjiantou.png" mode="aspectFit" />
-				</view>
-			</view>
-			<view class="card card--link">
-				<text>申请内容</text>
-				<view class="adopt-link-more">
-					<text>查看</text>
-					<image class="adopt-link-more__arrow" src="/static/youjiantou.png" mode="aspectFit" />
-				</view>
-			</view>
-		</scroll-view>
+  <PawAdoptionProofForm v-if="mode === 'proof'" :record-id="isRescue ? '' : recordId" :source="sourceType"
+    :source-type="sourceType" :rescue-id="rescueId" @submitted="onProofSubmitted" />
+  <view v-else class="audit-page">
+    <PawPageNav title="领养申请" fallback-url="/pages/me/index" :auto-back="false" @back="goBack" />
+    <scroll-view class="audit-scroll" scroll-y :show-scrollbar="false">
+      <view v-if="record" class="audit-content">
+        <view class="status-row"><text class="status-title">{{ titleByMode }}</text></view>
+        <view v-if="record.applyText" class="card"><text class="apply-body">{{ record.applyText }}</text></view>
+        <view class="card">
+          <text class="card-title">{{ catSectionTitle }}</text>
+          <view class="pet-row">
+            <view v-for="(pet, index) in displayPets" :key="pet.id || index" class="pet-cell">
+              <image class="pet-avatar" :src="petAvatarSrc(pet)" mode="aspectFill" />
+              <text class="pet-name">{{ pet.name }}</text>
+            </view>
+          </view>
+          <view class="yard-row">
+            <image class="yard-avatar" :src="record.ownerAvatar" mode="aspectFill" @tap="openAuditOwner" />
+            <text class="yard-name" @tap="openAuditOwner">{{ record.ownerName }}</text>
+            <YardTagPill :label="record.yardTag" @click="openAuditYard" />
+          </view>
+        </view>
+        <view class="card link-card" @tap="openAdoptInfo">
+          <text>领养信息</text>
+          <view class="link-value"><text>查看</text><uni-icons type="right" :size="14" color="#999" /></view>
+        </view>
+        <view class="card link-card" @tap="openApplyContent">
+          <text>申请内容</text>
+          <view class="link-value"><text>查看</text><uni-icons type="right" :size="14" color="#999" /></view>
+        </view>
+      </view>
+      <view v-else class="empty-state"><text>领养记录不存在</text></view>
+    </scroll-view>
 
-		<view v-if="mode==='ownerPending'" class="bar one">
-			<button class="btn yellow full" @click="goMode('ownerConfirm')">确认申请人已领养</button>
-		</view>
-		<view v-if="mode==='ownerReview'" class="bar">
-			<button class="btn ghost" @click="showReject=true">拒绝</button>
-			<button class="btn yellow" @click="showAgree=true">同意</button>
-		</view>
-		<view v-if="mode==='ownerConfirm'" class="bar">
-			<button class="btn ghost" @click="goMode('confirmReject')">驳回</button>
-			<button class="btn yellow" @click="goMode('confirmAgree')">确认已领养</button>
-		</view>
-		<view v-if="mode==='agreeDone' || mode==='confirmAgree' || mode==='confirmReject' || mode==='rejectDone'" class="bar one">
-			<button class="btn yellow full" @click="nextFromResult">{{ resultBtnText }}</button>
-		</view>
+    <view v-if="mode === 'ownerPending'" class="audit-bar" data-qa="qa-adoption-audit-actions">
+      <PawButton text="查看领养进度" block qa="qa-adoption-audit-owner-progress" @click="openAdoptionProgress" />
+    </view>
+    <view v-else-if="mode === 'ownerReview'" class="audit-bar audit-bar--dual">
+      <PawButton text="拒绝" tone="ghost" block qa="qa-adoption-audit-reject" @click="showReject = true" />
+      <PawButton text="同意" block qa="qa-adoption-audit-agree" @click="showAgree = true" />
+    </view>
+    <view v-else-if="mode === 'ownerConfirm'" class="audit-bar audit-bar--dual">
+      <PawButton text="驳回" tone="ghost" block qa="qa-adoption-audit-reject" @click="showReject = true" />
+      <PawButton text="确认已领养" block qa="qa-adoption-audit-confirm" @click="showAgree = true" />
+    </view>
+    <view v-else-if="['agreeDone', 'confirmAgree', 'confirmReject', 'rejectDone'].includes(mode)" class="audit-bar">
+      <PawButton :text="resultBtnText" block qa="qa-adoption-audit-next" @click="nextFromResult" />
+    </view>
 
-		<view v-if="showAgree" class="mask" @click="showAgree=false">
-			<view class="sheet sheet--agree" @click.stop>
-				<text class="sheet-title">确定同意领养吗</text>
-				<text class="sheet-desc">{{ agreeDescription }}</text>
-				<view class="sheet-actions"><view class="sheet-btn ghost" @click="showAgree=false"><text>返回</text></view><view class="sheet-btn yellow" @click="onAgree"><text>确认</text></view></view>
-			</view>
-		</view>
-		<view v-if="showReject" class="mask" @click="showReject=false">
-			<view class="sheet sheet--reject" @click.stop>
-				<text class="sheet-title">驳回</text>
-				<textarea v-model="rejectReason" maxlength="120" class="reason" placeholder="简短说明驳回的原因"></textarea>
-				<view class="sheet-actions"><view class="sheet-btn ghost" @click="showReject=false"><text>返回</text></view><view class="sheet-btn" :class="rejectReason.trim()?'yellow':'disabled'" @click="onReject"><text>确认</text></view></view>
-			</view>
-		</view>
-	</view>
+    <PawDialog v-model="showAgree" title="确定同意领养吗" :message="agreeDescription" :show-cancel="true" cancel-text="返回"
+      confirm-text="确认" @confirm="onAgree" />
+    <PawDialog v-model="showReject" title="驳回" :show-cancel="true" cancel-text="返回" confirm-text="确认"
+      :auto-close="false" @confirm="onReject" @cancel="rejectReason = ''">
+      <textarea v-model="rejectReason" class="reject-reason" maxlength="120" placeholder="简短说明驳回的原因" />
+    </PawDialog>
+  </view>
 </template>
 
 <script>
-import { goBackSmart } from '@/utils/navBack.js'
-import { openUserProfile, openYardDetail } from '@/utils/profileNav.js'
-import { getDemoAdoptions, updateAdoption } from '@/utils/adoptionStorage.js'
-import { adoptionPetAvatarSrc } from '@/utils/adoptionPetDisplay.js'
+import PawPageNav from '@/components/PawPageNav.vue'
+import PawButton from '@/components/base/PawButton.vue'
+import PawDialog from '@/components/overlay/PawDialog.vue'
 import YardTagPill from '@/components/YardTagPill.vue'
 import PawAdoptionProofForm from '@/components/PawAdoptionProofForm.vue'
+import { goBackSmart } from '@/utils/navBack.js'
+import { openUserProfile, openYardDetail } from '@/utils/profileNav.js'
+import { adoptionPetAvatarSrc } from '@/utils/adoptionPetDisplay.js'
+import { getAdoptionById, getAdoptionRecords, transitionAdoption } from '@/utils/adoptionStorage.js'
+
+function decodeValue(value) {
+  if (value === undefined || value === null) return ''
+  try { return decodeURIComponent(String(value)) } catch (e) { return String(value) }
+}
+
 export default {
-	components: { YardTagPill, PawAdoptionProofForm },
-	data(){return{statusBarHeight:20,menuRightWidth:87,mode:'ownerReview',id:'demo-pending',rec:getDemoAdoptions()[0],showAgree:false,showReject:false,rejectReason:''}},
-	computed:{
-		agreeDescription(){
-			return this.mode === 'ownerConfirm'
-				? '同意后申请将发给院主，由院主再次审核，为防止虐猫群体恶意领养，请您点击申请人头像审查领养人的历史记录后再做决定。'
-				: '同意后申请人可以查看小院位置（非收货地址）、您的联系方式以及您的领养留言。为防止虐猫群体恶意领养，请您点击申请人头像审查申请人的历史记录后再做决定。'
-		},
-		titleByMode(){
-			return {
-				ownerReview:'等待院主审核中……',ownerPending:'院主已同意，待申请人前往领养',ownerConfirm:'申请人已领养，待院主确认',
-				agreeDone:'已同意领养申请',confirmAgree:'已确认领养',confirmReject:'已驳回',success:'领养成功',rejectDone:'已驳回'
-			}[this.mode] || '领养申请'
-		},
-		resultBtnText(){ return this.mode==='agreeDone'?'好的':'查看详情' },
-		displayPets(){
-			const list = this.rec && Array.isArray(this.rec.pets) && this.rec.pets.length ? this.rec.pets : []
-			if (list.length) return list
-			return [
-				{ name: '奥利奥', avatar: '/static/home-feed-1.png' },
-				{ name: '呗呗', avatar: '/static/home-feed-1.png' }
-			]
-		},
-		catSectionTitle(){
-			const n = this.displayPets.length
-			return this.mode === 'success' ? `领走的猫咪（${n}）` : `申请领养的猫咪（${n}）`
-		}
-	},
-	onLoad(o){
-		const sys=uni.getSystemInfoSync();this.statusBarHeight=sys.statusBarHeight||20;try{const mb=uni.getMenuButtonBoundingClientRect();if(mb&&mb.left)this.menuRightWidth=Math.max(sys.windowWidth-mb.left,87)}catch(e){}
-		if(o.mode)this.mode=o.mode;if(o.id)this.id=decodeURIComponent(o.id)
-		const hit=getDemoAdoptions().find(i=>i.id===this.id);if(hit)this.rec=hit
-		if(o.popup==='agree')this.showAgree=true
-		if(o.popup==='reject')this.showReject=true
-	},
-	methods:{
-		petAvatarSrc: adoptionPetAvatarSrc,
-		goBack(){goBackSmart({fallbackUrl:'/pages/me/index'})},
-		openAuditOwner(){
-			openUserProfile({
-				pawId:this.rec.ownerPawId||'audit-owner-'+this.id,
-				nickname:this.rec.ownerName,
-				avatar:this.rec.ownerAvatar||''
-			})
-		},
-		openAuditYard(){
-			openYardDetail({ yardId:this.rec.yardId||'1', yardName:this.rec.ownerName })
-		},
-		goMode(m){uni.redirectTo({url:'/pages/yard/adoptionAudit?mode='+m+'&id='+encodeURIComponent(this.id)})},
-		onAgree(){this.showAgree=false;updateAdoption(this.id,{status:'pickup'});this.goMode('agreeDone')},
-		onReject(){if(!this.rejectReason.trim())return;this.showReject=false;updateAdoption(this.id,{status:'rejected',rejectNote:this.rejectReason.trim()});this.goMode('rejectDone')},
-		nextFromResult(){
-			if(this.mode==='agreeDone') return this.goMode('ownerPending')
-			if(this.mode==='confirmAgree') return this.goMode('success')
-			if(this.mode==='confirmReject') return uni.navigateTo({url:'/pages/yard/juryPanel'})
-			if(this.mode==='rejectDone') return this.goBack()
-		}
-	}
+  components: { PawPageNav, PawButton, PawDialog, YardTagPill, PawAdoptionProofForm },
+  data() {
+    return {
+      mode: 'ownerReview',
+      recordId: 'demo-pending',
+      sourceType: 'adoption',
+      rescueId: '',
+      record: null,
+      showAgree: false,
+      showReject: false,
+      rejectReason: ''
+    }
+  },
+  computed: {
+    agreeDescription() {
+      if (this.mode === 'ownerConfirm') return '确认后申请将进入评审团确认，请确认申请人已经完成线下领养。'
+      return '同意后申请人可以查看小院位置和院主联系方式，请确认申请信息真实有效。'
+    },
+    titleByMode() {
+      return {
+        ownerReview: '等待院主审核中……', ownerPending: '院主已同意，待申请人前往领养',
+        ownerConfirm: '申请人已领养，待院主确认', agreeDone: '已同意领养申请',
+        confirmAgree: '已确认领养', confirmReject: '已驳回', rejectDone: '已驳回', success: '领养成功'
+      }[this.mode] || '领养申请'
+    },
+    resultBtnText() { return this.mode === 'agreeDone' ? '好的' : this.mode === 'confirmAgree' ? '进入评审' : '查看详情' },
+    isRescue() { return this.sourceType === 'rescue' },
+    displayPets() {
+      const pets = this.record && Array.isArray(this.record.pets) ? this.record.pets : []
+      return pets.length ? pets : [{ name: '奥利奥', avatar: '/static/figma/adoption-flow/pet-orange.png' }]
+    },
+    catSectionTitle() {
+      return `${this.mode === 'success' ? '领走的猫咪' : '申请领养的猫咪'}（${this.displayPets.length}）`
+    }
+  },
+  onLoad(options = {}) {
+    this.mode = String(options.mode || 'ownerReview')
+    const source = decodeValue(options.source || options.sourceType)
+    this.sourceType = source === 'rescue' ? 'rescue' : 'adoption'
+    this.rescueId = this.sourceType === 'rescue'
+      ? decodeValue(options.rescueId || options.id || options.recordId)
+      : ''
+    this.recordId = this.sourceType === 'rescue'
+      ? ''
+      : (decodeValue(options.id || options.recordId) || 'demo-pending')
+    if (this.sourceType === 'rescue' && this.mode !== 'proof') {
+      uni.showToast({ title: '该救助页面仅支持公开证实', icon: 'none' })
+      uni.redirectTo({ url: `/pages/feature/index?mode=rescue-detail&id=${encodeURIComponent(this.rescueId)}` })
+      return
+    }
+    this.loadRecord()
+    this.showAgree = options.popup === 'agree'
+    this.showReject = options.popup === 'reject'
+  },
+  onShow() { if (this.mode !== 'proof') this.loadRecord() },
+  methods: {
+    petAvatarSrc: adoptionPetAvatarSrc,
+    loadRecord() {
+      this.record = getAdoptionById(this.recordId) || (!this.recordId ? getAdoptionRecords()[0] : null)
+      if (this.record && !this.recordId) this.recordId = this.record.id
+    },
+    goBack() { goBackSmart({ fallbackUrl: '/pages/me/index' }) },
+    openAuditOwner() {
+      if (!this.record) return
+      openUserProfile({ pawId: this.record.ownerPawId || `audit-owner-${this.recordId}`, nickname: this.record.ownerName, avatar: this.record.ownerAvatar })
+    },
+    openAuditYard() {
+      if (!this.record) return
+      openYardDetail({ yardId: this.record.yardId || '1', yardName: this.record.yardName || this.record.ownerName })
+    },
+    openAdoptInfo() { uni.navigateTo({ url: `/pages/meMore/adoptionFlow?frame=48&id=${encodeURIComponent(this.recordId)}` }) },
+    openApplyContent() { uni.navigateTo({ url: `/pages/meMore/adoptionApplyContent?id=${encodeURIComponent(this.recordId)}` }) },
+    goMode(nextMode) { uni.redirectTo({ url: `/pages/yard/adoptionAudit?mode=${nextMode}&id=${encodeURIComponent(this.recordId)}` }) },
+    onAgree() {
+      const nextStatus = this.mode === 'ownerConfirm' ? 'jury_confirm' : 'pickup'
+      const updated = transitionAdoption(this.recordId, nextStatus, { approvedAt: Date.now(), approvedBy: 'owner' })
+      if (!updated) { uni.showToast({ title: '当前状态不能执行此操作', icon: 'none' }); return }
+      this.showAgree = false
+      this.goMode(this.mode === 'ownerConfirm' ? 'confirmAgree' : 'agreeDone')
+    },
+    onReject() {
+      const reason = String(this.rejectReason || '').trim()
+      if (!reason) { uni.showToast({ title: '请填写驳回原因', icon: 'none' }); return }
+      const updated = transitionAdoption(this.recordId, 'rejected', { rejectNote: reason, rejectedAt: Date.now() })
+      if (!updated) { uni.showToast({ title: '当前状态不能驳回', icon: 'none' }); return }
+      this.showReject = false
+      this.rejectReason = ''
+      this.goMode('rejectDone')
+    },
+    nextFromResult() {
+      if (this.mode === 'agreeDone') return this.openAdoptionProgress()
+      if (this.mode === 'confirmAgree') return uni.navigateTo({ url: `/pages/meMore/adoptionFlow?frame=56&id=${encodeURIComponent(this.recordId)}` })
+      if (this.mode === 'confirmReject') return this.goBack()
+      return this.goBack()
+    },
+    openAdoptionProgress() {
+      uni.redirectTo({ url: `/pages/meMore/adoptionFlow?frame=50&id=${encodeURIComponent(this.recordId)}` })
+    },
+    onProofSubmitted() {
+      if (this.isRescue && this.rescueId) {
+        uni.redirectTo({ url: `/pages/feature/index?mode=rescue-detail&id=${encodeURIComponent(this.rescueId)}` })
+        return
+      }
+      this.goBack()
+    }
+  }
 }
 </script>
 
-<style lang="less" scoped>
-.page{height:100vh;display:flex;flex-direction:column;background:#f5f5f5}.nav-wrap{flex-shrink:0;background:#f5f5f5}.nav-row{height:88rpx;display:flex;align-items:center;padding:0 8rpx}
-.nav-side{width:88rpx;height:88rpx;display:flex;align-items:center;justify-content:center}.nav-back-icon{width:48rpx;height:48rpx}.nav-title{flex:1;text-align:center;font-size:34rpx;font-weight: 500}
-.main-scroll{flex:1;height:0;padding:24rpx;box-sizing:border-box}.status-row{padding:6rpx 8rpx 18rpx}.status-title{font-size:42rpx;font-weight:700}
-.card{background:#fff;border-radius:20rpx;padding:28rpx;margin-bottom:20rpx}.apply-body{font-size:28rpx;line-height:1.6}.card-title{font-size:30rpx;font-weight: 500;margin-bottom:16rpx}
-.pet-row{display:flex;flex-direction:row;flex-wrap:wrap;align-items:flex-end;gap:28rpx 32rpx}.pet-cell{display:flex;flex-direction:column;align-items:center;width:120rpx}.pet-av{width:112rpx;height:112rpx;border-radius:50%;background:#eee;display:block}.pet-name{margin-top:12rpx;font-size:24rpx;color:#111;text-align:center;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.yard-foot{display:flex;align-items:center;margin-top:22rpx;padding-top:20rpx;border-top:1rpx solid #f0f0f0}
-.yard-av{width:56rpx;height:56rpx;border-radius:50%;background:#eee}.yard-n{flex:1;margin-left:12rpx;font-size:26rpx}
-.card--link{display:flex;justify-content:space-between;align-items:center;font-size:30rpx}
-.adopt-link-more{display:flex;flex-direction:row;align-items:center;column-gap:8rpx}
-.adopt-link-more__arrow{width:22rpx;height:22rpx;flex-shrink:0}
-.bar{display:flex;gap:20rpx;background:#fff;padding:16rpx 24rpx calc(16rpx + env(safe-area-inset-bottom));border-top:1rpx solid #eee}.one .full{flex:1}
-.btn{height:88rpx;line-height:88rpx;border-radius:44rpx;font-size:28rpx}.ghost{flex:1;background:#fff;border:2rpx solid #ddd;color:#333}.yellow{flex:1;background:#ffdd00;border:none;color:#111}.disabled{flex:1;background:#e5e5e5;color:#999;border:none}
-.mask{position:fixed;inset:0;background:#5b5b5b;display:flex;align-items:flex-start;justify-content:center;z-index:99}.sheet{position:relative;width:316px;height:278px;margin-top:241px;background:#fff;border-radius:20px;overflow:visible}.sheet-title{position:absolute;left:0;right:0;top:20px;display:block;text-align:center;font-size:16px;line-height:22px;font-weight: 500}.sheet-desc{position:absolute;left:27px;right:27px;top:82px;display:block;font-size:13px;line-height:15px;color:#7d7d7d}.reason{position:absolute;left:15px;top:66px;box-sizing:border-box;width:287px;height:130px;margin:0;background:#f5f5f5;border-radius:10px;padding:12px;font-size:13px}.sheet-actions{position:absolute;left:0;right:0;bottom:0;height:51px;display:flex;border-top:1px solid #eee}.sheet-btn{flex:1;height:51px;display:flex;align-items:center;justify-content:center}.sheet-btn text{font-size:14px}.sheet-btn.ghost{border:0}.sheet-btn.ghost text{color:#9c9c9c}.sheet-btn.yellow,.sheet-btn.disabled{background:#5b5b5b}.sheet--agree .sheet-actions:after,.sheet--reject .sheet-actions:after{content:'';position:absolute;left:316px;top:-1px;width:30px;height:52px;background:#ffe600}.sheet--reject .sheet-actions:after{background:#e5e5e5}
+<style scoped>
+.audit-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f5;
+  color: #333
+}
+
+.audit-scroll {
+  flex: 1;
+  min-height: 0
+}
+
+.audit-content {
+  padding: 8px 15px 24px;
+  box-sizing: border-box
+}
+
+.status-row {
+  padding: 8px 3px 18px
+}
+
+.status-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111
+}
+
+.card {
+  margin-bottom: 10px;
+  padding: 16px;
+  border-radius: 10px;
+  background: #fff;
+  box-sizing: border-box
+}
+
+.apply-body {
+  display: block;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333
+}
+
+.card-title {
+  display: block;
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #222
+}
+
+.pet-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 15px;
+  align-items: flex-start
+}
+
+.pet-cell {
+  display: flex;
+  width: 49px;
+  flex-direction: column;
+  align-items: center
+}
+
+.pet-avatar {
+  display: block;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #eee
+}
+
+.pet-name {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px
+}
+
+.yard-row {
+  display: flex;
+  align-items: center;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #f0f0f0
+}
+
+.yard-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #eee
+}
+
+.yard-name {
+  flex: 1;
+  min-width: 0;
+  margin-left: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px
+}
+
+.link-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 50px;
+  font-size: 16px
+}
+
+.link-value {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: #999;
+  font-size: 14px
+}
+
+.audit-bar {
+  display: flex;
+  flex-shrink: 0;
+  padding: 8px 15px calc(8px + env(safe-area-inset-bottom));
+  background: #fff;
+  border-top: 1px solid #eee
+}
+
+.audit-bar--dual {
+  gap: 12px
+}
+
+.audit-bar .paw-button {
+  flex: 1
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 20px;
+  color: #999
+}
+
+.reject-reason {
+  display: block;
+  width: 100%;
+  height: 110px;
+  margin: 10px 0;
+  padding: 12px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 8px;
+  background: #f5f5f5;
+  font-size: 14px
+}
 </style>

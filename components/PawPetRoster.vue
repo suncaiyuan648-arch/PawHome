@@ -7,7 +7,7 @@
           <text class="managed-nav-name">{{ yardName }}</text>
           <text class="managed-nav-tag">小院</text>
         </view>
-        <text v-else class="title">{{ variant === 'mine' ? '我的云养' : '小院成员' }}</text>
+        <text v-else class="title">{{ variant === 'mine' ? '我的云养' : (variant === 'owned' ? '我的宠物' : '小院成员') }}</text>
       </template>
     </PawPageNav>
 

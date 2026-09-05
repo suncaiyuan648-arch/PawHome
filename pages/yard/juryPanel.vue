@@ -1,34 +1,214 @@
 <template>
-	<view class="page">
-		<PawPageNav title="逢猫评审团" :auto-back="false" @back="goBack" />
-		<scroll-view class="main-scroll" scroll-y :show-scrollbar="false">
-			<view class="head-row"><text class="n">86</text><text class="n n2">9896</text></view>
-			<view class="sub-row"><text class="s on">待投票</text><text class="s">投票结束</text></view>
-			<view class="card" v-for="(it,i) in list" :key="i" @click="openDetail(it)">
-				<view class="card-head"><image src="/static/figma/jury-db5da0781d7667c3490af5cfa74dd2fc7cf1ac01.png" mode="aspectFill"></image><view class="card-owner"><view class="title">{{ it.name }}<LevelCapsule level="1" /></view><text class="date">2026.02.22</text></view><text class="tag" :class="{done:it.done}">{{ it.done?'投票结束':'投票中' }}</text></view>
-				<view class="bar"><view class="left">92% (挺真实)</view><view class="right">8%</view></view>
-				<text class="txt">今天不做课间操了，开一个紧急例会，就在昨天，发生了一件骇人听闻的学生袭击老师事件</text>
-				<view class="evidence-row"><image src="/static/figma/jury-d0a23847642d582320e26f7499c0a5c51acf5a86.jpg" mode="aspectFill"></image><image src="/static/figma/jury-e81f2c2074a7772e8fbca3d3828b3a751f5cb5bb.png" mode="aspectFill"></image></view>
-				<view v-if="it.done" class="gift">获得5斤猫粮</view>
+	<view class="jury-page" data-qa="qa-jury-panel">
+		<PawPageNav title="逢猫评审团" background="#f7f7f7" :title-centered="true" :auto-back="false" @back="goBack" />
+
+		<view class="jury-stats-shell" data-qa="qa-jury-stats-sticky">
+			<view class="jury-stats" data-qa="qa-jury-tabs">
+				<view class="jury-stat" :class="{ 'jury-stat--active': activeTab === 'pending' }"
+					data-qa="qa-jury-stat-pending" @tap.stop="selectTab('pending')">
+					<text class="jury-stat__count">{{ pendingCount }}</text>
+					<view class="jury-stat__label" :class="{ 'jury-stat__label--active': activeTab === 'pending' }">
+						<text>待投票</text>
+					</view>
+				</view>
+				<view class="jury-stat" :class="{ 'jury-stat--active': activeTab === 'finished' }"
+					data-qa="qa-jury-stat-finished" @tap.stop="selectTab('finished')">
+					<text class="jury-stat__count">{{ finishedCount }}</text>
+					<view class="jury-stat__label" :class="{ 'jury-stat__label--active': activeTab === 'finished' }">
+						<text>投票结束</text>
+					</view>
+				</view>
+			</view>
+		</view>
+
+		<scroll-view class="jury-scroll" scroll-y :show-scrollbar="false" data-qa="qa-jury-scroll">
+
+			<view v-if="visibleItems.length" class="jury-list" data-qa="qa-jury-list">
+				<PawJuryItemCard v-for="item in visibleItems" :key="item.id" :item="item"
+					:qa="`qa-jury-card-${item.id}`" @click="openDetail" @identity-click="openIdentity" />
+			</view>
+
+			<view v-else class="jury-empty" data-qa="qa-jury-empty">
+				<text>{{ activeTab === 'pending' ? '暂无待投票内容' : '暂无已结束投票' }}</text>
 			</view>
 		</scroll-view>
 	</view>
 </template>
-<script>
-import LevelCapsule from '@/components/LevelCapsule.vue'
-import PawPageNav from '@/components/PawPageNav.vue'
 
-export default{components:{LevelCapsule,PawPageNav},data(){return{statusBarHeight:20,menuRightWidth:87,list:[{id:'jury-1',name:'我就是要喂猫',done:false},{id:'jury-2',name:'我就是要喂猫',done:true}]}},onLoad(){const s=uni.getSystemInfoSync();this.statusBarHeight=s.statusBarHeight||20;
-// #ifdef H5
-this.statusBarHeight=44
-// #endif
-try{const mb=uni.getMenuButtonBoundingClientRect();if(mb&&mb.left)this.menuRightWidth=Math.max(s.windowWidth-mb.left,87)}catch(e){}},methods:{goBack(){uni.navigateBack()},openDetail(it){uni.navigateTo({url:'/pages/yard/juryDetail?id='+encodeURIComponent(it.id)})}}}
+<script>
+import PawPageNav from '@/components/PawPageNav.vue'
+import PawJuryItemCard from '@/components/PawJuryItemCard.vue'
+import { JURY_ITEM_STATUS } from '@/utils/juryMock.js'
+import { getJuryItems } from '@/utils/juryStorage.js'
+import { goBackSmart } from '@/utils/navBack.js'
+import { openUserProfile } from '@/utils/profileNav.js'
+
+export default {
+	name: 'JuryPanelPage',
+	components: { PawPageNav, PawJuryItemCard },
+	data() {
+		return {
+			activeTab: 'pending',
+			reviewType: '',
+			juryItems: []
+		}
+	},
+	computed: {
+		itemsWithState() {
+			return this.juryItems.map((item) => ({
+				...item,
+				isFinished: item.status !== JURY_ITEM_STATUS.pending
+			}))
+		},
+		visibleItems() {
+			return this.itemsWithState.filter((item) => this.activeTab === 'finished' ? item.isFinished : !item.isFinished)
+		},
+		pendingCount() {
+			return this.itemsWithState.filter((item) => !item.isFinished).length
+		},
+		finishedCount() {
+			return this.itemsWithState.filter((item) => item.isFinished).length
+		}
+	},
+	onLoad(options = {}) {
+		this.reviewType = this.normalizeReviewType(options.reviewType || options.type || options.juryType)
+		if (this.reviewType === 'rescue') {
+			uni.redirectTo({ url: '/pages/yard/rescueReview' })
+			return
+		}
+		if (options.tab === 'finished' || options.state === 'finished') this.activeTab = 'finished'
+		this.loadJuryState()
+	},
+	onShow() {
+		this.loadJuryState()
+	},
+	methods: {
+		goBack() {
+			goBackSmart({ fallbackUrl: '/pages/index/index' })
+		},
+		selectTab(tab) {
+			this.activeTab = tab
+		},
+		loadJuryState() {
+			this.juryItems = getJuryItems({ reviewType: this.reviewType })
+		},
+		openDetail(item) {
+			if (!item || !item.id) return
+			const id = encodeURIComponent(item.id)
+			const type = this.reviewType ? `&reviewType=${encodeURIComponent(this.reviewType)}` : ''
+			uni.navigateTo({ url: `/pages/yard/juryDetail?itemId=${id}&id=${id}${type}` })
+		},
+		normalizeReviewType(value) {
+			const type = value === undefined || value === null ? '' : String(value).trim().toLowerCase()
+			return type === 'rescue' || type === 'adoption' ? type : ''
+		},
+		openIdentity(identity) {
+			if (!identity) return
+			openUserProfile({
+				pawId: identity.pawId || identity.userId || identity.id,
+				nickname: identity.nickname || identity.name,
+				avatar: identity.avatar
+			})
+		}
+	}
+}
 </script>
+
 <style lang="less" scoped>
-.page{height:100vh;background:#f5f5f5}.nav-wrap{background:#f5f5f5}.nav-row{height:88rpx;display:flex;align-items:center;padding:0 8rpx}
-.nav-side{width:88rpx;height:88rpx;display:flex;align-items:center;justify-content:center}.nav-back-icon{width:48rpx;height:48rpx}.nav-title{flex:1;text-align:center;font-size:34rpx;font-weight: 500}
-.main-scroll{height:calc(100vh - 78rpx);padding:20rpx 24rpx;box-sizing:border-box;transform:translateY(-5px)}.head-row,.sub-row{display:flex;gap:120rpx;padding-left:140rpx}.n{font-size:58rpx;font-weight:700}.n2{color:#999}.s{font-size:26rpx;color:#999}.on{color:#111;background:#ffdd00;border-radius:12rpx;padding:0 8rpx}
-.card{background:#fff;border-radius:20rpx;padding:20rpx 30rpx 46rpx;margin-top:20rpx}.card-head{display:flex;align-items:center}.card-head image{width:82rpx;height:82rpx;border-radius:50%}.card-owner{margin-left:12rpx}.title{font-size:27rpx;font-weight: 500}.lv{margin-left:8rpx;font-size:19rpx;color:#7a5200}.date{display:block;margin-top:3rpx;color:#999;font-size:20rpx}.tag{margin-left:auto;font-size:24rpx;color:#17aa60}.done{color:#f05b68}
-.bar{margin-top:16rpx;margin-left:24rpx;height:34rpx;border-radius:18rpx;background:linear-gradient(90deg,#ffdd00 0 92%,#1d93ea 92% 100%);display:flex;justify-content:space-between;align-items:center;padding:0 10rpx;font-size:19rpx}
-.txt{display:block;margin-top:30rpx;font-size:27rpx;line-height:1.35}.evidence-row{display:flex;gap:8rpx;margin-top:42rpx}.evidence-row image{width:224rpx;height:224rpx;border-radius:10rpx}.gift{margin-top:18rpx;margin-left:auto;background:#5c4200;color:#ffdf73;border-radius:8rpx;padding:6rpx 10rpx;width:max-content;font-size:20rpx}
+.jury-page {
+	display: flex;
+	width: 100%;
+	height: 100vh;
+	min-height: 0;
+	flex-direction: column;
+	background: #f7f7f7;
+}
+
+.jury-scroll {
+	height: 0;
+	min-height: 0;
+	flex: 1 1 auto;
+	box-sizing: border-box;
+	padding: 0 12px 24px;
+}
+
+.jury-stats-shell {
+	display: flex;
+	flex: 0 0 50px;
+	align-items: flex-start;
+	justify-content: center;
+	padding: 28px 12px 4px;
+	box-sizing: border-box;
+	background: #f7f7f7;
+}
+
+.jury-stats {
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	gap: 24px;
+}
+
+.jury-stat {
+	display: flex;
+	width: 80px;
+	min-height: 46px;
+	flex: 0 0 80px;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+	box-sizing: border-box;
+	border-radius: 8px;
+}
+
+.jury-stat__count {
+	color: #333;
+	font-size: 20px;
+	font-weight: 500;
+	line-height: 28px;
+}
+
+.jury-stat:not(.jury-stat--active) .jury-stat__count,
+.jury-stat:not(.jury-stat--active) .jury-stat__label {
+	color: #999;
+}
+
+.jury-stat__label {
+	display: flex;
+	width: max-content;
+	min-width: 40px;
+	height: 16px;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	color: #333;
+	font-size: 11px;
+	line-height: 16px;
+	white-space: nowrap;
+}
+
+.jury-stat__label--active {
+	border-radius: 8px;
+	background: #ffe60f;
+	color: #000;
+}
+
+.jury-list {
+	display: flex;
+	margin-top: 11px;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.jury-empty {
+	display: flex;
+	min-height: 160px;
+	margin-top: 12px;
+	align-items: center;
+	justify-content: center;
+	border-radius: 10px;
+	background: #fff;
+	color: #999;
+	font-size: 14px;
+}
 </style>

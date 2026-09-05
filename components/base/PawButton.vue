@@ -5,7 +5,7 @@
     `paw-button--${shape}`,
     { 'paw-button--block': block, 'paw-button--flush': flush, 'paw-button--nowrap': nowrap, 'paw-button--disabled': disabled, 'paw-button--loading': loading }
   ]" :disabled="disabled || loading" :loading="loading" :form-type="formType" hover-class="paw-button--pressed"
-    @click="onClick">
+    :data-qa="qa || null" @click="onClick">
     <view v-if="loading" class="paw-button__spinner" aria-hidden="true"></view>
     <slot>{{ text }}</slot>
   </button>
@@ -24,7 +24,8 @@ export default {
     nowrap: { type: Boolean, default: false },
     loading: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
-    formType: { type: String, default: '' }
+    formType: { type: String, default: '' },
+    qa: { type: String, default: '' }
   },
   emits: ['click'],
   methods: {

@@ -51,11 +51,25 @@ function storageWrite(value) {
   }
 }
 
+function normalizeAddressList(list) {
+  const source = Array.isArray(list) ? list : []
+  let defaultFound = false
+  const normalized = source.map(item => {
+    const value = item && typeof item === 'object' ? item : {}
+    const isDefault = value.isDefault === true && !defaultFound
+    if (isDefault) defaultFound = true
+    return { ...value, isDefault }
+  })
+  // Keep the user's address order stable. Default state is independent from
+  // list ordering and must not move an address after switching.
+  return normalized
+}
+
 function normalizeBook(book) {
   const source = book && typeof book === 'object' ? book : {}
   return {
-    shipping: Array.isArray(source.shipping) ? source.shipping : clone(DEFAULT_SHIPPING),
-    service: Array.isArray(source.service) ? source.service : clone(DEFAULT_SERVICE)
+    shipping: normalizeAddressList(Array.isArray(source.shipping) ? source.shipping : clone(DEFAULT_SHIPPING)),
+    service: normalizeAddressList(Array.isArray(source.service) ? source.service : clone(DEFAULT_SERVICE))
   }
 }
 
@@ -97,8 +111,8 @@ export function saveAddress(address = {}, kind = 'shipping') {
   else list.push(normalized)
   if (normalized.isDefault) list.forEach(item => { item.isDefault = String(item.id) === String(normalized.id) })
   else if (!list.some(item => item.isDefault) && list[0]) list[0].isDefault = true
-  writeBook({ ...book, [key]: list })
-  return clone(normalized)
+  const written = writeBook({ ...book, [key]: list })
+  return clone(written[key].find(item => String(item.id) === String(normalized.id)) || normalized)
 }
 
 export function deleteAddress(id, kind = 'shipping') {
@@ -106,16 +120,16 @@ export function deleteAddress(id, kind = 'shipping') {
   const book = readBook()
   let list = (book[key] || []).filter(item => String(item.id) !== String(id))
   if (!list.some(item => item.isDefault) && list[0]) list = list.map((item, index) => ({ ...item, isDefault: index === 0 }))
-  writeBook({ ...book, [key]: list })
-  return clone(list)
+  const written = writeBook({ ...book, [key]: list })
+  return clone(written[key])
 }
 
 export function setDefaultAddress(id, kind = 'shipping') {
   const key = kind === 'service' ? 'service' : 'shipping'
   const book = readBook()
   const list = (book[key] || []).map(item => ({ ...item, isDefault: String(item.id) === String(id) }))
-  writeBook({ ...book, [key]: list })
-  return clone(list)
+  const written = writeBook({ ...book, [key]: list })
+  return clone(written[key])
 }
 
 export function clearAddressBook() {

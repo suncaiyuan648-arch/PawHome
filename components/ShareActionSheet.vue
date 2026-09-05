@@ -7,10 +7,8 @@
       <view class="share-action-sheet__main-row">
         <view v-for="item in mainActions" :key="item.key" class="share-action-sheet__cell"
           hover-class="share-action-sheet__cell--pressed" @tap.stop="onPick(item.key)">
-          <view class="share-action-sheet__bubble">
-            <image class="share-action-sheet__bubble-bg" :src="item.bubble" mode="aspectFit" />
-            <PawIcon class="share-action-sheet__icon" :class="`share-action-sheet__icon--${item.key}`"
-              :name="item.iconName" :size="item.iconSize" />
+          <view class="share-action-sheet__bubble" :style="bubbleStyle(item.bubble)">
+            <PawIcon class="share-action-sheet__icon" :name="item.iconName" :size="item.iconSize" />
           </view>
           <text class="share-action-sheet__label">{{ item.label }}</text>
         </view>
@@ -20,18 +18,14 @@
 
       <view class="share-action-sheet__report-cell" hover-class="share-action-sheet__cell--pressed"
         @tap.stop="onPick('report')">
-        <view class="share-action-sheet__bubble">
-          <image class="share-action-sheet__bubble-bg" src="/static/figma/share-action-sheet/report-bubble.svg"
-            mode="aspectFit" />
-          <PawIcon class="share-action-sheet__icon share-action-sheet__icon--report" name="brand/share-report"
-            :size="27" />
+        <view class="share-action-sheet__bubble"
+          :style="bubbleStyle('/static/figma/share-action-sheet/report-bubble.svg')">
+          <PawIcon class="share-action-sheet__icon" name="brand/share-report" :size="27" />
         </view>
         <text class="share-action-sheet__label">举报</text>
       </view>
 
       <view class="share-action-sheet__close" hover-class="share-action-sheet__close--pressed" @tap.stop="close">
-        <image class="share-action-sheet__close-bg" src="/static/figma/share-action-sheet/close-bg.svg"
-          mode="aspectFit" />
         <PawIcon class="share-action-sheet__close-icon" name="navigation/share-close" :size="11" />
       </view>
     </view>
@@ -45,7 +39,11 @@ import PawIcon from '@/components/PawIcon/PawIcon.vue'
 export default {
   name: 'ShareActionSheet',
   components: { PawBottomSheet, PawIcon },
-  props: { visible: { type: Boolean, default: false } },
+  props: {
+    visible: { type: Boolean, default: false },
+    // 页面控制器提供当前业务对象，组件只负责把它原样带回选择事件。
+    shareData: { type: Object, default: () => ({}) }
+  },
   emits: ['update:visible', 'select', 'close'],
   data() {
     return {
@@ -88,12 +86,15 @@ export default {
     }
   },
   methods: {
+    bubbleStyle(url) {
+      return { backgroundImage: `url(${url})` }
+    },
     close() {
       this.$emit('update:visible', false)
       this.$emit('close')
     },
     onPick(key) {
-      this.$emit('select', key)
+      this.$emit('select', key, this.shareData)
       this.close()
     }
   }
@@ -102,18 +103,19 @@ export default {
 
 <style scoped>
 .share-action-sheet {
-  position: relative;
+  display: flex;
   width: 100%;
   height: 337px;
+  min-height: 0;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 23px 20px 0;
   box-sizing: border-box;
 }
 
 .share-action-sheet__title {
-  position: absolute;
-  top: 23px;
-  left: 20px;
   display: block;
-  width: 42px;
+  flex: 0 0 20px;
   height: 20px;
   color: #999;
   font-size: 14px;
@@ -122,14 +124,14 @@ export default {
 }
 
 .share-action-sheet__main-row {
-  position: absolute;
-  top: 60px;
-  left: 20px;
   display: flex;
+  flex: 0 0 67px;
   align-items: flex-start;
   gap: 20px;
-  width: 320px;
+  width: 100%;
+  max-width: 320px;
   height: 67px;
+  margin-top: 17px;
 }
 
 .share-action-sheet__cell,
@@ -143,49 +145,20 @@ export default {
 }
 
 .share-action-sheet__bubble {
-  position: relative;
+  display: flex;
   width: 48px;
   height: 48px;
   flex: 0 0 48px;
+  align-items: center;
+  justify-content: center;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
 }
 
-.share-action-sheet__bubble-bg,
-.share-action-sheet__icon,
-.share-action-sheet__close-bg,
-.share-action-sheet__close-icon {
-  position: absolute;
+.share-action-sheet__icon {
   display: block;
-}
-
-.share-action-sheet__bubble-bg {
-  inset: 0;
-  width: 48px;
-  height: 48px;
-}
-
-.share-action-sheet__icon--poster {
-  top: 10px;
-  left: 10px;
-}
-
-.share-action-sheet__icon--link {
-  top: 10px;
-  left: 9px;
-}
-
-.share-action-sheet__icon--wechat {
-  top: 12px;
-  left: 11px;
-}
-
-.share-action-sheet__icon--moments {
-  top: 5px;
-  left: 5px;
-}
-
-.share-action-sheet__icon--report {
-  top: 11px;
-  left: 10px;
+  flex: 0 0 auto;
 }
 
 .share-action-sheet__label {
@@ -200,37 +173,35 @@ export default {
 }
 
 .share-action-sheet__line {
-  position: absolute;
-  top: 144px;
-  left: 0;
   display: block;
+  flex: 0 0 0.7px;
   width: 100%;
   height: 0.7px;
+  margin-top: 17px;
 }
 
 .share-action-sheet__report-cell {
-  position: absolute;
-  top: 161px;
-  left: 20px;
+  margin-top: 16.3px;
 }
 
 .share-action-sheet__close {
-  position: absolute;
-  top: 280px;
-  left: 159px;
+  display: flex;
   width: 57px;
   height: 57px;
-}
-
-.share-action-sheet__close-bg {
-  inset: 0;
-  width: 57px;
-  height: 57px;
+  flex: 0 0 57px;
+  align-items: center;
+  justify-content: center;
+  margin: 52px auto 0;
+  background-image: url('/static/figma/share-action-sheet/close-bg.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
 }
 
 .share-action-sheet__close-icon {
-  top: 23px;
-  left: 23px;
+  display: block;
+  z-index: 1;
+  flex: 0 0 auto;
 }
 
 .share-action-sheet__cell--pressed .share-action-sheet__bubble,

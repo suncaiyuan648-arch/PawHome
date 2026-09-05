@@ -3,68 +3,62 @@
     <PawPageNav v-if="mode !== 'invite'" :title="title" :title-centered="mode === 'album'"
       :background="mode === 'rescue-detail' ? '#fff477' : '#f5f5f5'" fallback-url="/pages/index/index" />
     <scroll-view class="feature-scroll" scroll-y :show-scrollbar="false">
-      <template v-if="mode === 'rescue-fund'">
-        <view class="fund-card"><text class="fund-name">逢猫流浪动物救助基金池</text><text class="fund-balance">13.31</text><text
-            class="fund-label">剩余金额(元)</text>
-          <view class="fund-stats">
-            <view><text>63.01</text><text>今日入池(元)</text></view>
-            <view><text>300</text><text>今日救助支出(元)</text></view>
-            <view><text>7423.32</text><text>累计救助支出(元)</text></view>
-          </view>
+      <template v-if="mode === 'rescue-detail'">
+        <view class="rescue-intro"><text class="rescue-question">Ta的救助申请是真的吗？</text><text>请您审查该申请人是否为虚假申请及不实申请</text>
         </view>
-        <text class="fund-note">基金池不对外开放募捐，由平台云投喂业务五成利润入池</text>
-        <view class="fund-tabs">
-          <view><text>86</text>
-            <PawStatusPill text="待投票" tone="warning" />
-          </view>
-          <view><text>96</text><text>待打款</text></view>
-          <view><text>896</text><text>打款成功</text></view>
-          <view><text>796</text><text>投票否决</text></view>
-        </view>
-        <view v-for="item in rescueItems" :key="item.id" class="rescue-card paw-surface" @click="openRescueDetail">
+        <view class="detail-section detail-section--case paw-surface" data-qa="qa-rescue-detail-case">
           <view class="rescue-head">
-            <PawAvatar class="rescue-avatar" src="/static/figma/jury-db5da0781d7667c3490af5cfa74dd2fc7cf1ac01.png"
-              :size="41" />
-            <view>
-              <view class="rescue-author-line"><text>我就是要喂猫</text>
-                <LevelCapsule inline />
-              </view><text class="muted">2026.02.22</text>
-            </view>
-            <PawStatusPill :text="item.status" :tone="item.id === 1 ? 'success' : 'danger'" />
-          </view><text class="rescue-amount">¥300 <text>求助金额</text></text><text
-            class="rescue-copy">这只猫是我在学校门口看到的，后腿瘸了，走路不太顺畅，听我的同学说好像是被车压得...</text>
-          <view class="rescue-gallery">
-            <image v-for="i in 4" :key="i" src="/static/figma/feature/d81342748c84fc1068ceb0af9525bc465f5517e8.png"
-              mode="aspectFill" />
-          </view><text class="muted">2956人浏览</text>
-        </view>
-      </template>
-      <template v-else-if="mode === 'rescue-detail'">
-        <view class="rescue-intro"><text class="rescue-question">Ta的救助申请是真的吗？</text><text>请您审查该申请人是否为虚假申请及不必须申请</text>
-        </view>
-        <view class="detail-section detail-section--case paw-surface">
-          <view class="rescue-head">
-            <PawAvatar class="rescue-avatar" src="/static/figma/jury-db5da0781d7667c3490af5cfa74dd2fc7cf1ac01.png"
-              :size="34" />
-            <view>
-              <view class="rescue-author-line"><text>逢猫</text>
-                <LevelCapsule inline /><text class="help-type">个人求助</text>
+            <PawAvatar class="rescue-avatar" :src="currentRescue.ownerAvatar" :size="34" :clickable="true"
+              @click.stop="openRescueOwner(currentRescue)" />
+            <view class="rescue-author-copy">
+              <view class="rescue-author-line"><text @tap.stop="openRescueOwner(currentRescue)">{{
+                currentRescue.ownerName }}</text>
+                <LevelCapsule :level="currentRescue.ownerLevel" inline /><text class="help-type">{{
+                  currentRescue.helpType }}</text>
               </view><text class="muted">1天前来过　长沙市</text>
             </view>
-          </view><text class="rescue-amount">¥300 <text>求助金额</text></text><text class="detail-views">2956人浏览</text><text
-            class="rescue-copy">这只猫是我在学校门口看到的，后腿瘸了，走路不太顺畅，听我的同学说好像是被车压得，已经有一个星期了，现在天气炎热伤口已经发炎了，我是学生没有什么钱，想要带去宠物医院做检查。</text>
+          </view><text class="rescue-amount">¥{{ currentRescue.amount }} <text>求助金额</text></text><text
+            class="detail-views">{{ currentRescue.views }}人浏览</text><text class="rescue-copy">{{ currentRescue.detail
+            }}</text>
           <view class="detail-gallery">
-            <image v-for="i in 16" :key="i" src="/static/figma/feature/d81342748c84fc1068ceb0af9525bc465f5517e8.png"
+            <image v-for="(src, index) in currentRescue.mediaPaths.slice(0, 16)" :key="src + index" :src="src"
               mode="aspectFill" />
           </view>
         </view>
-        <view class="detail-section paw-surface"><text class="section-title">求助人信息</text><text
-            v-for="row in applicantRows" :key="row">{{ row }}</text></view>
-        <view class="detail-section paw-surface"><text class="section-title">申请救助的动物（2）</text>
+        <view class="detail-section paw-surface"><text class="section-title">求助人信息</text>
+          <view v-for="row in currentRescue.applicantRows" :key="row.label" class="applicant-row"><text>{{ row.label
+          }}</text><text>{{ row.value }}</text></view>
+        </view>
+        <view class="detail-section paw-surface"><text class="section-title">申请救助的动物（{{ currentRescue.animals.length
+        }}）</text>
           <view class="animal-row">
-            <image src="/static/avatarlog.png" mode="aspectFill" />
-            <image src="/static/figma/dynamic-cats.jpg" mode="aspectFill" />
+            <view v-for="animal in currentRescue.animals" :key="animal.id" class="animal-cell">
+              <image :src="animal.avatar" mode="aspectFill" /><text>{{ animal.name }}</text>
+            </view>
           </view>
+        </view>
+        <view class="detail-section detail-section--evidence paw-surface" data-qa="qa-rescue-detail-evidence">
+          <view class="evidence-heading"><text class="section-title">证实列表（{{ currentRescue.evidenceCount }}）</text><text
+              class="evidence-link" data-qa="qa-rescue-detail-evidence-list" @tap="openEvidenceList">查看全部</text></view>
+          <view v-for="proof in currentRescue.evidenceList.slice(0, 2)" :key="proof.id" class="evidence-row">
+            <PawAvatar class="evidence-avatar" :src="proof.avatar" :size="34" :clickable="true"
+              @click.stop="openEvidenceUser(proof)" />
+            <view class="evidence-copy">
+              <view class="evidence-author"><text @tap.stop="openEvidenceUser(proof)">{{ proof.name }}</text>
+                <LevelCapsule :level="proof.level" />
+              </view><text class="evidence-text">{{ proof.text }}</text><text class="muted">{{ proof.meta }}</text>
+            </view>
+          </view>
+          <PawButton class="evidence-action" text="我也来证实" size="sm" block qa="qa-rescue-detail-proof"
+            @click="openProof" />
+        </view>
+        <view class="detail-section paw-surface detail-section--promise">
+          <text class="section-title">求助人承诺</text>
+          <text class="detail-note">我承诺以上求助信息真实有效，所获救助资金将用于本次流浪动物救助，并及时公开救助进展。</text>
+        </view>
+        <view class="detail-section paw-surface detail-section--promise">
+          <text class="section-title">平台声明</text>
+          <text class="detail-note">平台仅提供信息发布、审核和资金流转服务，具体救助结果由求助人和参与证实的用户共同负责。</text>
         </view>
       </template>
       <template v-else-if="mode === 'invite'">
@@ -128,21 +122,27 @@
 
 <script>
 import PawPageNav from '@/components/PawPageNav.vue'
-import PawPrimaryButton from '@/components/PawPrimaryButton.vue'
-import PawStatusPill from '@/components/PawStatusPill.vue'
+import PawButton from '@/components/base/PawButton.vue'
 import PawAvatar from '@/components/identity/PawAvatar.vue'
 import LevelCapsule from '@/components/LevelCapsule.vue'
 import PawAlbumTag from '@/components/PawAlbumTag.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import { getPawHomeYardPetById } from '@/utils/yardMock.js'
+import { getRescueRecords, getRescueById } from '@/utils/rescueStorage.js'
+import { openUserProfile } from '@/utils/profileNav.js'
+
+function decodeValue(value) {
+  if (value === undefined || value === null) return ''
+  try { return decodeURIComponent(String(value)) } catch (e) { return String(value) }
+}
 
 export default {
-  components: { PawPageNav, PawPrimaryButton, PawStatusPill, PawAvatar, LevelCapsule, PawAlbumTag, PawIcon },
+  components: { PawPageNav, PawButton, PawAvatar, LevelCapsule, PawAlbumTag, PawIcon },
   data() {
     return {
-      mode: 'rescue-fund',
-      rescueItems: [{ id: 1, status: '待投票' }, { id: 2, status: '打款成功' }],
-      applicantRows: ['求助人姓名　马冬梅　已实名', '求助人年龄　23', '求助人身份　学生', '求助所在地　安徽省合肥市蜀山区海恒社区'],
+      mode: 'rescue-detail',
+      rescueId: '',
+      rescueItems: getRescueRecords(),
       inviteAvatars: ['/static/figma/feature/e1f65d79bfde8d6fc9cf263e86080d08f13770fc.jpg', '/static/figma/feature/66fd0f7323c88fa771f5da9f675372febcc335ba.jpg', '/static/figma/feature/a338f4ed23b0a9c0b631d2e34369f856b09a255a.jpg', '/static/figma/feature/7266b7871b03ce7a570811a13cbbd71e61491f75.jpg', '/static/figma/feature/bf6cfd188d6671b8e283e5e5563ece9da7dc2ef8.jpg', '/static/figma/feature/24a1e03cab61f32251063e6be98887860b879349.jpg', '/static/figma/feature/92204562aae4aec0c460d32bdc61d58f52e24268.jpg'],
       albumFilter: 'all',
       albumSort: 'default',
@@ -172,7 +172,13 @@ export default {
   },
   computed: {
     title() {
-      return { 'rescue-fund': '救助基金池', 'rescue-detail': '救助详情', invite: '邀请入驻', album: `${this.albumPetName}的相册` }[this.mode]
+      return { 'rescue-detail': '救助详情', invite: '邀请入驻', album: `${this.albumPetName}的相册` }[this.mode]
+    },
+    currentRescue() {
+      return getRescueById(this.rescueId) || this.rescueItems[0] || {
+        id: '', ownerName: '', ownerAvatar: '', ownerPawId: '', ownerLevel: 1, amount: 0,
+        views: 0, detail: '', mediaPaths: [], animals: [], applicantRows: [], evidenceCount: 0, evidenceList: []
+      }
     },
     albumFilters() {
       return [
@@ -212,8 +218,13 @@ export default {
     },
   },
   onLoad(options) {
-    const m = String(options.mode || 'rescue-fund')
-    this.mode = ['rescue-fund', 'rescue-detail', 'invite', 'album'].includes(m) ? m : 'rescue-fund'
+    const m = String(options.mode || 'rescue-detail')
+    this.mode = ['rescue-detail', 'invite', 'album'].includes(m) ? m : 'rescue-detail'
+    if (this.mode === 'rescue-detail') {
+      this.rescueItems = getRescueRecords()
+      this.rescueId = decodeValue(options.rescueId || options.id)
+      if (this.mode === 'rescue-detail' && !getRescueById(this.rescueId)) this.rescueId = this.rescueItems[0]?.id || ''
+    }
     if (this.mode === 'album' && String(options.managed || '') !== '1') {
       this.albumAccessDenied = true
       uni.showToast({ title: '无权访问该相册', icon: 'none' })
@@ -227,8 +238,30 @@ export default {
       if (pet && pet.name) this.albumPetName = pet.name
     }
   },
+  onShow() {
+    if (this.mode === 'rescue-detail') this.rescueItems = getRescueRecords()
+  },
   methods: {
-    openRescueDetail() { uni.navigateTo({ url: '/pages/feature/index?mode=rescue-detail' }) },
+    openRescueOwner(record) {
+      if (!record) return
+      openUserProfile({ pawId: record.ownerPawId || (record.applicant && record.applicant.id), nickname: record.ownerName, avatar: record.ownerAvatar })
+    },
+    openEvidenceUser(proof) {
+      if (!proof) return
+      openUserProfile({ pawId: proof.pawId || proof.userId || proof.id, nickname: proof.name, avatar: proof.avatar })
+    },
+    openRescueDetail(id) {
+      const rescueId = decodeValue(id) || this.rescueItems[0]?.id || ''
+      uni.navigateTo({ url: `/pages/feature/index?mode=rescue-detail&rescueId=${encodeURIComponent(rescueId)}` })
+    },
+    openEvidenceList() {
+      const rescueId = this.currentRescue.id
+      uni.navigateTo({ url: `/pages/meMore/adoptionProofList?source=rescue&rescueId=${encodeURIComponent(rescueId)}&id=${encodeURIComponent(rescueId)}` })
+    },
+    openProof() {
+      const rescueId = this.currentRescue.id
+      uni.navigateTo({ url: `/pages/yard/adoptionAudit?mode=proof&source=rescue&rescueId=${encodeURIComponent(rescueId)}&id=${encodeURIComponent(rescueId)}` })
+    },
     openYard() { uni.navigateTo({ url: '/pages/commodityDetails/index?id=1' }) },
     selectAlbumFilter(filter) {
       this.albumFilter = filter
@@ -309,93 +342,22 @@ export default {
 
 <style scoped>
 .feature-page {
+  height: 100vh;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: #f5f5f5;
   color: #222
 }
 
 .feature-page--rescue-detail {
-  background: #fff477
+  background: #f5f5f5
 }
 
 .feature-scroll {
-  height: calc(100vh - 150rpx)
-}
-
-.fund-card {
-  margin: 16rpx 24rpx;
-  padding: 32rpx;
-  border-radius: 38rpx;
-  background: #ffe56b;
-  text-align: center
-}
-
-.fund-name {
-  display: block;
-  text-align: left;
-  font-size: 28rpx;
-  font-weight: 500
-}
-
-.fund-balance {
-  display: block;
-  margin-top: 20rpx;
-  font-size: 56rpx;
-  font-weight: 700
-}
-
-.fund-label {
-  display: block;
-  font-size: 22rpx
-}
-
-.fund-stats {
-  display: flex;
-  margin-top: 28rpx
-}
-
-.fund-stats view {
-  display: flex;
   flex: 1;
-  flex-direction: column;
-  font-size: 22rpx
-}
-
-.fund-stats view text:first-child {
-  font-size: 28rpx;
-  font-weight: 500
-}
-
-.fund-note {
-  display: block;
-  padding: 0 28rpx;
-  color: #876f43;
-  font-size: 21rpx
-}
-
-.fund-tabs {
-  display: flex;
-  margin: 24rpx
-}
-
-.fund-tabs view {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  color: #999;
-  font-size: 21rpx
-}
-
-.fund-tabs view>text:first-child {
-  margin-bottom: 8rpx;
-  color: #333;
-  font-size: 34rpx
-}
-
-.rescue-card {
-  margin: 20rpx 24rpx;
-  padding: 24rpx
+  min-height: 0;
+  height: auto;
 }
 
 .rescue-head {
@@ -485,15 +447,16 @@ export default {
 }
 
 .detail-gallery {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 4rpx;
   margin-top: 28rpx
 }
 
 .detail-gallery image {
-  width: 100%;
-  height: 136rpx
+  width: calc((100% - 12rpx) / 4);
+  height: auto;
+  aspect-ratio: 1;
 }
 
 .detail-section>text {
@@ -900,81 +863,56 @@ export default {
   margin-top: 74px
 }
 
-.feature-page--rescue-fund .fund-card {
-  height: 184px;
-  margin-top: 0;
-  box-sizing: border-box
-}
-
-.feature-page--rescue-fund .fund-stats {
-  margin-top: 44rpx
-}
-
-.feature-page--rescue-fund .fund-note {
-  display: block;
-  margin-top: 7px
-}
-
-.feature-page--rescue-fund .fund-tabs {
-  margin-bottom: 50rpx
-}
-
-.feature-page--rescue-fund .rescue-card {
-  height: 283px;
-  padding: 15px;
-  margin-top: 10px;
-  box-sizing: border-box
-}
-
-.feature-page--rescue-fund .rescue-head image {
-  width: 41px;
-  height: 41px;
-  margin-right: 7px
-}
-
-.feature-page--rescue-fund .rescue-head .rescue-avatar {
-  margin-right: 7px
-}
-
-.feature-page--rescue-fund .rescue-copy {
-  margin-top: 13px
-}
-
-.feature-page--rescue-fund .rescue-gallery {
-  gap: 4px;
-  margin-top: 19px
-}
-
-.feature-page--rescue-fund .rescue-gallery image {
-  width: 77px;
-  height: 78px;
-  flex: none
-}
-
 .feature-page--rescue-detail .detail-section {
+  width: calc(100% - 30px);
+  box-sizing: border-box;
   margin-right: 15px;
   margin-left: 15px
 }
 
+.feature-page--rescue-detail .feature-scroll {
+  background: linear-gradient(180deg, #fcf276 0, #fcf276 181px, #f5f5f5 181px, #f5f5f5 100%);
+}
+
+.feature-page--rescue-detail .rescue-intro {
+  padding: 18px 26px 17px;
+  box-sizing: border-box;
+}
+
+.feature-page--rescue-detail .rescue-question {
+  margin-bottom: 8px;
+  font-size: 17px;
+  line-height: 24px;
+}
+
+.feature-page--rescue-detail .rescue-intro>text:last-child {
+  color: #666;
+  font-size: 11px;
+  line-height: 17px;
+}
+
 .feature-page--rescue-detail .detail-section--case {
-  height: 582px;
-  margin-top: 19px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin-top: 0;
   padding: 13px 17px 17px;
-  box-sizing: border-box
 }
 
 .feature-page--rescue-detail .detail-section--case .rescue-head image {
   width: 34px;
   height: 34px;
-  margin-right: 7px
+  margin-right: 7px;
+  flex: none;
 }
 
 .feature-page--rescue-detail .detail-section--case .rescue-head .rescue-avatar {
-  margin-right: 7px
+  margin-right: 7px;
+  flex: none;
 }
 
 .feature-page--rescue-detail .detail-section--case>.rescue-amount {
-  margin-top: 2px;
+  margin-top: 12px;
   font-size: 21px !important
 }
 
@@ -992,16 +930,146 @@ export default {
 .feature-page--rescue-detail .detail-section--case .rescue-copy {
   margin-top: 7px;
   font-size: 14.5px;
-  line-height: 17px
+  line-height: 20px;
+  word-break: break-all
 }
 
 .feature-page--rescue-detail .detail-section--case .detail-gallery {
-  grid-template-columns: repeat(4, 77px);
   gap: 1px;
-  margin-top: 48px
+  margin-top: 16px
 }
 
 .feature-page--rescue-detail .detail-section--case .detail-gallery image {
-  height: 77px
+  width: calc((100% - 3px) / 4);
+}
+
+.feature-page--rescue-detail .detail-section:not(.detail-section--case) {
+  margin-top: 10px;
+  padding: 15px 17px;
+}
+
+.feature-page--rescue-detail .applicant-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  color: #555;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.feature-page--rescue-detail .applicant-row text:last-child {
+  color: #333;
+  text-align: right;
+}
+
+.feature-page--rescue-detail .animal-row {
+  align-items: flex-start;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.feature-page--rescue-detail .animal-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #333;
+  font-size: 12px;
+}
+
+.feature-page--rescue-detail .animal-cell image {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+}
+
+.feature-page--rescue-detail .detail-section--evidence {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 17px;
+}
+
+.feature-page--rescue-detail .evidence-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.feature-page--rescue-detail .evidence-heading .section-title {
+  margin-top: 0;
+}
+
+.feature-page--rescue-detail .evidence-link {
+  margin-top: 0;
+  color: #888;
+  font-size: 12px;
+}
+
+.feature-page--rescue-detail .evidence-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.feature-page--rescue-detail .evidence-avatar {
+  flex: none;
+}
+
+.feature-page--rescue-detail .evidence-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.feature-page--rescue-detail .evidence-author {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #333;
+  font-size: 12px;
+}
+
+.feature-page--rescue-detail .evidence-text {
+  color: #333;
+  font-size: 12px;
+  line-height: 18px;
+  word-break: break-all;
+}
+
+.feature-page--rescue-detail .evidence-copy .muted {
+  margin-top: 0;
+}
+
+.feature-page--rescue-detail .evidence-action {
+  width: 100%;
+  margin-top: 2px;
+}
+
+.feature-page--rescue-detail .detail-note {
+  display: block;
+  margin-top: 10px;
+  color: #666;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.feature-page--rescue-detail .rescue-author-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.feature-page--rescue-detail .rescue-status {
+  flex: none;
+  min-height: 21px;
+  padding-right: 7px;
+  padding-left: 7px;
 }
 </style>

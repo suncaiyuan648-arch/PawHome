@@ -36,7 +36,7 @@ export default {
 	width: 28px;
 	height: 13px;
 	padding: 0;
-	border-radius: 999rpx;
+	border-radius: 999px;
 	background: var(--paw-level-bg, #523400);
 	box-sizing: border-box;
 	flex-shrink: 0;

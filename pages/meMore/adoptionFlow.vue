@@ -1,12 +1,14 @@
-<template><PawAdoptionFlowFigma :frame="frameNumber" /></template>
+<template>
+  <PawAdoptionFlowFigma :frame="frame" :record-id="recordId" />
+</template>
 
 <script>
 import PawAdoptionFlowFigma from '@/components/PawAdoptionFlowFigma.vue'
 export default {
   components: { PawAdoptionFlowFigma },
-  data() { return { frame: 44 } },
-  computed: { frameNumber() { return parseInt(this.frame, 10) || 44 } },
+  data() { return { frame: '', recordId: '' } },
   onLoad(options) {
+    this.recordId = options && (options.id || options.recordId) || ''
     let value = Number(options && options.frame)
     // H5 刷新子包路由时，查询参数有时只保留在 hash 中。
     // #ifdef H5

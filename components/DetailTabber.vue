@@ -32,7 +32,7 @@ export default {
       return [
         { key: 'share', label: '分享', image: '/static/fenxiang.png' },
         { key: 'join', label: this.joined ? '已入驻' : '入驻', image: this.joined ? '/static/yard-joined-checked.png' : '/static/ruzhu.png' },
-        { key: 'adopt', label: '领养', image: '/static/lingyang.png' }
+        { key: 'adopt', label: '领养', image: '/static/lingyang.png', qa: 'qa-pet-detail-adopt' }
       ]
     },
     primaryAction() {

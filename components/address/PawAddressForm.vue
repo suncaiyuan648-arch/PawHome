@@ -22,9 +22,9 @@
             <text class="form-title">地址信息</text>
             <view v-if="kind === 'shipping'" class="import-actions">
               <view class="import-chip" :class="{ 'import-chip--selected': importSource === 'service' }"
-                data-qa="address-import-service" @click="importService"><text>从服务地址导入</text></view>
+                data-qa="address-import-service" @tap.stop="openServiceImport"><text>从服务地址导入</text></view>
               <view class="import-chip" :class="{ 'import-chip--selected': importSource === 'wechat' }"
-                data-qa="address-import-wechat" @click="importWechat"><text>从微信地址导入</text></view>
+                data-qa="address-import-wechat" @tap.stop="openWechatImport"><text>从微信地址导入</text></view>
             </view>
           </view>
 
@@ -67,8 +67,8 @@
         </view>
 
         <view class="ops-row">
-          <view class="default-action" data-qa="address-default-toggle" @click="isDefault = !isDefault">
-            <view class="radio" :class="{ selected: isDefault }"><text v-if="isDefault">✓</text></view>
+          <view class="default-action" data-qa="address-default-toggle" @click="toggleDefault">
+            <PawCheckbox :model-value="isDefault" size="middle" @change="onDefaultChange" />
             <text>默认{{ kindLabel }}地址</text>
           </view>
           <text class="side-action" @click="kind === 'shipping' ? clearAll() : removeAddress()">{{ kind === 'shipping' ?
@@ -76,21 +76,24 @@
         </view>
       </view>
     </scroll-view>
-    <view class="footer">
-      <view class="save" data-qa="address-save" @click="save"><text>保存</text></view>
-    </view>
     <PawLocationPickerSheet :visible="showLocationPicker" :city="locationPickerCity"
       @update:visible="onLocationPickerVisibleChange" @select="onLocationPicked" @city-tap="openLocationCityPicker" />
+    <PawAddressImportSheet :visible="showImportSheet" :mode="importSheetMode" :addresses="serviceAddresses"
+      @update:visible="onImportSheetVisibleChange" @select="onServiceAddressSelected"
+      @request-wechat="requestWechatAddress" />
   </view>
 </template>
 
 <script>
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawLocationPickerSheet from '@/components/location/PawLocationPickerSheet.vue'
+import PawAddressImportSheet from '@/components/address/PawAddressImportSheet.vue'
+import PawCheckbox from '@/components/base/PawCheckbox.vue'
 import { recognizeAddress } from '@/utils/addressService.js'
+import { getAddressList } from '@/utils/addressMock.js'
 export default {
   name: 'PawAddressForm',
-  components: { PawPageNav, PawLocationPickerSheet },
+  components: { PawPageNav, PawLocationPickerSheet, PawAddressImportSheet, PawCheckbox },
   props: {
     kind: { type: String, default: 'shipping' },
     typing: { type: Boolean, default: false },
@@ -101,7 +104,8 @@ export default {
   data() {
     return {
       focusKey: '', smartText: '', isDefault: false, importSource: '', regionParts: [],
-      form: { name: '', phone: '', detail: '' }, showLocationPicker: false, locationPickerCity: '长沙市'
+      form: { name: '', phone: '', detail: '' }, showLocationPicker: false, locationPickerCity: '长沙市',
+      showImportSheet: false, importSheetMode: 'service', serviceAddresses: []
     }
   },
   computed: { kindLabel() { return this.kind === 'service' ? '服务' : '收货' }, regionText() { return this.regionParts.join(' ') } },
@@ -126,13 +130,67 @@ export default {
     },
     async readClipboard() { return new Promise(resolve => { if (typeof uni === 'undefined' || typeof uni.getClipboardData !== 'function') return resolve(''); uni.getClipboardData({ success: res => resolve((res && res.data) || ''), fail: () => resolve('') }) }) },
     async recognize() { let text = (this.smartText || '').trim(); if (!text) text = (await this.readClipboard()).trim(); if (!text) return uni.showToast({ title: '请先粘贴地址', icon: 'none' }); this.smartText = text; const result = await recognizeAddress(text); this.form.name = result.name || this.form.name; this.form.phone = result.phone || this.form.phone; this.regionParts = result.regionParts || this.regionParts; this.form.detail = result.detail || this.form.detail; if (!result.name && !result.phone && !result.regionParts.length && !result.detail) uni.showToast({ title: '未识别到地址信息', icon: 'none' }) },
-    importService() { this.fillDemo('service') }, importWechat() { this.fillDemo('wechat') },
+    openServiceImport() {
+      this.serviceAddresses = getAddressList('service')
+      this.importSheetMode = 'service'
+      this.showImportSheet = true
+    },
+    openWechatImport() {
+      this.importSheetMode = 'wechat'
+      this.showImportSheet = true
+    },
+    onImportSheetVisibleChange(value) {
+      this.showImportSheet = value
+    },
+    onServiceAddressSelected(address = {}) {
+      this.form = {
+        name: String(address.name || ''),
+        phone: String(address.phone || ''),
+        detail: String(address.detail || '')
+      }
+      this.regionParts = Array.isArray(address.regionParts) ? address.regionParts.filter(Boolean).slice(0, 4) : []
+      this.smartText = [...this.regionParts, this.form.detail, this.form.name, this.form.phone].filter(Boolean).join('，')
+      this.isDefault = false
+      this.importSource = 'service'
+    },
+    requestWechatAddress() {
+      const api = typeof wx !== 'undefined' && typeof wx.chooseAddress === 'function'
+        ? wx.chooseAddress
+        : typeof uni !== 'undefined' && typeof uni.chooseAddress === 'function'
+          ? uni.chooseAddress
+          : null
+      if (!api) {
+        return uni.showToast({ title: '当前环境不支持微信地址，请在真机重试', icon: 'none' })
+      }
+      api.call(typeof wx !== 'undefined' && wx.chooseAddress === api ? wx : uni, {
+        success: (result = {}) => this.applyWechatAddress(result),
+        fail: (error = {}) => {
+          const message = String(error.errMsg || '')
+          if (message.toLowerCase().includes('cancel')) return
+          uni.showToast({ title: '未获取到微信地址，请授权后重试', icon: 'none' })
+        }
+      })
+    },
+    applyWechatAddress(result = {}) {
+      const regionParts = [result.provinceName, result.cityName, result.countyName].filter(Boolean)
+      this.form = {
+        name: String(result.userName || ''),
+        phone: String(result.telNumber || ''),
+        detail: String(result.detailInfo || '')
+      }
+      this.regionParts = regionParts
+      this.smartText = [...regionParts, this.form.detail, this.form.name, this.form.phone].filter(Boolean).join('，')
+      this.importSource = 'wechat'
+      this.showImportSheet = false
+    },
     openRegionPicker() { uni.navigateTo({ url: '/pages/meMore/regionSelector?mode=address', events: { regionSelected: ({ parts = [] } = {}) => { this.regionParts = parts.filter(Boolean) } }, success: res => res.eventChannel.emit('initRegion', { parts: this.regionParts }) }) },
     openLocation() { this.locationPickerCity = this.regionParts[1] || this.regionParts[0] || uni.getStorageSync('selectedCity') || '长沙市'; this.showLocationPicker = true },
     onLocationPickerVisibleChange(value) { this.showLocationPicker = value },
     onLocationPicked(item) { const detail = [item && item.name, item && item.address].filter(Boolean).join(' ').trim(); if (detail) this.form.detail = detail },
     openLocationCityPicker() { uni.navigateTo({ url: '/pages/citySelect/index?current=' + encodeURIComponent(this.locationPickerCity), events: { citySelected: ({ city = '' } = {}) => { if (city.trim()) this.locationPickerCity = city.trim() } } }) },
     clearAll() { this.form = { name: '', phone: '', detail: '' }; this.regionParts = []; this.smartText = ''; this.isDefault = false; this.importSource = '' },
+    toggleDefault() { this.isDefault = !this.isDefault },
+    onDefaultChange(value) { this.isDefault = !!value },
     removeAddress() { uni.showToast({ title: '已删除', icon: 'none' }) },
     save() { if (!this.form.name || !this.form.phone || this.regionParts.length < 3 || !this.form.detail) return uni.showToast({ title: '请完善地址信息', icon: 'none' }); this.$emit('save', { name: this.form.name.trim(), phone: this.form.phone.trim(), regionParts: this.regionParts.filter(Boolean).slice(0, 4), detail: this.form.detail.trim(), isDefault: this.isDefault }) }
   }
@@ -203,7 +261,7 @@ export default {
 }
 
 .body {
-  padding: 8px 15px 104px
+  padding: 8px 15px 130px
 }
 
 .smart-card,
@@ -428,49 +486,6 @@ export default {
   color: #ff7800
 }
 
-.radio {
-  width: 14px;
-  height: 14px;
-  border: 1px solid #d2d2d2;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box
-}
-
-.radio.selected {
-  background: #ffe600;
-  border-color: #ffe600
-}
-
-.radio text {
-  font-size: 10px
-}
-
-.footer {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 8px 15px calc(8px + env(safe-area-inset-bottom));
-  background: #f5f5f5
-}
-
-.save {
-  height: 44px;
-  border-radius: 22px;
-  background: #ffe600;
-  display: flex;
-  align-items: center;
-  justify-content: center
-}
-
-.save text {
-  font-size: 14px;
-  font-weight: 500
-}
-
 .smart-card {
   height: 116px
 }
@@ -483,27 +498,12 @@ export default {
   min-height: 347px
 }
 
-.footer {
-  padding-bottom: calc(35px + env(safe-area-inset-bottom))
-}
-
 .body {
   padding-top: 11px
 }
 
 .smart-card {
   margin-bottom: 16px
-}
-
-.footer {
-  bottom: 0;
-  height: 115px;
-  padding: 8px 15px 0;
-  box-sizing: border-box
-}
-
-.address-form-page--service .footer {
-  bottom: 0
 }
 
 .address-form-page--embedded {
@@ -521,14 +521,6 @@ export default {
 
 .address-form-page--embedded .body {
   padding: 12px 15px 16px;
-}
-
-.address-form-page--embedded .footer {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 115px;
 }
 
 .import-chip--selected {

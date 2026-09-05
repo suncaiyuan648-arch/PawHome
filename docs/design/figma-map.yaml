@@ -96,6 +96,134 @@ pages:
         name: "动态发布结果页"
         node_id: "62:35942"
 
+  adoption:
+    name: "领养流程"
+    route: "/pages/adoption/petDetail"
+    source: "pages/adoption/petDetail.vue"
+    design_doc: "docs/pages-design/领养流程全链路任务清单.md"
+    states:
+      pet_detail:
+        name: "小院-查看宠物详情"
+        node_id: "62:29916"
+      pet_detail_yard:
+        name: "小院-查看宠物详情-领养入口"
+        node_id: "62:30091"
+      pet_detail_managed:
+        name: "我的云养-查看宠物详情"
+        node_id: "62:30259"
+      apply:
+        name: "领养申请"
+        node_id: "62:31044"
+      apply_long:
+        name: "领养申请-长表单"
+        node_id: "62:31158"
+      flow_waiting:
+        name: "领养申请-等待审核"
+        node_id: "62:31384"
+      flow_owner_review:
+        name: "院主-等待院主审核"
+        node_id: "62:31597"
+      flow_owner_confirm:
+        name: "领养审核-待院主确认领养"
+        node_id: "62:32153"
+      flow_progress_reward:
+        name: "领养进度-获得奖励"
+        node_id: "62:33198"
+      pick_cats:
+        name: "领养-选择宠物"
+        node_id: "62:36699"
+      evidence_confirm:
+        name: "确认领养"
+        node_id: "62:35297"
+      evidence_list:
+        name: "证实列表详情"
+        node_id: "62:35393"
+      result_claim:
+        name: "领养进度-领取结果"
+        node_id: "62:36210"
+      result_apply:
+        name: "领养申请结果"
+        node_id: "62:36497"
+      reward_address:
+        name: "领养进度-填写收货地址"
+        node_id: "62:36752"
+      my_adoption:
+        name: "我的领养"
+        node_id: "62:41525"
+      my_adoption_empty:
+        name: "我的领养-空状态"
+        node_id: "62:41969"
+      adoption_support:
+        name: "助力领养"
+        node_id: "62:42711"
+      adoption_quota:
+        name: "领养额度"
+        node_id: "62:42864"
+      adoption_quota_detail:
+        name: "领养额度明细"
+        node_id: "62:42949"
+      component_nodes:
+      adoption_flow_frames: "62:31384–62:33198"
+      proof_form: "62:37451"
+      agree_dialog: "62:38705"
+      reject_dialog: "62:38731"
+      contact_dialog: "62:38803"
+      insufficient_quota_dialog: "62:38954"
+
+  jury:
+    name: "逢猫评审团"
+    route: "/pages/yard/juryPanel"
+    source: "pages/yard/juryPanel.vue"
+    design_doc: "docs/pages-design/评审团全链路任务清单.md"
+    states:
+      panel:
+        name: "评审团"
+        node_id: "62:34304"
+      pending_detail:
+        name: "待投票"
+        node_id: "62:33410"
+      voted_detail:
+        name: "已投票"
+        node_id: "62:34054"
+    component_nodes:
+      vote_real_result: "62:38745"
+      vote_fake_result: "62:38774"
+
+  rescue:
+    name: "发布救助到证实救助"
+    route: "/pages/yard/rescueReview"
+    source: "pages/yard/rescueReview.vue"
+    design_doc: "docs/pages-design/领养流程全链路任务清单.md"
+    states:
+      rescue_fund:
+        name: "救助评审列表"
+        node_id: "62:34421"
+        query: {}
+      rescue_detail:
+        name: "救助详情"
+        node_id: "62:33657"
+        query:
+          mode: "rescue-detail"
+      rescue_evidence_list:
+        name: "证实列表详情"
+        node_id: "62:35393"
+        query:
+          source: "rescue"
+      rescue_evidence_form:
+        name: "我也来证实"
+        node_id: "62:37451"
+        query:
+          mode: "proof"
+          source: "rescue"
+      rescue_apply:
+        name: "救助申请长表单"
+        node_id: "62:31158"
+        query:
+          state: "long"
+    component_nodes:
+      evidence_list: "62:35393"
+      evidence_form: "62:37451"
+
 # Figma states whose current code route/source has not yet been formally mapped.
 # Keep them here for discovery, but do not let an agent guess the route.
 unresolved_design_states:

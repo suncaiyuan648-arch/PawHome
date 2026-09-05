@@ -1,7 +1,9 @@
 <template>
   <view class="detail-shell">
     <PawYardDetailFigma :state="figmaState" :yard-data="yard" @pet-click="openPetDetail" @pet-list-click="openPetList"
-      @rank-user="openRankUser" />
+      @rank-user="openRankUser" @adopt="openAdoptSheet" />
+    <AdoptPickCatsSheet v-model="adoptPickSheetVisible" :yard-name="yard.name" :yard-id="yardId" :cats="adoptionPets"
+      :owner-avatar="yard.avatar" :owner-paw-id="yard.owner && yard.owner.pawId" />
     <view v-if="helpPopup" class="help-mask">
       <view class="help-dialog" :class="{ 'help-dialog--food': helpPopup === 'food-stat' }">
         <text class="help-title">{{ helpContent.title }}</text>
@@ -17,7 +19,7 @@
     <view v-if="overlayState === 'reply-idle' || overlayState === 'reply-input'" class="reply-mask">
       <view class="reply-panel">
         <view class="reply-input"><text>{{ overlayState === 'reply-input' ? '这是一个充满希望的季节，希望小猫今年也可以好好地' : '说点什么'
-            }}</text>
+        }}</text>
         </view>
         <view class="reply-actions"><uni-icons type="mic" color="#444" :size="20"></uni-icons><uni-icons type="image"
             color="#444" :size="20"></uni-icons>
@@ -30,16 +32,22 @@
 
 <script>
 import PawYardDetailFigma from '@/components/PawYardDetailFigma.vue'
+import AdoptPickCatsSheet from '@/components/AdoptPickCatsSheet.vue'
 import { openUserProfile } from '@/utils/profileNav.js'
 import { getPawHomeYardMock } from '@/utils/yardMock.js'
 
 export default {
-  components: { PawYardDetailFigma },
+  components: { PawYardDetailFigma, AdoptPickCatsSheet },
   data() {
     const yard = getPawHomeYardMock()
-    return { figmaState: 'dynamic', overlayState: '', helpPopup: '', yardId: yard.id, yard }
+    return { figmaState: 'dynamic', overlayState: '', helpPopup: '', adoptPickSheetVisible: false, yardId: yard.id, yard }
   },
-  computed: { helpContent() { return this.helpPopup === 'feedback-stat' ? { title: '平均反馈时长', copy: '院主共反馈78次，平均反馈时长3天2小时；平均反馈时长指的是院主自投粮物流签收后的平均上传动态反馈时间，未计算次数内的反馈不计入' } : { title: '帮助领养', copy: '截止目前，院主已从43位领养人中仔细筛选出23人，并成功为13只猫咪找到新家，沉福它们，感谢院主和领养人不辞辛苦的坚持与努力' } } },
+  computed: {
+    helpContent() { return this.helpPopup === 'feedback-stat' ? { title: '平均反馈时长', copy: '院主共反馈78次，平均反馈时长3天2小时；平均反馈时长指的是院主自投粮物流签收后的平均上传动态反馈时间，未计算次数内的反馈不计入' } : { title: '帮助领养', copy: '截止目前，院主已从43位领养人中仔细筛选出23人，并成功为13只猫咪找到新家，沉福它们，感谢院主和领养人不辞辛苦的坚持与努力' } },
+    adoptionPets() {
+      return (this.yard.pets || []).filter(pet => pet.state === 'pending' || pet.state === 'cloud')
+    }
+  },
   onLoad(options = {}) {
     if (options.id) this.yardId = String(options.id)
     const allowed = ['dynamic', 'dynamic-empty', 'feeding', 'dynamic-expanded']
@@ -79,6 +87,9 @@ export default {
     openRankUser(item) {
       if (!item) return
       openUserProfile({ pawId: item.pawId || item.id, nickname: item.text, avatar: item.avatar })
+    },
+    openAdoptSheet() {
+      this.adoptPickSheetVisible = true
     }
   }
 }

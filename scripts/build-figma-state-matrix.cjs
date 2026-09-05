@@ -50,7 +50,7 @@ function target(index, name) {
     33: ['/pages/user/profile?nickname=%E5%B0%A7%E5%B0%A7&state=dynamic-long', 'dynamic-long'], 34: ['/pages/user/profile?nickname=%E5%B0%A7%E5%B0%A7', 'review'],
     41: ['/pages/publishDynamic/postFeed', 'default'], 58: ['/pages/yard/juryDetail?id=jury-1', 'pending'],
     59: ['/pages/feature/index?mode=rescue-detail', 'default'], 60: ['/pages/yard/juryDetail?id=jury-1&state=voted', 'voted'],
-    61: ['/pages/yard/juryPanel', 'default'], 62: ['/pages/feature/index?mode=rescue-fund', 'default'],
+    61: ['/pages/yard/juryPanel', 'default'], 62: ['/pages/yard/rescueReview', 'default'],
     71: ['/pages/leaderboard/index', 'default'], 72: ['/pages/auth/verifyResult?status=success', 'face'],
     73: ['/pages/feature/index?mode=invite', 'default'], 74: ['/pages/auth/realName', 'default'],
     75: ['/pages/publishDynamic/postFeedOrder', 'order-sheet'], 76: ['/pages/publishDynamic/postSuccess', 'default'],

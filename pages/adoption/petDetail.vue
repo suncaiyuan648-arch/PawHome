@@ -6,98 +6,96 @@
       @footer-action="onFigmaFooterAction" @footer-primary="onFigmaFooterPrimary"
       @message-user-click="openMessageUser" />
     <template v-else>
-      <!-- 顶部大图轮播 + 状态栏渐变 + 返回 -->
-      <view class="pd-hero">
-        <swiper :key="'sw-' + currentPet.id" class="pd-swiper" :style="{ height: galleryHeightPx + 'px' }"
-          :current="galleryIndex" :circular="galleryUrls.length > 1" :indicator-dots="galleryUrls.length > 1"
-          indicator-color="rgba(255,255,255,0.35)" indicator-active-color="rgba(255,255,255,0.95)" :autoplay="false"
-          @change="onGalleryChange">
-          <swiper-item v-for="(src, gi) in galleryUrls" :key="currentPet.id + '-g-' + gi" class="pd-swiper-item">
-            <image class="pd-swiper-img" :src="src" mode="aspectFill" @tap="previewPetImage(src)" />
-          </swiper-item>
-        </swiper>
-        <view class="pd-hero-grad" />
-        <view class="pd-nav" :style="{ paddingTop: statusBarHeight + 'px' }">
-          <view class="pd-nav-hit" @click="goBack">
-            <image class="pd-nav-back" src="/static/nav-back-arrow.png" mode="aspectFit" />
-          </view>
-          <view class="pd-album-hit" @click="openAlbum"><uni-icons type="images" color="#ffffff"
-              :size="20" /><text>相册</text></view>
+      <PawPageNav background="transparent" :auto-back="false" @back="goBack" @layout="onNavLayout" />
+      <view class="pd-default-stage" :style="{ marginTop: `-${navOverlayOffset}px` }">
+        <!-- 顶部大图轮播，系统导航由 PawPageNav 统一提供。 -->
+        <view class="pd-hero">
+          <swiper :key="'sw-' + currentPet.id" class="pd-swiper" :style="{ height: galleryHeightPx + 'px' }"
+            :current="galleryIndex" :circular="galleryUrls.length > 1" :indicator-dots="galleryUrls.length > 1"
+            indicator-color="rgba(255,255,255,0.35)" indicator-active-color="rgba(255,255,255,0.95)" :autoplay="false"
+            @change="onGalleryChange">
+            <swiper-item v-for="(src, gi) in galleryUrls" :key="currentPet.id + '-g-' + gi" class="pd-swiper-item">
+              <image class="pd-swiper-img" :src="src" mode="aspectFill" @tap="previewPetImage(src)" />
+            </swiper-item>
+          </swiper>
+          <view class="pd-hero-grad" />
+          <view class="pd-album-hit" :style="{ top: navOverlayOffset + 'px', right: navRightReservedWidth + 'px' }"
+            @click="openAlbum"><uni-icons type="images" color="#ffffff" :size="20" /><text>相册</text></view>
         </view>
+
+        <scroll-view class="pd-scroll" scroll-y :show-scrollbar="false" :enable-flex="true">
+          <!-- 待领养横向头像：点击切换当前宠物 -->
+          <view class="pd-strip-wrap">
+            <scroll-view class="pd-strip-scroll" scroll-x :show-scrollbar="false" :enable-flex="true">
+              <view class="pd-strip-inner">
+                <view v-for="(p, pi) in adoptablePets" :key="p.id" class="pd-strip-item"
+                  :class="{ 'pd-strip-item--on': pi === activeIndex }" @click="selectPet(pi)">
+                  <image class="pd-strip-av" :src="p.avatar" mode="aspectFill" />
+                  <view v-if="pi === activeIndex" class="pd-strip-tri" />
+                </view>
+              </view>
+            </scroll-view>
+          </view>
+
+          <view class="pd-card">
+            <view class="pd-card-head">
+              <view class="pd-card-head-left">
+                <text class="pd-name">{{ currentPet.name }}</text>
+                <view class="pd-status"><text>{{ currentPet.statusLabel }}</text></view>
+              </view>
+              <text class="pd-seq">{{ positionText }}</text>
+            </view>
+            <view class="pd-tags">
+              <view v-for="(t, ti) in currentPet.tags" :key="'t-' + ti" class="pd-tag"><text>{{ t }}</text></view>
+            </view>
+            <text class="pd-desc">{{ currentPet.desc }}</text>
+
+            <view class="pd-yard" @click="openYardDetail">
+              <image class="pd-yard-av" :src="yard.avatar" mode="aspectFill" />
+              <view class="pd-yard-mid">
+                <view class="pd-yard-name-row">
+                  <text class="pd-yard-name">{{ yard.name }}</text>
+                  <YardTagPill />
+                </view>
+              </view>
+              <text class="pd-yard-stat">已在小院获得猫粮{{ yard.foodJin }}斤</text>
+            </view>
+          </view>
+
+          <view v-if="!figmaVariant" class="pd-yard-intro">
+            <text class="pd-yard-intro-txt">{{ yard.intro }}</text>
+          </view>
+
+          <view v-if="figmaVariant" class="pd-info-card">
+            <view><text>心情</text><text>开心</text></view>
+            <view><text>状态</text><text>极度饥饿</text></view>
+            <view><text>云家长</text><text class="pd-parent">
+                <image src="/static/figma/adoption-flow/pet-owner.png" mode="aspectFill"></image>姜栋
+              </text></view>
+            <view><text>剩余云养天数</text><text>16/30天</text></view>
+            <view><text>剩余粮食</text><text class="pd-link">点击查看图片</text></view>
+            <view v-if="figmaVariant === 37"><text>投粮详情</text><text class="pd-link">点击查看</text></view>
+            <text class="pd-remain-badge">已连续云养25天</text>
+          </view>
+          <view v-if="figmaVariant" class="pd-message-card">
+            <text class="pd-message-title">云家长寄语留言板</text>
+            <view class="pd-message-row">
+              <image src="/static/figma/adoption-flow/pet-owner.png" mode="aspectFill"></image>
+              <view>
+                <view class="pd-message-name"><text>姜栋</text>
+                  <LevelCapsule level="1" /><text class="pd-role">小黄的第3任云家长</text>
+                </view><text class="pd-message-copy">给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞</text><text
+                  class="pd-message-meta">昨天 20:45　江西　回复</text>
+              </view>
+              <view class="pd-like">
+                <PawLikeIcon :liked="true" /><text>32</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="pd-pad-bottom" />
+        </scroll-view>
       </view>
-
-      <scroll-view class="pd-scroll" scroll-y :show-scrollbar="false" :enable-flex="true">
-        <!-- 待领养横向头像：点击切换当前宠物 -->
-        <view class="pd-strip-wrap">
-          <scroll-view class="pd-strip-scroll" scroll-x :show-scrollbar="false" :enable-flex="true">
-            <view class="pd-strip-inner">
-              <view v-for="(p, pi) in adoptablePets" :key="p.id" class="pd-strip-item"
-                :class="{ 'pd-strip-item--on': pi === activeIndex }" @click="selectPet(pi)">
-                <image class="pd-strip-av" :src="p.avatar" mode="aspectFill" />
-                <view v-if="pi === activeIndex" class="pd-strip-tri" />
-              </view>
-            </view>
-          </scroll-view>
-        </view>
-
-        <view class="pd-card">
-          <view class="pd-card-head">
-            <view class="pd-card-head-left">
-              <text class="pd-name">{{ currentPet.name }}</text>
-              <view class="pd-status"><text>{{ currentPet.statusLabel }}</text></view>
-            </view>
-            <text class="pd-seq">{{ positionText }}</text>
-          </view>
-          <view class="pd-tags">
-            <view v-for="(t, ti) in currentPet.tags" :key="'t-' + ti" class="pd-tag"><text>{{ t }}</text></view>
-          </view>
-          <text class="pd-desc">{{ currentPet.desc }}</text>
-
-          <view class="pd-yard" @click="openYardDetail">
-            <image class="pd-yard-av" :src="yard.avatar" mode="aspectFill" />
-            <view class="pd-yard-mid">
-              <view class="pd-yard-name-row">
-                <text class="pd-yard-name">{{ yard.name }}</text>
-                <YardTagPill />
-              </view>
-            </view>
-            <text class="pd-yard-stat">已在小院获得猫粮{{ yard.foodJin }}斤</text>
-          </view>
-        </view>
-
-        <view v-if="!figmaVariant" class="pd-yard-intro">
-          <text class="pd-yard-intro-txt">{{ yard.intro }}</text>
-        </view>
-
-        <view v-if="figmaVariant" class="pd-info-card">
-          <view><text>心情</text><text>开心</text></view>
-          <view><text>状态</text><text>极度饥饿</text></view>
-          <view><text>云家长</text><text class="pd-parent">
-              <image src="/static/figma/adoption-flow/pet-owner.png" mode="aspectFill"></image>姜栋
-            </text></view>
-          <view><text>剩余云养天数</text><text>16/30天</text></view>
-          <view><text>剩余粮食</text><text class="pd-link">点击查看图片</text></view>
-          <view v-if="figmaVariant === 37"><text>投粮详情</text><text class="pd-link">点击查看</text></view>
-          <text class="pd-remain-badge">已连续云养25天</text>
-        </view>
-        <view v-if="figmaVariant" class="pd-message-card">
-          <text class="pd-message-title">云家长寄语留言板</text>
-          <view class="pd-message-row">
-            <image src="/static/figma/adoption-flow/pet-owner.png" mode="aspectFill"></image>
-            <view>
-              <view class="pd-message-name"><text>姜栋</text>
-                <LevelCapsule level="1" /><text class="pd-role">小黄的第3任云家长</text>
-              </view><text class="pd-message-copy">给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞</text><text
-                class="pd-message-meta">昨天 20:45　江西　回复</text>
-            </view>
-            <view class="pd-like">
-              <PawLikeIcon :liked="true" /><text>32</text>
-            </view>
-          </view>
-        </view>
-
-        <view class="pd-pad-bottom" />
-      </scroll-view>
 
       <view v-if="!figmaVariant" class="pd-tabber-wrap">
         <DetailTabber :joined="yardJoined" :pet-id="currentPet && currentPet.id" @adopt="openAdoptFlow"
@@ -126,13 +124,55 @@ import PawPetDetailFigma from "@/components/PawPetDetailFigma.vue";
 import LevelCapsule from "@/components/LevelCapsule.vue";
 import YardFeedPopup from "@/components/YardFeedPopup.vue";
 import ShareActionSheet from "@/components/ShareActionSheet.vue";
+import PawPageNav from "@/components/PawPageNav.vue";
 import { shouldShowAdoptEntryHint, dismissAdoptEntryHint } from "@/utils/adoptEntryGate.js";
 import { PAW_MSG_ADOPT_DAY_LIMIT } from "@/utils/pawNoticeMessages.js";
 import { getPawHomeYardMock } from "@/utils/yardMock.js";
 import PawLikeIcon from "@/components/base/PawLikeIcon.vue";
 import { openUserProfile } from "@/utils/profileNav.js";
+import { getWechatNavLayout } from "@/utils/navLayout.js";
 
 const IMG_A = "/static/home-feed-1.png";
+
+function normalizePreviewImageUrl(value) {
+  if (typeof value !== 'string') return '';
+  const url = value.trim();
+  if (!url) return '';
+  return /^(?:\/|https?:\/\/|wxfile:\/\/|cloud:\/\/)/i.test(url) ? url : '';
+}
+
+function normalizePreviewImageUrls(values) {
+  if (!Array.isArray(values)) return [];
+  return Array.from(new Set(values.map(normalizePreviewImageUrl).filter(Boolean)));
+}
+
+function isPackagedPreviewImageUrl(url) {
+  return /^\/static\//i.test(url);
+}
+
+function preparePreviewImageUrl(url) {
+  if (!isPackagedPreviewImageUrl(url) || typeof uni === 'undefined' || typeof uni.compressImage !== 'function') {
+    return Promise.resolve(url);
+  }
+
+  return new Promise((resolve) => {
+    uni.compressImage({
+      src: url,
+      compressedWidth: 1080,
+      success: (result) => {
+        const tempFilePath = normalizePreviewImageUrl(result && result.tempFilePath);
+        resolve(tempFilePath || url);
+      },
+      fail: (error) => {
+        console.warn('[PawHome][petDetail] packaged preview image preparation failed, using source path', {
+          url,
+          error
+        });
+        resolve(url);
+      }
+    });
+  });
+}
 
 export default {
   components: {
@@ -144,12 +184,14 @@ export default {
     YardFeedPopup,
     ShareActionSheet,
     PawLikeIcon,
+    PawPageNav,
   },
   data() {
     const yard = getPawHomeYardMock();
     return {
-      statusBarHeight: 20,
-      galleryHeightPx: 375,
+      galleryHeightPx: getWechatNavLayout().windowWidth,
+      navOverlayOffset: getWechatNavLayout().totalHeight,
+      navRightReservedWidth: getWechatNavLayout().rightReservedWidth,
       galleryIndex: 0,
       activeIndex: 0,
       yardId: yard.id,
@@ -181,10 +223,10 @@ export default {
     },
   },
   onLoad(query) {
-    const sys = uni.getSystemInfoSync();
-    this.statusBarHeight = sys.statusBarHeight || 20;
-    const w = Number(sys.windowWidth) || 375;
-    this.galleryHeightPx = w;
+    const layout = getWechatNavLayout();
+    this.galleryHeightPx = layout.windowWidth;
+    this.navOverlayOffset = layout.totalHeight;
+    this.navRightReservedWidth = layout.rightReservedWidth;
     if (query && query.yardName) {
       try {
         this.yardName = decodeURIComponent(query.yardName);
@@ -243,15 +285,72 @@ export default {
     if (query && query.popup === 'adopt-limit') this.showAdoptEntryHint = true;
   },
   methods: {
+    onNavLayout(layout) {
+      if (!layout) return;
+      if (Number.isFinite(Number(layout.totalHeight))) this.navOverlayOffset = Number(layout.totalHeight);
+      if (Number.isFinite(Number(layout.rightReservedWidth))) {
+        this.navRightReservedWidth = Number(layout.rightReservedWidth);
+      }
+    },
     openAlbum() {
       if (!this.managedPet) return;
       const petId = this.currentPet && this.currentPet.id ? encodeURIComponent(this.currentPet.id) : '';
       uni.navigateTo({ url: `/pages/feature/index?mode=album&managed=1&petId=${petId}&yardId=${encodeURIComponent(this.yardId)}` });
     },
     previewPetImage(payload) {
-      const urls = Array.isArray(payload?.urls) && payload.urls.length ? payload.urls : this.galleryUrls;
-      const current = typeof payload === 'string' ? payload : payload?.current;
-      uni.previewImage({ current: current || urls[0], urls });
+      const requestedUrls = Array.isArray(payload?.urls) && payload.urls.length ? payload.urls : this.galleryUrls;
+      let urls = normalizePreviewImageUrls(requestedUrls);
+      if (!urls.length && requestedUrls !== this.galleryUrls) urls = normalizePreviewImageUrls(this.galleryUrls);
+      if (!urls.length) {
+        console.warn('[PawHome][petDetail] previewImage skipped: no valid image urls');
+        uni.showToast({ title: '暂无可预览图片', icon: 'none' });
+        return;
+      }
+
+      const requestedCurrent = typeof payload === 'string' ? payload : payload?.current;
+      const normalizedCurrent = normalizePreviewImageUrl(requestedCurrent);
+      const current = urls.includes(normalizedCurrent) ? normalizedCurrent : urls[0];
+      const currentIndex = urls.indexOf(current);
+      if (normalizedCurrent && normalizedCurrent !== current) {
+        console.warn('[PawHome][petDetail] previewImage current is not in urls, fallback to first image', {
+          current: normalizedCurrent,
+          fallback: current
+        });
+      }
+
+      // 微信原生预览对包内静态路径的解码兼容性弱，先转换为临时文件路径；网络图保持原 URL。
+      Promise.all(urls.map(preparePreviewImageUrl)).then((preparedUrls) => {
+        const preparedCurrent = preparedUrls[currentIndex < 0 ? 0 : currentIndex] || preparedUrls[0];
+        uni.previewImage({
+          // uni-mp-weixin 对 current 的兼容处理以索引为准，且索引与 urls 始终一一对应。
+          current: currentIndex < 0 ? 0 : currentIndex,
+          urls: preparedUrls,
+          success: () => {
+            console.info('[PawHome][petDetail] previewImage opened', {
+              current: preparedCurrent,
+              currentIndex,
+              count: preparedUrls.length
+            });
+          },
+          fail: (error) => {
+            console.error('[PawHome][petDetail] previewImage failed', {
+              current: preparedCurrent,
+              currentIndex,
+              urls: preparedUrls,
+              error
+            });
+            uni.showToast({ title: '图片预览失败，请稍后重试', icon: 'none' });
+          },
+          complete: (result) => {
+            console.info('[PawHome][petDetail] previewImage complete', {
+              current: preparedCurrent,
+              currentIndex,
+              count: preparedUrls.length,
+              errMsg: result && result.errMsg
+            });
+          }
+        });
+      });
     },
     goBack() {
       goBackSmart({ fallbackUrl: "/pages/index/index" });
@@ -343,6 +442,14 @@ export default {
   background: #111;
 }
 
+.pd-default-stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .pd-swiper {
   width: 100%;
   background: #222;
@@ -373,27 +480,6 @@ export default {
       rgba(30, 28, 26, 0) 100%);
 }
 
-.pd-nav {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  z-index: 6;
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  padding-left: 4px;
-  box-sizing: border-box;
-}
-
-.pd-nav-hit {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .pd-page--figma {
   width: 100%;
   height: calc(100vh + 20px);
@@ -404,20 +490,15 @@ export default {
 }
 
 .pd-album-hit {
+  position: absolute;
+  z-index: 6;
   display: flex;
   align-items: center;
   gap: 6rpx;
   height: 44px;
-  margin-left: auto;
-  margin-right: 28rpx;
+  padding: 0 12px;
   color: #fff;
   font-size: 22rpx;
-}
-
-.pd-nav-back {
-  width: 22px;
-  height: 22px;
-  filter: brightness(0) invert(1);
 }
 
 .pd-scroll {

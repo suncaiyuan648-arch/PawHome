@@ -1,633 +1,594 @@
 <template>
-	<view class="page">
-		<view class="hero">
-			<view class="nav-wrap" :style="{ paddingTop: statusBarHeight + 'px' }">
-				<view class="nav-row">
-					<view class="nav-side nav-left" @click.stop="goBack">
-						<image class="nav-back-icon" src="/static/nav-back-arrow.png" mode="aspectFit"></image>
-					</view>
-					<text class="nav-title">逢猫评审团</text>
-					<view class="nav-side nav-right" :style="{ width: menuRightWidth + 'px' }"></view>
-				</view>
-			</view>
-			<view class="hero-text">
-				<text class="hero-title">{{ voted ? '感谢您的认真审查' : 'Ta的领养是真的吗？' }}</text>
-				<text class="hero-sub">{{ voted ? '您的宝贵意见是逢猫审查虚假领养的重要参考' : '请您审查该申请人是否为虚假领养及虐猫群体的恶意领养' }}</text>
-			</view>
-		</view>
+  <view class="jury-detail-page" data-qa="qa-jury-detail">
+    <view class="jury-detail-hero" :class="{ 'jury-detail-hero--voted': voted }">
+      <PawPageNav title="逢猫评审团" background="#1866fc" :light="true" :title-centered="true" :auto-back="false"
+        @back="goBack" />
+      <view class="jury-detail-hero__copy">
+        <text class="jury-detail-hero__title">{{ voted ? '感谢您的认真审查' : 'Ta的领养是真的吗？' }}</text>
+        <text class="jury-detail-hero__subtitle">
+          {{ voted ? '您的宝贵意见是逢猫审查虚假领养的重要参考' : '请您审查该申请人是否为虚假领养及虐猫群体的恶意领养' }}
+        </text>
+      </view>
+    </view>
 
-		<scroll-view class="main-scroll" scroll-y :show-scrollbar="false">
-			<view v-if="voted" class="card vote-summary">
-				<view class="bar-wrap">
-					<view class="bar-left"><text>50%</text></view>
-					<view class="bar-right"><text>50%</text></view>
-				</view>
-				<view class="summary-row">
-					<view><text class="sum-name">挺真实</text><text class="sum-p">32人投票</text></view>
-					<view class="sum-right"><text class="sum-name">有点假(已选)</text><text class="sum-p">32人投票</text></view>
-				</view>
-			</view>
+    <scroll-view class="jury-detail-scroll" scroll-y :show-scrollbar="false" data-qa="qa-jury-detail-scroll">
+      <view v-if="item" class="jury-detail-content">
+        <view v-if="voted" class="jury-detail-card jury-vote-summary" data-qa="qa-jury-detail-vote-summary">
+          <PawVoteRatioBar :real-percent="voteStats.realPercent" :fake-percent="voteStats.fakePercent"
+            :real-label="`${voteStats.realPercent}%`" :fake-label="`${voteStats.fakePercent}%`" :height="30" />
+          <view class="jury-vote-summary__legend">
+            <view class="jury-vote-summary__side">
+              <text>挺真实{{ selectedVote === 'real' ? '(已选)' : '' }}</text>
+              <text class="jury-vote-summary__count">{{ voteStats.realCount }}人投票</text>
+            </view>
+            <view class="jury-vote-summary__side jury-vote-summary__side--right">
+              <text>有点假{{ selectedVote === 'fake' ? '(已选)' : '' }}</text>
+              <text class="jury-vote-summary__count">{{ voteStats.fakeCount }}人投票</text>
+            </view>
+          </view>
+        </view>
 
-			<view class="card">
-				<view class="proof-gallery">
-					<image src="/static/figma/jury-e81f2c2074a7772e8fbca3d3828b3a751f5cb5bb.png" mode="aspectFill">
-					</image>
-					<image src="/static/figma/jury-e81f2c2074a7772e8fbca3d3828b3a751f5cb5bb.png" mode="aspectFill">
-					</image>
-				</view>
-				<view class="proof-row">
-					<view class="proof-cell"><text class="proof-date">2026.01.03</text><text
-							class="proof-label">来到逢猫</text></view>
-					<view class="proof-cell"><text class="proof-date">2026.01.03</text><text
-							class="proof-label">有家啦</text></view>
-				</view>
-				<text class="apply-body">我第一次去的时候小猫一直躲着我，去了几次都没有逮到，后来我买了一个网，趁着小猫睡着的时候我一个网兜给盖上去了，终于把小猫猫带回家了</text>
-			</view>
+        <view class="jury-detail-card jury-evidence-card" data-qa="qa-jury-detail-evidence">
+          <view class="jury-evidence-card__items">
+            <view v-for="evidence in (item.detailEvidence || item.evidence)" :key="evidence.id"
+              class="jury-evidence-card__item">
+              <PawImage class="jury-evidence-card__image" :src="evidence.src" display-mode="fixed" :width="106"
+                :height="106" :radius="3" :preview-urls="detailEvidenceUrls" :preview-index="evidenceIndex(evidence)"
+                data-qa="qa-jury-detail-evidence-image" />
+              <text class="jury-evidence-card__date">{{ evidence.date }}</text>
+              <text class="jury-evidence-card__label">{{ evidence.label }}</text>
+            </view>
+          </view>
+          <text class="jury-detail-card__body">{{ item.applyText }}</text>
+        </view>
 
-			<view class="card">
-				<view class="applicant-row"><text class="applicant-name">逢猫</text>
-					<view class="applicant-tag"><text>申请人</text></view>
-				</view>
-				<text
-					class="apply-body">你好我是一个学生虽然我是一个学生但是我家里面有地方可以养猫我本人喜欢养猫我的家人也喜欢养猫，还有我小时候有养猫的经验，相信我可以把猫养好，我的家人都支持我养猫，会给我经济支持。</text>
-				<view class="applicant-gallery">
-					<image src="/static/figma/feature/04a93fa17267335f49e6e818f8caa78dd3afc80b.png" mode="aspectFill">
-					</image>
-					<image src="/static/figma/jury-applicant-room.png" mode="aspectFill"></image>
-				</view>
-			</view>
+        <view class="jury-detail-card jury-application-card" data-qa="qa-jury-detail-application">
+          <view class="jury-application-card__identity" data-qa="qa-jury-applicant" @tap.stop="openApplicant">
+            <PawAvatar :src="item.applicantAvatar" :size="34" :clickable="true" @click="openApplicant" />
+            <text class="jury-application-card__name">{{ item.applicantName }}</text>
+            <view class="jury-application-card__tag"><text>申请人</text></view>
+          </view>
+          <text class="jury-detail-card__body">{{ item.application.text }}</text>
+          <view v-if="item.application.media.length" class="jury-application-card__media">
+            <PawImage v-for="(media, index) in item.application.media" :key="media.id"
+              class="jury-application-card__media-image" :src="media.src" display-mode="fixed" :width="106"
+              :height="106" :radius="3" :preview-urls="applicationMediaUrls" :preview-index="index"
+              data-qa="qa-jury-application-media-image" />
+          </view>
+        </view>
 
-			<view class="card">
-				<text class="card-title">申请领养的猫咪（{{ juryDemoPets.length }}）</text>
-				<view class="pet-row">
-					<view v-for="(p, i) in juryDemoPets" :key="i" class="pet-cell">
-						<image class="pet-av" :src="petAvatarSrc(p)" mode="aspectFill" />
-						<text class="pet-name">{{ p.name }}</text>
-					</view>
-				</view>
-				<view class="yard-foot">
-					<image class="yard-av" src="/static/avatar.png" mode="aspectFill"></image><text
-						class="yard-n">我就是要喂猫</text>
-					<YardTagPill class="yard-tag-pill--ml" />
-				</view>
-			</view>
-			<view class="bottom-space"></view>
-			<view class="bar">
-				<view class="share"><text>分享</text></view>
-				<template v-if="!voted">
-					<button class="btn yellow" @click="vote('real')">挺真实</button>
-					<button class="btn blue" @click="vote('fake')">有点假</button>
-				</template>
-				<button v-else class="btn yellow full">下一个（1/5）</button>
-			</view>
-		</scroll-view>
+        <view class="jury-detail-card jury-pets-card" data-qa="qa-jury-detail-pets">
+          <text class="jury-pets-card__title">申请领养的猫咪（{{ item.pets.length }}）</text>
+          <view class="jury-pets-card__list">
+            <view v-for="pet in item.pets" :key="pet.id" class="jury-pets-card__pet" :data-qa="`qa-jury-pet-${pet.id}`"
+              @tap.stop="openPet(pet)">
+              <PawAvatar :src="pet.avatar" :size="48" :clickable="true" @click="openPet(pet)" />
+              <text>{{ pet.name }}</text>
+            </view>
+          </view>
+          <view class="jury-pets-card__owner" data-qa="qa-jury-yard" @tap.stop="openOwner">
+            <PawAvatar :src="item.yard.avatar || item.ownerAvatar" :size="34" :clickable="true" @click="openOwner" />
+            <text>{{ item.ownerName }}</text>
+            <view class="jury-pets-card__owner-tag"><text>小院</text></view>
+          </view>
+        </view>
+        <view class="jury-detail-scroll__space"></view>
+      </view>
+      <view v-else class="jury-detail-empty" data-qa="qa-jury-detail-empty">
+        <text>暂时找不到这条评审内容</text>
+      </view>
+    </scroll-view>
 
-		<PawNoticeModal v-model:visible="showVoteDayLimitModal" :message="pawVoteLimitMsg"
-			@confirm="onVoteDayLimitConfirm" />
-
-		<view v-if="showVoteResult" class="mask" @click="showVoteResult = false">
-			<view class="sheet" @click.stop>
-				<PawIcon class="result-icon" :name="selectedVote === 'real' ? 'status/jury-real' : 'status/jury-fake'"
-					:size="60" />
-				<text class="sheet-title">投票成功</text>
-				<image class="result-bar" src="/static/figma/jury-modal/vote-bar.png" mode="scaleToFill" />
-				<view class="summary-row">
-					<view>
-						<text class="sum-name">挺真实{{ selectedVote === 'real' ? '(已选)' : '' }}</text>
-						<text class="sum-p">32人投票</text>
-					</view>
-					<view class="sum-right">
-						<text class="sum-name">有点假{{ selectedVote === 'fake' ? '(已选)' : '' }}</text>
-						<text class="sum-p">32人投票</text>
-					</view>
-				</view>
-				<view class="sheet-actions">
-					<view class="sheet-btn ghost" @click="showVoteResult = false"><text>返回</text></view>
-					<view class="sheet-btn yellow" @click="closeVoteSheet"><text>好的</text></view>
-				</view>
-			</view>
-		</view>
-	</view>
+    <PawJuryActionBar :voted="voted" :next-label="nextLabel" @share="shareItem" @vote="vote" @next="goNext" />
+    <PawNoticeModal v-model:visible="showVoteLimitModal" :message="voteLimitMessage" @confirm="closeVoteLimit" />
+    <PawJuryVoteDialog v-model="showVoteResult" :selected-vote="selectedVote || 'real'"
+      :real-percent="voteStats.realPercent" :fake-percent="voteStats.fakePercent" :real-vote-count="voteStats.realCount"
+      :fake-vote-count="voteStats.fakeCount" @close="onVoteDialogClose" @back="onVoteDialogBack"
+      @next="onVoteDialogNext" />
+    <ShareActionSheet v-model:visible="shareSheetVisible" :share-data="juryShareData" @select="onShareAction" />
+  </view>
 </template>
 
 <script>
+import PawPageNav from '@/components/PawPageNav.vue'
+import PawAvatar from '@/components/identity/PawAvatar.vue'
+import PawImage from '@/components/base/PawImage.vue'
 import PawNoticeModal from '@/components/PawNoticeModal.vue'
-import YardTagPill from '@/components/YardTagPill.vue'
-import { adoptionPetAvatarSrc } from '@/utils/adoptionPetDisplay.js'
+import PawJuryActionBar from '@/components/PawJuryActionBar.vue'
+import PawJuryVoteDialog from '@/components/PawJuryVoteDialog.vue'
+import PawVoteRatioBar from '@/components/PawVoteRatioBar.vue'
+import ShareActionSheet from '@/components/ShareActionSheet.vue'
+import { goBackSmart } from '@/utils/navBack.js'
 import { PAW_MSG_VOTE_DAY_LIMIT } from '@/utils/pawNoticeMessages.js'
-import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import { JURY_ITEM_STATUS } from '@/utils/juryMock.js'
+import { openUserProfile, openYardDetail } from '@/utils/profileNav.js'
+import {
+  getJuryItemById,
+  getJuryItems,
+  getJuryVoteLimitState,
+  writeJuryVote
+} from '@/utils/juryStorage.js'
 
-const VOTE_KEY = 'PAWHOME_JURY_VOTES'
 export default {
-	components: { PawNoticeModal, YardTagPill, PawIcon },
-	data() {
-		return {
-			juryDemoPets: [
-				{ name: '奥利奥', avatar: '/static/home-feed-1.png' },
-				{ name: '呗呗', avatar: '/static/home-feed-2.png' }
-			],
-			statusBarHeight: 20,
-			menuRightWidth: 87,
-			itemId: 'jury-1',
-			selectedVote: '',
-			voted: false,
-			showVoteResult: false,
-			/** 演示：首次点投票先弹「当日无投票次数」；接接口后删除 */
-			mockVoteDayBlocked: true,
-			showVoteDayLimitModal: false,
-			pawVoteLimitMsg: PAW_MSG_VOTE_DAY_LIMIT
-		}
-	},
-	onLoad(options) {
-		const s = uni.getSystemInfoSync()
-		this.statusBarHeight = s.statusBarHeight || 20
-		// #ifdef H5
-		this.statusBarHeight = 44
-		// #endif
-		try {
-			const mb = uni.getMenuButtonBoundingClientRect()
-			if (mb && mb.left) this.menuRightWidth = Math.max(s.windowWidth - mb.left, 87)
-		} catch (e) { }
-		if (options.id) this.itemId = decodeURIComponent(options.id)
-		this.readVote()
-		if (options.state === 'voted') {
-			this.selectedVote = 'fake'
-			this.voted = true
-		}
-		if (options.popup === 'vote-real' || options.popup === 'vote-fake') {
-			this.selectedVote = options.popup === 'vote-real' ? 'real' : 'fake'
-			this.showVoteResult = true
-		}
-		if (options.popup === 'vote-limit') this.showVoteDayLimitModal = true
-	},
-	methods: {
-		petAvatarSrc: adoptionPetAvatarSrc,
-		goBack() { uni.navigateBack() },
-		readVote() {
-			let all = {}
-			try { all = JSON.parse(uni.getStorageSync(VOTE_KEY) || '{}') } catch (e) { }
-			const vote = all[this.itemId] || ''
-			this.selectedVote = vote
-			this.voted = !!vote
-		},
-		saveVote(v) {
-			let all = {}
-			try { all = JSON.parse(uni.getStorageSync(VOTE_KEY) || '{}') } catch (e) { }
-			all[this.itemId] = v
-			uni.setStorageSync(VOTE_KEY, JSON.stringify(all))
-		},
-		vote(v) {
-			if (this.voted) return
-			if (this.mockVoteDayBlocked) {
-				this.showVoteDayLimitModal = true
-				return
-			}
-			this.selectedVote = v
-			this.saveVote(v)
-			this.showVoteResult = true
-		},
-		onVoteDayLimitConfirm() {
-			this.mockVoteDayBlocked = false
-		},
-		closeVoteSheet() {
-			this.showVoteResult = false
-			this.voted = true
-		}
-	}
+  name: 'JuryDetailPage',
+  components: { PawPageNav, PawAvatar, PawImage, PawNoticeModal, PawJuryActionBar, PawJuryVoteDialog, PawVoteRatioBar, ShareActionSheet },
+  data() {
+    return {
+      itemId: '',
+      reviewType: '',
+      item: null,
+      selectedVote: '',
+      showVoteResult: false,
+      shareSheetVisible: false,
+      showVoteLimitModal: false,
+      voteLimitMessage: PAW_MSG_VOTE_DAY_LIMIT
+    }
+  },
+  computed: {
+    voted() {
+      const item = this.item || {}
+      return Boolean(item.hasVoted || item.vote || item.status === JURY_ITEM_STATUS.voted || item.status === JURY_ITEM_STATUS.closed)
+    },
+    voteStats() {
+      const source = (this.item && (this.item.voteStats || this.item.voteStatistics)) || {}
+      if (this.voted) {
+        return {
+          realPercent: 50,
+          fakePercent: 50,
+          realCount: 32,
+          fakeCount: 32
+        }
+      }
+      const realPercent = Number(source.realPercent ?? source.real ?? 0)
+      const fakePercent = Number(source.fakePercent ?? source.fake ?? 0)
+      return {
+        realPercent: Number.isFinite(realPercent) ? realPercent : 0,
+        fakePercent: Number.isFinite(fakePercent) ? fakePercent : 0,
+        realCount: source.realCount ?? 0,
+        fakeCount: source.fakeCount ?? 0
+      }
+    },
+    queueItems() {
+      const filter = this.reviewType ? { reviewType: this.reviewType } : {}
+      return getJuryItems({ ...filter, includeClosed: false })
+    },
+    pendingQueueItems() {
+      return this.queueItems.filter(item => item.status === JURY_ITEM_STATUS.pending)
+    },
+    detailEvidenceUrls() {
+      return (this.item && (this.item.detailEvidence || this.item.evidence) || []).map(entry => entry.src)
+    },
+    applicationMediaUrls() {
+      return (this.item && this.item.application && this.item.application.media || []).map(entry => entry.src)
+    },
+    juryShareData() {
+      const item = this.item || {}
+      const reviewType = item.reviewType || this.reviewType || 'adoption'
+      const evidence = item.detailEvidence || item.evidence || []
+      const media = item.application && item.application.media || []
+      // 评审证据通常是更轻量的分享封面；没有证据时再回退到申请材料或头像。
+      const imageUrl = (evidence[0] && evidence[0].src) || (media[0] && media[0].src) || item.applicantAvatar || ''
+      const title = reviewType === 'rescue' ? '逢猫救助评审' : '逢猫领养评审'
+      const query = [
+        `itemId=${encodeURIComponent(item.id || this.itemId)}`,
+        `id=${encodeURIComponent(item.id || this.itemId)}`,
+        `reviewType=${encodeURIComponent(reviewType)}`
+      ].join('&')
+      return {
+        type: 'jury-review',
+        reviewType,
+        itemId: item.id || this.itemId,
+        title,
+        summary: item.summary || item.applyText || '',
+        applicantName: item.applicantName || '',
+        yardName: item.yardName || item.ownerName || '',
+        petNames: (item.pets || []).map(pet => pet.name),
+        imageUrl,
+        path: `/pages/yard/juryDetail?${query}`,
+        query
+      }
+    },
+    nextItem() {
+      const currentIndex = this.queueItems.findIndex(entry => entry.id === this.itemId)
+      const startIndex = currentIndex >= 0 ? currentIndex + 1 : 0
+      return this.queueItems.slice(startIndex).find(item => item.status === JURY_ITEM_STATUS.pending) || null
+    },
+    nextLabel() {
+      if (!this.nextItem) return '返回评审团'
+      const nextIndex = this.pendingQueueItems.findIndex(entry => entry.id === this.nextItem.id)
+      return `下一个（${nextIndex + 1}/${this.pendingQueueItems.length}）`
+    }
+  },
+  onLoad(options = {}) {
+    this.itemId = String(options.itemId || options.id || '')
+    this.reviewType = this.normalizeReviewType(options.reviewType || options.type || options.juryType)
+    this.refreshItem()
+    if (options.popup === 'vote-real' || options.popup === 'vote-fake') {
+      this.selectedVote = options.popup === 'vote-real' ? 'real' : 'fake'
+      this.showVoteResult = true
+    }
+  },
+  onShow() {
+    if (this.itemId) this.refreshItem()
+  },
+  onShareAppMessage() {
+    const share = this.juryShareData
+    return {
+      title: share.title,
+      path: share.path,
+      imageUrl: share.imageUrl || undefined
+    }
+  },
+  onShareTimeline() {
+    const share = this.juryShareData
+    return {
+      title: share.title,
+      query: share.query,
+      imageUrl: share.imageUrl || undefined
+    }
+  },
+  methods: {
+    refreshItem() {
+      const filter = this.reviewType ? { reviewType: this.reviewType } : {}
+      const item = getJuryItemById(this.itemId, filter) || getJuryItems(filter)[0] || null
+      this.item = item
+      if (!item) return
+      if (!this.itemId) this.itemId = item.id
+      this.selectedVote = item.vote || ''
+    },
+    goBack() {
+      const type = this.reviewType ? `?reviewType=${encodeURIComponent(this.reviewType)}` : ''
+      goBackSmart({ fallbackUrl: `/pages/yard/juryPanel${type}` })
+    },
+    vote(value) {
+      if (this.voted) return
+      const result = writeJuryVote(this.itemId, value, getJuryVoteLimitState())
+      if (!result.ok) {
+        if (result.reason === 'vote-limit') this.showVoteLimitModal = true
+        else uni.showToast({ title: '当前评审不可投票', icon: 'none' })
+        return
+      }
+      this.selectedVote = result.vote
+      this.refreshItem()
+      this.showVoteResult = true
+    },
+    closeVoteLimit() {
+      this.showVoteLimitModal = false
+    },
+    onVoteDialogClose() {
+      this.showVoteResult = false
+      this.refreshItem()
+    },
+    onVoteDialogBack() {
+      this.showVoteResult = false
+      this.refreshItem()
+    },
+    onVoteDialogNext() {
+      this.showVoteResult = false
+      this.goNext()
+    },
+    goNext() {
+      if (!this.nextItem) {
+        const type = this.reviewType ? `&reviewType=${encodeURIComponent(this.reviewType)}` : ''
+        goBackSmart({ fallbackUrl: `/pages/yard/juryPanel?tab=finished${type}` })
+        return
+      }
+      const id = encodeURIComponent(this.nextItem.id)
+      const type = this.reviewType ? `&reviewType=${encodeURIComponent(this.reviewType)}` : ''
+      uni.redirectTo({ url: `/pages/yard/juryDetail?itemId=${id}&id=${id}${type}` })
+    },
+    shareItem() {
+      if (!this.item) return
+      this.shareSheetVisible = true
+    },
+    onShareAction(key, shareData) {
+      const payload = shareData && shareData.path ? shareData : this.juryShareData
+      if (key === 'link') {
+        uni.setClipboardData({
+          data: payload.path,
+          success: () => uni.showToast({ title: '评审链接已复制', icon: 'none' })
+        })
+        return
+      }
+      if (key === 'wechat' || key === 'moments') {
+        uni.showToast({ title: '请使用微信分享面板完成分享', icon: 'none' })
+        return
+      }
+      if (key === 'poster') {
+        uni.showToast({ title: '评审海报生成中', icon: 'none' })
+        return
+      }
+      if (key === 'report') {
+        uni.showToast({ title: '已收到举报反馈', icon: 'none' })
+      }
+    },
+    evidenceIndex(evidence) {
+      return (this.item && (this.item.detailEvidence || this.item.evidence) || []).findIndex(entry => entry.id === evidence.id)
+    },
+    openApplicant() {
+      if (!this.item || !this.item.applicant) return
+      openUserProfile({
+        pawId: this.item.applicant.pawId || this.item.applicantId,
+        nickname: this.item.applicantName,
+        avatar: this.item.applicantAvatar
+      })
+    },
+    openOwner() {
+      if (!this.item) return
+      openYardDetail({ yardId: this.item.yardId, yardName: this.item.yardName || this.item.ownerName })
+    },
+    openPet(pet) {
+      const petId = String(pet && (pet.yardPetId || pet.sourcePetId || pet.petId || pet.id) || '').trim()
+      if (!petId) return
+      const yardId = encodeURIComponent(this.item && this.item.yardId || '1')
+      const yardName = encodeURIComponent(this.item && this.item.yardName || '')
+      const yardQuery = yardName ? `&yardName=${yardName}` : ''
+      uni.navigateTo({
+        url: `/pages/adoption/petDetail?petId=${encodeURIComponent(petId)}&yardId=${yardId}&managed=0&state=0${yardQuery}`
+      })
+    },
+    normalizeReviewType(value) {
+      const type = value === undefined || value === null ? '' : String(value).trim().toLowerCase()
+      return type === 'rescue' || type === 'adoption' ? type : ''
+    }
+  }
 }
 </script>
 
 <style lang="less" scoped>
-.page {
-	height: 100vh;
-	background: #f5f5f5;
-	display: flex;
-	flex-direction: column
+.jury-detail-page {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  flex-direction: column;
+  background: #f5f5f5;
 }
 
-.hero {
-	position: relative;
-	z-index: 1;
-	height: 279px;
-	flex: none;
-	background: #1d6df0
+.jury-detail-hero {
+  display: flex;
+  height: 279px;
+  min-height: 279px;
+  flex-direction: column;
+  background: #1866fc;
 }
 
-.nav-wrap {
-	background: transparent
+.jury-detail-hero__copy {
+  display: flex;
+  flex-direction: column;
+  padding: 45px 26px 0;
+  box-sizing: border-box;
 }
 
-.nav-row {
-	height: 88rpx;
-	display: flex;
-	align-items: center;
-	padding: 0 8rpx
+.jury-detail-hero__title {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
 }
 
-.nav-side {
-	width: 88rpx;
-	height: 88rpx;
-	display: flex;
-	align-items: center;
-	justify-content: center
+.jury-detail-hero__subtitle {
+  margin-top: 6px;
+  color: #d9e6ff;
+  font-size: 12px;
+  line-height: 17px;
+  white-space: nowrap;
 }
 
-.nav-back-icon {
-	width: 48rpx;
-	height: 48rpx;
-	filter: brightness(0) invert(1)
+.jury-detail-scroll {
+  position: relative;
+  z-index: 2;
+  flex: 1 1 auto;
+  height: 0;
+  min-height: 0;
+  margin-top: -86px;
+  box-sizing: border-box;
 }
 
-.nav-title {
-	flex: 1;
-	text-align: center;
-	font-size: 34rpx;
-	font-weight: 500;
-	color: #fff
+.jury-detail-content {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 15px;
+  box-sizing: border-box;
 }
 
-.hero-text {
-	padding: 48rpx 24rpx 24rpx
+.jury-detail-card {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  box-sizing: border-box;
+  border-radius: 9px;
+  background: #fff;
 }
 
-.hero-title {
-	display: block;
-	font-size: 48rpx;
-	font-weight: 700;
-	color: #fff
+.jury-vote-summary {
+  gap: 5px;
+  padding: 19px 22px 13px;
 }
 
-.hero-sub {
-	display: block;
-	margin-top: 10rpx;
-	font-size: 24rpx;
-	color: #cfe0ff
+.jury-vote-summary__legend {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.main-scroll {
-	position: relative;
-	z-index: 2;
-	flex: 1;
-	height: 0;
-	margin-top: -86px;
-	padding: 0 30rpx;
-	box-sizing: border-box
+.jury-vote-summary__side {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  color: #333;
+  font-size: 12px;
+  line-height: 17px;
 }
 
-.card {
-	background: #fff;
-	border-radius: 18rpx;
-	padding: 20rpx;
-	margin-bottom: 20rpx
+.jury-vote-summary__side--right {
+  align-items: flex-end;
+  text-align: right;
 }
 
-.main-scroll .card:first-child {
-	padding-bottom: 18px
+.jury-vote-summary__count {
+  color: #999;
+  font-size: 11px;
+  line-height: 15px;
 }
 
-.main-scroll .card:nth-child(2) {
-	padding: 10px 19px 22px
+.jury-evidence-card {
+  min-height: 250px;
+  gap: 11px;
+  padding: 19px 18px 15px;
 }
 
-.vote-summary {
-	margin-top: -30rpx
+.jury-evidence-card__items {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
 }
 
-.bar-wrap {
-	height: 54rpx;
-	border-radius: 27rpx;
-	overflow: hidden;
-	background: #eee;
-	display: flex
+.jury-evidence-card__item {
+  display: flex;
+  width: 106px;
+  flex: 0 0 106px;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 
-.bar-left {
-	flex: 1;
-	background: #ffdd00;
-	display: flex;
-	align-items: center;
-	padding-left: 16rpx
+.jury-evidence-card__image {
+  display: block;
+  width: 106px;
+  height: 106px;
+  border-radius: 3px;
+  background: #eee;
 }
 
-.bar-right {
-	flex: 1;
-	background: #1d93ea;
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-	padding-right: 16rpx;
-	color: #fff
+.jury-evidence-card__date,
+.jury-evidence-card__label {
+  color: #333;
+  font-size: 12px;
+  line-height: 17px;
+  text-align: center;
+  white-space: nowrap;
 }
 
-.summary-row {
-	display: flex;
-	justify-content: space-between;
-	margin-top: 16rpx
+.jury-evidence-card__label {
+  color: #999;
 }
 
-.sum-name {
-	display: block;
-	font-size: 24rpx;
-	color: #333
+.jury-detail-card__body {
+  display: block;
+  color: #333;
+  font-size: 14px;
+  line-height: 1.45;
+  white-space: pre-line;
+  word-break: break-word;
 }
 
-.sum-p {
-	display: block;
-	margin-top: 6rpx;
-	font-size: 22rpx;
-	color: #999
+.jury-application-card {
+  gap: 14px;
+  padding: 20px 17px;
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, .05);
 }
 
-.sum-right {
-	text-align: right
+.jury-application-card__identity,
+.jury-pets-card__owner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.proof-row {
-	display: flex
+.jury-application-card__name,
+.jury-pets-card__owner>text {
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
 }
 
-.proof-cell {
-	flex: 1;
-	text-align: center;
-	margin: 6rpx 0 14rpx
+.jury-application-card__tag,
+.jury-pets-card__owner-tag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 16px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: #ee8002;
+  color: #fff;
+  font-size: 10px;
+  line-height: 15px;
 }
 
-.proof-date {
-	display: block;
-	font-size: 24rpx;
-	color: #333
+.jury-application-card__media {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
 }
 
-.proof-label {
-	display: block;
-	font-size: 22rpx;
-	color: #999;
-	margin-top: 4rpx
+.jury-application-card__media-image {
+  display: block;
+  width: 106px;
+  height: 106px;
+  border-radius: 3px;
+  background: #eee;
 }
 
-.apply-body {
-	font-size: 27rpx;
-	line-height: 1.35;
-	color: #333
+.jury-pets-card {
+  gap: 0;
+  padding: 15px 18px 12px;
 }
 
-.proof-gallery {
-	display: flex;
-	justify-content: space-around;
-	gap: 90rpx;
-	margin: 18rpx 68rpx 0
+.jury-pets-card__title {
+  color: #333;
+  font-size: 16px;
+  line-height: 22px;
 }
 
-.proof-gallery image {
-	width: 212rpx;
-	height: 212rpx;
-	border-radius: 8rpx;
-	flex: none
+.jury-pets-card__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 27px;
 }
 
-.applicant-row {
-	display: flex;
-	align-items: center;
-	margin-bottom: 10rpx
+.jury-pets-card__pet {
+  display: flex;
+  width: 49px;
+  flex: 0 0 49px;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: #333;
+  font-size: 14px;
+  line-height: 20px;
 }
 
-.main-scroll .card:nth-child(2) .applicant-tag {
-	margin-left: 12px
+.jury-pets-card__owner {
+  margin-top: 43px;
 }
 
-.applicant-gallery {
-	display: flex;
-	gap: 4rpx;
-	margin-top: 134rpx;
-	margin-left: -9px
+.jury-pets-card__owner-tag {
+  background: #fff463;
+  color: #333;
 }
 
-.applicant-gallery image {
-	width: 212rpx;
-	height: 212rpx;
-	border-radius: 8rpx
+.jury-detail-scroll__space {
+  height: 110px;
+  flex: 0 0 110px;
 }
 
-.applicant-name {
-	font-size: 30rpx;
-	font-weight: 700
-}
-
-.applicant-tag {
-	margin-left: 12rpx;
-	background: #f19a2d;
-	border-radius: 10rpx;
-	padding: 3rpx 10rpx
-}
-
-.applicant-tag text {
-	font-size: 22rpx;
-	color: #fff
-}
-
-.card-title {
-	font-size: 30rpx;
-	font-weight: 500;
-	margin-bottom: 16rpx
-}
-
-.pet-row {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	align-items: flex-end;
-	gap: 28rpx 32rpx
-}
-
-.pet-cell {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	width: 120rpx
-}
-
-.pet-av {
-	width: 112rpx;
-	height: 112rpx;
-	border-radius: 50%;
-	background: #eee;
-	display: block
-}
-
-.pet-name {
-	margin-top: 12rpx;
-	font-size: 24rpx;
-	color: #111;
-	text-align: center;
-	width: 100%;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap
-}
-
-.yard-foot {
-	display: flex;
-	align-items: center;
-	margin-top: 20rpx;
-	padding-top: 16rpx;
-	border-top: 1rpx solid #f0f0f0
-}
-
-.yard-av {
-	width: 56rpx;
-	height: 56rpx;
-	border-radius: 50%;
-	background: #eee
-}
-
-.yard-n {
-	margin-left: 12rpx;
-	font-size: 30rpx;
-	flex: 1
-}
-
-.bottom-space {
-	height: 120rpx
-}
-
-.bar {
-	display: flex;
-	gap: 16rpx;
-	align-items: center;
-	background: #fff;
-	border-top: 1rpx solid #eee;
-	padding: 12rpx 16rpx calc(12rpx + env(safe-area-inset-bottom))
-}
-
-.share {
-	width: 72rpx;
-	text-align: center;
-	color: #666;
-	font-size: 22rpx
-}
-
-.btn {
-	height: 78rpx;
-	line-height: 78rpx;
-	border-radius: 39rpx;
-	font-size: 32rpx;
-	border: none
-}
-
-.yellow {
-	flex: 1;
-	background: #ffdd00;
-	color: #111
-}
-
-.blue {
-	flex: 1;
-	background: #1d93ea;
-	color: #fff
-}
-
-.full {
-	flex: 1
-}
-
-.mask {
-	position: fixed;
-	inset: 0;
-	background: #5b5b5b;
-	display: flex;
-	align-items: flex-start;
-	justify-content: center;
-	z-index: 99
-}
-
-.sheet {
-	position: relative;
-	box-sizing: border-box;
-	width: 316px;
-	height: 319px;
-	margin-top: 241px;
-	background: #fff;
-	border-radius: 20px;
-	overflow: visible;
-	padding: 0
-}
-
-.result-icon {
-	position: absolute;
-	left: 128px;
-	top: 29px;
-	border-radius: 50%
-}
-
-.sheet-title {
-	position: absolute;
-	left: 0;
-	right: 0;
-	top: 100px;
-	display: block;
-	text-align: center;
-	font-size: 18px;
-	line-height: 25px;
-	font-weight: 500
-}
-
-.result-bar {
-	position: absolute;
-	left: 23px;
-	top: 159px;
-	width: 272px;
-	height: 31px
-}
-
-.sheet .summary-row {
-	position: absolute;
-	left: 23px;
-	right: 23px;
-	top: 194px;
-	margin: 0
-}
-
-.sheet-actions {
-	position: absolute;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	height: 54px;
-	display: flex;
-	border-top: 1px solid #eee
-}
-
-.sheet-actions:after {
-	content: '';
-	position: absolute;
-	left: 316px;
-	top: -1px;
-	width: 30px;
-	height: 55px;
-	background: #ffe600
-}
-
-.sheet-btn {
-	flex: 1;
-	height: 54px;
-	display: flex;
-	align-items: center;
-	justify-content: center
-}
-
-.sheet-btn text {
-	font-size: 14px
-}
-
-.sheet-btn.ghost {
-	border: 0
-}
-
-.sheet-btn.ghost text {
-	color: #9c9c9c
-}
-
-.sheet-btn.yellow {
-	background: #5b5b5b
+.jury-detail-empty {
+  display: flex;
+  min-height: 220px;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 14px;
 }
 </style>

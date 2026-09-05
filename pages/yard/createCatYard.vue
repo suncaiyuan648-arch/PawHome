@@ -11,9 +11,13 @@
 			<view class="content-inner">
 				<view class="card cover-card" data-qa="create-yard-intro-card">
 					<view class="cover-top">
-						<view class="cover-inner">
-							<image class="cover-camera" src="/static/figma/create-yard/camera.svg" mode="aspectFit" />
-							<text class="cover-tip">小院头像</text>
+						<view class="cover-inner" data-qa="create-yard-avatar" @tap="openAvatarPicker">
+							<image v-if="avatarPath" class="cover-avatar" :src="avatarPath" mode="aspectFill" />
+							<template v-else>
+								<image class="cover-camera" src="/static/figma/create-yard/camera.svg"
+									mode="aspectFit" />
+								<text class="cover-tip">小院头像</text>
+							</template>
 						</view>
 						<view v-if="voiceSavedSeconds <= 0" class="mic-btn" data-qa="create-yard-record"
 							@tap="openVoicePopup">
@@ -96,12 +100,14 @@
 							mode="aspectFit" />
 					</view>
 					<view class="addr-main">
-						<text class="addr-title">请填写收货地址，用于接收猫粮</text>
+						<view class="addr-line1-row">
+							<text class="addr-title">请填写收货地址，用于接收猫粮</text>
+							<view class="addr-action">
+								<text>添加</text>
+								<image src="/static/figma/create-yard/arrow-right.svg" mode="aspectFit" />
+							</view>
+						</view>
 						<text class="addr-sub">不对外展示，可放心填写</text>
-					</view>
-					<view class="addr-action">
-						<text>添加</text>
-						<image src="/static/figma/create-yard/arrow-right.svg" mode="aspectFit" />
 					</view>
 				</view>
 				<view v-else class="card addr-card addr-card--picked" @tap="openPickShipping">
@@ -112,12 +118,14 @@
 							mode="aspectFit" />
 					</view>
 					<view class="addr-main">
-						<text class="addr-line1">{{ shippingDetailText }}</text>
+						<view class="addr-line1-row">
+							<text class="addr-line1">{{ shippingDetailText }}</text>
+							<view class="addr-action addr-action--edit">
+								<text>修改</text>
+								<image src="/static/figma/create-yard/arrow-right.svg" mode="aspectFit" />
+							</view>
+						</view>
 						<text class="addr-line2">{{ shippingPick.name }} {{ shippingPick.phone }}</text>
-					</view>
-					<view class="addr-action addr-action--edit">
-						<text>修改</text>
-						<image src="/static/figma/create-yard/arrow-right.svg" mode="aspectFit" />
 					</view>
 				</view>
 			</view>
@@ -135,6 +143,8 @@
 		<PawLocationPickerSheet :visible="showLocationPicker" :city="locationPickerCity"
 			@update:visible="onLocationPickerVisibleChange" @select="onLocationPicked"
 			@city-tap="openLocationCityPicker" />
+		<PawImageCropper :visible="showAvatarCropper" :src="pendingAvatarPath"
+			@update:visible="onAvatarCropperVisibleChange" @confirm="onAvatarCropped" @cancel="onAvatarCropperCancel" />
 		<PawRealNamePrompt :visible="showRealNamePrompt" type="real-name" @update:visible="showRealNamePrompt = $event"
 			@confirm="goRealName" />
 		<PawNoticeModal v-model:visible="showVoiceNotice" :message="voiceNoticeMessage" />
@@ -146,14 +156,16 @@ import PawPageNav from '@/components/PawPageNav.vue'
 import PawSafeArea from '@/components/base/PawSafeArea.vue'
 import PawVoiceRecorderSheet from '@/components/voice/PawVoiceRecorderSheet.vue'
 import PawLocationPickerSheet from '@/components/location/PawLocationPickerSheet.vue'
+import PawImageCropper from '@/components/form/PawImageCropper.vue'
 import PawNoticeModal from '@/components/PawNoticeModal.vue'
 import PawRealNamePrompt from '@/components/auth/PawRealNamePrompt.vue'
 import { isRealNameVerified } from '@/utils/realNameMock.js'
 import { PAW_MSG_VOICE_LEVEL, PAW_MSG_VOICE_DAY_LIMIT } from '@/utils/pawNoticeMessages.js'
+import { getAddressById, getAddressList } from '@/utils/addressMock.js'
 
 export default {
 	name: 'CreateCatYardPage',
-	components: { PawPageNav, PawSafeArea, PawVoiceRecorderSheet, PawLocationPickerSheet, PawNoticeModal, PawRealNamePrompt },
+	components: { PawPageNav, PawSafeArea, PawVoiceRecorderSheet, PawLocationPickerSheet, PawImageCropper, PawNoticeModal, PawRealNamePrompt },
 	data() {
 		return {
 			animalKind: 'cat',
@@ -180,7 +192,11 @@ export default {
 			yardContact: '',
 			regionParts: [],
 			locDetail: '',
-			shippingPick: null
+			shippingPick: null,
+			shippingSelectedId: '',
+			avatarPath: '',
+			pendingAvatarPath: '',
+			showAvatarCropper: false
 		}
 	},
 	computed: {
@@ -216,7 +232,10 @@ export default {
 				name: '项子涵',
 				phone: '19878675365'
 			}
+		} else {
+			this.shippingPick = getAddressList('shipping').find(row => row.isDefault) || null
 		}
+		this.shippingSelectedId = this.shippingPick && this.shippingPick.id ? String(this.shippingPick.id) : ''
 		if (options.popup === 'voice-permission') {
 			this.voiceNoticeMessage = PAW_MSG_VOICE_LEVEL
 			this.showVoiceNotice = true
@@ -227,6 +246,11 @@ export default {
 		}
 		if (options.popup === 'location') this.openLocationSearch()
 		if (options.auth === 'required' || !isRealNameVerified()) this.showRealNamePrompt = true
+	},
+	onShow() {
+		if (!this.shippingSelectedId) return
+		const address = getAddressById(this.shippingSelectedId, 'shipping')
+		if (address) this.shippingPick = address
 	},
 	methods: {
 		doTrim(value) {
@@ -247,6 +271,48 @@ export default {
 		},
 		onContactInput(e) {
 			this.yardContact = this.doTrim(e.detail.value)
+		},
+		openAvatarPicker() {
+			if (typeof uni === 'undefined') return
+			if (typeof uni.chooseImage !== 'function') {
+				return uni.showToast({ title: '当前环境不支持选择图片', icon: 'none' })
+			}
+			uni.chooseImage({
+				count: 1,
+				sizeType: ['compressed'],
+				sourceType: ['album'],
+				success: result => {
+					const path = result && Array.isArray(result.tempFilePaths) ? result.tempFilePaths[0] : ''
+					if (!path) return
+					uni.getImageInfo({
+						src: path,
+						success: info => {
+							const width = Number(info && info.width)
+							const height = Number(info && info.height)
+							if (width > 0 && height > 0 && Math.abs(width - height) < 0.5) {
+								this.avatarPath = path
+								this.pendingAvatarPath = ''
+								return
+							}
+							this.pendingAvatarPath = path
+							this.showAvatarCropper = true
+						},
+						fail: () => uni.showToast({ title: '图片读取失败，请重试', icon: 'none' })
+					})
+				}
+			})
+		},
+		onAvatarCropperVisibleChange(value) {
+			this.showAvatarCropper = value
+			if (!value) this.pendingAvatarPath = ''
+		},
+		onAvatarCropped(path) {
+			if (!path) return
+			this.avatarPath = path
+			this.pendingAvatarPath = ''
+		},
+		onAvatarCropperCancel() {
+			this.pendingAvatarPath = ''
 		},
 		openLocationSearch() {
 			this.locationPickerCity = this.regionParts[1] || this.regionParts[0] || uni.getStorageSync('selectedCity') || '长沙市'
@@ -274,11 +340,15 @@ export default {
 			this.locDetail = ''
 		},
 		openPickShipping() {
+			const selectedId = this.shippingPick && this.shippingPick.id
+				? `&selectedId=${encodeURIComponent(this.shippingPick.id)}`
+				: ''
 			uni.navigateTo({
-				url: '/pages/meMore/shippingAddress?pick=1',
+				url: `/pages/meMore/shippingAddress?kind=shipping&pick=1&returnUrl=${encodeURIComponent('/pages/yard/createCatYard')}${selectedId}`,
 				events: {
 					addressPicked: (payload = {}) => {
 						if (!payload || !payload.detail) return
+						this.shippingSelectedId = payload.id ? String(payload.id) : ''
 						this.shippingPick = {
 							id: payload.id,
 							name: payload.name || '',
@@ -566,6 +636,13 @@ export default {
 	height: 28px;
 }
 
+.cover-avatar {
+	display: block;
+	width: 100%;
+	height: 100%;
+	border-radius: 12px;
+}
+
 .cover-tip {
 	margin-top: 4px;
 	color: #b6b6b8;
@@ -840,10 +917,18 @@ export default {
 	margin-left: 13px;
 }
 
+.addr-line1-row {
+	display: flex;
+	width: 100%;
+	min-width: 0;
+	align-items: center;
+}
+
 .addr-title,
 .addr-line1 {
 	display: block;
-	max-width: 100%;
+	flex: 1 1 auto;
+	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	color: #333;

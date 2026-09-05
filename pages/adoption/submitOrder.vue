@@ -3,21 +3,28 @@
     <PawBottomSheet v-model="sheetVisible" variant="order-address" height="495px" :close-on-mask="true"
       :safe-area="false" :z-index="10060" @after-close="goBack">
       <view class="order-sheet" @tap.stop>
-        <view class="close" data-qa="submit-order-close" @tap="closeSheet">
-          <PawIcon name="navigation/close" :size="16" label="关闭" />
+        <view class="sheet-header">
+          <view class="sheet-header-spacer" />
+          <view class="close" data-qa="submit-order-close" @tap="closeSheet">
+            <PawIcon name="navigation/close" :size="16" label="关闭" />
+          </view>
         </view>
         <text class="eyebrow">百位审查官中超90%认为您的领养为真</text>
         <text class="headline">恭喜您，抽中[逢猫]猫粮5斤!</text>
         <text class="section-title">填写您的收货地址</text>
-        <view class="address-row" @tap="addAddress">
+        <view class="address-row" data-qa="submit-order-address" @tap="addAddress">
           <view class="pin">
             <image class="pin-icon" src="/static/figma/create-yard/address-pin.png" mode="aspectFit" />
           </view>
-          <view class="address-copy"><text>请填写收货地址，用于接收奖励</text><text>不对外展示，可放心填写</text></view>
-          <text class="add">添加 ›</text>
+          <view class="address-copy"><text>{{ selectedAddress ? selectedAddress.name + ' ' + selectedAddress.phone :
+            '请填写收货地址，用于接收奖励' }}</text><text>{{ selectedAddress ? formatAddress(selectedAddress) : '不对外展示，可放心填写'
+              }}</text></view>
+          <text class="add">{{ selectedAddress ? '修改 ›' : '添加 ›' }}</text>
         </view>
         <text class="hint">提交后地址不可修改，请谨慎填写</text>
-        <view class="submit" @tap="submit"><text>提交订单</text></view>
+        <view class="submit" data-qa="submit-order-submit" :class="{ disabled: !selectedAddress }" @tap="submit">
+          <text>提交订单</text>
+        </view>
       </view>
     </PawBottomSheet>
   </view>
@@ -26,17 +33,56 @@
 <script>
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import { getAddressById, getAddressList } from '@/utils/addressMock.js'
+import { getAdoptionById, getLastAdoptionId, transitionAdoption } from '@/utils/adoptionStorage.js'
 
 export default {
   components: { PawBottomSheet, PawIcon },
   data() {
-    return { sheetVisible: true }
+    return { sheetVisible: true, recordId: '', selectedAddress: null, selectedAddressId: '' }
+  },
+  onLoad(options = {}) {
+    this.recordId = String(options.recordId || options.id || getLastAdoptionId() || '')
+    const record = this.recordId ? getAdoptionById(this.recordId) : null
+    this.selectedAddress = record && record.rewardAddress ? record.rewardAddress : (getAddressList('shipping').find(item => item.isDefault) || null)
+    this.selectedAddressId = this.selectedAddress && this.selectedAddress.id ? String(this.selectedAddress.id) : ''
+  },
+  onShow() {
+    if (!this.selectedAddressId) return
+    const address = getAddressById(this.selectedAddressId, 'shipping')
+    if (address) this.selectedAddress = address
   },
   methods: {
     closeSheet() { this.sheetVisible = false },
     goBack() { uni.navigateBack() },
-    addAddress() { uni.navigateTo({ url: '/pages/meMore/addShippingAddress' }) },
-    submit() { uni.navigateTo({ url: '/pages/adoption/result?variant=80' }) },
+    formatAddress(address = {}) { return [...(address.regionParts || []), address.detail || ''].filter(Boolean).join(' ') || '已选择收货地址' },
+    addAddress() {
+      const selectedId = this.selectedAddressId
+        ? `&selectedId=${encodeURIComponent(this.selectedAddressId)}`
+        : ''
+      const returnUrl = `/pages/adoption/submitOrder?recordId=${encodeURIComponent(this.recordId)}`
+      uni.navigateTo({
+        url: `/pages/meMore/shippingAddress?kind=shipping&pick=1&returnUrl=${encodeURIComponent(returnUrl)}${selectedId}`,
+        events: {
+          addressPicked: (address) => {
+            if (!address || !address.id) return
+            this.selectedAddressId = String(address.id)
+            this.selectedAddress = address
+          }
+        }
+      })
+    },
+    submit() {
+      if (!this.selectedAddress) { uni.showToast({ title: '请先填写收货地址', icon: 'none' }); return }
+      if (this.recordId) {
+        const updated = transitionAdoption(this.recordId, 'reward_done', {
+          rewardAddress: { ...this.selectedAddress },
+          rewardOrderSubmittedAt: Date.now()
+        })
+        if (!updated) { uni.showToast({ title: '当前状态不能领取奖励', icon: 'none' }); return }
+      }
+      uni.navigateTo({ url: `/pages/adoption/result?variant=80&id=${encodeURIComponent(this.recordId)}` })
+    },
   },
 }
 </script>
@@ -48,17 +94,28 @@ export default {
 }
 
 .order-sheet {
-  position: relative;
   width: 100%;
   height: 495px;
-  padding: 28px 10px 0;
+  padding: 0 10px 43px;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 45px;
+  flex: 0 0 auto;
+}
+
+.sheet-header-spacer {
+  width: 32px;
+  height: 32px;
 }
 
 .close {
-  position: absolute;
-  right: 20px;
-  top: 13px;
   width: 32px;
   height: 32px;
   display: flex;
@@ -147,16 +204,17 @@ export default {
 }
 
 .submit {
-  position: absolute;
-  left: 15px;
-  right: 15px;
-  bottom: 43px;
   height: 47px;
   border-radius: 24px;
   background: #ffe000;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: auto 5px 0;
+}
+
+.submit.disabled {
+  opacity: .45;
 }
 
 .submit text {

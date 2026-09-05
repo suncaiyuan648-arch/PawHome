@@ -59,6 +59,8 @@
     <ReplyComposerSheet v-model:visible="replySheetVisible" :reply-to-name="replyTargetName" @send="onReplySend"
       @voice="onComposerVoice" @pick-image="onComposerPickImage" />
     <ShareActionSheet v-model:visible="shareSheetVisible" />
+    <AdoptPickCatsSheet v-model="adoptPickSheetVisible" :yard-name="yard.name" :yard-id="yardId" :cats="adoptionPets"
+      :owner-avatar="yard.avatar" :owner-paw-id="yard.owner && yard.owner.pawId" />
     <YardFeedPopup v-if="commentsEmpty" v-model:visible="feedPopupVisible" @learn-food="onLearnFood"
       @agreement="onAgreement" @feed-order="onFeedOrder" />
   </view>
@@ -76,6 +78,7 @@ import CommentComposer from '@/components/dynamic/CommentComposer.vue'
 import CommentThread from '@/components/dynamic/CommentThread.vue'
 import ReplyComposerSheet from '@/components/ReplyComposerSheet.vue'
 import ShareActionSheet from '@/components/ShareActionSheet.vue'
+import AdoptPickCatsSheet from '@/components/AdoptPickCatsSheet.vue'
 import YardFeedRankStrip from '@/components/yard/YardFeedRankStrip.vue'
 import YardSummaryCard from '@/components/yard/YardSummaryCard.vue'
 import YardFeedPopup from '@/components/YardFeedPopup.vue'
@@ -145,7 +148,7 @@ const DYNAMIC_DETAIL_COMMENTS = [
 
 export default {
   name: 'DynamicDetailPage',
-  components: { PawAnnouncementMarquee, PawPageNav, PawAvatar, PawOwnerBadge, PawFixedActionBar, DynamicMediaViewer, FeedingSourceRow, CommentComposer, CommentThread, ReplyComposerSheet, ShareActionSheet, YardFeedRankStrip, YardSummaryCard, YardFeedPopup, PawLikeIcon },
+  components: { PawAnnouncementMarquee, PawPageNav, PawAvatar, PawOwnerBadge, PawFixedActionBar, DynamicMediaViewer, FeedingSourceRow, CommentComposer, CommentThread, ReplyComposerSheet, ShareActionSheet, AdoptPickCatsSheet, YardFeedRankStrip, YardSummaryCard, YardFeedPopup, PawLikeIcon },
   data() {
     const yard = getPawHomeYardMock()
     return {
@@ -158,6 +161,7 @@ export default {
       replySheetVisible: false,
       replySheetTarget: null,
       shareSheetVisible: false,
+      adoptPickSheetVisible: false,
       feedPopupVisible: false,
       mediaItems: [`${DYNAMIC_DETAIL_ASSET}hero.png`, `${DYNAMIC_DETAIL_ASSET}hero.png`],
       announcementItems: yard.announcementItems,
@@ -186,7 +190,7 @@ export default {
       return [
         { key: 'share', label: '分享', iconName: 'actions/dynamic-share' },
         { key: 'yard', label: this.commentsEmpty ? '入驻' : '去看看', iconName: 'actions/dynamic-join' },
-        { key: 'adopt', label: '领养', iconName: 'actions/dynamic-adopt' }
+        { key: 'adopt', label: '领养', iconName: 'actions/dynamic-adopt', qa: 'qa-dynamic-detail-adopt' }
       ]
     },
     primaryAction() {
@@ -196,6 +200,9 @@ export default {
       const target = this.replySheetTarget
       const author = target && target.author
       return author && typeof author.name === 'string' ? author.name : ''
+    },
+    adoptionPets() {
+      return (this.yard.pets || []).filter(pet => pet.state === 'pending' || pet.state === 'cloud')
     }
   },
   onLoad(query = {}) {
@@ -232,7 +239,7 @@ export default {
     onFooterAction(action) {
       if (action.key === 'share') { this.shareSheetVisible = true }
       if (action.key === 'yard') this.openYard()
-      if (action.key === 'adopt') uni.showToast({ title: '进入领养流程', icon: 'none' })
+      if (action.key === 'adopt') this.adoptPickSheetVisible = true
     },
     onPrimaryAction() {
       if (this.commentsEmpty) {

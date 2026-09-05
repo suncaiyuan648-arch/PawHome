@@ -1,19 +1,21 @@
 <template>
   <PawOverlay :model-value="openValue" :close-on-mask="canCloseOnMask" :placement="placement" :z-index="zIndex"
-    :exit-duration="160" @update:model-value="setValue" @update:visible="setValue" @after-open="$emit('after-open')"
-    @after-close="$emit('after-close')">
+    :mask-color="overlayMaskColor" :exit-duration="160" @update:model-value="setValue" @update:visible="setValue"
+    @after-open="$emit('after-open')" @after-close="$emit('after-close')">
     <template #default="{ opened, closing }">
-      <view class="paw-dialog__wrap">
+      <view class="paw-dialog__wrap" :class="'paw-dialog__wrap--' + variant">
         <view class="paw-dialog"
           :class="[`paw-dialog--${variant}`, { 'paw-dialog--open': opened, 'paw-dialog--closing': closing }]" @tap.stop>
           <text v-if="title" class="paw-dialog__title">{{ title }}</text>
           <text v-if="message || body" class="paw-dialog__message">{{ message || body }}</text>
           <slot />
           <view v-if="showActions" class="paw-dialog__actions">
-            <view v-if="showCancel" class="paw-dialog__action paw-dialog__action--cancel" @tap.stop="onCancel"><text>{{
+            <view v-if="showCancel" class="paw-dialog__action paw-dialog__action--cancel" data-qa="paw-dialog-cancel"
+              @tap.stop="onCancel"><text>{{
                 cancelText }}</text></view>
             <view class="paw-dialog__action paw-dialog__action--confirm"
-              :class="{ 'paw-dialog__action--danger': variant === 'destructive' }" @tap.stop="onConfirm">
+              :class="{ 'paw-dialog__action--danger': variant === 'destructive' }" data-qa="paw-dialog-confirm"
+              @tap.stop="onConfirm">
               <view v-if="confirmLoading" class="paw-dialog__spinner"></view><text>{{ confirmText }}</text>
             </view>
           </view>
@@ -41,6 +43,7 @@ export default {
     showCancel: { type: Boolean, default: false },
     confirmLoading: { type: Boolean, default: false },
     closeOnMask: { type: Boolean, default: false },
+    maskColor: { type: String, default: '' },
     autoClose: { type: Boolean, default: true },
     placement: {
       type: String,
@@ -53,6 +56,9 @@ export default {
   computed: {
     openValue() { return this.modelValue !== undefined ? this.modelValue : !!this.visible },
     canCloseOnMask() { return this.variant !== 'destructive' && this.closeOnMask },
+    overlayMaskColor() {
+      return this.maskColor || (this.variant === 'destructive' ? 'rgba(0, 0, 0, .15)' : '')
+    },
     showActions() { return this.showCancel || !!this.confirmText }
   },
   methods: {
@@ -76,6 +82,11 @@ export default {
   padding: 48px;
   box-sizing: border-box;
   pointer-events: none;
+}
+
+.paw-dialog__wrap--destructive {
+  padding: 0 30px;
+  transform: translateY(-38px);
 }
 
 .paw-dialog {
@@ -155,6 +166,108 @@ export default {
 
 .paw-dialog__action--danger {
   color: var(--paw-color-danger, #ff3d3d);
+}
+
+.paw-dialog__wrap--jury-vote-result {
+  padding: 24px;
+}
+
+.paw-dialog--jury-vote-result {
+  width: 317px;
+  max-width: calc(100vw - 48px);
+  border-radius: 20px;
+}
+
+.paw-dialog--jury-vote-result .paw-dialog__actions {
+  min-height: 53px;
+  height: 53px;
+  border-top: 0;
+}
+
+.paw-dialog--jury-vote-result .paw-dialog__action {
+  height: 53px;
+  min-height: 53px;
+  color: #000;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.paw-dialog--jury-vote-result .paw-dialog__action--cancel {
+  color: #999;
+  background: #fff;
+  font-weight: 400;
+}
+
+.paw-dialog--jury-vote-result .paw-dialog__action+.paw-dialog__action {
+  border-left: 0;
+}
+
+.paw-dialog--jury-vote-result .paw-dialog__action--confirm {
+  background: #ffe60f;
+}
+
+.paw-dialog--destructive {
+  width: 315px;
+  max-width: none;
+  height: 141px;
+  border-radius: 25px;
+  padding: 0 21px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  box-shadow: none;
+}
+
+.paw-dialog--destructive .paw-dialog__title {
+  width: 100%;
+  margin: 0 0 32px;
+  padding: 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.paw-dialog--destructive .paw-dialog__actions {
+  display: flex;
+  flex: 0 0 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 19px;
+  width: 100%;
+  min-height: 38px;
+  border-top: 0;
+}
+
+.paw-dialog--destructive .paw-dialog__action {
+  flex: 0 0 126px;
+  width: 126px;
+  min-height: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 20px;
+  background: rgba(233, 233, 233, .5);
+  color: #333;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.paw-dialog--destructive .paw-dialog__action+.paw-dialog__action {
+  border-left: 0;
+}
+
+.paw-dialog--destructive .paw-dialog__action--cancel {
+  color: #333;
+  font-weight: 700;
+}
+
+.paw-dialog--destructive .paw-dialog__action--danger {
+  background: #ffe60f;
+  color: #333;
 }
 
 .paw-dialog__spinner {

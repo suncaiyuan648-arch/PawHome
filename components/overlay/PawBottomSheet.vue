@@ -1,7 +1,7 @@
 <template>
-  <PawOverlay :model-value="openValue" placement="bottom" :close-on-mask="closeOnMask" :z-index="zIndex"
-    :enter-duration="180" :exit-duration="200" @update:model-value="setValue" @update:visible="setValue"
-    @after-open="$emit('after-open')" @after-close="$emit('after-close')">
+  <PawOverlay :model-value="openValue" placement="bottom" :close-on-mask="closeOnMask" :show-mask="showMask"
+    :z-index="zIndex" :enter-duration="180" :exit-duration="200" @update:model-value="setValue"
+    @update:visible="setValue" @after-open="$emit('after-open')" @after-close="$emit('after-close')">
     <template #default="{ opened, closing }">
       <PawSafeArea class="paw-bottom-sheet" :enabled="safeArea" :class="[
         `paw-bottom-sheet--${variant}`,
@@ -30,6 +30,7 @@ export default {
     visible: { type: Boolean, default: undefined },
     variant: { type: String, default: 'default' },
     closeOnMask: { type: Boolean, default: true },
+    showMask: { type: Boolean, default: true },
     safeArea: { type: Boolean, default: true },
     lockScroll: { type: Boolean, default: true },
     height: { type: [String, Number], default: '' },
@@ -59,6 +60,8 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
+  display: flex;
+  flex-direction: column;
   max-height: 100%;
   overflow: hidden;
   box-sizing: border-box;
@@ -92,6 +95,18 @@ export default {
   background: #f8f8f8;
 }
 
+.paw-bottom-sheet.paw-bottom-sheet--address-save {
+  background: #f5f5f5;
+  border-radius: 0;
+}
+
+.paw-bottom-sheet.paw-bottom-sheet--address-save .paw-bottom-sheet__body {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+}
+
 .paw-bottom-sheet--open {
   transform: translateY(0);
 }
@@ -103,6 +118,10 @@ export default {
 }
 
 .paw-bottom-sheet__body {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-direction: column;
   min-height: 0;
 }
 

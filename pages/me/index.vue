@@ -1,57 +1,50 @@
 <template>
 	<view class="me-page">
-		<view v-if="pageState === 'profile-upload'" class="profile-underlay">
-			<view class="profile-underlay-nav">
-				<image src="/static/nav-back-arrow.png" mode="aspectFit"></image><text>昵称头像</text>
-			</view>
-		</view>
-		<view class="nav-wrap" :style="{ paddingTop: statusBarHeight + 'px' }">
-			<view class="nav-row">
-				<view class="nav-left" @click.stop="onMenuTap">
+		<PawPageNav :show-back="false" background="#f5f5f5" slot-position="custom" :slot-style="{ left: '0px' }">
+			<template #content>
+				<view class="nav-menu-hit" data-qa="qa-me-menu" @tap.stop="onMenuTap">
 					<uni-icons type="bars" color="#333333" :size="24"></uni-icons>
 				</view>
-				<view class="nav-right" :style="{ width: menuRightWidth + 'px' }"></view>
-			</view>
-		</view>
-		<scroll-view class="main-scroll" scroll-y :show-scrollbar="false" :enable-flex="true"
-			:style="{ height: mainScrollPx + 'px' }" :bounces="false">
+			</template>
+		</PawPageNav>
+		<scroll-view class="main-scroll" scroll-y :show-scrollbar="false" :enable-flex="true" :bounces="false">
 			<view class="scroll-inner">
 				<view class="profile-card card card--elevated">
-					<view class="chief-ribbon" @click.stop="goLevelPage">
-						<text class="chief-title">城市投喂首席官</text>
-						<view class="chief-sub-row">
-							<text class="chief-sub">距下一级6376</text>
-							<image class="chief-chevron" src="/static/me/link-chevron.png" mode="aspectFit"></image>
-						</view>
-					</view>
+					<view class="profile-card__surface" aria-hidden="true"></view>
 					<view class="profile-main">
-						<image class="profile-avatar" src="/static/figma/me-avatar.png" mode="aspectFill"></image>
+						<PawImage class="profile-avatar" :src="profileAvatar" :size="65" :radius="32.5" :preview="false"
+							:clickable="true" data-qa="qa-me-avatar" @click="openProfileUpload" />
 						<view class="profile-info">
-							<view class="name-row">
+							<view class="name-row" data-qa="qa-me-profile">
 								<text class="profile-name">浮生孤影</text>
-								<view @click.stop="goLevelPage">
+								<view data-qa="qa-me-level" @click.stop="goLevelPage">
 									<LevelCapsule level="1" />
 								</view>
 							</view>
-							<text class="paw-id">逢猫号: 2876598765</text>
+							<text class="paw-id">逢猫号：2876598765</text>
 						</view>
+						<PawMemberBanner class="profile-card__member-banner" data-qa="qa-me-membership-ribbon"
+							:title="membership.title" :progress-text="`距下一级${membership.remainingExp}`"
+							@click="goLevelPage" />
 					</view>
 					<view class="stats-row">
-						<view class="stat-cell" @click="toast('我的云养宠物')">
-							<view class="stat-tag stat-tag--red"><text>新反馈</text></view>
-							<text class="stat-num">11只</text>
+						<view class="stat-cell" data-qa="qa-me-cloud-pets" @click="goMyCloudPets">
+							<PawBadge class="stat-badge" text="新反馈" size="small">
+								<text class="stat-num">11只</text>
+							</PawBadge>
 							<text class="stat-label">我的云养宠物</text>
 						</view>
-						<view class="stat-cell" @click="goMyPets">
+						<view class="stat-cell" data-qa="qa-me-my-pets" @click="goMyPets">
 							<text class="stat-num">1只</text>
 							<text class="stat-label">我的宠物</text>
 						</view>
-						<view class="stat-cell" @click="goMyAdoption">
-							<view class="stat-tag stat-tag--red"><text>新进度</text></view>
-							<text class="stat-num">22只</text>
+						<view class="stat-cell" data-qa="qa-me-my-adoption" @click="goMyAdoption">
+							<PawBadge class="stat-badge" text="新进度" size="small">
+								<text class="stat-num">22只</text>
+							</PawBadge>
 							<text class="stat-label">我的领养</text>
 						</view>
-						<view class="stat-cell" @click="goMyMedals">
+						<view class="stat-cell" data-qa="qa-me-medals" @click="goMyMedals">
 							<text class="stat-num">1只</text>
 							<text class="stat-label">勋章</text>
 						</view>
@@ -63,14 +56,15 @@
 						<text class="card-title">我的订单</text>
 						<view class="card-link" @click="toast('全部订单')">
 							<text>全部</text>
-							<image class="link-chevron" src="/static/me/link-chevron.png" mode="aspectFit"></image>
+							<PawIcon class="link-chevron" name="navigation/order-chevron-right" :size="10" />
 						</view>
 					</view>
 					<view class="orders-grid">
 						<view v-for="(item, i) in orderEntries" :key="i" class="order-item" @click="toast(item.label)">
 							<view class="order-icon-wrap">
-								<PawIcon class="order-icon-img" :name="item.iconName" :size="24" />
-								<view v-if="item.badge" class="order-badge"><text>{{ item.badge }}</text></view>
+								<PawBadge :count="item.badge">
+									<PawIcon class="order-icon-img" :name="item.iconName" :size="24" />
+								</PawBadge>
 							</view>
 							<text class="order-label">{{ item.label }}</text>
 						</view>
@@ -82,7 +76,7 @@
 						<text class="card-title card-title--blue">我的小院</text>
 						<view class="card-link" @click="goManagedYard">
 							<text>查看</text>
-							<image class="link-chevron" src="/static/me/link-chevron.png" mode="aspectFit"></image>
+							<PawIcon class="link-chevron" name="navigation/yard-link-chevron" :size="8" :rotate="180" />
 						</view>
 					</view>
 					<view class="yard-body">
@@ -90,32 +84,38 @@
 							<view class="yard-line">
 								<text class="yard-line-label">今日曝光</text>
 								<text class="yard-num">361万</text>
-								<text class="yard-line-sub">（昨日12万）</text>
+								<text class="yard-line-sub">(昨日12万)</text>
 							</view>
 							<view class="yard-line">
 								<text class="yard-line-label">今日获粮</text>
 								<text class="yard-num">361斤</text>
-								<text class="yard-line-sub">（昨日1斤）</text>
+								<text class="yard-line-sub">(昨日1斤)</text>
 							</view>
 						</view>
 						<view class="yard-divider"></view>
 						<view class="yard-right">
 							<view class="yard-action" @click="goYardFeedOrders">
-								<PawIcon class="yard-icon-img" name="actions/yard-feed" :size="19" />
-								<text class="yard-action-text">投喂订单</text>
-								<view class="yard-badge"><text>9</text></view>
+								<PawBadge :count="9">
+									<view class="yard-action-content">
+										<PawIcon class="yard-icon-img" name="actions/yard-feed" :size="22" />
+										<text class="yard-action-text">投喂订单</text>
+									</view>
+								</PawBadge>
 							</view>
 							<view class="yard-action" @click="goAdoptionAudit">
-								<PawIcon class="yard-icon-img" name="actions/yard-audit" :size="19" />
-								<text class="yard-action-text">领养审核</text>
-								<view class="yard-badge"><text>9</text></view>
+								<PawBadge :count="9">
+									<view class="yard-action-content">
+										<PawIcon class="yard-icon-img" name="actions/yard-audit" :size="22" />
+										<text class="yard-action-text">领养审核</text>
+									</view>
+								</PawBadge>
 							</view>
 						</view>
 					</view>
 				</view>
 
 				<view v-for="review in reviewCards" :key="review.title" class="review-card card card--elevated"
-					@click="goJuryPanel">
+					@click="goJuryPanel(review.reviewType)">
 					<view class="card-header card-header--review">
 						<text class="card-title">{{ review.title }}</text>
 						<text class="card-sub">{{ review.question }}</text>
@@ -128,11 +128,9 @@
 						</view>
 					</view>
 					<view class="poll-wrap">
-						<text class="poll-caption">92%（挺真实）</text>
-						<view class="poll-result">
-							<view class="poll-yellow"></view>
-							<view class="poll-blue"><text>8%</text></view>
-						</view>
+						<PawVoteRatioBar class="poll-bar" :real-percent="review.realPercent"
+							:fake-percent="review.fakePercent" :real-label="`${review.realPercent}%（挺真实）`"
+							:fake-label="`${review.fakePercent}%`" :min-fake-width="48" :height="26" />
 					</view>
 				</view>
 			</view>
@@ -142,11 +140,11 @@
 		<view v-if="drawerOpen" class="drawer-backdrop" @click="closeDrawer"></view>
 		<view v-if="drawerOpen" class="drawer-shell" :class="{ 'drawer-shell--show': drawerAnim }" @click.stop>
 			<scroll-view class="drawer-scroll" scroll-y :show-scrollbar="false">
-				<view class="drawer-pad" :style="{ paddingTop: Math.max(statusBarHeight, 20) + 29 + 'px' }">
+				<view class="drawer-pad">
 					<view v-for="(section, si) in menuSections" :key="si" class="menu-section">
 						<view v-for="(label, ri) in section" :key="ri" class="menu-row" @click="onMenuRow(label)">
 							<text class="menu-row-label">{{ label }}</text>
-							<image class="menu-row-chevron" src="/static/me/link-chevron.png" mode="aspectFit"></image>
+							<PawChevron class="menu-row-chevron" :size="10" />
 						</view>
 					</view>
 					<view class="drawer-settings" @click="onMenuRow('设置')">
@@ -158,17 +156,23 @@
 				</view>
 			</scroll-view>
 		</view>
-		<PawBottomSheet :model-value="pageState === 'profile-upload'" variant="profile-upload" height="379px"
-			:close-on-mask="true" :safe-area="false" :z-index="10060"
-			@update:model-value="onProfileUploadVisibleChange">
-			<view class="profile-upload-sheet" @tap.stop>
-				<text class="profile-upload-skip" @tap="closeProfileUpload">晚点再填</text>
-				<image class="profile-upload-avatar" src="/static/figma/profile-upload-avatar.png" mode="scaleToFill">
-				</image>
-				<text class="profile-upload-title">上传头像</text>
-				<text class="profile-upload-copy">逢猫新用户5119</text>
-				<view class="profile-upload-divider"></view>
-				<view class="profile-upload-btn" @tap="closeProfileUpload"><text>完成</text></view>
+		<PawBottomSheet v-model:visible="avatarSheetVisible" variant="profile-upload" height="379px"
+			:close-on-mask="true" :safe-area="true" :z-index="10060" @after-close="onProfileUploadClosed">
+			<view class="profile-upload-sheet" data-qa="qa-me-avatar-sheet" @tap.stop>
+				<view class="profile-upload-head">
+					<text class="profile-upload-title">更换头像</text>
+					<text class="profile-upload-skip" data-qa="qa-me-avatar-cancel" @tap="closeProfileUpload">取消</text>
+				</view>
+				<PawImage class="profile-upload-avatar" :src="profileAvatar" :size="95" :radius="47.5"
+					:preview="false" />
+				<text class="profile-upload-copy">选择一张新头像，让大家更容易认出你</text>
+				<view class="profile-upload-actions">
+					<view class="profile-upload-action" data-qa="qa-me-avatar-album" @tap="chooseAvatar">
+						<text>从相册选择</text>
+					</view>
+					<view class="profile-upload-action" data-qa="qa-me-avatar-camera" @tap="takeAvatar"><text>拍照</text>
+					</view>
+				</view>
 			</view>
 		</PawBottomSheet>
 	</view>
@@ -178,16 +182,28 @@
 import CustomTabber from '@/components/CustomTabber/index.vue'
 import LevelCapsule from '@/components/LevelCapsule.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import PawBadge from '@/components/base/PawBadge.vue'
+import PawChevron from '@/components/base/PawChevron.vue'
+import PawImage from '@/components/base/PawImage.vue'
+import PawMemberBanner from '@/components/PawMemberBanner/PawMemberBanner.vue'
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
+import PawPageNav from '@/components/PawPageNav.vue'
+import PawVoteRatioBar from '@/components/PawVoteRatioBar.vue'
+import { getLastAdoptionId } from '@/utils/adoptionStorage.js'
+import { getMemberLevelTitle } from '@/utils/memberLevel.js'
 
 export default {
-	components: { CustomTabber, LevelCapsule, PawIcon, PawBottomSheet },
+	components: { CustomTabber, LevelCapsule, PawIcon, PawBadge, PawChevron, PawImage, PawMemberBanner, PawBottomSheet, PawPageNav, PawVoteRatioBar },
 	data() {
 		return {
 			pageState: 'default',
-			statusBarHeight: 20,
-			menuRightWidth: 87,
-			mainScrollPx: 500,
+			avatarSheetVisible: false,
+			profileAvatar: '/static/figma/me-avatar.png',
+			membership: {
+				level: 8,
+				title: getMemberLevelTitle(8),
+				remainingExp: 6376
+			},
 			authChecked: false,
 			reviewText:
 				'今天不做课间操了，开一个紧急例会，就在昨天，发生了一件骇人听闻的学生袭击老师事件，主犯夏洛...',
@@ -199,8 +215,8 @@ export default {
 				{ label: '待评价', iconName: 'actions/order-review', badge: 7 }
 			],
 			reviewCards: [
-				{ title: '求助评审', question: 'Ta的求助是真的吗？' },
-				{ title: '领养评审', question: 'Ta的领养是真的吗？' }
+				{ title: '求助评审', question: 'Ta的求助是真的吗？', reviewType: 'rescue', realPercent: 92, fakePercent: 8 },
+				{ title: '领养评审', question: 'Ta的领养是真的吗？', reviewType: 'adoption', realPercent: 92, fakePercent: 8 }
 			],
 			drawerOpen: false,
 			drawerAnim: false,
@@ -214,15 +230,14 @@ export default {
 	},
 	onLoad(options = {}) {
 		this.pageState = String(options.state || 'default')
-		this.layoutScroll()
 		if (this.pageState === 'drawer') {
 			this.drawerOpen = true
 			this.drawerAnim = true
 		}
+		if (this.pageState === 'profile-upload') this.avatarSheetVisible = true
 	},
 	onShow() {
 		if (!this.ensureLogin()) return
-		this.layoutScroll()
 		// #ifdef MP-WEIXIN
 		this.$nextTick(() => {
 			const cur = getCurrentPages().slice(-1)[0]
@@ -245,23 +260,8 @@ export default {
 			uni.navigateTo({ url: '/pages/auth/login' })
 			return false
 		},
-		layoutScroll() {
-			const sys = uni.getSystemInfoSync()
-			let statusBarHeight = sys.statusBarHeight || 20
-			// #ifdef H5
-			statusBarHeight = 48
-			// #endif
-			this.statusBarHeight = statusBarHeight
-			const navPx = statusBarHeight + 44
-			this.mainScrollPx = Math.max(200, (sys.windowHeight || 600) - navPx)
-			// #ifdef MP-WEIXIN
-			try {
-				const mb = uni.getMenuButtonBoundingClientRect()
-				if (mb && mb.left) {
-					this.menuRightWidth = Math.max(sys.windowWidth - mb.left, 87)
-				}
-			} catch (e) { }
-			// #endif
+		openProfileUpload() {
+			this.avatarSheetVisible = true
 		},
 		onMenuTap() {
 			if (this.drawerOpen) {
@@ -277,11 +277,33 @@ export default {
 				this.drawerOpen = false
 			}, 300)
 		},
-		onProfileUploadVisibleChange(value) {
-			if (!value) this.pageState = 'default'
+		onProfileUploadClosed() {
+			if (this.pageState === 'profile-upload') this.pageState = 'default'
 		},
 		closeProfileUpload() {
-			this.onProfileUploadVisibleChange(false)
+			this.avatarSheetVisible = false
+		},
+		chooseAvatar() {
+			uni.chooseImage({
+				count: 1,
+				sourceType: ['album'],
+				success: (result) => {
+					const path = result && result.tempFilePaths && result.tempFilePaths[0]
+					if (path) this.profileAvatar = path
+					this.closeProfileUpload()
+				}
+			})
+		},
+		takeAvatar() {
+			uni.chooseImage({
+				count: 1,
+				sourceType: ['camera'],
+				success: (result) => {
+					const path = result && result.tempFilePaths && result.tempFilePaths[0]
+					if (path) this.profileAvatar = path
+					this.closeProfileUpload()
+				}
+			})
 		},
 		onMenuRow(label) {
 			this.closeDrawer()
@@ -293,7 +315,15 @@ export default {
 				uni.navigateTo({ url: '/pages/meMore/browsingHistory' })
 				return
 			}
-			if (label === '我的宠物' || label === '小院宠物') {
+			if (label === '我的云养宠物') {
+				this.goMyCloudPets()
+				return
+			}
+			if (label === '我的宠物') {
+				this.goMyPets()
+				return
+			}
+			if (label === '小院宠物') {
 				uni.navigateTo({ url: '/pages/meMore/myAssets?mode=pets' })
 				return
 			}
@@ -310,7 +340,7 @@ export default {
 				return
 			}
 			if (label === '救助基金池') {
-				uni.navigateTo({ url: '/pages/feature/index?mode=rescue-fund' })
+				uni.navigateTo({ url: '/pages/yard/rescueReview' })
 				return
 			}
 			if (label === '邀请入驻') {
@@ -321,10 +351,17 @@ export default {
 				uni.navigateTo({ url: '/pages/meMore/yardFeedOrders' })
 				return
 			}
+			if (label === '我申请的领养') {
+				this.goMyAdoption()
+				return
+			}
 			this.toast(label)
 		},
 		goMyAdoption() {
 			uni.navigateTo({ url: '/pages/meMore/myAdoption' })
+		},
+		goMyCloudPets() {
+			uni.navigateTo({ url: '/pages/meMore/myAssets?mode=pets&state=mine' })
 		},
 		goManagedYard() {
 			uni.navigateTo({ url: '/pages/yard/yardCats?state=managed' })
@@ -336,7 +373,7 @@ export default {
 			uni.navigateTo({ url: '/pages/meMore/myFeedings' })
 		},
 		goMyPets() {
-			uni.navigateTo({ url: '/pages/meMore/myAssets?mode=pets' })
+			uni.navigateTo({ url: '/pages/meMore/myAssets?mode=pets&state=owned' })
 		},
 		goMyMedals() {
 			uni.navigateTo({ url: '/pages/meMore/myAssets?mode=medals' })
@@ -345,10 +382,16 @@ export default {
 			uni.navigateTo({ url: '/pages/meMore/yardFeedOrders' })
 		},
 		goAdoptionAudit() {
-			uni.navigateTo({ url: '/pages/yard/adoptionAudit' })
+			const id = getLastAdoptionId()
+			uni.navigateTo({ url: '/pages/yard/adoptionAudit' + (id ? '?id=' + encodeURIComponent(id) : '') })
 		},
-		goJuryPanel() {
-			uni.navigateTo({ url: '/pages/yard/juryPanel' })
+		goJuryPanel(reviewType = '') {
+			if (reviewType === 'rescue') {
+				uni.navigateTo({ url: '/pages/yard/rescueReview' })
+				return
+			}
+			const query = reviewType ? `?reviewType=${encodeURIComponent(reviewType)}` : ''
+			uni.navigateTo({ url: `/pages/yard/juryPanel${query}` })
 		},
 		goLevelPage() {
 			const name = '浮生孤影'
@@ -376,49 +419,33 @@ export default {
 	box-sizing: border-box;
 }
 
-.nav-wrap {
-	flex-shrink: 0;
-	background: #f5f5f5;
-}
-
-.nav-row {
+.nav-menu-hit {
+	display: flex;
+	width: 44px;
 	height: 44px;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 0 8rpx 0 4rpx;
-	box-sizing: border-box;
-}
-
-.nav-left {
-	padding: 12rpx 24rpx;
-	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 
-.nav-right {
-	flex-shrink: 0;
-}
-
 .main-scroll {
-	flex: none;
+	flex: 1;
+	height: 0;
+	min-height: 0;
 	width: 100%;
 	box-sizing: border-box;
-	padding: 12rpx 0 0;
+	padding: 6px 0 0;
 	background: #f5f5f5;
 }
 
 .scroll-inner {
-	padding-bottom: calc(12rpx + 120px + constant(safe-area-inset-bottom));
-	padding-bottom: calc(12rpx + 120px + env(safe-area-inset-bottom));
+	padding-bottom: 81px;
 	box-sizing: border-box;
 }
 
 .card {
-	margin: 0 16rpx 16rpx;
+	margin: 0 8px 8px;
 	background: #ffffff;
-	border-radius: 16rpx;
+	border-radius: 8px;
 	box-sizing: border-box;
 }
 
@@ -429,94 +456,87 @@ export default {
 
 .profile-card {
 	position: relative;
-	height: 291rpx;
-	padding: 0;
-}
-
-.chief-ribbon {
-	position: absolute;
-	right: 0;
-	top: 23rpx;
-	z-index: 2;
-	width: 290rpx;
-	height: 103rpx;
-	padding: 10rpx 18rpx 8rpx 58rpx;
-	box-sizing: border-box;
-	background: linear-gradient(118deg, #6a5649 0%, #4d3f36 45%, #352b26 100%);
-	clip-path: polygon(0 0, 100% 0, 100% 100%, 14% 100%);
-	box-shadow: -4rpx 6rpx 16rpx rgba(0, 0, 0, 0.12);
-}
-
-.chief-title {
-	display: block;
-	font-size: 28rpx;
-	font-weight: 500;
-	color: #fee0c5;
-	line-height: 40rpx;
-}
-
-.chief-sub-row {
 	display: flex;
-	flex-direction: row;
-	align-items: center;
-	margin-top: 0;
+	flex-direction: column;
+	height: 145.5px;
+	padding: 0;
+	gap: 23.5px;
+	background: transparent;
+	overflow: visible;
 }
 
-.chief-sub {
-	font-size: 20rpx;
-	color: rgba(255, 255, 255, 0.82);
-	line-height: 28rpx;
+.profile-card__surface {
+	position: absolute;
+	top: 11.5px;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 0;
+	background: #ffffff;
+	border-radius: 8px;
 }
 
-.chief-chevron {
-	width: 22rpx;
-	height: 22rpx;
-	margin-left: 6rpx;
-	flex-shrink: 0;
-	filter: brightness(0) invert(1);
-	opacity: 0.88;
+.profile-card__member-banner {
+	display: flex;
+	flex: 0 0 47.6323%;
+	align-self: flex-start;
+	width: 47.6323%;
+	max-width: 171px;
+	height: auto;
+	aspect-ratio: 171 / 73;
+	z-index: 2;
 }
 
 .profile-main {
-	position: absolute;
-	left: 16rpx;
-	top: 0;
+	position: relative;
 	display: flex;
 	align-items: flex-start;
-	padding-right: 0;
-	min-height: 0;
-	margin-top: 0;
+	flex: 0 0 65px;
+	min-height: 65px;
+	box-sizing: border-box;
+	padding: 11.5px 0 0 8px;
+	gap: 9px;
+	overflow: visible;
+	z-index: 1;
 }
 
 .profile-avatar {
-	width: 130rpx;
-	height: 130rpx;
+	position: relative;
+	z-index: 3;
+	width: 65px;
+	height: 65px;
+	margin-top: -11.5px;
+	box-sizing: border-box;
 	border-radius: 50%;
 	flex-shrink: 0;
 	background: #f0f0f0;
-	border: 0;
+	border: 3px solid #ffffff;
 	box-shadow: none;
 }
 
 .profile-info {
 	flex: 1;
 	min-width: 0;
-	margin-left: 18rpx;
-	padding-top: 39rpx;
+	padding-top: 8px;
 }
 
 .name-row {
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
-	gap: 14rpx;
+	gap: 7px;
 }
 
 .profile-name {
-	font-size: 32rpx;
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 16px;
 	font-weight: 700;
 	color: #111111;
-	line-height: 46rpx;
+	line-height: 23px;
 }
 
 .name-row .lv-cap {
@@ -526,19 +546,19 @@ export default {
 .paw-id {
 	display: block;
 	margin-top: 0;
-	font-size: 20rpx;
+	font-size: 10px;
 	color: #999999;
-	line-height: 32rpx;
+	line-height: 16px;
 }
 
 .stats-row {
-	position: absolute;
-	left: 26rpx;
-	right: 26rpx;
-	top: 177rpx;
+	position: static;
 	display: flex;
-	margin-top: 0;
-	padding-top: 0;
+	align-items: center;
+	flex: 0 0 auto;
+	margin: 0 13px;
+	column-gap: 8px;
+	padding: 0;
 	border-top: 0;
 }
 
@@ -547,64 +567,44 @@ export default {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: flex-start;
+	justify-content: center;
 	position: relative;
 	min-width: 0;
-	padding-top: 6rpx;
-}
-
-.stat-tag {
-	position: absolute;
-	top: -12rpx;
-	right: 4rpx;
-	left: auto;
-	height: 26rpx;
-	padding: 0 6rpx;
-	box-sizing: border-box;
-	border-radius: 4rpx;
-	white-space: nowrap;
-	z-index: 1;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.stat-tag--red {
-	background: #ff2741;
-}
-
-.stat-tag text {
-	font-size: 14rpx;
-	font-weight: 500;
-	color: #ffffff;
-	line-height: 20rpx;
+	padding-top: 0;
 }
 
 .stat-num {
-	font-size: 30rpx;
+	font-size: 15px;
 	font-weight: 700;
 	color: #111111;
-	line-height: 46rpx;
+	line-height: 23px;
 }
 
 .stat-label {
 	margin-top: 0;
-	font-size: 20rpx;
+	font-size: 10px;
 	color: #888888;
-	line-height: 34rpx;
+	line-height: 17px;
 	text-align: center;
 }
 
 .orders-card {
-	height: 216rpx;
-	padding: 14rpx 26rpx 20rpx;
+	display: flex;
+	flex-direction: column;
+	height: 108px;
+	padding: 7px 13px 10px;
+	gap: 10px;
+}
+
+.orders-card .card-header {
+	margin-bottom: 0;
 }
 
 .card-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	margin-bottom: 20rpx;
+	margin-bottom: 10px;
 	padding: 0;
 }
 
@@ -613,14 +613,14 @@ export default {
 }
 
 .card-title {
-	font-size: 28rpx;
+	font-size: 14px;
 	font-weight: 400;
 	color: #111111;
-	line-height: 40rpx;
+	line-height: 20px;
 }
 
 .card-title--blue {
-	color: #1976d2;
+	color: #0887f7;
 	font-weight: 500;
 }
 
@@ -628,31 +628,35 @@ export default {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	font-size: 22rpx;
+	gap: 2px;
+	font-size: 11px;
 	color: #999999;
-	line-height: 36rpx;
+	line-height: 18px;
+}
+
+.orders-card .card-link {
+	gap: 5px;
 }
 
 .card-link .link-chevron {
-	width: 24rpx;
-	height: 24rpx;
-	margin-left: 4rpx;
+	width: 10px;
+	height: 10px;
 	flex-shrink: 0;
 }
 
 .card-sub {
-	font-size: 22rpx;
+	font-size: 11px;
 	color: #999999;
-	line-height: 32rpx;
-	max-width: 340rpx;
+	line-height: 16px;
+	max-width: 170px;
 	text-align: right;
 }
 
 .orders-grid {
 	display: flex;
 	justify-content: space-between;
-	align-items: flex-start;
-	padding: 4rpx 0 0;
+	align-items: center;
+	padding: 2px 0 0;
 }
 
 .order-item {
@@ -660,71 +664,59 @@ export default {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	gap: 8px;
 	min-width: 0;
 }
 
 .order-icon-wrap {
 	position: relative;
-	width: 48rpx;
-	height: 48rpx;
+	width: 24px;
+	height: 24px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 
 .order-icon-img {
-	filter: brightness(0.48);
-}
-
-.order-badge {
-	position: absolute;
-	right: -6rpx;
-	top: -8rpx;
-	min-width: 30rpx;
-	height: 30rpx;
-	padding: 0 8rpx;
-	box-sizing: border-box;
-	border-radius: 30rpx;
-	background: #ff2741;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.order-badge text {
-	font-size: 20rpx;
-	font-weight: 500;
-	color: #ffffff;
-	line-height: 1;
+	filter: none;
 }
 
 .order-label {
-	margin-top: 16rpx;
-	font-size: 22rpx;
+	font-size: 11px;
 	color: #333333;
-	line-height: 34rpx;
+	line-height: 17px;
 	text-align: center;
 }
 
 .yard-card {
-	height: 218rpx;
-	padding: 10rpx 26rpx 18rpx;
+	display: flex;
+	flex-direction: column;
+	height: 109px;
+	padding: 5px 13px 9px;
+	gap: 10px;
+}
+
+.yard-card .card-header {
+	margin-bottom: 0;
 }
 
 .yard-body {
 	display: flex;
-	align-items: stretch;
+	align-items: center;
+	min-height: 0;
+	gap: 24px;
+	padding: 0 8px;
 }
 
 .yard-left {
 	flex: 1;
 	min-width: 0;
-	padding: 0 16rpx 0 14rpx;
+	padding: 0 8px 0 7px;
 	display: flex;
 	flex-direction: row;
 	align-items: flex-start;
 	justify-content: space-between;
-	gap: 16rpx;
+	gap: 8px;
 }
 
 .yard-line {
@@ -732,113 +724,110 @@ export default {
 	min-width: 0;
 	display: flex;
 	flex-direction: column;
-	gap: 6rpx;
+	align-items: flex-start;
+	gap: 1px;
+	text-align: left;
 }
 
 .yard-line-label {
 	display: block;
-	font-size: 22rpx;
-	color: #666666;
-	line-height: 40rpx;
+	font-size: 11px;
+	color: #333333;
+	line-height: 18px;
 }
 
 .yard-num {
 	display: block;
-	margin-top: 4rpx;
-	font-size: 28rpx;
+	margin-top: 0;
+	font-size: 14px;
 	font-weight: 700;
 	color: #111111;
-	line-height: 48rpx;
+	line-height: 24px;
 }
 
 .yard-line-sub {
-	font-size: 18rpx;
+	font-size: 9px;
 	color: #999999;
-	line-height: 32rpx;
+	line-height: 14px;
 }
 
 .yard-divider {
-	width: 1rpx;
+	width: 1px;
 	background: #e8e8e8;
 	flex-shrink: 0;
-	margin: 0 12rpx;
-	align-self: stretch;
+	align-self: center;
+	height: 100%;
 }
 
 .yard-right {
 	flex-shrink: 0;
-	width: 190rpx;
+	width: 96px;
 	display: flex;
 	flex-direction: column;
+	align-items: center;
 	justify-content: center;
-	gap: 10rpx;
-	padding-left: 4rpx;
+	gap: 10px;
+	padding-left: 2px;
 }
 
 .yard-action {
+	position: relative;
 	display: flex;
 	align-items: center;
-	gap: 8rpx;
+	box-sizing: border-box;
+	gap: 4px;
+}
+
+.yard-action-content {
+	display: flex;
+	align-items: center;
+	gap: 4px;
 }
 
 .yard-icon-img {
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	flex-shrink: 0;
 }
 
 .yard-action-text {
-	flex: 1;
-	font-size: 20rpx;
+	flex: 0 0 auto;
+	font-size: 11px;
 	color: #333333;
-	line-height: 40rpx;
-	min-width: 0;
-}
-
-.yard-badge {
-	min-width: 34rpx;
-	height: 34rpx;
-	padding: 0 10rpx;
-	box-sizing: border-box;
-	border-radius: 34rpx;
-	background: #ff2741;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.yard-badge text {
-	font-size: 22rpx;
-	font-weight: 500;
-	color: #ffffff;
-	line-height: 1;
+	line-height: 18px;
+	white-space: nowrap;
 }
 
 .review-card {
-	height: 292rpx;
-	padding: 12rpx 30rpx 0;
-	position: relative;
-	overflow: visible;
+	min-height: 146px;
+	padding: 6px 15px 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	box-sizing: border-box;
 }
 
 .review-card .card-header {
-	margin-bottom: 22rpx;
+	margin-bottom: 1px;
 }
 
 .review-body {
 	display: flex;
 	align-items: flex-start;
-	gap: 14rpx;
+	gap: 7px;
 	margin-bottom: 0;
 }
 
 .review-text {
-	flex: none;
-	width: 400rpx;
+	flex: 1;
+	width: auto;
 	min-width: 0;
-	font-size: 22rpx;
+	font-size: 11px;
 	color: #333333;
-	line-height: 27rpx;
+	line-height: 13.5px;
 	text-align: justify;
-	max-height: 84rpx;
+	max-height: 42px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	display: -webkit-box;
@@ -852,72 +841,26 @@ export default {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	gap: 12rpx;
+	gap: 6px;
 }
 
 .review-img {
-	width: 110rpx;
-	height: 110rpx;
-	border-radius: 10rpx;
+	width: 55px;
+	height: 55px;
+	border-radius: 5px;
 	background: #f0f0f0;
 }
 
 .poll-wrap {
-	position: absolute;
-	left: 52rpx;
-	right: -32rpx;
-	bottom: -16rpx;
-	height: 92rpx;
+	width: 100%;
+	margin-top: 0;
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
 }
 
-.poll-caption {
-	font-size: 20rpx;
-	color: #555555;
-	line-height: 28rpx;
-	white-space: nowrap;
-	align-self: flex-start;
-	padding-top: 16rpx;
-}
-
-.poll-result {
-	position: relative;
-	width: 112rpx;
-	height: 92rpx;
-	flex-shrink: 0;
-}
-
-.poll-yellow {
-	position: absolute;
-	left: 0;
-	top: 0;
-	width: 128rpx;
-	height: 92rpx;
-	background: #ffe000;
-	clip-path: polygon(18rpx 0, 100% 0, 100% 100%, 0 100%);
-}
-
-.poll-blue {
-	position: absolute;
-	left: 20rpx;
-	top: 0;
-	width: 92rpx;
-	height: 54rpx;
-	border-radius: 27rpx 0 0 27rpx;
-	background: #1687ed;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	box-sizing: border-box;
-}
-
-.poll-blue text {
-	font-size: 22rpx;
-	font-weight: 700;
-	color: #ffffff;
-	line-height: 36rpx;
+.poll-bar {
+	width: 100%;
+	flex: 1 1 auto;
 }
 
 .drawer-shell {
@@ -930,7 +873,7 @@ export default {
 	z-index: 99999;
 	box-sizing: border-box;
 	background: #f7f7f7;
-	box-shadow: 8rpx 0 32rpx rgba(0, 0, 0, 0.12);
+	box-shadow: 4px 0 16px rgba(0, 0, 0, 0.12);
 	display: flex;
 	flex-direction: column;
 	transform: translateX(-102%);
@@ -956,16 +899,16 @@ export default {
 }
 
 .drawer-pad {
-	padding: 0 15px 48rpx;
+	padding: 73px 15px 24px;
 	box-sizing: border-box;
 }
 
 .menu-section {
 	background: #ffffff;
-	border-radius: 24rpx;
-	margin-bottom: 20rpx;
+	border-radius: 12px;
+	margin-bottom: 10px;
 	overflow: hidden;
-	box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+	box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
 }
 
 .menu-row {
@@ -973,8 +916,8 @@ export default {
 	flex-direction: row;
 	align-items: center;
 	justify-content: space-between;
-	padding: 27rpx 16px;
-	border-bottom: 1rpx solid #f0f0f0;
+	padding: 13.5px 16px;
+	border-bottom: 1px solid #f0f0f0;
 	box-sizing: border-box;
 }
 
@@ -985,16 +928,16 @@ export default {
 .menu-row-label {
 	flex: 1;
 	min-width: 0;
-	font-size: 28rpx;
+	font-size: 14px;
 	font-weight: 400;
 	color: #111111;
-	line-height: 42rpx;
+	line-height: 21px;
 }
 
 .menu-row-chevron {
-	width: 22rpx;
-	height: 22rpx;
-	margin-left: 16rpx;
+	width: 11px;
+	height: 11px;
+	margin-left: 8px;
 	flex-shrink: 0;
 	opacity: 0.38;
 }
@@ -1003,13 +946,13 @@ export default {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	padding: 12px 8px 24rpx;
+	padding: 12px 8px 12px;
 	margin-top: 12px;
 }
 
 .settings-icon-wrap {
-	width: 88rpx;
-	height: 88rpx;
+	width: 44px;
+	height: 44px;
 	border-radius: 50%;
 	background: #ebebeb;
 	display: flex;
@@ -1018,106 +961,88 @@ export default {
 }
 
 .settings-text {
-	margin-top: 14rpx;
-	font-size: 24rpx;
+	margin-top: 7px;
+	font-size: 12px;
 	color: #888888;
-	line-height: 34rpx;
-}
-
-.profile-underlay {
-	position: fixed;
-	inset: 0;
-	z-index: 299;
-	padding-top: 44px;
-	background: #fff;
-	box-sizing: border-box
-}
-
-.profile-underlay-nav {
-	height: 44px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	position: relative
-}
-
-.profile-underlay-nav image {
-	position: absolute;
-	left: 16px;
-	width: 10px;
-	height: 18px
-}
-
-.profile-underlay-nav text {
-	font-size: 17px;
-	color: #222
+	line-height: 17px;
 }
 
 .profile-upload-sheet {
 	width: 100%;
-	height: 379px;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
 	box-sizing: border-box;
+	padding: 20px 20px 28px;
+}
+
+.profile-upload-head {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 24px;
+	position: relative;
+}
+
+.profile-upload-avatar {
+	align-self: center;
+	flex: 0 0 auto;
+	margin-top: 24px;
+}
+
+.profile-upload-title {
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 20px;
+	color: #222222;
 }
 
 .profile-upload-skip {
 	position: absolute;
-	right: 18px;
-	top: 28px;
-	font-size: 12px;
-	color: #777;
-}
-
-.profile-upload-avatar {
-	position: absolute;
-	left: 140px;
-	top: 45px;
-	width: 95px;
-	height: 75px;
-	border-radius: 50%;
-	object-fit: cover;
-}
-
-.profile-upload-title {
-	position: absolute;
-	top: 112px;
-	left: 0;
 	right: 0;
-	text-align: center;
-	font-size: 14px;
-	color: #222;
+	font-size: 12px;
+	line-height: 20px;
+	color: #777777;
 }
 
 .profile-upload-copy {
-	position: absolute;
-	top: 166px;
-	left: 0;
-	right: 0;
+	display: block;
+	margin-top: 18px;
 	text-align: center;
 	font-size: 12px;
-	color: #999;
+	line-height: 18px;
+	color: #999999;
 }
 
-.profile-upload-divider {
-	position: absolute;
-	left: 20px;
-	right: 20px;
-	top: 200px;
-	height: 1px;
-	background: #f0f0f0;
+.profile-upload-actions {
+	display: flex;
+	margin-top: auto;
+	gap: 10px;
 }
 
-.profile-upload-btn {
-	position: absolute;
-	left: 28px;
-	right: 28px;
-	bottom: 42px;
-	height: 49px;
-	border-radius: 25px;
+.profile-upload-action {
+	display: flex;
+	flex: 1 1 0;
+	height: 44px;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	border-radius: 22px;
 	background: #ffe600;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 20px;
+	color: #222222;
+}
+
+.profile-upload-action:first-child {
+	background: #f4f4f4;
+	color: #333333;
+}
+
+.profile-upload-action text {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 14px;
-	color: #222;
 }
 </style>

@@ -1,7 +1,10 @@
 <template>
-  <view class="assets-page" :class="['assets-page--' + mode, { 'assets-page--roster': listState === 'mine' }]">
-    <template v-if="mode === 'pets' && listState === 'mine'">
-      <PawPetRoster variant="mine" @back="goBack" @feed-click="openFeedPopup" />
+  <view class="assets-page" data-qa="qa-my-assets-page"
+    :class="['assets-page--' + mode, { 'assets-page--roster': ['mine', 'owned'].includes(listState) }]">
+    <template v-if="mode === 'pets' && (listState === 'mine' || listState === 'owned')">
+      <PawPetRoster :variant="listState === 'mine' ? 'mine' : 'owned'"
+        :data-qa="listState === 'mine' ? 'qa-my-cloud-pets-page' : 'qa-my-pets-page'" @back="goBack"
+        @feed-click="openFeedPopup" />
     </template>
     <template v-else-if="mode === 'pets'">
       <view class="pets-header">
@@ -20,7 +23,7 @@
       <view class="pet-card">
         <view v-for="pet in pets" :key="pet.name + pet.avatar" class="pet-item">
           <image :src="pet.avatar" mode="aspectFill" /><text>{{ pet.name }}</text><text class="pet-breed">{{ pet.breed
-          }}</text>
+            }}</text>
         </view>
         <view class="pet-item" @click="addPet">
           <view class="add-circle"><uni-icons type="plusempty" color="#e5b600" :size="25" /></view><text>去添加</text>
@@ -107,7 +110,7 @@ export default {
       ]
     }
   },
-  onLoad(options) { const m = String(options.mode || 'pets'); this.mode = ['pets', 'medals', 'map', 'new'].includes(m) ? m : 'pets'; this.listState = options.state === 'mine' ? 'mine' : '' },
+  onLoad(options) { const m = String(options.mode || 'pets'); this.mode = ['pets', 'medals', 'map', 'new'].includes(m) ? m : 'pets'; this.listState = ['mine', 'owned'].includes(options.state) ? options.state : '' },
   methods: {
     goBack() { uni.navigateBack({ fail: () => uni.reLaunch({ url: '/pages/me/index' }) }) },
     onPetSearch(value) { this.petKeyword = String(value || '').trim() },

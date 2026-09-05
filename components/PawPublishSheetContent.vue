@@ -22,7 +22,7 @@
         </view>
       </view>
 
-      <view class="publish-option-column" @tap="$emit('create-help')">
+      <view class="publish-option-column" data-qa="qa-publish-create-help" @tap="$emit('create-help')">
         <text class="publish-option-label">发起求助</text>
         <view class="publish-option publish-option--help">
           <view class="publish-option-title-row">

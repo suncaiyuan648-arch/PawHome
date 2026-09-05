@@ -21,7 +21,7 @@
 			<view class="tab-label-wrap">
 				<text>消息</text>
 				<view v-if="messageUnreadCount > 0" class="message"><text>{{ formatUnreadCount(messageUnreadCount)
-				}}</text></view>
+						}}</text></view>
 			</view>
 		</view>
 		<view class="customTabberItem" :class="{ 'active': activeItem === 3 }" @tap="changeTabber(3)"><text>我</text>
@@ -85,7 +85,7 @@ export default {
 		},
 		onPublishHelp() {
 			this.closePublishPanel()
-			uni.navigateTo({ url: '/pages/feature/index?mode=rescue-detail' })
+			uni.navigateTo({ url: '/pages/adoption/adoptApply?state=long&source=rescue' })
 		},
 		changeTabber(index) {
 			const routes = [
