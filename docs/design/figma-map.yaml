@@ -135,9 +135,6 @@ pages:
       evidence_confirm:
         name: "确认领养"
         node_id: "62:35297"
-      evidence_list:
-        name: "证实列表详情"
-        node_id: "62:35393"
       result_claim:
         name: "领养进度-领取结果"
         node_id: "62:36210"
@@ -164,7 +161,6 @@ pages:
         node_id: "62:42949"
       component_nodes:
       adoption_flow_frames: "62:31384–62:33198"
-      proof_form: "62:37451"
       agree_dialog: "62:38705"
       reject_dialog: "62:38731"
       contact_dialog: "62:38803"
@@ -207,13 +203,14 @@ pages:
       rescue_evidence_list:
         name: "证实列表详情"
         node_id: "62:35393"
+        route: "/pages/meMore/rescueProofList"
         query:
           source: "rescue"
       rescue_evidence_form:
         name: "我也来证实"
         node_id: "62:37451"
+        route: "/pages/meMore/rescueProofForm"
         query:
-          mode: "proof"
           source: "rescue"
       rescue_apply:
         name: "救助申请长表单"
@@ -459,6 +456,12 @@ paw_icon_sources:
     export_format: "svg"
     source_frame: "15 × 11"
     local_source: "assets/paw-icons/source/actions/selection-check.svg"
+  actions/copy:
+    node_id: "62:36924"
+    figma_page: "Page 1"
+    export_format: "svg"
+    source_frame: "10 × 10.6335"
+    local_source: "assets/paw-icons/source/actions/copy.svg"
   actions/agreement-check:
     node_id: "62:31380"
     figma_page: "Page 1"
@@ -609,6 +612,12 @@ paw_icon_sources:
     export_format: "svg"
     source_frame: "17 × 17"
     local_source: "assets/paw-icons/source/status/check.svg"
+  status/adoption-rejected:
+    node_id: "62:39293"
+    figma_page: "Page 1"
+    export_format: "svg"
+    source_frame: "24 × 24"
+    local_source: "assets/paw-icons/source/status/adoption-rejected.svg"
   status/success-check:
     node_id: "62:36668"
     figma_page: "Page 1"
@@ -725,10 +734,10 @@ components:
       - "dynamic_detail.comments_empty: different identity name/owner state cannot be overridden while Source Han Sans CN is unavailable to the Figma plugin runtime"
     code_connect: "pending-plan-seat: requires an Organization/Enterprise Dev or Full seat"
   level_capsule:
-    semantic_name: "LevelCapsule"
+    semantic_name: "LevelBadge"
     node_id: "62:42069"
     figma_name: "Group 1321318288"
-    source: "components/LevelCapsule.vue"
+    source: "components/customBadge/LevelBadge.vue"
     adoption_status: "adopted"
     layout_semantics: "fixed 28x13, horizontal center, vertical center"
   feeding_source_row:
@@ -781,10 +790,10 @@ components:
     adoption_status: "adopted"
     layout_semantics: "fixed approximately 4x8px vector"
   yard_type_badge:
-    semantic_name: "YardTypeBadge"
+    semantic_name: "YardBadge"
     node_id: "62:42091"
     figma_name: "Frame 1321318310"
-    source: "components/YardTagPill.vue"
+    source: "components/customBadge/YardBadge.vue"
     adoption_status: "adopted"
     layout_semantics: "fixed 30x16, centered"
   yard_name_verified:
@@ -809,10 +818,10 @@ components:
     adoption_status: "adopted"
     layout_semantics: "horizontal center, gap 3px"
   level_capsule_compact:
-    semantic_name: "LevelCapsule/Compact"
+    semantic_name: "LevelBadge/Compact"
     node_id: "62:41095"
     figma_name: "Group 1321318288"
-    source: "components/LevelCapsule.vue"
+    source: "components/customBadge/LevelBadge.vue"
     adoption_status: "adopted"
     layout_semantics: "fixed 28x13, horizontal center, vertical center"
   feed_author_summary:

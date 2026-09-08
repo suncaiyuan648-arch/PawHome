@@ -1,5 +1,5 @@
 <template>
-  <view class="comment-composer" @tap.stop="onTap">
+  <view class="comment-composer" :class="{ 'comment-composer--fluid': fluid }" @tap.stop="onTap">
     <PawAvatar :src="avatar" :size="34" />
     <view class="comment-composer__field">
       <input v-if="!readonly" class="comment-composer__input" :value="value" :placeholder="placeholder"
@@ -28,6 +28,7 @@ export default {
     avatar: { type: String, default: '/static/user.png' },
     placeholder: { type: String, default: '有话要说，告诉她这条路并不孤单' },
     readonly: { type: Boolean, default: false },
+    fluid: { type: Boolean, default: false },
     value: { type: String, default: '' }
   },
   emits: ['input', 'send', 'voice', 'pick-image', 'click'],
@@ -48,6 +49,10 @@ export default {
   width: 345px;
   height: 34px;
   box-sizing: border-box;
+}
+
+.comment-composer--fluid {
+  width: 100%;
 }
 
 .comment-composer__field {
@@ -95,5 +100,4 @@ export default {
 .comment-composer__hit--voice {
   margin-right: 3px;
 }
-
 </style>

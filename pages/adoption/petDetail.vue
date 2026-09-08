@@ -55,7 +55,7 @@
               <view class="pd-yard-mid">
                 <view class="pd-yard-name-row">
                   <text class="pd-yard-name">{{ yard.name }}</text>
-                  <YardTagPill />
+                  <YardBadge :yard-id="yardId" :yard-name="yard.name" />
                 </view>
               </view>
               <text class="pd-yard-stat">已在小院获得猫粮{{ yard.foodJin }}斤</text>
@@ -83,7 +83,7 @@
               <image src="/static/figma/adoption-flow/pet-owner.png" mode="aspectFill"></image>
               <view>
                 <view class="pd-message-name"><text>姜栋</text>
-                  <LevelCapsule level="1" /><text class="pd-role">小黄的第3任云家长</text>
+                  <LevelBadge level="1" /><text class="pd-role">小黄的第3任云家长</text>
                 </view><text class="pd-message-copy">给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞</text><text
                   class="pd-message-meta">昨天 20:45　江西　回复</text>
               </view>
@@ -119,9 +119,9 @@ import { goBackSmart } from "@/utils/navBack.js";
 import DetailTabber from "@/components/DetailTabber.vue";
 import AdoptEntryHintModal from "@/components/AdoptEntryHintModal.vue";
 import AdoptPickCatsSheet from "@/components/AdoptPickCatsSheet.vue";
-import YardTagPill from "@/components/YardTagPill.vue";
+import YardBadge from "@/components/customBadge/YardBadge.vue";
 import PawPetDetailFigma from "@/components/PawPetDetailFigma.vue";
-import LevelCapsule from "@/components/LevelCapsule.vue";
+import LevelBadge from "@/components/customBadge/LevelBadge.vue";
 import YardFeedPopup from "@/components/YardFeedPopup.vue";
 import ShareActionSheet from "@/components/ShareActionSheet.vue";
 import PawPageNav from "@/components/PawPageNav.vue";
@@ -178,9 +178,9 @@ export default {
   components: {
     DetailTabber,
     AdoptEntryHintModal,
-    YardTagPill,
+    YardBadge,
     PawPetDetailFigma,
-    LevelCapsule,
+    LevelBadge,
     YardFeedPopup,
     ShareActionSheet,
     PawLikeIcon,
@@ -245,7 +245,11 @@ export default {
     if (requestedPetId) {
       try {
         const pi = this.adoptablePets.findIndex((x) => x.id === requestedPetId);
-        if (pi >= 0) this.activeIndex = pi;
+        if (pi >= 0) {
+          this.activeIndex = pi;
+        } else if (!Number.isNaN(requestedIndex) && requestedIndex >= 0) {
+          this.activeIndex = Math.min(requestedIndex, this.adoptablePets.length - 1);
+        }
       } catch (e) {
         /* ignore */
       }
@@ -274,9 +278,10 @@ export default {
         statusLabel: '已云养',
         tags: ['中华田园犬', '男生', '已绝育', '2岁3个月']
       }));
-      const requestedPetIndex = requestedPetId
+      const requestedPetIndexById = requestedPetId
         ? this.adoptablePets.findIndex((pet) => pet.id === requestedPetId)
-        : requestedIndex;
+        : -1;
+      const requestedPetIndex = requestedPetIndexById >= 0 ? requestedPetIndexById : requestedIndex;
       this.activeIndex = requestedPetIndex >= 0 && requestedPetIndex < this.adoptablePets.length
         ? requestedPetIndex
         : 3;

@@ -112,8 +112,9 @@ navCenterY       = capsuleTop + capsuleHeight / 2
 允许的可选参数：
 
 - `content-inset-left`：只调整业务内容的水平起点，必须有页面设计依据。
+- `native-capsule-gap`：业务内容与微信原生胶囊之间的水平安全间距，默认 `8px`；只作用于 `#content` 插槽的右侧避让，不改变原生胶囊几何。
 - `back-hit-width`：只调整返回按钮点击区域，必须有组件/交互依据。
-- `title-centered`：仅当 Figma 标题要求以整屏中心线对齐时使用；不改变 placeholder 或导航几何。
+- `title-centered`：默认 `true`，标题按整屏中心线对齐；仅当 Figma 明确要求标题锚定在返回按钮与原生胶囊避让区之间时传 `:title-centered="false"`。不改变 placeholder 或导航几何。
 - `slot-position`：带 `#content` 时的定位模式，支持 `left`（默认）、`center` 和 `custom`。
 - `slot-style`：仅用于 `slot-position="custom"`，传入 slot 容器的 CSS 定位/尺寸样式；不要用它重绘原生胶囊。
 

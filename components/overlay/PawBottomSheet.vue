@@ -100,6 +100,11 @@ export default {
   border-radius: 0;
 }
 
+.paw-bottom-sheet.paw-bottom-sheet--reward-address {
+  background: #fff;
+  border-radius: 27px 27px 0 0;
+}
+
 .paw-bottom-sheet.paw-bottom-sheet--address-save .paw-bottom-sheet__body {
   display: flex;
   height: 100%;

@@ -176,6 +176,22 @@ export const PAW_ICON_REGISTRY = Object.freeze({
     "sourceLabel": "Figma node 62:43079",
     "src": "/static/paw-icons/color/navigation/clock-disabled.svg"
   },
+  "navigation/clock": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "sourceFrame": {
+      "width": 17,
+      "height": 17
+    },
+    "sourceBounds": null,
+    "recommendedSlot": 20,
+    "slot": 20,
+    "family": null,
+    "figmaNodeId": "62:31433",
+    "sourceLabel": "Figma node 62:31433",
+    "src": "/static/paw-icons/color/navigation/clock.svg"
+  },
   "navigation/expand-arrow": {
     "kind": "color",
     "width": 24,
@@ -575,6 +591,23 @@ export const PAW_ICON_REGISTRY = Object.freeze({
     "figmaNodeId": "62:28222",
     "sourceLabel": "Figma node 62:28222",
     "src": "/static/paw-icons/color/actions/selection-check.svg"
+  },
+  "actions/copy": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "sourceFrame": {
+      "width": 10,
+      "height": 10.6335
+    },
+    "sourceBounds": null,
+    "recommendedSlot": 16,
+    "slot": 12,
+    "family": null,
+    "preserveRects": true,
+    "figmaNodeId": "62:36924",
+    "sourceLabel": "Figma node 62:36924",
+    "src": "/static/paw-icons/color/actions/copy.svg"
   },
   "actions/agreement-check": {
     "kind": "color",
@@ -976,6 +1009,38 @@ export const PAW_ICON_REGISTRY = Object.freeze({
     "sourceLabel": "Figma node 62:32653",
     "src": "/static/paw-icons/color/status/check.svg"
   },
+  "status/rejected": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "sourceFrame": {
+      "width": 17,
+      "height": 17
+    },
+    "sourceBounds": null,
+    "recommendedSlot": 20,
+    "slot": 20,
+    "family": null,
+    "figmaNodeId": "62:32354",
+    "sourceLabel": "Figma nodes 62:32354 + 62:32360 normalized into one frame",
+    "src": "/static/paw-icons/color/status/rejected.svg"
+  },
+  "status/adoption-rejected": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "sourceFrame": {
+      "width": 24,
+      "height": 24
+    },
+    "sourceBounds": null,
+    "recommendedSlot": 28,
+    "slot": 24,
+    "family": null,
+    "figmaNodeId": "62:39293",
+    "sourceLabel": "Figma node 62:39293 (Frame)",
+    "src": "/static/paw-icons/color/status/adoption-rejected.svg"
+  },
   "status/success-check": {
     "kind": "color",
     "width": 24,
@@ -1071,6 +1136,22 @@ export const PAW_ICON_REGISTRY = Object.freeze({
     "figmaNodeId": "62:35695",
     "sourceLabel": "Figma node 62:35695",
     "src": "/static/paw-icons/color/badges/crown-right.svg"
+  },
+  "badges/adoption-reward": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "sourceFrame": {
+      "width": 21.114,
+      "height": 22.1211
+    },
+    "sourceBounds": null,
+    "recommendedSlot": 28,
+    "slot": 24,
+    "family": null,
+    "figmaNodeId": null,
+    "sourceLabel": "Figma adoption flow reward medal",
+    "src": "/static/paw-icons/color/badges/adoption-reward.svg"
   },
   "brand/share-poster": {
     "kind": "color",

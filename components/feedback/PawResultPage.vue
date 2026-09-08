@@ -1,19 +1,23 @@
 <template>
   <view class="paw-result-page">
-    <PawPageNav :title="navTitle" :title-centered="true" background="#ffffff" :fallback-url="fallbackUrl"
-      :auto-back="false" @back="$emit('back')" />
-    <view class="paw-result-page__content" :class="`paw-result-page__content--${status}`" :style="contentStyle">
+    <PawPageNav :title="navTitle" background="#ffffff" :fallback-url="fallbackUrl" :auto-back="false"
+      @back="$emit('back')" />
+    <view class="paw-result-page__content" :class="[
+      `paw-result-page__content--${status}`,
+      { 'paw-result-page__content--failure-brand': status === 'failure' && failureTone === 'brand' }
+    ]" :style="contentStyle">
       <view class="paw-result-page__icon">
         <PawIcon v-if="status !== 'failure'" name="status/check" :size="60" label="成功" />
+        <PawIcon v-else-if="failureIconName" :name="failureIconName" :size="28" label="失败" />
         <uni-icons v-else type="closeempty" color="#666" :size="34" />
       </view>
       <text class="paw-result-page__title">{{ title }}</text>
-      <text v-if="description" class="paw-result-page__description">{{ description }}</text>
+      <text v-if="description" class="paw-result-page__description" :style="descriptionStyle">{{ description }}</text>
     </view>
     <view class="paw-result-page__action-wrap" :style="actionStyle">
       <PawButton class="paw-result-page__action" :class="{ 'paw-result-page__action--failure': status === 'failure' }"
-        :text="actionText" :tone="status === 'failure' ? 'secondary' : 'brand'" :size="actionButtonSize" block flush
-        @click="$emit('action')" />
+        :text="actionText" :tone="status === 'failure' && failureTone !== 'brand' ? 'secondary' : 'brand'"
+        :size="actionButtonSize" block flush @click="$emit('action')" />
     </view>
   </view>
 </template>
@@ -32,9 +36,12 @@ export default {
     contentTop: { type: [Number, String], default: 38 },
     title: { type: String, default: '' },
     description: { type: String, default: '' },
+    descriptionMaxWidth: { type: [Number, String], default: '' },
     actionText: { type: String, default: '' },
     actionWidth: { type: [Number, String], default: 209 },
     actionHeight: { type: [Number, String], default: 45 },
+    failureIconName: { type: String, default: '' },
+    failureTone: { type: String, default: 'muted' },
     fallbackUrl: { type: String, default: '/pages/index/index' }
   },
   emits: ['back', 'action'],
@@ -44,6 +51,10 @@ export default {
     },
     actionButtonSize() {
       return Number(this.actionHeight) >= 48 ? 'result' : 'lg'
+    },
+    descriptionStyle() {
+      const width = Number(this.descriptionMaxWidth)
+      return width > 0 ? { maxWidth: `${width}px` } : {}
     },
     actionStyle() {
       return {
@@ -87,6 +98,10 @@ export default {
 
 .paw-result-page__content--failure .paw-result-page__icon {
   background: #e7e7e7;
+}
+
+.paw-result-page__content--failure-brand .paw-result-page__icon {
+  background: var(--paw-color-brand, #ffe60f);
 }
 
 .paw-result-page__title {

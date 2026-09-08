@@ -62,7 +62,7 @@ function target(index, name) {
     101: ['/pages/auth/realName?popup=real-name', 'real-name-modal'], 102: ['/pages/auth/realName?popup=privacy', 'privacy-modal'],
     103: ['/pages/yard/adoptionAudit?mode=ownerReview&popup=agree', 'agree-modal'], 104: ['/pages/yard/adoptionAudit?mode=ownerConfirm&popup=agree', 'agree-modal'],
     105: ['/pages/yard/adoptionAudit?mode=ownerReview&popup=reject', 'reject-modal'], 106: ['/pages/yard/juryDetail?id=jury-1&popup=vote-real', 'vote-real-result'],
-    107: ['/pages/yard/juryDetail?id=jury-1&popup=vote-fake', 'vote-fake-result'], 108: ['/pages/meMore/adoptionDetail?id=demo-pending&popup=contact', 'contact'],
+    107: ['/pages/yard/juryDetail?id=jury-1&popup=vote-fake', 'vote-fake-result'], 108: ['/pages/meMore/adoptionFlow?id=demo-pending&frame=54&popup=contact', 'contact'],
     109: ['/pages/commodityDetails/index?id=1&state=reply-idle', 'reply-idle'], 110: ['/pages/commodityDetails/index?id=1&state=reply-input', 'reply-input'],
     111: ['/pages/commodityDetails/index?id=1&state=feed-popup', 'feed-popup'], 112: ['/pages/commodityDetails/index?id=1&popup=help-adopt', 'adoption-help'],
     113: ['/pages/commodityDetails/index?id=1&popup=feedback-stat', 'feedback-help'], 114: ['/pages/adoption/extras?mode=quota&popup=insufficient', 'insufficient-modal'],
@@ -84,7 +84,7 @@ function target(index, name) {
     161: ['/pages/messageDetail/index?type=interaction', 'default'], 162: ['/pages/adoption/extras?mode=support', 'default'],
     163: ['/pages/messageDetail/index?type=activity', 'default'], 164: ['/pages/adoption/extras?mode=quota', 'default'],
     165: ['/pages/adoption/extras?mode=quota-detail', 'default'], 166: ['/pages/yard/yardCats?state=roster', 'yard'],
-    167: ['/pages/meMore/myAssets?mode=pets&state=mine', 'mine-list'], 168: ['/pages/yard/yardCats?state=status', 'alternate'],
+    167: ['/pages/meMore/myCloudPets', 'mine-list'], 168: ['/pages/yard/yardCats?state=status', 'alternate'],
     169: ['/pages/meMore/myAssets?mode=pets', 'default'], 170: ['/pages/meMore/myAssets?mode=medals', 'default'],
     171: ['/pages/meMore/myAssets?mode=map', 'default'], 172: ['/pages/meMore/myAssets?mode=new', 'default']
   }

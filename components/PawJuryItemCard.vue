@@ -8,7 +8,7 @@
         <view class="paw-jury-item-card__identity-copy">
           <view class="paw-jury-item-card__name-row">
             <text class="paw-jury-item-card__name">{{ applicantName }}</text>
-            <LevelCapsule v-if="applicantLevel" :level="applicantLevel" />
+            <LevelBadge v-if="applicantLevel" :level="applicantLevel" />
           </view>
           <text v-if="createdAtText" class="paw-jury-item-card__date">{{ createdAtText }}</text>
         </view>
@@ -56,7 +56,7 @@
 
 <script>
 import PawAvatar from '@/components/identity/PawAvatar.vue'
-import LevelCapsule from '@/components/LevelCapsule.vue'
+import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import PawStatusPill from '@/components/PawStatusPill.vue'
 import PawVoteRatioBar from '@/components/PawVoteRatioBar.vue'
 import { safeImgSrc } from '@/utils/safeImgSrc.js'
@@ -71,7 +71,7 @@ function clampPercent(value, fallback) {
 
 export default {
   name: 'PawJuryItemCard',
-  components: { PawAvatar, LevelCapsule, PawStatusPill, PawVoteRatioBar },
+  components: { PawAvatar, LevelBadge, PawStatusPill, PawVoteRatioBar },
   props: {
     item: { type: Object, default: () => ({}) },
     evidenceSize: { type: [Number, String], default: 112 },

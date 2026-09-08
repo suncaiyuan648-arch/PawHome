@@ -45,6 +45,7 @@ function iconMetadata(name, sourceViewBox) {
     recommendedSlot,
     slot: finalSlot,
     family,
+    ...(configured.preserveRects === true ? { preserveRects: true } : {}),
     figmaNodeId: configured.figmaNodeId || null,
     sourceLabel: configured.sourceLabel || null
   }

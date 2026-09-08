@@ -7,7 +7,7 @@
         <text class="paw-user-identity__name" @tap.stop="onNameClick">{{ name }}</text>
         <view v-if="level !== null && level !== undefined" class="paw-user-identity__badge-hit"
           @tap.stop="onMembershipClick">
-          <LevelCapsule :level="level" />
+          <LevelBadge :level="level" />
         </view>
         <view v-if="owner" class="paw-user-identity__badge-hit" @tap.stop="onBadgeClick">
           <PawOwnerBadge />
@@ -26,11 +26,11 @@
 import PawAvatar from '@/components/identity/PawAvatar.vue'
 import PawOwnerBadge from '@/components/identity/PawOwnerBadge.vue'
 import PawVerifiedBadge from '@/components/identity/PawVerifiedBadge.vue'
-import LevelCapsule from '@/components/LevelCapsule.vue'
+import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 
 export default {
   name: 'PawUserIdentity',
-  components: { PawAvatar, PawOwnerBadge, PawVerifiedBadge, LevelCapsule },
+  components: { PawAvatar, PawOwnerBadge, PawVerifiedBadge, LevelBadge },
   props: {
     avatar: { type: String, default: '' },
     name: { type: String, default: '' },
@@ -118,8 +118,7 @@ export default {
 }
 
 .paw-user-identity__name-row :deep(.paw-owner-badge),
-.paw-user-identity__name-row :deep(.paw-verified-badge),
-.paw-user-identity__name-row :deep(.level-capsule) {
+.paw-user-identity__name-row :deep(.paw-verified-badge) {
   flex-shrink: 0;
 }
 

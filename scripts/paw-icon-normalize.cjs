@@ -39,7 +39,7 @@ function rootParts(source) {
   return root
 }
 
-function stripFigmaExportChrome(source) {
+function stripFigmaExportChrome(source, preserveRects = false) {
   // Figma's SVG export keeps the selected node's ancestor backgrounds and
   // clip-path rectangles. They are part of the exported frame preview, not
   // part of the icon artwork, and would otherwise become opaque pixels in
@@ -51,10 +51,10 @@ function stripFigmaExportChrome(source) {
     .replace(/\sclip-path\s*=\s*["'][^"']*["']/gi, '')
     .replace(/<filter\b[^>]*>[\s\S]*?<\/filter>/gi, '')
     .replace(/\sfilter\s*=\s*["'][^"']*["']/gi, '')
-    .replace(/<rect\b[^>]*\/?>(?:<\/rect>)?/gi, '')
+    .replace(preserveRects ? /$^/ : /<rect\b[^>]*\/?>(?:<\/rect>)?/gi, '')
 }
 
-function normalizeSvg(source, sourceViewBox, optical = {}, slot = DESIGN_CANVAS) {
+function normalizeSvg(source, sourceViewBox, optical = {}, slot = DESIGN_CANVAS, metadata = {}) {
   const [, originalOpening, content, closing] = rootParts(source)
   const scale = DESIGN_CANVAS / Number(slot)
   const translateX = (DESIGN_CANVAS - sourceViewBox.width * scale) / 2 - sourceViewBox.x * scale
@@ -70,7 +70,7 @@ function normalizeSvg(source, sourceViewBox, optical = {}, slot = DESIGN_CANVAS)
     // Only normalize root SVG attributes. Nested frame/clip dimensions are
     // part of the Figma glyph and must remain intact.
     .replace(/\s(width|height|style|overflow|preserveAspectRatio)\s*=\s*["'][^"']*["']/gi, '')
-  const cleanedContent = stripFigmaExportChrome(content)
+  const cleanedContent = stripFigmaExportChrome(content, metadata.preserveRects === true)
   const sourceContent = scale === 1 && translateX === 0 && translateY === 0
     ? cleanedContent
     : `<g transform="${sourceMatrix}">${cleanedContent}</g>`
@@ -80,11 +80,11 @@ function normalizeSvg(source, sourceViewBox, optical = {}, slot = DESIGN_CANVAS)
   return `${opening}${opticalContent}${closing}`
 }
 
-async function normalizeAndFitSvg(source, sourceViewBox, optical, slot) {
+async function normalizeAndFitSvg(source, sourceViewBox, optical, slot, metadata = {}) {
   // Kept as a compatibility name for the existing build scripts. V3 must not
   // fit against painted bounds: the exported Figma frame is the optical
   // coordinate system, and its complete frame is mapped to the selected slot.
-  return normalizeSvg(source, sourceViewBox, optical, slot)
+  return normalizeSvg(source, sourceViewBox, optical, slot, metadata)
 }
 
 module.exports = {

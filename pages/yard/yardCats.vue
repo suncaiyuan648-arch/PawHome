@@ -7,7 +7,7 @@
 		<!-- #endif -->
 		<view v-if="pageState === 'roster' || pageState === 'status' || pageState === 'managed'" class="roster-wrap">
 			<PawPetRoster :variant="pageState === 'managed' || pageState === 'status' ? 'status' : 'yard'"
-				:managed="pageState === 'managed'" :yard-name="yardName" :yard-avatar="yard.avatar"
+				:managed="pageState === 'managed'" :yard-id="yardId" :yard-name="yardName" :yard-avatar="yard.avatar"
 				:owner-paw-id="ownerPawId" @back="goBack" @add-pet="onAdd" @pet-click="openPetDetail"
 				@owner-click="openPetOwner" @feed-click="openFeedPopup" />
 		</view>
@@ -90,7 +90,7 @@
 					<image class="pop-foot-avatar" :src="selectedCat.avatar" mode="aspectFill" />
 					<view class="pop-foot-mid">
 						<text class="pop-foot-yard" @click.stop="openYardOwner">{{ yardName }}</text>
-						<YardTagPill @click.stop="openYardDetailPage" />
+						<YardBadge :yard-id="yardId" :yard-name="yardName" />
 					</view>
 					<text class="pop-foot-stat">已在小院获得猫粮{{ selectedCat.foodJin }}斤</text>
 				</view>
@@ -144,8 +144,8 @@
 
 <script>
 import { goBackSmart } from '@/utils/navBack.js'
-import { openUserProfile, openYardDetail } from '@/utils/profileNav.js'
-import YardTagPill from '@/components/YardTagPill.vue'
+import { openUserProfile } from '@/utils/profileNav.js'
+import YardBadge from '@/components/customBadge/YardBadge.vue'
 import PawPetRoster from '@/components/PawPetRoster.vue'
 import PawSearchBar from '@/components/navigation/PawSearchBar.vue'
 import PawSelectionSheet from '@/components/overlay/PawSelectionSheet.vue'
@@ -153,7 +153,7 @@ import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import YardFeedPopup from '@/components/YardFeedPopup.vue'
 import { getPawHomeYardMock } from '@/utils/yardMock.js'
 export default {
-	components: { YardTagPill, PawPetRoster, PawSearchBar, PawSelectionSheet, PawBottomSheet, YardFeedPopup },
+	components: { YardBadge, PawPetRoster, PawSearchBar, PawSelectionSheet, PawBottomSheet, YardFeedPopup },
 	data() {
 		const yard = getPawHomeYardMock()
 		return {
@@ -273,9 +273,6 @@ export default {
 				nickname: this.yardName,
 				avatar: this.yard.owner.avatar
 			})
-		},
-		openYardDetailPage() {
-			openYardDetail({ yardId: this.yardId || '1', yardName: this.yardName })
 		},
 		onAdd() {
 			this.addPetKind = 'cat'

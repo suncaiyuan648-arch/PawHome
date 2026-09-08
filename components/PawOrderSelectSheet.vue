@@ -28,7 +28,7 @@
 							<view class="order-top">
 								<view class="order-identity" @tap.stop="emitOrderUser(order)">
 									<text class="order-name">{{ order.userName }}</text>
-									<LevelCapsule :level="order.level" />
+									<LevelBadge :level="order.level" />
 								</view>
 								<text v-if="order.timedOut" class="order-timeout">已超时</text>
 								<text v-else class="order-countdown">{{ order.countdown }}</text>
@@ -36,7 +36,7 @@
 							<text class="order-amount">投粮{{ order.kg }}斤</text>
 							<view class="order-bottom">
 								<text class="order-time">{{ order.time }}</text>
-								<view class="order-feedback"><text>{{ order.feedbackTag }}</text></view>
+								<PawFeedingFeedbackTag :text="order.feedbackTag" tone="progress" />
 							</view>
 						</view>
 					</view>
@@ -48,13 +48,14 @@
 
 <script>
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
-import LevelCapsule from '@/components/LevelCapsule.vue'
+import PawFeedingFeedbackTag from '@/components/feeding/PawFeedingFeedbackTag.vue'
+import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 
 const FIGMA_ORDER_AVATAR = '/static/figma/publish/order-avatar.png'
 
 export default {
 	name: 'PawOrderSelectSheet',
-	components: { PawBottomSheet, LevelCapsule },
+	components: { PawBottomSheet, PawFeedingFeedbackTag, LevelBadge },
 	props: {
 		modelValue: { type: Boolean, default: false },
 		orders: { type: Array, default: () => [] },
@@ -254,10 +255,6 @@ export default {
 	overflow: hidden;
 }
 
-.order-identity :deep(.level-capsule) {
-	flex: 0 0 28px;
-}
-
 .order-timeout,
 .order-countdown {
 	flex: 0 0 auto;
@@ -281,20 +278,6 @@ export default {
 	font-size: 12px;
 	line-height: 16px;
 	color: #999;
-	white-space: nowrap;
-}
-
-.order-feedback {
-	flex: 0 0 auto;
-	padding: 2px 5px;
-	background: rgba(245, 245, 245, .85);
-	box-sizing: border-box;
-}
-
-.order-feedback text {
-	font-size: 12px;
-	line-height: 15px;
-	color: #384d7b;
 	white-space: nowrap;
 }
 </style>

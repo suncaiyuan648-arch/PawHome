@@ -9,14 +9,14 @@
       <view v-else-if="comment.replyTo" class="comment-item__copy comment-item__copy--reply">
         <view class="comment-item__reply-prefix"><text>回复</text><text class="comment-item__reply-target">{{
           comment.replyTo.name }}</text>
-          <LevelCapsule :level="comment.replyTo.level || 1" :inline="true" /><text>：</text>
+          <LevelBadge :level="comment.replyTo.level || 1" :inline="true" /><text>：</text>
         </view><text class="comment-item__reply-body" @tap.stop="onReplyTap(comment)">{{ comment.copy || comment.text
           }}</text>
       </view>
       <text v-else class="comment-item__copy" @tap.stop="onReplyTap(comment)">{{ comment.copy || comment.text }}</text>
       <view class="comment-item__meta">
-        <view class="comment-item__meta-left"><text>{{ comment.meta }}</text><text class="comment-item__reply"
-            @tap.stop="$emit('reply', comment)">回复</text></view>
+        <view class="comment-item__meta-left"><text>{{ comment.meta }}</text><text v-if="!readonly"
+            class="comment-item__reply" @tap.stop="$emit('reply', comment)">回复</text></view>
         <view class="comment-item__like" @tap.stop="$emit('like', comment)">
           <PawLikeIcon :liked="comment.liked" /><text>{{ comment.likes ||
             0 }}</text>
@@ -33,14 +33,14 @@
             <view v-else-if="child.replyTo" class="comment-item__copy comment-item__copy--reply">
               <view class="comment-item__reply-prefix"><text>回复</text><text class="comment-item__reply-target">{{
                 child.replyTo.name }}</text>
-                <LevelCapsule :level="child.replyTo.level || 1" :inline="true" /><text>：</text>
+                <LevelBadge :level="child.replyTo.level || 1" :inline="true" /><text>：</text>
               </view><text class="comment-item__reply-body" @tap.stop="onReplyTap(child)">{{ child.copy || child.text
                 }}</text>
             </view>
             <text v-else class="comment-item__copy" @tap.stop="onReplyTap(child)">{{ child.copy || child.text }}</text>
             <view class="comment-item__meta">
-              <view class="comment-item__meta-left"><text>{{ child.meta }}</text><text class="comment-item__reply"
-                  @tap.stop="$emit('reply', child)">回复</text></view>
+              <view class="comment-item__meta-left"><text>{{ child.meta }}</text><text v-if="!readonly"
+                  class="comment-item__reply" @tap.stop="$emit('reply', child)">回复</text></view>
               <view class="comment-item__like" @tap.stop="$emit('like', child)">
                 <PawLikeIcon :liked="child.liked" /><text>{{ child.likes
                   || 0 }}</text>
@@ -61,15 +61,16 @@
 <script>
 import PawUserIdentity from '@/components/identity/PawUserIdentity.vue'
 import VoiceComment from '@/components/dynamic/VoiceComment.vue'
-import LevelCapsule from '@/components/LevelCapsule.vue'
+import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import PawLikeIcon from '@/components/base/PawLikeIcon.vue'
 import PawDivider from '@/components/base/PawDivider.vue'
 
 export default {
   name: 'CommentItem',
-  components: { PawUserIdentity, VoiceComment, LevelCapsule, PawLikeIcon, PawDivider },
+  components: { PawUserIdentity, VoiceComment, LevelBadge, PawLikeIcon, PawDivider },
   props: {
     comment: { type: Object, default: () => ({}) },
+    readonly: { type: Boolean, default: false },
     playing: { type: Boolean, default: false },
     replyPreviewCount: { type: Number, default: 1 }
   },
@@ -85,7 +86,9 @@ export default {
   methods: {
     onUserAvatarClick(comment) { this.$emit('user-click', comment) },
     onUserNameClick(comment) { this.$emit('user-click', comment) },
-    onReplyTap(comment) { this.$emit('reply', comment) },
+    onReplyTap(comment) {
+      if (!this.readonly) this.$emit('reply', comment)
+    },
     onMembershipClick() { },
     onBadgeClick() { },
     toggleReplies() {
@@ -185,12 +188,6 @@ export default {
   align-items: center;
   gap: 4px;
   vertical-align: middle;
-}
-
-.comment-item__reply-prefix :deep(.level-capsule),
-.comment-item__reply-prefix :deep(.level-capsule__inline) {
-  display: inline-flex;
-  margin: 0;
 }
 
 .comment-item__reply-body {

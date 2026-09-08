@@ -2,7 +2,7 @@
 	<view class="page">
 		<view class="hero-backdrop" aria-hidden="true"></view>
 		<view class="hero">
-			<PawPageNav background="transparent" :auto-back="false" @back="goBack" />
+			<PawPageNav background="#fcf276" :auto-back="false" @back="goBack" />
 			<view class="avatar-card" @click="onPickAvatar">
 				<image v-if="avatarUrl" class="avatar-img" :src="avatarUrl" mode="aspectFill"></image>
 				<template v-else>
@@ -21,7 +21,7 @@
 							<text class="req">*</text>
 						</view>
 						<text class="f-val">{{ form.status }}</text>
-						<PawIcon class="f-arrow" name="navigation/chevron-right" :size="8" />
+						<PawIcon class="f-arrow" name="navigation/form-chevron" :size="12" />
 					</view>
 					<view class="f-row">
 						<view class="f-label">
@@ -31,7 +31,7 @@
 						<input class="f-input" type="text" :value="form.name" placeholder="填写名字" placeholder-class="ph"
 							@input="onNameInput" />
 						<view v-if="form.name" class="f-clear" @click.stop="form.name = ''">
-							<PawIcon name="navigation/clear" :size="16" label="清除" />
+							<PawIcon name="navigation/form-clear" :size="16" label="清除" />
 						</view>
 					</view>
 					<view class="f-row f-row--tap" @click="openSheet('value')">
@@ -40,7 +40,7 @@
 							<text class="req">*</text>
 						</view>
 						<text class="f-val">{{ petValue }}</text>
-						<PawIcon class="f-arrow" name="navigation/chevron-right" :size="8" />
+						<PawIcon class="f-arrow" name="navigation/form-chevron" :size="12" />
 					</view>
 
 					<template v-if="expandMore">
@@ -48,41 +48,42 @@
 							<view class="f-label"><text>{{ formLabel }}性格</text></view>
 							<text class="f-val" :class="{ 'f-ph': !form.personality }">{{ form.personality || '亲人'
 							}}</text>
-							<PawIcon class="f-arrow" name="navigation/chevron-right" :size="8" />
+							<PawIcon class="f-arrow" name="navigation/form-chevron" :size="12" />
 						</view>
 						<view class="f-row f-row--tap" @click="openBreedPicker">
 							<view class="f-label"><text>{{ formLabel }}品种</text></view>
 							<text class="f-val">{{ form.breed }}</text>
-							<PawIcon class="f-arrow" name="navigation/chevron-right" :size="8" />
+							<PawIcon class="f-arrow" name="navigation/form-chevron" :size="12" />
 						</view>
 						<view class="f-row f-row--tap" @click="openSheet('gender')">
 							<view class="f-label"><text>{{ formLabel }}性别</text></view>
 							<text class="f-val">{{ form.gender }}</text>
-							<PawIcon class="f-arrow" name="navigation/chevron-right" :size="8" />
+							<PawIcon class="f-arrow" name="navigation/form-chevron" :size="12" />
 						</view>
 						<picker mode="date" :value="birthValue" @change="onBirthChange">
 							<view class="f-row f-row--tap">
 								<view class="f-label"><text>{{ formLabel }}生日</text></view>
 								<text class="f-val">{{ birthDisplay }}</text>
-								<PawIcon class="f-arrow" name="navigation/chevron-right" :size="8" />
+								<PawIcon class="f-arrow" name="navigation/form-chevron" :size="12" />
 							</view>
 						</picker>
 						<view class="f-row f-row--tap" @click="openSheet('neuter')">
 							<view class="f-label"><text>绝育</text></view>
 							<text class="f-val">{{ form.neuter }}</text>
-							<PawIcon class="f-arrow" name="navigation/chevron-right" :size="8" />
+							<PawIcon class="f-arrow" name="navigation/form-chevron" :size="12" />
 						</view>
 						<view class="f-row f-row--tap" @click="openSheet('vaccine')">
 							<view class="f-label"><text>疫苗</text></view>
 							<text class="f-val">{{ form.vaccine }}</text>
-							<PawIcon class="f-arrow" name="navigation/chevron-right" :size="8" />
+							<PawIcon class="f-arrow" name="navigation/form-chevron" :size="12" />
 						</view>
 					</template>
 
 					<view class="expand-bar" @click="expandMore = !expandMore">
-						<text class="expand-txt">补充更多</text>
-						<PawIcon class="expand-arrow" :class="{ 'expand-arrow--open': expandMore }"
-							name="navigation/expand-arrow" :size="12" />
+						<text class="expand-txt">{{ expandMore ? '收起更多' : '补充更多' }}</text>
+						<view class="expand-arrow">
+							<PawIcon name="navigation/expand-arrow" :size="12" :rotate="expandMore ? 180 : 0" />
+						</view>
 					</view>
 				</view>
 
@@ -104,9 +105,9 @@
 
 		<!-- 价值使用页面专属刻度，其余选项统一走选择 Sheet -->
 		<PawSelectionSheet v-model="selectionSheetVisible" title="" :items="sheetOptions" :value="currentSheetValue"
-			variant="form-selection" :show-close="true" @select="onPickOption" />
+			variant="form-selection" :show-close="true" :safe-area="false" height="385px" @select="onPickOption" />
 		<PawBottomSheet v-model="valueSheetVisible" variant="value-selection" height="497px" :close-on-mask="true"
-			:safe-area="true">
+			:safe-area="true" @after-open="onValueSheetOpen">
 			<view class="value-sheet">
 				<view class="value-close" @click.stop="closeSheet">
 					<PawIcon class="value-close-icon" name="navigation/value-close" :size="26" label="关闭" />
@@ -115,8 +116,27 @@
 				<view class="scale-value"><text class="scale-yen">￥</text><text class="scale-number">{{ petValue
 				}}</text>
 				</view>
-				<view class="scale-ruler-area">
-					<image class="scale-ruler" src="/static/figma/pet-value-ruler.png" mode="aspectFit" />
+				<view class="scale-ruler-area" @touchstart.stop="onScaleTouchStart"
+					@touchmove.stop.prevent="onScaleTouchMove" @touchend.stop="onScaleTouchEnd"
+					@touchcancel.stop="onScaleTouchEnd">
+					<view class="scale-ruler-viewport">
+						<view class="scale-ruler-track" :class="{ 'is-dragging': rulerDragging }"
+							:style="rulerTrackStyle">
+							<view class="scale-ruler-line" aria-hidden="true"></view>
+							<view v-for="tick in rulerTicks" :key="tick.value" class="scale-ruler-tick"
+								:class="{ 'scale-ruler-tick--major': tick.major }"
+								:style="{ left: `${tick.position}%` }">
+								<view class="scale-ruler-tick-mark" aria-hidden="true"></view>
+								<text v-if="tick.major" class="scale-ruler-tick-label">{{ tick.value }}</text>
+							</view>
+						</view>
+						<view class="scale-ruler-pointer" :style="rulerPointerStyle" aria-hidden="true">
+							<view class="scale-ruler-pointer-head"></view>
+							<view class="scale-ruler-pointer-stem"></view>
+						</view>
+						<view class="scale-ruler-fade scale-ruler-fade--left" aria-hidden="true"></view>
+						<view class="scale-ruler-fade scale-ruler-fade--right" aria-hidden="true"></view>
+					</view>
 				</view>
 				<text class="scale-hint">用于设置用户申请领养时所需的领养额度</text>
 				<text
@@ -164,7 +184,15 @@ export default {
 			mediaList: [],
 			sheetKind: '',
 			petValue: 15,
-			personalityValue: 50
+			personalityValue: 50,
+			rulerValue: 15,
+			rulerWidth: 309,
+			rulerHeight: 66,
+			rulerViewportWidth: 375,
+			rulerPointerWidth: 22,
+			rulerDragging: false,
+			rulerDragStartX: 0,
+			rulerDragStartValue: 15
 		}
 	},
 	computed: {
@@ -217,6 +245,29 @@ export default {
 			set(value) {
 				if (!value) this.closeSheet()
 			}
+		},
+		rulerTicks() {
+			return Array.from({ length: 31 }, (_, value) => ({
+				value,
+				major: value % 5 === 0,
+				position: (value / 30) * 100
+			}))
+		},
+		rulerTrackStyle() {
+			return {
+				width: `${this.rulerWidth}px`,
+				height: `${this.rulerHeight}px`,
+				transform: `translate3d(${this.rulerTranslate}px, -50%, 0)`
+			}
+		},
+		rulerPointerStyle() {
+			return {
+				width: `${this.rulerPointerWidth}px`,
+				height: `${this.rulerHeight}px`
+			}
+		},
+		rulerTranslate() {
+			return this.rulerViewportWidth / 2 - (this.rulerValue / 30) * this.rulerWidth
 		}
 	},
 	onLoad(query) {
@@ -272,8 +323,13 @@ export default {
 		},
 		openSheet(kind) {
 			this.sheetKind = kind
+			if (kind === 'value') this.rulerValue = this.petValue
 		},
 		closeSheet() {
+			if (this.sheetKind === 'value') {
+				this.petValue = Math.round(this.rulerValue)
+				this.rulerValue = this.petValue
+			}
 			this.sheetKind = ''
 		},
 		isOptionSelected(opt) {
@@ -295,9 +351,51 @@ export default {
 			this.closeSheet()
 		},
 		onScaleChange(e) {
-			const value = Number(e.detail.value || 0)
-			if (this.sheetKind === 'value') this.petValue = value
-			else this.personalityValue = value
+			const value = Math.min(30, Math.max(0, Number(e.detail.value || 0)))
+			if (this.sheetKind === 'value') {
+				this.rulerValue = value
+				this.petValue = Math.round(value)
+			} else this.personalityValue = value
+		},
+		onValueSheetOpen() {
+			this.$nextTick(() => {
+				uni.createSelectorQuery().in(this)
+					.select('.scale-ruler-viewport').boundingClientRect()
+					.exec((rects = []) => {
+						const viewport = rects[0]
+						if (!viewport || !viewport.width) return
+						this.rulerViewportWidth = viewport.width
+						this.rulerWidth = Math.min(309, Math.max(240, viewport.width - 66))
+					})
+			})
+		},
+		touchX(e) {
+			const touch = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0])
+			if (!touch) return null
+			const x = touch.clientX !== undefined ? touch.clientX : touch.pageX
+			return typeof x === 'number' ? x : null
+		},
+		onScaleTouchStart(e) {
+			const x = this.touchX(e)
+			if (x === null) return
+			this.rulerDragging = true
+			this.rulerDragStartX = x
+			this.rulerDragStartValue = this.rulerValue
+		},
+		onScaleTouchMove(e) {
+			if (!this.rulerDragging) return
+			const x = this.touchX(e)
+			if (x === null || !this.rulerWidth) return
+			const delta = x - this.rulerDragStartX
+			const next = this.rulerDragStartValue - (delta / this.rulerWidth) * 30
+			this.rulerValue = Math.min(30, Math.max(0, next))
+			this.petValue = Math.round(this.rulerValue)
+		},
+		onScaleTouchEnd() {
+			if (!this.rulerDragging) return
+			this.rulerDragging = false
+			this.petValue = Math.round(this.rulerValue)
+			this.rulerValue = this.petValue
 		},
 		onPickAvatar() {
 			uni.chooseImage({
@@ -336,6 +434,8 @@ export default {
 <style scoped>
 .page {
 	min-height: 100vh;
+	height: 100vh;
+	overflow: hidden;
 	display: flex;
 	flex-direction: column;
 	position: relative;
@@ -357,55 +457,56 @@ export default {
 	position: relative;
 	z-index: 1;
 	background: transparent;
-	padding-bottom: 28rpx;
+	padding-bottom: 14px;
 	flex-shrink: 0;
 }
 
 .avatar-card {
-	width: 188rpx;
-	height: 188rpx;
-	margin: 16rpx auto 0;
+	width: 94px;
+	height: 94px;
+	margin: 8px auto 0;
 	background: #fff;
-	border-radius: 24rpx;
+	border-radius: 12px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .avatar-img {
 	width: 100%;
 	height: 100%;
-	border-radius: 24rpx;
+	border-radius: 12px;
 }
 
 .avatar-tip {
-	margin-top: 8rpx;
-	font-size: 24rpx;
+	margin-top: 4px;
+	font-size: 12px;
 	color: #b6b6b8;
-	line-height: 34rpx;
+	line-height: 17px;
 }
 
 .scroll {
 	flex: 1;
 	height: 0;
+	min-height: 0;
 	width: 100%;
 	position: relative;
 	z-index: 1;
 }
 
 .scroll-pad {
-	padding: 6rpx 24rpx 24rpx;
-	padding-bottom: calc(24rpx + 59px + env(safe-area-inset-bottom));
+	padding: 3px 12px 12px;
+	padding-bottom: calc(12px + 59px + env(safe-area-inset-bottom));
 	box-sizing: border-box;
 }
 
 .card {
 	background: #fff;
-	border-radius: 16rpx;
+	border-radius: 8px;
 	overflow: hidden;
-	margin-bottom: 24rpx;
+	margin-bottom: 12px;
 }
 
 .fields-card {
@@ -416,10 +517,11 @@ export default {
 .f-row {
 	display: flex;
 	align-items: center;
-	height: 58px;
 	min-height: 58px;
-	padding: 0;
+	height: auto;
+	padding: 18px 0;
 	box-sizing: border-box;
+	border-bottom: 0.5px solid #f6f8fa;
 }
 
 .fields-card .f-row {
@@ -434,30 +536,30 @@ export default {
 	display: flex;
 	align-items: center;
 	flex-shrink: 0;
-	margin-right: 16rpx;
+	margin-right: 8px;
 }
 
 .f-label text:first-child {
-	font-size: 30rpx;
+	font-size: 15px;
 	font-weight: 500;
 	color: #222;
-	line-height: 42rpx;
+	line-height: 21px;
 }
 
 .req {
 	color: #ff4d4f;
-	font-size: 28rpx;
-	margin-left: 4rpx;
-	line-height: 42rpx;
+	font-size: 14px;
+	margin-left: 2px;
+	line-height: 21px;
 }
 
 .f-val {
 	flex: 1;
 	text-align: right;
-	font-size: 30rpx;
+	font-size: 15px;
 	color: #555;
-	line-height: 42rpx;
-	margin-right: 8rpx;
+	line-height: 21px;
+	margin-right: 4px;
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -471,16 +573,16 @@ export default {
 .f-input {
 	flex: 1;
 	text-align: right;
-	font-size: 30rpx;
+	font-size: 15px;
 	color: #333;
-	line-height: 42rpx;
-	margin-right: 8rpx;
+	line-height: 21px;
+	margin-right: 4px;
 	min-width: 0;
 }
 
 .ph {
 	color: #c8c8c8;
-	font-size: 28rpx;
+	font-size: 14px;
 }
 
 .f-clear {
@@ -502,9 +604,11 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	height: 35px;
+	min-height: 35px;
+	height: auto;
 	column-gap: 0;
-	padding: 0;
+	padding: 9px 0 8px;
+	box-sizing: border-box;
 }
 
 .expand-txt {
@@ -514,33 +618,36 @@ export default {
 }
 
 .expand-arrow {
-	display: block;
+	display: flex;
+	align-items: center;
 	margin-left: 3px;
-	transform: rotate(-90deg);
-}
-
-.expand-arrow--open {
-	transform: rotate(90deg);
 }
 
 .card-desc {
+	display: flex;
+	flex-direction: column;
 	padding: 10px 9px 12px;
-	height: 202px;
+	min-height: 202px;
 	box-sizing: border-box;
 }
 
 .ta-wrap {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
 	position: relative;
-	padding-bottom: 40rpx;
-	min-height: 200rpx;
+	padding-bottom: 20px;
+	min-height: 0;
 }
 
 .ta {
+	flex: 1;
 	width: 100%;
-	min-height: 180rpx;
-	font-size: 28rpx;
+	min-height: 140px;
+	height: auto;
+	font-size: 14px;
 	color: #333;
-	line-height: 44rpx;
+	line-height: 22px;
 	box-sizing: border-box;
 }
 
@@ -548,23 +655,25 @@ export default {
 	position: absolute;
 	right: 0;
 	bottom: 0;
-	font-size: 24rpx;
+	font-size: 12px;
 	color: #b0b0b0;
-	line-height: 34rpx;
+	line-height: 17px;
 }
 
 .media-row {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 16rpx;
-	margin-top: 8rpx;
+	gap: 8px;
+	margin-top: 4px;
 }
 
 .media-cell {
 	position: relative;
-	width: 160rpx;
-	height: 160rpx;
-	border-radius: 16rpx;
+	flex: 0 0 80px;
+	width: auto;
+	height: auto;
+	aspect-ratio: 1;
+	border-radius: 8px;
 	overflow: hidden;
 	background: #f2f2f2;
 }
@@ -576,10 +685,10 @@ export default {
 
 .media-del {
 	position: absolute;
-	top: 6rpx;
-	right: 6rpx;
-	width: 36rpx;
-	height: 36rpx;
+	top: 3px;
+	right: 3px;
+	width: 18px;
+	height: 18px;
 	border-radius: 50%;
 	background: rgba(255, 59, 48, 0.95);
 	display: flex;
@@ -589,17 +698,19 @@ export default {
 
 .media-del text {
 	color: #fff;
-	font-size: 24rpx;
+	font-size: 12px;
 	line-height: 1;
 	font-weight: 500;
 }
 
 .media-add {
-	width: 160rpx;
-	height: 160rpx;
-	border-radius: 16rpx;
+	flex: 0 0 80px;
+	width: auto;
+	height: auto;
+	aspect-ratio: 1;
+	border-radius: 8px;
 	background: #f5f5f5;
-	border: 1rpx dashed #ddd;
+	border: 0.5px dashed #ddd;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -608,12 +719,12 @@ export default {
 }
 
 .media-add-txt {
-	margin-top: 8rpx;
-	font-size: 22rpx;
+	margin-top: 4px;
+	font-size: 11px;
 	color: #aaa;
-	line-height: 30rpx;
+	line-height: 15px;
 	text-align: center;
-	padding: 0 8rpx;
+	padding: 0 4px;
 }
 
 .footer {
@@ -702,15 +813,122 @@ export default {
 	align-items: center;
 	justify-content: center;
 	width: 100%;
-	height: 82px;
+	min-height: 82px;
+	height: auto;
 	margin-top: 14px;
 	background: #f2f2f2;
 }
 
-.scale-ruler {
-	display: block;
-	width: 309px;
+.scale-ruler-viewport {
+	position: relative;
+	width: 100%;
 	height: 66px;
+	overflow: hidden;
+	touch-action: none;
+}
+
+.scale-ruler-track {
+	position: absolute;
+	left: 0;
+	top: 50%;
+	will-change: transform;
+}
+
+.scale-ruler-track.is-dragging {
+	transition: none;
+}
+
+.scale-ruler-line {
+	position: absolute;
+	top: 31px;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background: #e5e5e5;
+}
+
+.scale-ruler-tick {
+	position: absolute;
+	top: 0;
+	width: 1px;
+	height: 66px;
+	transform: translateX(-50%);
+}
+
+.scale-ruler-tick-mark {
+	position: absolute;
+	top: 27px;
+	left: 0;
+	width: 1px;
+	height: 9px;
+	background: #e0e0e0;
+}
+
+.scale-ruler-tick--major .scale-ruler-tick-mark {
+	top: 20px;
+	height: 22px;
+	width: 2px;
+	background: #dcdcdc;
+}
+
+.scale-ruler-tick-label {
+	position: absolute;
+	top: 47px;
+	left: 50%;
+	transform: translateX(-50%);
+	font-size: 14px;
+	line-height: 17px;
+	color: #999;
+	white-space: nowrap;
+}
+
+.scale-ruler-pointer {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	z-index: 2;
+	overflow: hidden;
+	transform: translate(-50%, -50%);
+	pointer-events: none;
+}
+
+.scale-ruler-pointer-head {
+	position: absolute;
+	top: 0;
+	left: 1px;
+	width: 0;
+	height: 0;
+	border-left: 10px solid transparent;
+	border-right: 10px solid transparent;
+	border-bottom: 11px solid #ff4e2e;
+}
+
+.scale-ruler-pointer-stem {
+	position: absolute;
+	top: 10px;
+	left: 8px;
+	width: 6px;
+	height: 56px;
+	background: #ff4e2e;
+}
+
+.scale-ruler-fade {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	z-index: 3;
+	width: 42px;
+	pointer-events: none;
+}
+
+.scale-ruler-fade--left {
+	left: 0;
+	background: linear-gradient(to right, #f2f2f2 0%, rgba(242, 242, 242, 0.86) 38%, rgba(242, 242, 242, 0) 100%);
+}
+
+.scale-ruler-fade--right {
+	right: 0;
+	background: linear-gradient(to left, #f2f2f2 0%, rgba(242, 242, 242, 0.86) 38%, rgba(242, 242, 242, 0) 100%);
 }
 
 .scale-hint {
@@ -724,7 +942,8 @@ export default {
 
 .scale-copy {
 	display: block;
-	width: 313px;
+	width: calc(100% - 32px);
+	max-width: 313px;
 	margin-top: 9px;
 	text-align: center;
 	font-size: 12px;

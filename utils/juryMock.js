@@ -6,6 +6,8 @@
  */
 
 import { getPawHomeYardPetById, getPawHomeYardPets } from '@/utils/yardMock.js'
+import { getAdoptionRecords } from '@/utils/adoptionStorage.js'
+import { getRescueRecords } from '@/utils/rescueStorage.js'
 
 export const JURY_VOTE_VALUES = Object.freeze({
 	real: 'real',
@@ -452,9 +454,65 @@ const GENERATED_JURY_ITEMS = [
 export const JURY_MOCK_ITEMS = deepFreeze([...RAW_JURY_ITEMS, ...GENERATED_JURY_ITEMS]
 	.map((item) => normalizeJuryItem(item)))
 
+function getLocalAdoptionJuryItems() {
+	try {
+		return getAdoptionRecords({ includeDemo: false })
+			.filter((record) => record.status === 'jury_confirm_pending' || record.status === 'jury_confirm')
+			.map((record) => ({
+				id: `adoption-review-${record.id}`,
+				reviewType: 'adoption',
+				applicationId: record.id,
+				recordId: record.id,
+				workflowStatus: 'open',
+				applicant: { id: record.applicantId, name: record.applicantName, avatar: record.applicantAvatar },
+				owner: { id: record.ownerPawId, name: record.ownerName, avatar: record.ownerAvatar, level: 1, yardId: record.yardId, yardName: record.yardName },
+				yardId: record.yardId,
+				yardName: record.yardName,
+				pets: record.pets,
+				applyText: record.applyText,
+				application: { id: record.id, text: record.applyText, media: (record.mediaPaths || []).map((src, index) => ({ id: `${record.id}-apply-${index}`, src })) },
+				evidence: (record.proofPhotos || []).map((src, index) => ({ id: `${record.id}-proof-${index}`, src }))
+			}))
+	} catch (error) {
+		return []
+	}
+}
+
+function getLocalRescueJuryItems() {
+	try {
+		return getRescueRecords({ includeDemo: false })
+			.filter((record) => record.applicationStatus === 'platform_pending')
+			.map((record) => ({
+				id: `rescue-review-${record.id}`,
+				reviewType: 'rescue',
+				applicationId: record.id,
+				recordId: record.id,
+				workflowStatus: 'open',
+				applicant: { id: record.applicant && record.applicant.id, name: record.applicantName, avatar: record.ownerAvatar },
+				owner: { id: record.ownerPawId, name: record.ownerName, avatar: record.ownerAvatar, level: record.ownerLevel, yardId: record.yardId, yardName: record.yardName },
+				yardId: record.yardId,
+				yardName: record.yardName,
+				pets: record.animals,
+				applyText: record.description || record.applyText,
+				application: { id: record.id, text: record.description || record.applyText, media: (record.mediaPaths || []).map((src, index) => ({ id: `${record.id}-apply-${index}`, src })) },
+				evidence: (record.mediaPaths || []).map((src, index) => ({ id: `${record.id}-evidence-${index}`, src })),
+				reward: { label: `求助金额 ¥${record.amount || 0}` }
+			}))
+	} catch (error) {
+		return []
+	}
+}
+
 export function getJuryMockItems(options = {}) {
 	const votes = options && options.votes && typeof options.votes === 'object' ? options.votes : {}
-	return JURY_MOCK_ITEMS.map((item) => normalizeJuryItem(item, votes[item.id]))
+	const items = [
+		...JURY_MOCK_ITEMS,
+		...getLocalAdoptionJuryItems().map((item) => normalizeJuryItem(item)),
+		...getLocalRescueJuryItems().map((item) => normalizeJuryItem(item))
+	]
+	const unique = new Map()
+	items.forEach((item) => { if (item && !unique.has(item.id)) unique.set(item.id, item) })
+	return Array.from(unique.values()).map((item) => normalizeJuryItem(item, votes[item.id]))
 }
 
 export function getJuryMockItemById(id, options = {}) {

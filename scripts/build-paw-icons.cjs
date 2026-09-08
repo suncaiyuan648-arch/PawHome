@@ -94,7 +94,7 @@ async function build() {
     const sourceViewBox = readViewBox(source, sourcePath)
     const metadata = readV3Metadata(name, sourceViewBox, sourcePath)
     const optical = readOpticalMetadata(name, sourcePath)
-    const normalized = await normalizeAndFitSvg(source, sourceViewBox, optical, metadata.slot)
+    const normalized = await normalizeAndFitSvg(source, sourceViewBox, optical, metadata.slot, metadata)
     if (kind === 'mono') {
       if (!/currentColor/i.test(source)) fail(`mono icon must use currentColor: ${sourcePath}`)
       const template = encodeURIComponent(normalized.replace(/currentColor/g, '__PAW_ICON_COLOR__'))

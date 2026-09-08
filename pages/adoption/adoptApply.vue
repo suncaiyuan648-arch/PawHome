@@ -28,7 +28,8 @@
 				</view>
 
 				<PawAdoptionPetsCard :title="longMode ? '申请救助的动物' : '申请领养的猫咪'" :pets="pets" :yard-name="yardName"
-					:yard-avatar="yardAvatar" :min-height="longMode ? 201 : 296" :margin-bottom="longMode ? 10 : 12"
+					:yard-id="yardId" :yard-avatar="yardAvatar" :min-height="longMode ? 201 : 296"
+					:margin-bottom="longMode ? 10 : 12"
 					:qa-prefix="rescueMode ? 'qa-rescue-apply-pet-' : 'qa-adoption-apply-pet-'" @add="addMoreCats"
 					@pet-click="openPetDetail" @yard-click="openYardDetailPage" />
 				<view v-if="longMode" class="help-form-card">
@@ -87,11 +88,10 @@ import { goBackSmart } from '@/utils/navBack.js'
 import { openYardDetail } from '@/utils/profileNav.js'
 import {
 	getAdoptionPick,
-	addAdoption,
 	setLastAdoptionId,
 	clearAdoptionPick
 } from '@/utils/adoptionStorage.js'
-import { createRescue } from '@/utils/rescueStorage.js'
+import { createApplication } from '@/utils/applicationMockApi.js'
 import AdoptPickCatsSheet from '@/components/AdoptPickCatsSheet.vue'
 import PawAdoptionPetsCard from '@/components/PawAdoptionPetsCard.vue'
 import PawPageNav from '@/components/PawPageNav.vue'
@@ -316,9 +316,10 @@ export default {
 					uni.showToast({ title: '请选择求助金额', icon: 'none' })
 					return
 				}
-				const rescue = createRescue({
+				const rescueResult = createApplication('rescue', {
 					status: 'pending',
 					statusText: '待投票',
+					applicationStatus: 'platform_pending',
 					applicant: {
 						id: this.ownerPawId,
 						name: '马冬梅',
@@ -340,21 +341,24 @@ export default {
 					applyText: t,
 					createdAt: Date.now(),
 				})
+				const rescue = rescueResult.success ? rescueResult.data : null
 				if (!rescue || !rescue.id) {
 					uni.showToast({ title: '救助申请保存失败，请重试', icon: 'none' })
 					return
 				}
 				clearAdoptionPick()
 				uni.redirectTo({
-					url: '/pages/yard/rescueReview?rescueId=' + encodeURIComponent(rescue.id),
+					url: '/pages/adoption/adoptApplySuccess?type=rescue&rescueId=' + encodeURIComponent(rescue.id),
 				})
 				return
 			}
-			const draftId = 'ad-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8)
+			const cloudPet = this.pets.find((pet) => pet && (pet.cloudFed || pet.isCloudFed || pet.managed === true))
 			const rec = {
-				id: draftId,
-				recordId: draftId,
-				status: 'pending',
+				status: this.pets.some((pet) => pet && (pet.cloudFed || pet.isCloudFed || pet.managed === true))
+					? 'cloud_pending'
+					: 'pending',
+				cloudParentRequired: this.pets.some((pet) => pet && (pet.cloudFed || pet.isCloudFed || pet.managed === true)),
+				cloudParentPawId: cloudPet && (cloudPet.cloudParentPawId || cloudPet.cloudParentId || cloudPet.ownerPawId) || '',
 				applyText: t,
 				mediaPaths: [...this.mediaPaths],
 				pets: this.pets.map((p, index) => ({
@@ -372,7 +376,8 @@ export default {
 				applicantName: '逢猫',
 				createdAt: Date.now()
 			}
-			const saved = addAdoption(rec)
+			const adoptionResult = createApplication('adoption', rec)
+			const saved = adoptionResult.success ? adoptionResult.data : null
 			if (!saved || !saved.id) {
 				uni.showToast({ title: '申请保存失败，请重试', icon: 'none' })
 				return

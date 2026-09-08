@@ -27,7 +27,7 @@
 					<view class="podium-card-inner" @click.stop="openLbUser(topThree[1])">
 						<view class="podium-name-row">
 							<text class="podium-name">{{ topThree[1].name }}</text>
-							<LevelCapsule :level="topThree[1].lv" />
+							<LevelBadge :level="topThree[1].lv" />
 						</view>
 						<text class="podium-weight">{{ topThree[1].weight }}斤</text>
 						<text class="podium-city">{{ topThree[1].city }}</text>
@@ -47,7 +47,7 @@
 					<view class="podium-card-inner" @click.stop="openLbUser(topThree[0])">
 						<view class="podium-name-row">
 							<text class="podium-name">{{ topThree[0].name }}</text>
-							<LevelCapsule :level="topThree[0].lv" />
+							<LevelBadge :level="topThree[0].lv" />
 						</view>
 						<text class="podium-weight">{{ topThree[0].weight }}斤</text>
 						<text class="podium-city">{{ topThree[0].city }}</text>
@@ -70,7 +70,7 @@
 					<view class="podium-card-inner" @click.stop="openLbUser(topThree[2])">
 						<view class="podium-name-row">
 							<text class="podium-name">{{ topThree[2].name }}</text>
-							<LevelCapsule :level="topThree[2].lv" />
+							<LevelBadge :level="topThree[2].lv" />
 						</view>
 						<text class="podium-weight">{{ topThree[2].weight }}斤</text>
 						<text class="podium-city">{{ topThree[2].city }}</text>
@@ -87,7 +87,7 @@
 						<view class="list-main-line">
 							<view class="list-name-with-lv" @click.stop="openLbUser(row)">
 								<text class="list-name">{{ row.name }}</text>
-								<LevelCapsule :level="row.lv" />
+								<LevelBadge :level="row.lv" />
 							</view>
 							<view class="list-metrics">
 								<text class="list-weight">{{ row.weight }}斤</text>
@@ -105,7 +105,7 @@
 				@click.stop="openLbUser(selfRow)"></image>
 			<view class="footer-mid" @click.stop="openLbUser(selfRow)">
 				<text class="footer-name">{{ selfRow.name }}</text>
-				<LevelCapsule :level="selfRow.lv" />
+				<LevelBadge :level="selfRow.lv" />
 			</view>
 			<view class="footer-cols">
 				<view class="footer-col">
@@ -128,7 +128,7 @@
 <script>
 import { openUserProfile } from '@/utils/profileNav.js'
 import { goBackSmart } from '@/utils/navBack.js'
-import LevelCapsule from '@/components/LevelCapsule.vue'
+import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
@@ -228,7 +228,7 @@ const TAB_BOARD = {
 }
 
 export default {
-	components: { LevelCapsule, PawPageNav, PawIcon },
+	components: { LevelBadge, PawPageNav, PawIcon },
 	data() {
 		const initial = cloneBoard(TAB_BOARD.day_feed)
 		return {
@@ -565,10 +565,6 @@ export default {
 	color: #333;
 }
 
-.podium-name-row .lv-cap {
-	flex-shrink: 0;
-}
-
 .podium-weight {
 	margin-top: 1px;
 	font-size: 18px;
@@ -684,10 +680,6 @@ export default {
 	color: #202221;
 }
 
-.list-name-with-lv .lv-cap {
-	flex-shrink: 0;
-}
-
 /* 与左侧昵称区拉开一段距离；斤与城市之间再留空 */
 .list-metrics {
 	position: absolute;
@@ -748,10 +740,6 @@ export default {
 	align-items: center;
 	gap: 4px;
 	margin: 0;
-}
-
-.footer-mid .lv-cap {
-	flex-shrink: 0;
 }
 
 .footer-name {

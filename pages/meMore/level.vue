@@ -1,77 +1,61 @@
 <template>
 	<view class="level-page">
-		<!-- #ifndef MP-WEIXIN -->
-		<image class="level-top-reference" src="/static/figma/level-top.png" mode="scaleToFill"></image>
-		<!-- #endif -->
-		<view class="nav-wrap" :style="{ paddingTop: statusBarHeight + 'px' }">
-			<view class="nav-row">
-				<view class="nav-side nav-left" @click.stop="goBack">
-					<image class="nav-back-icon" src="/static/nav-back-arrow.png" mode="aspectFit"></image>
-				</view>
-				<view class="nav-side nav-right" :style="{ width: menuRightWidth + 'px' }"></view>
-			</view>
-		</view>
+		<PawPageNav background="linear-gradient(180deg, #fffcdc 0%, #ffffff 100%)" fallback-url="/pages/me/index" />
 
-		<view class="main-body">
-			<view class="scroll-inner">
-				<view class="user-row">
-					<view class="user-avatar">
-						<text class="user-avatar-txt">逢猫</text>
-					</view>
+		<scroll-view class="level-scroll" scroll-y :show-scrollbar="false" :enable-flex="true">
+			<view class="level-content">
+				<view class="user-row" data-qa="qa-level-user">
+					<image class="level-avatar" src="/static/figma/level-avatar.png" mode="aspectFit" />
 					<text class="user-name">{{ nickname }}</text>
 				</view>
 
-				<view class="level-card">
-					<text class="level-main">{{ levelMainText }}</text>
+				<view class="level-card" data-qa="qa-level-card">
+					<view class="level-main" aria-label="当前等级">
+						<text class="level-prefix">LV.</text>
+						<text class="level-number">{{ userLevel }}</text>
+					</view>
 					<text class="level-title">{{ levelTitle }}</text>
+
 					<view class="progress-block">
-						<view class="progress-top-row">
-							<text class="progress-lv-tip">{{ isMax ? 'MAX' : 'LV.' + userLevel }}</text>
-						</view>
+						<text class="progress-label" :class="{ 'progress-label--max': isMax }">{{ isMax ? 'MAX' : 'LV.'
+							+ userLevel }}</text>
 						<view class="progress-track">
 							<view class="progress-fill" :style="{ width: progressPercent + '%' }"></view>
 						</view>
-						<text v-if="!isMax" class="progress-nums">{{ progressNumText }}</text>
+						<text v-if="!isMax" class="progress-numbers">{{ progressNumText }}</text>
 					</view>
 				</view>
 
-				<view class="stats-row">
-					<view class="stat-col">
-						<text class="stat-val">{{ formatComma(stats.grainJin) }}斤</text>
-						<text class="stat-lab">累计投粮</text>
-					</view>
-					<view class="stat-col">
-						<text class="stat-val">{{ formatComma(stats.feedCatJin) }}天</text>
-						<text class="stat-lab">累计喂猫</text>
-					</view>
-					<view class="stat-col">
-						<text class="stat-val">{{ stats.daysOnPlatform }}天</text>
-						<text class="stat-lab">来到逢猫</text>
+				<view class="stats-row" data-qa="qa-level-stats">
+					<view v-for="stat in statItems" :key="stat.label" class="stat-col">
+						<text class="stat-value">{{ stat.value }}</text>
+						<text class="stat-label">{{ stat.label }}</text>
 					</view>
 				</view>
 
-				<view class="menu-card">
-					<view v-for="(row, i) in menuRows" :key="i" class="menu-row"
-						:class="{ 'menu-row--last': i === menuRows.length - 1 }" @click="onMenu(row)">
-						<text class="menu-txt">{{ row.label }}</text>
-						<image class="menu-chevron" src="/static/me/link-chevron.png" mode="aspectFit"></image>
+				<view class="menu-card" data-qa="qa-level-menu">
+					<view v-for="(row, index) in menuRows" :key="row.key" class="menu-row"
+						:data-qa="'qa-level-' + row.key"
+						:class="{ 'menu-row--first': index === 0, 'menu-row--last': index === menuRows.length - 1 }"
+						@tap.stop="onMenu(row)">
+						<text class="menu-text">{{ row.label }}</text>
+						<image class="menu-chevron" src="/static/me/link-chevron.png" mode="aspectFit"
+							aria-hidden="true" />
 					</view>
 				</view>
 			</view>
-		</view>
+		</scroll-view>
 	</view>
 </template>
 
 <script>
-import { goBackSmart } from '@/utils/navBack.js'
+import PawPageNav from '@/components/PawPageNav.vue'
 import { getMemberLevelTitle } from '@/utils/memberLevel.js'
 
-
 export default {
+	components: { PawPageNav },
 	data() {
 		return {
-			statusBarHeight: 20,
-			menuRightWidth: 87,
 			nickname: '亮亮',
 			maxLevel: 8,
 			userLevel: 8,
@@ -93,26 +77,26 @@ export default {
 		isMax() {
 			return this.userLevel >= this.maxLevel
 		},
-		levelMainText() {
-			return 'LV.' + this.userLevel
-		},
 		levelTitle() {
 			return getMemberLevelTitle(this.userLevel, this.maxLevel)
 		},
 		progressPercent() {
 			if (this.isMax) return 100
 			if (!this.progressTargetJin) return 0
-			return Math.min(
-				100,
-				Math.round((this.progressCurrentJin / this.progressTargetJin) * 1000) / 10
-			)
+			return Math.min(100, Math.round((this.progressCurrentJin / this.progressTargetJin) * 1000) / 10)
 		},
 		progressNumText() {
 			return this.progressCurrentJin + '斤/' + this.progressTargetJin + '斤'
+		},
+		statItems() {
+			return [
+				{ value: this.formatComma(this.stats.grainJin) + '斤', label: '累计投粮' },
+				{ value: this.formatComma(this.stats.feedCatJin) + '天', label: '累计云养' },
+				{ value: this.stats.daysOnPlatform + '天', label: '来到逢猫' }
+			]
 		}
 	},
 	onLoad(query) {
-		this.layoutScroll()
 		if (query && String(query.variant) === '64') {
 			this.userLevel = 7
 			this.stats = { grainJin: 20001, feedCatJin: 432, daysOnPlatform: 734 }
@@ -123,50 +107,26 @@ export default {
 		}
 		if (query && (query.max === '1' || query.max === 'true')) {
 			this.userLevel = this.maxLevel
-			this.stats = {
-				grainJin: 30001,
-				feedCatJin: 432,
-				daysOnPlatform: 734
-			}
+			this.stats = { grainJin: 30001, feedCatJin: 432, daysOnPlatform: 734 }
 		}
 		if (query && query.nickname) {
 			this.nickname = decodeURIComponent(query.nickname)
 		}
 	},
-	onShow() {
-		this.layoutScroll()
-	},
 	methods: {
-		layoutScroll() {
-			const sys = uni.getSystemInfoSync()
-			this.statusBarHeight = sys.statusBarHeight || 20
-			// #ifdef MP-WEIXIN
-			try {
-				const mb = uni.getMenuButtonBoundingClientRect()
-				if (mb && mb.left) {
-					this.menuRightWidth = Math.max(sys.windowWidth - mb.left, 87)
-				}
-			} catch (e) { }
-			// #endif
-		},
-		goBack() {
-			goBackSmart({ fallbackUrl: '/pages/me/index' })
-		},
-		formatComma(n) {
-			const s = String(Math.round(Number(n) || 0))
-			return s.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+		formatComma(value) {
+			const text = String(Math.round(Number(value) || 0))
+			return text.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 		},
 		onMenu(row) {
-			if (row.key === 'rules') {
-				uni.navigateTo({ url: '/pages/meMore/levelRules' })
-				return
+			const routes = {
+				annual: '/pages/meMore/annualReport',
+				helped: '/pages/meMore/helpedAnimals',
+				rules: '/pages/meMore/levelRules'
 			}
-			if (row.key === 'annual') {
-				uni.navigateTo({ url: '/pages/meMore/annualReport' })
-				return
-			}
-			if (row.key === 'helped') {
-				uni.navigateTo({ url: '/pages/meMore/helpedAnimals' })
+			const url = routes[row.key]
+			if (url) {
+				uni.navigateTo({ url })
 				return
 			}
 			uni.showToast({ title: row.label, icon: 'none' })
@@ -177,244 +137,228 @@ export default {
 
 <style scoped>
 .level-page {
-	position: relative;
-	min-height: 100vh;
-	background: linear-gradient(180deg, #fff8e8 0%, #f3f4f6 42%, #f3f4f6 100%);
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+	min-height: 0;
 	box-sizing: border-box;
-	padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+	background: linear-gradient(180deg, #fffcdc 0%, #ffffff 43.577%, #f5f5f5 70.813%, #f5f5f5 100%);
 }
 
-.level-top-reference {
-	position: absolute;
-	left: 0;
-	top: 0;
+.level-scroll {
+	flex: 1 1 auto;
+	height: 0;
+	min-height: 0;
 	width: 100%;
-	height: 100px;
-	z-index: 20;
-	pointer-events: none;
+	box-sizing: border-box;
 }
 
-.nav-wrap {
-	flex-shrink: 0;
+.level-content {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	box-sizing: border-box;
+	min-height: 100%;
+	padding: 3px 0 48px;
 	background: transparent;
-}
-
-.nav-row {
-	position: relative;
-	height: 44px;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 0 8rpx;
-	box-sizing: border-box;
-}
-
-.nav-side {
-	flex-shrink: 0;
-	display: flex;
-	align-items: center;
-	min-width: 80rpx;
-}
-
-.nav-left {
-	padding: 8rpx 24rpx 8rpx 16rpx;
-	margin-left: 4rpx;
-	min-width: 72rpx;
-	min-height: 72rpx;
-	justify-content: center;
-}
-
-.nav-back-icon {
-	width: 40rpx;
-	height: 40rpx;
-	display: block;
-}
-
-.main-body {
-	width: 100%;
-	box-sizing: border-box;
-}
-
-.scroll-inner {
-	padding: 76rpx 30rpx 48rpx;
-	box-sizing: border-box;
 }
 
 .user-row {
 	display: flex;
-	flex-direction: row;
+	flex: 0 0 auto;
 	align-items: center;
-	margin-bottom: 40rpx;
-	padding-left: 38rpx;
+	height: 55px;
+	padding-left: 32px;
+	box-sizing: border-box;
 }
 
-.user-avatar {
-	width: 108rpx;
-	height: 108rpx;
-	border-radius: 50%;
-	background: #ffe60f;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
-}
-
-.user-avatar-txt {
-	font-size: 26rpx;
-	font-weight: 700;
-	color: #111111;
+.level-avatar {
+	display: block;
+	flex: 0 0 auto;
+	width: 55px;
+	height: 55px;
 }
 
 .user-name {
-	margin-left: 20rpx;
-	font-size: 34rpx;
+	margin-left: 7px;
+	color: #333333;
+	font-size: 20px;
 	font-weight: 700;
-	color: #111111;
-	line-height: 48rpx;
+	line-height: 28px;
+	white-space: nowrap;
 }
 
 .level-card {
-	margin-left: 12rpx;
-	margin-right: 12rpx;
-	border-radius: 28rpx;
-	padding: 30rpx 50rpx 12rpx;
+	display: flex;
+	flex: 0 0 auto;
+	flex-direction: column;
 	box-sizing: border-box;
-	background: linear-gradient(180deg, #ffe20a 0%, #ffe20a 58%, #fffdf0 100%);
-	box-shadow: 0 8rpx 32rpx rgba(200, 170, 60, 0.2);
+	width: calc(100% - 43px);
+	height: 163px;
+	margin: 19px auto 0;
+	padding: 6px 24px 0;
+	border-radius: 20px;
+	background: linear-gradient(180deg, #ffe60f 0%, #ffe60f 53.108%, #ffffff 100%);
+	overflow: hidden;
 }
 
 .level-main {
-	display: block;
-	font-size: 64rpx;
+	display: flex;
+	flex: 0 0 auto;
+	align-items: baseline;
+	height: 48px;
+	color: #6b4a22;
 	font-weight: 700;
-	color: #5d4037;
-	line-height: 1.05;
-	letter-spacing: 2rpx;
+	line-height: 48px;
+}
+
+.level-prefix {
+	font-size: 32px;
+}
+
+.level-number {
+	font-size: 40px;
 }
 
 .level-title {
 	display: block;
-	margin-top: 32rpx;
-	font-size: 40rpx;
-	font-weight: 500;
-	color: #6d5344;
-	line-height: 40rpx;
+	flex: 0 0 auto;
+	margin-top: 10px;
+	color: #6b4a22;
+	font-size: 20px;
+	font-weight: 700;
+	line-height: 28px;
+	white-space: nowrap;
 }
 
 .progress-block {
-	margin-top: 36rpx;
-	width: 276rpx;
-}
-
-.progress-top-row {
 	display: flex;
-	flex-direction: row;
-	align-items: center;
-	justify-content: flex-start;
-	margin-bottom: 10rpx;
-	min-height: 36rpx;
+	flex: 0 0 auto;
+	flex-direction: column;
+	align-items: stretch;
+	width: 139px;
+	margin-top: 15px;
+	color: #6b4a22;
 }
 
-.progress-lv-tip {
-	font-size: 24rpx;
-	font-weight: 500;
-	color: #5d4037;
-	line-height: 34rpx;
+.progress-label {
+	display: block;
+	width: 100%;
+	height: 12px;
+	font-size: 10px;
+	font-weight: 700;
+	line-height: 12px;
+	text-align: left;
+}
+
+.progress-label--max {
+	text-align: right;
 }
 
 .progress-track {
-	height: 12rpx;
-	border-radius: 999rpx;
-	background: rgba(255, 255, 255, 0.85);
+	display: flex;
+	flex: 0 0 auto;
+	width: 139px;
+	height: 3px;
+	margin-top: 2px;
+	border-radius: 5px;
+	background: rgba(255, 255, 255, 0.88);
 	overflow: hidden;
 }
 
 .progress-fill {
 	height: 100%;
-	border-radius: 999rpx;
-	background: linear-gradient(90deg, #d4a012 0%, #c48f0a 100%);
 	max-width: 100%;
+	border-radius: 5px;
+	background: #fbc800;
 }
 
-.progress-nums {
+.progress-numbers {
 	display: block;
-	margin-top: 14rpx;
-	font-size: 24rpx;
-	color: #6d5344;
-	line-height: 34rpx;
+	align-self: flex-start;
+	margin-top: 2px;
+	font-size: 10px;
+	font-weight: 400;
+	line-height: 12px;
+	white-space: nowrap;
 }
 
 .stats-row {
 	display: flex;
-	flex-direction: row;
+	flex: 0 0 auto;
 	align-items: flex-start;
 	justify-content: space-between;
-	margin-top: 64rpx;
-	padding: 0 8rpx;
+	width: calc(100% - 74px);
+	margin: 28px auto 0;
 	box-sizing: border-box;
 }
 
 .stat-col {
-	flex: 1;
 	display: flex;
+	flex: 0 0 67px;
 	flex-direction: column;
 	align-items: center;
+	width: 67px;
 	text-align: center;
 }
 
-.stat-val {
-	font-size: 50rpx;
+.stat-value {
+	display: block;
+	color: #6b4a22;
+	font-size: 24px;
+	font-weight: 700;
+	line-height: 29px;
+	white-space: nowrap;
+}
+
+.stat-label {
+	display: block;
+	margin-top: 9px;
+	color: #979797;
+	font-size: 15px;
 	font-weight: 500;
-	color: #6d5344;
-	line-height: 42rpx;
-}
-
-.stat-col:nth-child(2) .stat-val,
-.stat-col:last-child .stat-val {
-	width: 100rpx;
-}
-
-.stat-lab {
-	margin-top: 8rpx;
-	font-size: 22rpx;
-	color: #9e9e9e;
-	line-height: 32rpx;
+	line-height: 20px;
+	white-space: nowrap;
 }
 
 .menu-card {
-	margin-top: 334rpx;
-	margin-left: 8rpx;
-	margin-right: 8rpx;
+	display: flex;
+	flex: 0 0 auto;
+	flex-direction: column;
+	width: calc(100% - 36px);
+	height: 183px;
+	margin: 169px auto 0;
+	border-radius: 15px;
 	background: #ffffff;
-	border-radius: 20rpx;
 	overflow: hidden;
-	box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
 }
 
 .menu-row {
 	display: flex;
-	flex-direction: row;
+	flex: 0 0 61px;
 	align-items: center;
 	justify-content: space-between;
-	padding: 40rpx 28rpx;
+	width: 100%;
+	height: 61px;
+	padding: 0 15px;
 	box-sizing: border-box;
-	border-bottom: 1rpx solid #f0f0f0;
+	background: #ffffff;
 }
 
-.menu-row--last {
-	border-bottom: none;
-}
-
-.menu-txt {
-	font-size: 28rpx;
+.menu-text {
+	flex: 1 1 auto;
+	min-width: 0;
 	color: #999999;
-	line-height: 40rpx;
+	font-size: 14px;
+	font-weight: 400;
+	line-height: 20px;
 }
 
 .menu-chevron {
-	width: 24rpx;
-	height: 24rpx;
-	flex-shrink: 0;
-	opacity: 0.45;
+	display: block;
+	flex: 0 0 auto;
+	width: 7px;
+	height: 11px;
+	margin-left: 16px;
 }
 </style>

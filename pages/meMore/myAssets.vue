@@ -1,92 +1,106 @@
 <template>
   <view class="assets-page" data-qa="qa-my-assets-page"
-    :class="['assets-page--' + mode, { 'assets-page--roster': ['mine', 'owned'].includes(listState) }]">
-    <template v-if="mode === 'pets' && (listState === 'mine' || listState === 'owned')">
-      <PawPetRoster :variant="listState === 'mine' ? 'mine' : 'owned'"
-        :data-qa="listState === 'mine' ? 'qa-my-cloud-pets-page' : 'qa-my-pets-page'" @back="goBack"
-        @feed-click="openFeedPopup" />
+    :class="['assets-page--' + mode, { 'assets-page--roster': listState === 'owned' }]">
+    <template v-if="mode === 'pets' && listState === 'owned'">
+      <PawPetRoster variant="owned" data-qa="qa-my-pets-page" @back="goBack" @feed-click="openFeedPopup" />
     </template>
     <template v-else-if="mode === 'pets'">
-      <view class="pets-header">
-        <view class="pets-title-row">
-          <view class="back-hit" @click="goBack">
-            <image src="/static/nav-back-arrow.png" mode="aspectFit" />
-          </view>
-          <text class="pets-title">小院成员</text>
-          <PawSearchBar class="pet-search" v-model="petKeyword" placeholder="搜索宠物名字/品种等" @search="onPetSearch" />
-        </view>
-        <view class="search-tabs"><text class="tab-active">全部(23)</text><text>猫咪(22)</text><text>狗狗(1)</text>
-          <view class="sort"><text>智能排序</text><uni-icons type="down" color="#555" :size="13" /></view><uni-icons
-            type="list" color="#555" :size="22" />
-        </view>
-      </view>
-      <view class="pet-card">
-        <view v-for="pet in pets" :key="pet.name + pet.avatar" class="pet-item">
-          <image :src="pet.avatar" mode="aspectFill" /><text>{{ pet.name }}</text><text class="pet-breed">{{ pet.breed
-            }}</text>
-        </view>
-        <view class="pet-item" @click="addPet">
-          <view class="add-circle"><uni-icons type="plusempty" color="#e5b600" :size="25" /></view><text>去添加</text>
-        </view>
-      </view>
+      <PawPetRoster variant="yard" :yard-id="yardId" :yard-name="yardName" :yard-avatar="yardAvatar"
+        :owner-paw-id="ownerPawId" @back="goBack" @pet-click="openPetDetail" @owner-click="openPetOwner"
+        @feed-click="openFeedPopup" />
     </template>
 
     <template v-else-if="mode === 'medals'">
-      <image class="medal-bg" src="/static/figma/medals/medal-page-bg.png" mode="scaleToFill" />
+      <image class="medal-bg" src="/static/figma/medals/medal-page-bg.png" mode="aspectFill" aria-hidden="true" />
       <PawPageNav title="我的勋章" background="transparent" fallback-url="/pages/me/index" />
-      <view class="medal-profile">
-        <image class="profile-photo" src="/static/figma/me-avatar.png" mode="aspectFill" />
-        <view class="profile-copy">
-          <view class="profile-name-row"><text class="asset-name">浮生孤影</text>
-            <LevelCapsule level="1" />
-          </view><text class="asset-muted">您的勋章数量超越80%用户</text>
+      <scroll-view class="medal-scroll" scroll-y :show-scrollbar="false" :enable-flex="true">
+        <view class="medal-content">
+          <view class="medal-profile" data-qa="qa-my-medals-profile">
+            <view class="medal-profile-main">
+              <image class="profile-photo" src="/static/figma/me-avatar.png" mode="aspectFill" />
+              <view class="profile-copy">
+                <view class="profile-name-row"><text class="asset-name">浮生孤影</text>
+                  <LevelBadge level="1" />
+                </view><text class="asset-muted">您的勋章数量超越80%用户</text>
+              </view>
+            </view>
+            <view class="medal-count">
+              <image class="medal-laurel medal-laurel--left" src="/static/figma/medals/laurel-left.svg" mode="aspectFit"
+                aria-hidden="true" />
+              <image class="medal-laurel medal-laurel--right" src="/static/figma/medals/laurel-right.svg"
+                mode="aspectFit" aria-hidden="true" />
+              <text class="medal-number">0</text>
+              <view class="medal-count-label">
+                <text class="count-unit">枚勋章</text>
+                <PawIcon name="navigation/chevron-right" :size="7" color="#333" />
+              </view>
+            </view>
+          </view>
+          <view class="main-medal" data-qa="qa-my-medals-featured" @tap.stop="openNewMedal">
+            <image src="/static/figma/medals/guardian-medal.png" mode="aspectFit" />
+          </view>
+          <text class="recent">最近获得</text>
+          <text class="recent-copy">累计投喂10斤</text>
+          <text class="earned">已获得 9 枚勋章</text>
+          <view class="medal-divider"></view>
+          <view class="medal-grid">
+            <view v-for="i in 6" :key="i" class="medal-grid-item" :data-qa="'qa-my-medal-' + i"
+              @tap.stop="openNewMedal">
+              <view class="grid-medal">
+                <image src="/static/figma/medals/guardian-medal.png" mode="aspectFit" />
+              </view><text>诸邪退散</text>
+            </view>
+          </view>
         </view>
-        <view class="medal-count"><text class="medal-number">0</text><text class="count-unit">枚勋章</text></view>
-      </view>
-      <view class="main-medal" @click="openNewMedal">
-        <image src="/static/figma/medals/guardian-medal.png" mode="scaleToFill" />
-      </view><text class="recent">最近获得</text><text class="recent-copy">累计投喂10斤</text><text class="earned">已获得 9
-        枚勋章</text>
-      <view class="medal-divider"></view>
-      <view class="medal-grid">
-        <view v-for="i in 6" :key="i" @click="openNewMedal">
-          <view class="grid-medal">
-            <image src="/static/figma/medals/guardian-medal.png" mode="scaleToFill" />
-          </view><text>诸邪退散</text>
-        </view>
-      </view>
+      </scroll-view>
     </template>
 
     <template v-else-if="mode === 'map'">
       <PawPageNav title="勋章地图" background="#e4e4e4" fallback-url="/pages/meMore/myAssets?mode=medals" />
-      <view class="map-footer">
-        <image class="profile-photo" src="/static/figma/me-avatar.png" mode="aspectFill" />
-        <view class="profile-copy">
-          <view class="profile-name-row"><text class="asset-name">浮生孤影</text>
-            <LevelCapsule level="1" />
-          </view><text class="asset-muted">您的勋章数量超越80%用户</text>
+      <view class="map-spacer"></view>
+      <view class="map-footer" data-qa="qa-medal-map-profile">
+        <view class="medal-profile-main">
+          <image class="profile-photo" src="/static/figma/me-avatar.png" mode="aspectFill" />
+          <view class="profile-copy">
+            <view class="profile-name-row"><text class="asset-name">浮生孤影</text>
+              <LevelBadge level="1" />
+            </view><text class="asset-muted">您的勋章数量超越80%用户</text>
+          </view>
         </view>
-        <view class="medal-count"><text class="medal-number">0</text><text class="count-unit">枚勋章</text></view>
+        <view class="medal-count">
+          <image class="medal-laurel medal-laurel--left" src="/static/figma/medals/map-laurel-left.svg" mode="aspectFit"
+            aria-hidden="true" />
+          <image class="medal-laurel medal-laurel--right" src="/static/figma/medals/map-laurel-right.svg"
+            mode="aspectFit" aria-hidden="true" />
+          <text class="medal-number">0</text>
+          <view class="medal-count-label">
+            <text class="count-unit">枚勋章</text>
+            <PawIcon name="navigation/chevron-right" :size="7" color="#333" />
+          </view>
+        </view>
       </view>
     </template>
 
     <template v-else>
-      <view class="new-nav">
-        <view class="back-hit" @click="goBack">
-          <image src="/static/nav-back-arrow.png" mode="aspectFit" />
-        </view><text>得诸邪避散勋章</text>
-        <view class="rules">规则</view>
-      </view>
-      <view class="new-medal-card">
+      <PawPageNav background="#eaf5ff" fallback-url="/pages/meMore/myAssets?mode=medals" slot-position="custom"
+        :slot-style="{ left: '39px' }">
+        <template #content>
+          <view class="new-nav-content">
+            <text class="new-nav-title">得诸邪避散勋章</text>
+          </view>
+        </template>
+      </PawPageNav>
+      <view class="new-medal-card" data-qa="qa-new-medal-card">
+        <view class="rules" data-qa="qa-medal-rules" @tap.stop="openMedalRules">规则</view>
         <view class="new-medal-image">
-          <image src="/static/figma/medals/guardian-medal.png" mode="scaleToFill" />
+          <image src="/static/figma/medals/guardian-medal.png" mode="aspectFit" />
         </view><text class="new-medal-name">诸邪避散</text><text class="new-medal-state">已获得</text><text
           class="new-medal-sub">连续30天云养猫咪</text>
         <view class="progress-row">
           <view class="progress-fill"></view>
           <view class="progress-check"><uni-icons type="checkmarkempty" color="#1639bf" :size="15" /></view>
         </view><text class="task-state">任务已完成</text><text class="encouragement">你是最棒的！！！</text>
-        <view class="claim-button" @click="claimMedal">领取勋章</view>
+        <view class="claim-button" data-qa="qa-new-medal-confirm" @tap.stop="claimMedal">好的</view>
       </view>
     </template>
 
@@ -97,26 +111,72 @@
 
 <script>
 import PawPageNav from '@/components/PawPageNav.vue'
+import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawPetRoster from '@/components/PawPetRoster.vue'
-import PawSearchBar from '@/components/navigation/PawSearchBar.vue'
-import LevelCapsule from '@/components/LevelCapsule.vue'
+import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import YardFeedPopup from '@/components/YardFeedPopup.vue'
+import { openUserProfile } from '@/utils/profileNav.js'
+
+const PENDING_FIRST_MEDAL_KEY = 'pawhome.pendingFirstMedal'
+
+function isPendingFirstMedal(value) {
+  return value === true || value === 1 || value === '1' || value === 'true' || Boolean(value && typeof value === 'object')
+}
+
 export default {
-  components: { PawPageNav, PawPetRoster, PawSearchBar, LevelCapsule, YardFeedPopup },
+  components: { PawPageNav, PawIcon, PawPetRoster, LevelBadge, YardFeedPopup },
   data() {
     return {
-      mode: 'pets', listState: '', petKeyword: '', feedPopupVisible: false, feedPetId: '', pets: [
-        { name: '奥利奥', breed: '加菲猫', avatar: '/static/figma/pets/pet-orange.png' }, { name: '煤球', breed: '奶牛猫', avatar: '/static/figma/pets/pet-black-white.png' }, { name: '呗呗', breed: '金毛', avatar: '/static/figma/pets/pet-dog.png' }, { name: '呗呗', breed: '金毛', avatar: '/static/figma/pets/pet-dog.png' }
-      ]
+      mode: 'pets', listState: '', feedPopupVisible: false, feedPetId: '',
+      yardId: '1',
+      yardName: '我就是要喂猫',
+      yardAvatar: '/static/figma/yard-cover-exact.png',
+      ownerPawId: 'owner-1'
     }
   },
-  onLoad(options) { const m = String(options.mode || 'pets'); this.mode = ['pets', 'medals', 'map', 'new'].includes(m) ? m : 'pets'; this.listState = ['mine', 'owned'].includes(options.state) ? options.state : '' },
+  onLoad(options = {}) {
+    const requestedMode = String(options.mode || 'pets')
+    const pendingFirstMedal = isPendingFirstMedal(uni.getStorageSync(PENDING_FIRST_MEDAL_KEY))
+      || ['1', 'true'].includes(String(options.first || '').toLowerCase())
+    this.mode = requestedMode === 'medals' && pendingFirstMedal
+      ? 'new'
+      : (['pets', 'medals', 'map', 'new'].includes(requestedMode) ? requestedMode : 'pets')
+    this.listState = options.state === 'owned' ? 'owned' : ''
+    if (options.yardId) this.yardId = String(options.yardId)
+    if (options.yardName) this.yardName = decodeURIComponent(String(options.yardName))
+    if (requestedMode === 'medals' && pendingFirstMedal) {
+      uni.removeStorageSync(PENDING_FIRST_MEDAL_KEY)
+    }
+  },
   methods: {
-    goBack() { uni.navigateBack({ fail: () => uni.reLaunch({ url: '/pages/me/index' }) }) },
-    onPetSearch(value) { this.petKeyword = String(value || '').trim() },
-    addPet() { uni.navigateTo({ url: '/pages/yard/addKitten' }) },
+    goBack() {
+      if (this.mode === 'new') {
+        this.openMedalList()
+        return
+      }
+      uni.navigateBack({ fail: () => uni.reLaunch({ url: '/pages/me/index' }) })
+    },
+    openPetDetail(pet) {
+      const petId = pet && pet.id ? String(pet.id) : ''
+      if (!petId) return
+      uni.navigateTo({
+        url: '/pages/adoption/petDetail?state=35&managed=0&petId=' + encodeURIComponent(petId) +
+          '&yardId=' + encodeURIComponent(this.yardId)
+      })
+    },
+    openPetOwner(owner) {
+      if (!owner || !owner.pawId) return
+      openUserProfile({ pawId: owner.pawId, nickname: owner.name, avatar: owner.avatar })
+    },
     openNewMedal() { uni.navigateTo({ url: '/pages/meMore/myAssets?mode=new' }) },
-    claimMedal() { uni.showToast({ title: '勋章已领取', icon: 'success' }) },
+    openMedalList() {
+      uni.navigateBack({ fail: () => uni.redirectTo({ url: '/pages/meMore/myAssets?mode=medals' }) })
+    },
+    openMedalRules() { uni.showToast({ title: '勋章规则', icon: 'none' }) },
+    claimMedal() {
+      uni.removeStorageSync(PENDING_FIRST_MEDAL_KEY)
+      this.openMedalList()
+    },
     openFeedPopup(pet) {
       const petId = pet && pet.id ? String(pet.id) : ''
       if (!petId) return
@@ -130,8 +190,11 @@ export default {
 
 <style scoped>
 .assets-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 0;
   position: relative;
-  min-height: 100vh;
   overflow: hidden;
   background: #f5f5f5;
   color: #222;
@@ -139,124 +202,10 @@ export default {
   font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif
 }
 
-.assets-page--pets {
-  padding-top: 44px
-}
-
-.back-hit {
-  width: 34px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none
-}
-
-.back-hit image {
-  width: 22px;
-  height: 22px
-}
-
-.pets-header {
-  background: #fff
-}
-
-.pets-title-row {
-  height: 52px;
-  display: flex;
-  align-items: center;
-  padding-right: 13px;
-  box-sizing: border-box
-}
-
-.pets-title {
-  font-size: 18px;
-  white-space: nowrap
-}
-
-.pet-search {
-  flex: 1;
-  min-width: 0;
-  margin-left: 22px
-}
-
-.search-tabs {
-  height: 29px;
-  display: flex;
-  align-items: center;
-  padding: 0 8px;
-  gap: 4px;
-  font-size: 12px;
-  box-sizing: border-box
-}
-
-.search-tabs>text {
-  height: 28px;
-  padding: 0 13px;
-  display: flex;
-  align-items: center;
-  border-radius: 3px;
-  background: #f6f6f6;
-  white-space: nowrap
-}
-
-.search-tabs .tab-active {
-  background: #ffe000
-}
-
-.sort {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  white-space: nowrap
-}
-
-.pet-card {
-  height: 157px;
-  margin: 8px 16px 0;
-  display: flex;
-  align-items: flex-start;
-  padding: 33px 3px 0;
-  background: #fff;
-  border-radius: 15px;
-  box-sizing: border-box
-}
-
-.pet-item {
-  width: 20%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 13px;
-  white-space: nowrap
-}
-
-.pet-item image,
-.add-circle {
-  width: 48px;
-  height: 48px;
-  margin-bottom: 4px;
-  border-radius: 50%
-}
-
-.add-circle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f7f7f7
-}
-
-.pet-breed {
-  margin-top: 3px;
-  color: #999;
-  font-size: 11px
-}
-
 .assets-page--medals {
+  height: 100vh;
+  min-height: 0;
   background: #fff;
-  min-height: 812px
 }
 
 .medal-bg {
@@ -264,17 +213,46 @@ export default {
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: 0
+  z-index: 0;
+  pointer-events: none
+}
+
+.medal-scroll {
+  flex: 1 1 auto;
+  height: 0;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.medal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 100%;
+  padding-bottom: 32px;
+  box-sizing: border-box;
 }
 
 .medal-profile {
+  flex: 0 0 auto;
   position: relative;
   z-index: 1;
   height: 97px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   padding: 9px 15px 16px;
   box-sizing: border-box
+}
+
+.medal-profile-main {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 11px;
+  min-width: 0
 }
 
 .profile-photo {
@@ -286,7 +264,7 @@ export default {
 }
 
 .profile-copy {
-  margin-left: 11px;
+  flex: 1 1 auto;
   min-width: 0
 }
 
@@ -297,40 +275,73 @@ export default {
 }
 
 .asset-name {
-  font-size: 17px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 700;
   white-space: nowrap
 }
 
 .asset-muted {
   display: block;
   margin-top: 4px;
-  color: #aaa;
+  color: #898989;
   font-size: 12px;
   white-space: nowrap
 }
 
 .medal-count {
-  margin-left: auto;
+  position: relative;
+  z-index: 1;
+  height: 64px;
+  flex: 0 0 95px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 62px
+  box-sizing: border-box
 }
 
 .medal-number {
-  font-size: 38px;
+  font-size: 36px;
   font-weight: 500;
-  line-height: 40px
+  line-height: 40px;
+  position: relative;
+  z-index: 1
 }
 
-.count-unit {
-  font-size: 14px;
-  color: #555;
+.medal-count-label {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 18px;
   white-space: nowrap
 }
 
+.count-unit {
+  font-size: 13px;
+  color: #555;
+}
+
+.medal-laurel {
+  position: absolute;
+  z-index: 0;
+  top: 5px;
+  width: 21px;
+  height: 45px;
+  pointer-events: none
+}
+
+.medal-laurel--left {
+  left: 0
+}
+
+.medal-laurel--right {
+  right: 0
+}
+
 .main-medal {
+  flex: 0 0 auto;
   position: relative;
   z-index: 1;
   display: block;
@@ -343,6 +354,7 @@ export default {
 .recent,
 .recent-copy,
 .earned {
+  flex: 0 0 auto;
   position: relative;
   z-index: 1;
   display: block;
@@ -350,7 +362,7 @@ export default {
 }
 
 .recent {
-  color: #aaa;
+  color: #999;
   font-size: 12px
 }
 
@@ -367,6 +379,7 @@ export default {
 }
 
 .medal-divider {
+  flex: 0 0 auto;
   position: relative;
   z-index: 1;
   height: 1px;
@@ -375,15 +388,20 @@ export default {
 }
 
 .medal-grid {
+  flex: 0 0 auto;
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  row-gap: 26px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  column-gap: 5px;
+  row-gap: 10px;
+  box-sizing: border-box;
   padding: 30px 23px 0
 }
 
-.medal-grid view {
+.medal-grid-item {
+  flex: 0 0 110px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -398,20 +416,26 @@ export default {
 }
 
 .assets-page--map {
-  min-height: 812px;
-  background: #e4e4e4
+  height: 100vh;
+  min-height: 0;
+  background: #e1e1e1
+}
+
+.map-spacer {
+  flex: 1 1 auto;
+  min-height: 0
 }
 
 .map-footer {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  flex: 0 0 153px;
+  width: 100%;
   height: 153px;
   padding: 17px 15px 43px;
   display: flex;
   align-items: center;
-  background: #fff;
+  justify-content: space-between;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.8);
   border-radius: 10px 10px 0 0;
   box-sizing: border-box
 }
@@ -422,34 +446,41 @@ export default {
 }
 
 .map-footer .profile-copy {
-  margin-left: 10px
-}
-
-.map-footer .medal-count {
-  margin-left: auto
+  flex: 1 1 auto;
+  min-width: 0
 }
 
 .assets-page--new {
-  min-height: 812px;
-  padding-top: 44px;
+  height: 100vh;
+  min-height: 0;
   background: #eaf5ff
 }
 
-.new-nav {
-  height: 54px;
+.new-nav-content {
   display: flex;
+  flex: 1 1 auto;
   align-items: center;
-  padding-right: 9px;
-  box-sizing: border-box
+  min-width: 0;
 }
 
-.new-nav>text {
-  font-size: 18px;
-  font-weight: 500
+.new-nav-title {
+  flex: 0 0 auto;
+  color: #222;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 22px;
+  white-space: nowrap;
 }
 
 .rules {
-  margin-left: auto;
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
   padding: 5px 11px;
   border-radius: 14px;
   background: #c9d9ea;
@@ -458,16 +489,18 @@ export default {
 }
 
 .new-medal-card {
-  position: absolute;
-  left: 24px;
-  right: 24px;
-  top: 121px;
-  bottom: 0;
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: calc(100% - 48px);
+  margin: 23px auto 0;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   background: #fff;
-  border-radius: 24px 24px 0 0
+  border-radius: 24px 24px 0 0;
+  overflow: hidden
 }
 
 .new-medal-image {
@@ -551,8 +584,9 @@ export default {
   align-items: center;
   justify-content: center;
   background: linear-gradient(90deg, #f6e0aa, #e9ca76);
-  color: transparent;
-  font-size: 15px
+  color: #7a4200;
+  font-size: 16px;
+  font-weight: 700
 }
 
 .main-medal,
@@ -602,8 +636,6 @@ export default {
 }
 
 .assets-page--medals .medal-grid {
-  grid-template-columns: repeat(3, 110px);
-  column-gap: 5px;
   row-gap: 10px;
   padding: 17px 17px 0
 }

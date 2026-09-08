@@ -47,14 +47,14 @@
 
 页面接入约束：页面负责数据、跳转和 Toast；复用组件只负责展示、动效和事件。通用组件不内置演示列表或业务导航，图片默认使用 `aspectFill`，品牌色统一使用 `styles/paw-design-system.scss` 语义 Token。
 
-## 等级胶囊（Lv）
+## 等级徽章（Lv）
 
 | 资源 | 路径 |
 |------|------|
-| 样式 | `styles/lv-cap.scss`（`App.vue` 已 `@import`） |
-| 用法 | `<LevelCapsule :level="1" />` |
+| 实现 | `components/customBadge/LevelBadge.vue`，底层使用 `PawBadge` 独立使用模式 |
+| 用法 | `<LevelBadge :level="1" />` |
 
-只能保留 `components/LevelCapsule.vue` 一个真实视觉实现；`styles/lv-cap.scss` 仅为历史页面提供兼容样式，不应在新页面直接绘制 `.lv-cap`。
+等级徽章统一收敛到 `components/customBadge/LevelBadge.vue`；页面不应再直接绘制历史 `.lv-cap` 样式。
 
 ## 评论 / 动态相关
 

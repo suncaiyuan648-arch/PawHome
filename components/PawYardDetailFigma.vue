@@ -79,7 +79,7 @@
           <view class="feeding-row" v-for="n in 4" :key="n">
             <image src="/static/figma/yard-feeding-avatar.png?v=2" mode="aspectFill" /><text
               class="feeding-name">平安是福</text>
-            <LevelCapsule :level="1" /><text class="feeding-copy">投粮200克 已反馈2/5次</text>
+            <LevelBadge :level="1" /><text class="feeding-copy">投粮200克 已反馈2/5次</text>
           </view>
         </view>
 
@@ -132,7 +132,7 @@ import PawAvatar from '@/components/identity/PawAvatar.vue'
 import PawOwnerBadge from '@/components/identity/PawOwnerBadge.vue'
 import PawVerifiedBadge from '@/components/identity/PawVerifiedBadge.vue'
 import YardLocationLine from '@/components/identity/YardLocationLine.vue'
-import LevelCapsule from '@/components/LevelCapsule.vue'
+import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import FeedingSourceRow from '@/components/dynamic/FeedingSourceRow.vue'
 import YardFeedRankStrip from '@/components/yard/YardFeedRankStrip.vue'
 import PawFixedActionBar from '@/components/layout/PawFixedActionBar.vue'
@@ -146,7 +146,7 @@ import { getPawHomeYardMock } from '@/utils/yardMock.js'
 
 export default {
   name: 'PawYardDetailFigma',
-  components: { PawPageNav, PawAnnouncementMarquee, PawAvatar, PawOwnerBadge, PawVerifiedBadge, YardLocationLine, LevelCapsule, FeedingSourceRow, YardFeedRankStrip, PawFixedActionBar, CommentThread, PawTabs, ReplyComposerSheet, ShareActionSheet, PawLikeIcon },
+  components: { PawPageNav, PawAnnouncementMarquee, PawAvatar, PawOwnerBadge, PawVerifiedBadge, YardLocationLine, LevelBadge, FeedingSourceRow, YardFeedRankStrip, PawFixedActionBar, CommentThread, PawTabs, ReplyComposerSheet, ShareActionSheet, PawLikeIcon },
   props: {
     state: { type: String, default: 'dynamic' },
     yardData: { type: Object, default: () => getPawHomeYardMock() }

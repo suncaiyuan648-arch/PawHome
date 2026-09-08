@@ -8,14 +8,16 @@
           :class="[`paw-dialog--${variant}`, { 'paw-dialog--open': opened, 'paw-dialog--closing': closing }]" @tap.stop>
           <text v-if="title" class="paw-dialog__title">{{ title }}</text>
           <text v-if="message || body" class="paw-dialog__message">{{ message || body }}</text>
-          <slot />
+          <view v-if="$slots.default" class="paw-dialog__slot">
+            <slot />
+          </view>
           <view v-if="showActions" class="paw-dialog__actions">
             <view v-if="showCancel" class="paw-dialog__action paw-dialog__action--cancel" data-qa="paw-dialog-cancel"
               @tap.stop="onCancel"><text>{{
                 cancelText }}</text></view>
             <view class="paw-dialog__action paw-dialog__action--confirm"
-              :class="{ 'paw-dialog__action--danger': variant === 'destructive' }" data-qa="paw-dialog-confirm"
-              @tap.stop="onConfirm">
+              :class="{ 'paw-dialog__action--danger': variant === 'destructive', 'paw-dialog__action--disabled': !confirmEnabled }"
+              data-qa="paw-dialog-confirm" @tap.stop="onConfirm">
               <view v-if="confirmLoading" class="paw-dialog__spinner"></view><text>{{ confirmText }}</text>
             </view>
           </view>
@@ -42,6 +44,7 @@ export default {
     cancelText: { type: String, default: '取消' },
     showCancel: { type: Boolean, default: false },
     confirmLoading: { type: Boolean, default: false },
+    confirmEnabled: { type: Boolean, default: true },
     closeOnMask: { type: Boolean, default: false },
     maskColor: { type: String, default: '' },
     autoClose: { type: Boolean, default: true },
@@ -65,7 +68,7 @@ export default {
     setValue(value) { this.$emit('update:modelValue', value); this.$emit('update:visible', value) },
     onCancel() { this.$emit('cancel'); this.setValue(false) },
     onConfirm() {
-      if (this.confirmLoading) return
+      if (this.confirmLoading || !this.confirmEnabled) return
       this.$emit('confirm')
       if (this.autoClose) this.setValue(false)
     }
@@ -138,6 +141,10 @@ export default {
   padding-top: 24px;
 }
 
+.paw-dialog__slot {
+  display: block;
+}
+
 .paw-dialog__actions {
   display: flex;
   min-height: 49px;
@@ -166,6 +173,90 @@ export default {
 
 .paw-dialog__action--danger {
   color: var(--paw-color-danger, #ff3d3d);
+}
+
+.paw-dialog__action--disabled {
+  pointer-events: none;
+}
+
+.paw-dialog__wrap--adoption-confirm,
+.paw-dialog__wrap--adoption-reject {
+  padding: 30px;
+}
+
+.paw-dialog--adoption-confirm,
+.paw-dialog--adoption-reject {
+  width: 315px;
+  max-width: calc(100vw - 60px);
+  border-radius: 20px;
+}
+
+.paw-dialog--adoption-confirm .paw-dialog__title,
+.paw-dialog--adoption-reject .paw-dialog__title {
+  padding: 26px 20px 0;
+  color: #333;
+  font-size: 18px;
+  line-height: 26px;
+}
+
+.paw-dialog--adoption-confirm .paw-dialog__message {
+  padding: 31px 35px 28px;
+  color: #666;
+  font-size: 15px;
+  line-height: 22px;
+  text-align: left;
+  word-break: break-all;
+}
+
+.paw-dialog--adoption-confirm .paw-dialog__actions,
+.paw-dialog--adoption-reject .paw-dialog__actions {
+  min-height: 55px;
+  border-top: 0;
+}
+
+.paw-dialog--adoption-confirm .paw-dialog__action,
+.paw-dialog--adoption-reject .paw-dialog__action {
+  min-height: 55px;
+  color: #333;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.paw-dialog--adoption-confirm .paw-dialog__action+.paw-dialog__action,
+.paw-dialog--adoption-reject .paw-dialog__action+.paw-dialog__action {
+  border-left: 0;
+}
+
+.paw-dialog--adoption-confirm .paw-dialog__action--cancel,
+.paw-dialog--adoption-reject .paw-dialog__action--cancel {
+  background: #fff;
+  color: #999;
+  font-weight: 400;
+}
+
+.paw-dialog--adoption-confirm .paw-dialog__action--confirm {
+  background: #ffe60f;
+  color: #1d1d1d;
+}
+
+.paw-dialog--adoption-reject .paw-dialog__slot {
+  display: block;
+  height: 110px;
+  margin: 24px 16px 29px;
+  padding: 12px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  background: #f5f5f5;
+}
+
+.paw-dialog--adoption-reject .paw-dialog__action--confirm {
+  background: #f1f1f1;
+  color: #999;
+}
+
+.paw-dialog--adoption-reject .paw-dialog__action--confirm:not(.paw-dialog__action--disabled) {
+  background: #ffe60f;
+  color: #1d1d1d;
 }
 
 .paw-dialog__wrap--jury-vote-result {
@@ -204,6 +295,72 @@ export default {
 
 .paw-dialog--jury-vote-result .paw-dialog__action--confirm {
   background: #ffe60f;
+}
+
+.paw-dialog__wrap--breed-supplement,
+.paw-dialog__wrap--breed-supplement-result {
+  padding: 30px;
+}
+
+.paw-dialog--breed-supplement,
+.paw-dialog--breed-supplement-result {
+  width: 315px;
+  max-width: calc(100vw - 60px);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.paw-dialog--breed-supplement .paw-dialog__title,
+.paw-dialog--breed-supplement-result .paw-dialog__title {
+  padding: 20px 20px 0;
+  color: #777;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.paw-dialog--breed-supplement-result .paw-dialog__message {
+  padding: 22px 32px 38px;
+  color: #999;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  text-align: center;
+  word-break: break-all;
+}
+
+.paw-dialog--breed-supplement .paw-dialog__actions,
+.paw-dialog--breed-supplement-result .paw-dialog__actions {
+  min-height: 48px;
+  border-top: 0.5px solid #f5f5f5;
+}
+
+.paw-dialog--breed-supplement .paw-dialog__action,
+.paw-dialog--breed-supplement-result .paw-dialog__action {
+  min-height: 48px;
+  color: #333;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.paw-dialog--breed-supplement .paw-dialog__action+.paw-dialog__action,
+.paw-dialog--breed-supplement-result .paw-dialog__action+.paw-dialog__action {
+  border-left: 0.5px solid #f5f5f5;
+}
+
+.paw-dialog--breed-supplement .paw-dialog__action--cancel {
+  color: #999;
+  font-weight: 400;
+}
+
+.paw-dialog--breed-supplement .paw-dialog__action--confirm.paw-dialog__action--disabled {
+  color: #d5d5d5;
+}
+
+.paw-dialog--breed-supplement-result .paw-dialog__action--confirm {
+  color: #999;
+  font-weight: 400;
 }
 
 .paw-dialog--destructive {

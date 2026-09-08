@@ -65,12 +65,12 @@
 | Figma 画板 | 源码映射 | 结果 |
 | --- | --- | --- |
 | `62:31044` 领养申请；`62:31158` 领养申请（长表单） | `pages/adoption/adoptApply.vue`：普通领养与长表单模式 | 已实现（同一路由多模式） |
-| `62:31384`、`62:31484` 领养申请-等待审核；`62:31597` 院主-等待院主审核；`62:31711` 院主-等待云家长审核；`62:31825` 领养-领养信息-查看；`62:31908` 领养-申请内容-查看；`62:32023` 院主-待申请人领养；`62:32153` 领养审核-待院主确认领养；`62:32305` 领养审核-驳回成功；`62:32483` 领养审核-领养成功；`62:32651` 领养申请-已同意；`62:32789` 领养进度-待院主确认；`62:32983` 领养进度-待评审团确认；`62:33198` 领养进度-获得奖励 | `pages/meMore/adoptionFlow.vue` + `components/PawAdoptionFlowFigma.vue`：`frame=44–57`；详情拆分页由 `pages/meMore/adoptionDetail.vue`、`adoptionApplyContent.vue` 承载 | 已实现（共享领养流程组件） |
+| `62:31384`、`62:31484` 领养申请-等待审核；`62:31597` 院主-等待院主审核；`62:31711` 院主-等待云家长审核；`62:31825` 领养-领养信息-查看；`62:31908` 领养-申请内容-查看；`62:32023` 院主-待申请人领养；`62:32153` 领养审核-待院主确认领养；`62:32305` 领养审核-驳回成功；`62:32483` 领养审核-领养成功；`62:32651` 领养申请-已同意；`62:32789` 领养进度-待院主确认；`62:32983` 领养进度-待评审团确认；`62:33198` 领养进度-获得奖励 | `pages/meMore/adoptionFlow.vue` + `components/PawAdoptionFlowFigma.vue`：`frame=44–57`；领养信息和申请内容分别由 `frame=48/49` 承载 | 已实现（共享领养流程组件） |
 | `62:33410` 待投票；`62:34304` 评审团 | `pages/yard/juryPanel.vue`：待投票/已结束列表与评审团入口 | 已实现 |
 | `62:33657` 救助详情；`62:34421` 救助评审列表（原救助基金池） | `pages/feature/index.vue?mode=rescue-detail`、`pages/yard/rescueReview.vue` + `utils/rescueStorage.js` | 救助本地链路已实现，已完成运行时全链路验收（RESCUE-009）；生产接口和鉴权仍待接入 |
 | `62:34054` 已投票 | `pages/yard/juryDetail.vue`：`state=voted` | 已实现 |
 | `62:32789`、`62:32983`、`62:33198` 领养进度状态 | `pages/meMore/adoptionFlow.vue`：`frame=55/56/57`，并由 `PawAdoptionFlowFigma` 渲染进度条 | 已实现（共享流程状态） |
-| `62:35297` 确认领养；`62:35393` 证实列表详情 | `pages/meMore/adoptionConfirm.vue`、`pages/meMore/adoptionProofList.vue`、`components/PawAdoptionEvidence.vue` | 领养证实已实现；救助来源已接入并完成运行时验收 |
+| `62:35297` 确认领养；`62:35393` 救助证实列表详情 | `pages/meMore/adoptionConfirm.vue`、`pages/meMore/rescueProofList.vue`、`components/PawAdoptionEvidence.vue` | 领养确认已实现；救助证实列表已独立接入并完成运行时验收 |
 | `62:36210` 领养进度-领取结果页；`62:36267` 领养审核-同意结果页；`62:36324` 领养审核-院主确认结果页；`62:36381` 领养审核-确认驳回结果页；`62:36440` 确认领养结果页；`62:36497` 领养申请结果页 | `pages/adoption/result.vue`：`variant=80/81/82/83/84/85` | 已实现（结果配置复用） |
 | `62:36752` 领养-进度-填写收货地址；`62:36782`、`62:36940` 院主-投粮详情；`62:37087` 云家长-投粮详情 | `pages/adoption/submitOrder.vue`；`pages/meMore/feedingDetail.vue` + `components/PawFeedingDetailFigma.vue`：`variant=90/91/92` | 已实现（共享详情/订单组件） |
 | `62:36699` 领养-选择宠物 | `pages/adoption/pickCats.vue` + `components/AdoptPickCatsSheet.vue` | 已实现 |
@@ -90,7 +90,7 @@
 | `62:36095` 小院认证-结果页；`62:36554` 小院创建结果页 | `pages/yard/yardCertify.vue` 提交后直接进入 `pages/yard/yardCats.vue?state=managed`；旧 `yardCertifyDone.vue` 已移除 | 已调整（创建成功统一进入小院动物管理页） |
 | `62:36152` 年度报告 | `pages/meMore/annualReport.vue` | 已实现 |
 | `62:37970`、`62:38114`、`62:38248` 小院认证 | `pages/yard/yardCertify.vue`：`figmaState=97/98/99`，表单、已通过、审核中 | 已实现（同一路由多状态） |
-| `62:37451` 我也来证实 | `pages/yard/adoptionAudit.vue?mode=proof` + `components/PawAdoptionProofForm.vue` | 领养已实现；救助来源已接入并完成运行时验收 |
+| `62:37451` 我也来证实 | `pages/meMore/rescueProofForm.vue` + `components/PawAdoptionProofForm.vue` | 仅救助来源提供独立证实页，并完成运行时验收 |
 
 ### 6. 宠物、语音、投票与领养弹层
 
@@ -99,7 +99,7 @@
 | `62:38679` 实名认证弹窗；`62:38692` 隐私政策弹窗 | `pages/auth/realName.vue`：`popup=real-name/privacy` | 已实现（共享弹层） |
 | `62:38705`、`62:38718` 院主-确定同意领养弹窗；`62:38731` 院主-驳回领养弹窗；`62:39245` 领养审核-确认驳回结果页 | `pages/yard/adoptionAudit.vue`：`popup=agree/reject`、`mode=confirmAgree/confirmReject/rejectDone` | 已实现（审核状态与弹层复用） |
 | `62:38745` 投票-挺真实弹窗；`62:38774` 投票-有点假弹窗；`62:39188`、`62:39198` 领养-无次数弹窗 | `pages/yard/juryDetail.vue`：`popup=vote-real/vote-fake`；`pages/adoption/petDetail.vue` + `AdoptEntryHintModal`：领养额度限制 | 已实现（共享弹层） |
-| `62:38803` 院主-联系方式 | `pages/meMore/adoptionDetail.vue` 联系方式弹层；`PawAdoptionFlowFigma` 联系信息卡片 | 已实现（详情/流程复用） |
+| `62:38803` 院主-联系方式 | `PawAdoptionFlowFigma` 联系信息卡片与 `PawDialog`；兼容测试路径使用 `adoptionFlow?frame=54&popup=contact` | 已实现（流程页复用） |
 | `62:38818` 回复-待输入；`62:38831` 回复-输入 | `pages/commodityDetails/index.vue`：`state=reply-idle/reply-input` + `components/ReplyComposerSheet.vue` | 已实现（共享评论组件） |
 | `62:38844` 投喂弹窗；`62:38930` 帮助领养弹窗；`62:38940` 平均反馈时长弹窗；`62:38968`、`62:38987` 已获粮弹窗 | `pages/commodityDetails/index.vue`：`state=feed-popup`、`popup=help-adopt/feedback-stat/food-stat`；`components/PawFoodStatModal.vue` | 已实现（共享业务弹层） |
 | `62:38954` 领养额度不足 | `pages/adoption/extras.vue`：`popup=insufficient` | 已实现 |
@@ -130,7 +130,7 @@
 | `62:42330` 消息 | `pages/message/index.vue` | 已实现 |
 | `62:42564` 服务订单消息；`62:42643` 互动消息；`62:42799` 活动消息 | `pages/messageDetail/index.vue`：`type=service/interaction/activity` | 已实现（同一路由多类型） |
 | `62:42711` 助力领养；`62:42864` 领养额度；`62:42949` 领养额度明细 | `pages/adoption/extras.vue`：`mode=support/quota/quota-detail` | 已实现（同一路由多模式） |
-| `62:43023`、`62:43284` 小院-查看猫咪列表；`62:43156` 我的-查看猫咪列表；`62:43393` 我的宠物 | `pages/yard/yardCats.vue`：`state=roster/status`；`pages/meMore/myAssets.vue`：`mode=pets`、`state=mine`；共享 `PawPetRoster` | 已实现（共享宠物列表组件） |
+| `62:43023`、`62:43284` 小院-查看猫咪列表；`62:43156` 我的-查看猫咪列表；`62:43393` 我的宠物 | `pages/yard/yardCats.vue`：`state=roster/status`；`pages/meMore/myCloudPets.vue`：独立的 `mine-list` 页面；`pages/meMore/myAssets.vue`：`mode=pets&state=owned`；共享 `PawPetRoster` | 已实现（共享搜索、筛选、卡片视觉骨架；云养页不渲染小院卡片 actionBar） |
 | `62:43457` 我的勋章；`62:43518` 勋章地图；`62:43556` 获得新勋章 | `pages/meMore/myAssets.vue`：`mode=medals/map/new` | 已实现（同一路由多模式） |
 
 ## 遗漏页面统计

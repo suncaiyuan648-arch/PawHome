@@ -1,65 +1,113 @@
 <template>
   <view class="feature-page" :class="`feature-page--${mode}`">
-    <PawPageNav v-if="mode !== 'invite'" :title="title" :title-centered="mode === 'album'"
+    <PawPageNav v-if="mode !== 'invite'" :title="title" :title-centered="true"
       :background="mode === 'rescue-detail' ? '#fff477' : '#f5f5f5'" fallback-url="/pages/index/index" />
+    <view v-if="mode === 'rescue-detail'" class="rescue-detail-hero" data-qa="qa-rescue-detail-hero">
+      <view class="rescue-intro">
+        <text class="rescue-question">Ta的救助申请是真的吗？</text>
+        <text>请您审查该申请人是否为虚假申请及不实申请</text>
+      </view>
+    </view>
     <scroll-view class="feature-scroll" scroll-y :show-scrollbar="false">
       <template v-if="mode === 'rescue-detail'">
-        <view class="rescue-intro"><text class="rescue-question">Ta的救助申请是真的吗？</text><text>请您审查该申请人是否为虚假申请及不实申请</text>
-        </view>
-        <view class="detail-section detail-section--case paw-surface" data-qa="qa-rescue-detail-case">
-          <view class="rescue-head">
-            <PawAvatar class="rescue-avatar" :src="currentRescue.ownerAvatar" :size="34" :clickable="true"
-              @click.stop="openRescueOwner(currentRescue)" />
-            <view class="rescue-author-copy">
-              <view class="rescue-author-line"><text @tap.stop="openRescueOwner(currentRescue)">{{
-                currentRescue.ownerName }}</text>
-                <LevelCapsule :level="currentRescue.ownerLevel" inline /><text class="help-type">{{
-                  currentRescue.helpType }}</text>
-              </view><text class="muted">1天前来过　长沙市</text>
+        <view class="rescue-detail-cards">
+          <PawCard class="detail-section detail-section--case paw-surface" padding="13px 17px 17px" border="none"
+            data-qa="qa-rescue-detail-case">
+            <view class="rescue-head">
+              <view class="rescue-identity">
+                <PawAvatar class="rescue-avatar" :src="currentRescue.ownerAvatar" :size="34" :clickable="true"
+                  @click.stop="openRescueOwner(currentRescue)" />
+                <text class="rescue-owner-name" @tap.stop="openRescueOwner(currentRescue)">{{ currentRescue.ownerName
+                }}</text>
+                <LevelBadge :level="currentRescue.ownerLevel" inline />
+                <PersonalHelpBadge :label="currentRescue.helpType || '个人求助'" />
+              </view>
+              <text class="muted rescue-meta">1天前来过　长沙市</text>
+            </view><text class="rescue-amount">¥{{ currentRescue.amount }} <text>求助金额</text></text><text
+              class="detail-views">{{ currentRescue.views }}人浏览</text><text class="rescue-copy">{{ currentRescue.detail
+              }}</text>
+            <view class="detail-gallery">
+              <view v-for="(src, index) in rescueDetailImageUrls.slice(0, 16)" :key="src + index"
+                class="detail-gallery-cell">
+                <PawImage class="detail-gallery-image" :src="src" display-mode="fixed" width="100%" height="100%"
+                  :preview-urls="rescueDetailImageUrls" :preview-index="index" />
+              </view>
             </view>
-          </view><text class="rescue-amount">¥{{ currentRescue.amount }} <text>求助金额</text></text><text
-            class="detail-views">{{ currentRescue.views }}人浏览</text><text class="rescue-copy">{{ currentRescue.detail
-            }}</text>
-          <view class="detail-gallery">
-            <image v-for="(src, index) in currentRescue.mediaPaths.slice(0, 16)" :key="src + index" :src="src"
-              mode="aspectFill" />
-          </view>
-        </view>
-        <view class="detail-section paw-surface"><text class="section-title">求助人信息</text>
-          <view v-for="row in currentRescue.applicantRows" :key="row.label" class="applicant-row"><text>{{ row.label
-          }}</text><text>{{ row.value }}</text></view>
-        </view>
-        <view class="detail-section paw-surface"><text class="section-title">申请救助的动物（{{ currentRescue.animals.length
-        }}）</text>
-          <view class="animal-row">
-            <view v-for="animal in currentRescue.animals" :key="animal.id" class="animal-cell">
-              <image :src="animal.avatar" mode="aspectFill" /><text>{{ animal.name }}</text>
+          </PawCard>
+          <PawCard class="detail-section paw-surface applicant-info-card" title="求助人信息" gap="10px" padding="15px 17px"
+            border="none">
+            <view v-for="row in applicantInfoRows" :key="row.label" class="applicant-row">
+              <PawTag :text="row.label" />
+              <view class="applicant-value">
+                <text class="applicant-value-text">{{ row.value }}</text>
+                <VerifiedBadge v-if="row.verified" />
+              </view>
             </view>
-          </view>
-        </view>
-        <view class="detail-section detail-section--evidence paw-surface" data-qa="qa-rescue-detail-evidence">
-          <view class="evidence-heading"><text class="section-title">证实列表（{{ currentRescue.evidenceCount }}）</text><text
-              class="evidence-link" data-qa="qa-rescue-detail-evidence-list" @tap="openEvidenceList">查看全部</text></view>
-          <view v-for="proof in currentRescue.evidenceList.slice(0, 2)" :key="proof.id" class="evidence-row">
-            <PawAvatar class="evidence-avatar" :src="proof.avatar" :size="34" :clickable="true"
-              @click.stop="openEvidenceUser(proof)" />
-            <view class="evidence-copy">
-              <view class="evidence-author"><text @tap.stop="openEvidenceUser(proof)">{{ proof.name }}</text>
-                <LevelCapsule :level="proof.level" />
-              </view><text class="evidence-text">{{ proof.text }}</text><text class="muted">{{ proof.meta }}</text>
+          </PawCard>
+          <PawAdoptionPetsCard class="detail-section paw-surface rescue-animals-card" title="申请救助的动物"
+            :pets="currentRescue.animals" :yard-name="currentRescue.yardName" :yard-id="currentRescue.yardId"
+            :yard-avatar="currentRescue.yardAvatar" :show-add="false" :show-owner="true" :min-height="0"
+            :margin-bottom="0" card-padding="15px 17px 17px" qa-prefix="qa-rescue-detail-animal-"
+            @pet-click="openRescueAnimal" @yard-click="openRescueYard" />
+          <PawCard class="detail-section detail-section--evidence paw-surface" padding="15px 17px 17px" border="none"
+            data-qa="qa-rescue-detail-evidence">
+            <template #title>
+              <view class="evidence-heading">
+                <view class="evidence-title"><text>证实列表</text><text class="evidence-count">({{
+                  currentRescue.evidenceCount }})</text></view>
+                <view class="evidence-link" data-qa="qa-rescue-detail-evidence-list" @tap="openEvidenceList">
+                  <text>查看全部</text>
+                  <PawIcon name="navigation/chevron-right" :size="12" color="#999" />
+                </view>
+              </view>
+            </template>
+            <view class="evidence-people-row">
+              <view v-for="proof in evidencePreviewPeople" :key="proof.id" class="evidence-person"
+                @tap.stop="openEvidenceUser(proof)">
+                <PawAvatar class="evidence-person-avatar" :src="proof.avatar" :size="48" :clickable="true"
+                  @click.stop="openEvidenceUser(proof)" />
+                <text class="evidence-person-name">{{ proof.name }}</text>
+                <text class="evidence-person-relation">{{ proof.relationship || '证实人' }}</text>
+              </view>
             </view>
-          </view>
-          <PawButton class="evidence-action" text="我也来证实" size="sm" block qa="qa-rescue-detail-proof"
-            @click="openProof" />
+            <view v-if="featuredEvidence" class="evidence-quote">
+              <text class="evidence-quote-text">{{ featuredEvidence.name }}： “{{ featuredEvidence.text }}”</text>
+            </view>
+            <template #footer>
+              <view class="evidence-action-row">
+                <view class="evidence-proof-count">
+                  <text>已有</text>
+                  <text class="evidence-proof-count-number">{{ currentRescue.evidenceCount }}</text>
+                  <text>人证实为真</text>
+                </view>
+                <PawButton class="evidence-proof-button" :text="hasCurrentUserProof ? '已证实' : '为ta证实'"
+                  :tone="hasCurrentUserProof ? 'secondary' : 'accent'" size="xs" qa="qa-rescue-detail-proof"
+                  :disabled="hasCurrentUserProof" @click="openProof" />
+              </view>
+            </template>
+          </PawCard>
+          <PawCard class="detail-section paw-surface detail-section--promise" title="求助人承诺" gap="10px"
+            padding="15px 17px" border="none">
+            <text class="detail-note">我承诺以上求助信息真实有效，所获救助资金将用于本次流浪动物救助，并及时公开救助进展。</text>
+          </PawCard>
+          <PawCard class="detail-section paw-surface detail-section--promise" title="平台声明" gap="10px"
+            padding="15px 17px" border="none">
+            <text class="detail-note">平台仅提供信息发布、审核和资金流转服务，具体救助结果由求助人和参与证实的用户共同负责。</text>
+          </PawCard>
+          <PawCard class="detail-section paw-surface rescue-comments-section" title="留言 (15)" gap="10px"
+            padding="15px 17px 20px" border="none" data-qa="qa-rescue-detail-comments">
+            <CommentThread class="rescue-comment-thread" :comments="rescueComments" :comment-preview-count="2"
+              @user-click="openRescueCommentUser" @reply="openRescueReplySheet" @like="toggleRescueCommentLike"
+              @voice-play="onRescueVoicePlay">
+              <template #before>
+                <CommentComposer avatar="/static/figma/dynamic-detail/current-user.png" readonly fluid
+                  @click="openRescueReplySheet" @voice="onRescueComposerVoice"
+                  @pick-image="onRescueComposerPickImage" />
+              </template>
+            </CommentThread>
+          </PawCard>
         </view>
-        <view class="detail-section paw-surface detail-section--promise">
-          <text class="section-title">求助人承诺</text>
-          <text class="detail-note">我承诺以上求助信息真实有效，所获救助资金将用于本次流浪动物救助，并及时公开救助进展。</text>
-        </view>
-        <view class="detail-section paw-surface detail-section--promise">
-          <text class="section-title">平台声明</text>
-          <text class="detail-note">平台仅提供信息发布、审核和资金流转服务，具体救助结果由求助人和参与证实的用户共同负责。</text>
-        </view>
+        <view class="rescue-detail-scroll-spacer" />
       </template>
       <template v-else-if="mode === 'invite'">
         <!-- #ifndef MP-WEIXIN -->
@@ -117,32 +165,98 @@
         </view>
       </template>
     </scroll-view>
+    <PawJuryActionBar v-if="mode === 'rescue-detail'" :voted="rescueVoted" @share="openRescueShare" @vote="onRescueVote"
+      @next="onRescueVoteNext" />
+    <ReplyComposerSheet v-if="mode === 'rescue-detail'" v-model:visible="rescueReplySheetVisible"
+      :reply-to-name="rescueReplyTargetName" @send="onRescueReplySend" @voice="onRescueComposerVoice"
+      @pick-image="onRescueComposerPickImage" />
+    <ShareActionSheet v-if="mode === 'rescue-detail'" v-model:visible="rescueShareSheetVisible" />
+    <PawJuryVoteDialog v-if="mode === 'rescue-detail'" v-model="rescueVoteResultVisible"
+      :selected-vote="selectedRescueVote || 'real'" @close="closeRescueVoteResult" @back="closeRescueVoteResult"
+      @next="onRescueVoteNext" />
   </view>
 </template>
 
 <script>
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawButton from '@/components/base/PawButton.vue'
+import PawCard from '@/components/base/PawCard.vue'
 import PawAvatar from '@/components/identity/PawAvatar.vue'
-import LevelCapsule from '@/components/LevelCapsule.vue'
+import PawImage from '@/components/base/PawImage.vue'
+import PawTag from '@/components/base/PawTag.vue'
+import PawAdoptionPetsCard from '@/components/PawAdoptionPetsCard.vue'
+import PawJuryActionBar from '@/components/PawJuryActionBar.vue'
+import PawJuryVoteDialog from '@/components/PawJuryVoteDialog.vue'
+import LevelBadge from '@/components/customBadge/LevelBadge.vue'
+import PersonalHelpBadge from '@/components/customBadge/PersonalHelpBadge.vue'
+import VerifiedBadge from '@/components/customBadge/VerifiedBadge.vue'
 import PawAlbumTag from '@/components/PawAlbumTag.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import CommentComposer from '@/components/dynamic/CommentComposer.vue'
+import CommentThread from '@/components/dynamic/CommentThread.vue'
+import ReplyComposerSheet from '@/components/ReplyComposerSheet.vue'
+import ShareActionSheet from '@/components/ShareActionSheet.vue'
 import { getPawHomeYardPetById } from '@/utils/yardMock.js'
-import { getRescueRecords, getRescueById } from '@/utils/rescueStorage.js'
-import { openUserProfile } from '@/utils/profileNav.js'
+import { getRescueRecords, getRescueById, hasRescueProofByUser } from '@/utils/rescueStorage.js'
+import { openUserProfile, openYardDetail, SELF_PAW_ID } from '@/utils/profileNav.js'
 
 function decodeValue(value) {
   if (value === undefined || value === null) return ''
   try { return decodeURIComponent(String(value)) } catch (e) { return String(value) }
 }
 
+const RESCUE_DETAIL_COMMENTS = [
+  {
+    id: 'rescue-comment-1',
+    author: { name: '姜栋', avatar: '/static/figma/dynamic-detail/comment-avatar-1.svg', level: 1 },
+    copy: '给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞',
+    meta: '昨天 20:45  江西',
+    likes: 32,
+    liked: true
+  },
+  {
+    id: 'rescue-comment-2',
+    author: { name: '姜栋', avatar: '/static/figma/dynamic-detail/comment-avatar-1.svg', level: 1 },
+    copy: '给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞',
+    meta: '昨天 20:45  江西',
+    likes: 32,
+    liked: true
+  }
+]
+
 export default {
-  components: { PawPageNav, PawButton, PawAvatar, LevelCapsule, PawAlbumTag, PawIcon },
+  components: {
+    PawPageNav,
+    PawButton,
+    PawCard,
+    PawAvatar,
+    PawImage,
+    PawTag,
+    PawAdoptionPetsCard,
+    PawJuryActionBar,
+    PawJuryVoteDialog,
+    LevelBadge,
+    PersonalHelpBadge,
+    VerifiedBadge,
+    PawAlbumTag,
+    PawIcon,
+    CommentComposer,
+    CommentThread,
+    ReplyComposerSheet,
+    ShareActionSheet
+  },
   data() {
     return {
       mode: 'rescue-detail',
       rescueId: '',
       rescueItems: getRescueRecords(),
+      rescueComments: RESCUE_DETAIL_COMMENTS,
+      rescueReplySheetVisible: false,
+      rescueReplySheetTarget: null,
+      rescueShareSheetVisible: false,
+      rescueVoted: false,
+      selectedRescueVote: '',
+      rescueVoteResultVisible: false,
       inviteAvatars: ['/static/figma/feature/e1f65d79bfde8d6fc9cf263e86080d08f13770fc.jpg', '/static/figma/feature/66fd0f7323c88fa771f5da9f675372febcc335ba.jpg', '/static/figma/feature/a338f4ed23b0a9c0b631d2e34369f856b09a255a.jpg', '/static/figma/feature/7266b7871b03ce7a570811a13cbbd71e61491f75.jpg', '/static/figma/feature/bf6cfd188d6671b8e283e5e5563ece9da7dc2ef8.jpg', '/static/figma/feature/24a1e03cab61f32251063e6be98887860b879349.jpg', '/static/figma/feature/92204562aae4aec0c460d32bdc61d58f52e24268.jpg'],
       albumFilter: 'all',
       albumSort: 'default',
@@ -179,6 +293,46 @@ export default {
         id: '', ownerName: '', ownerAvatar: '', ownerPawId: '', ownerLevel: 1, amount: 0,
         views: 0, detail: '', mediaPaths: [], animals: [], applicantRows: [], evidenceCount: 0, evidenceList: []
       }
+    },
+    rescueDetailImageUrls() {
+      return Array.isArray(this.currentRescue.mediaPaths)
+        ? this.currentRescue.mediaPaths.filter(Boolean)
+        : []
+    },
+    rescueYard() {
+      return {
+        id: this.currentRescue.yardId || '1',
+        name: this.currentRescue.yardName || '我就是要喂猫',
+      }
+    },
+    evidencePreviewPeople() {
+      const list = Array.isArray(this.currentRescue.evidenceList) ? this.currentRescue.evidenceList : []
+      return list.slice(0, 2)
+    },
+    featuredEvidence() {
+      return this.evidencePreviewPeople[0] || null
+    },
+    hasCurrentUserProof() {
+      return hasRescueProofByUser(this.currentRescue, SELF_PAW_ID)
+    },
+    applicantInfoRows() {
+      const rows = Array.isArray(this.currentRescue.applicantRows) ? this.currentRescue.applicantRows : []
+      return rows.map((row) => {
+        const source = row && typeof row === 'object' ? row : { value: row }
+        const label = String(source.label || '')
+        const rawValue = String(source.value || '')
+        const verified = source.verified !== false && label === '求助人姓名'
+        return {
+          label,
+          value: verified ? rawValue.replace(/(?:\s|　)*已实名$/, '') : rawValue,
+          verified
+        }
+      })
+    },
+    rescueReplyTargetName() {
+      const target = this.rescueReplySheetTarget
+      const author = target && target.author
+      return author && typeof author.name === 'string' ? author.name : ''
     },
     albumFilters() {
       return [
@@ -242,6 +396,46 @@ export default {
     if (this.mode === 'rescue-detail') this.rescueItems = getRescueRecords()
   },
   methods: {
+    openRescueShare() {
+      this.rescueShareSheetVisible = true
+    },
+    onRescueVote(vote) {
+      if (this.rescueVoted || !vote) return
+      this.selectedRescueVote = vote
+      this.rescueVoted = true
+      this.rescueVoteResultVisible = true
+    },
+    closeRescueVoteResult() {
+      this.rescueVoteResultVisible = false
+    },
+    onRescueVoteNext() {
+      this.rescueVoteResultVisible = false
+      uni.navigateBack({ fail: () => uni.navigateTo({ url: '/pages/yard/rescueReview' }) })
+    },
+    openRescueReplySheet(comment) {
+      this.rescueReplySheetTarget = comment && comment.author ? comment : null
+      this.rescueReplySheetVisible = true
+    },
+    onRescueReplySend() {
+      uni.showToast({ title: '已发送', icon: 'none' })
+    },
+    onRescueComposerVoice() {
+      uni.showToast({ title: '语音输入敬请期待', icon: 'none' })
+    },
+    onRescueComposerPickImage() {
+      uni.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] })
+    },
+    openRescueCommentUser(comment) {
+      const author = comment && (comment.author || comment)
+      if (!author) return
+      openUserProfile({ pawId: author.pawId || comment.id, nickname: author.name, avatar: author.avatar })
+    },
+    toggleRescueCommentLike(comment) {
+      if (!comment) return
+      comment.liked = !comment.liked
+      comment.likes = Math.max(0, (comment.likes || 0) + (comment.liked ? 1 : -1))
+    },
+    onRescueVoicePlay() { },
     openRescueOwner(record) {
       if (!record) return
       openUserProfile({ pawId: record.ownerPawId || (record.applicant && record.applicant.id), nickname: record.ownerName, avatar: record.ownerAvatar })
@@ -254,13 +448,29 @@ export default {
       const rescueId = decodeValue(id) || this.rescueItems[0]?.id || ''
       uni.navigateTo({ url: `/pages/feature/index?mode=rescue-detail&rescueId=${encodeURIComponent(rescueId)}` })
     },
+    openRescueAnimal(animal, index) {
+      if (!animal) return
+      const petId = animal.yardPetId || animal.petId || (Number(index) === 1 ? 'roster-dog-1' : 'roster-cat-1')
+      const query = [
+        'state=35',
+        'managed=0',
+        `petId=${encodeURIComponent(petId)}`,
+        `yardId=${encodeURIComponent(this.rescueYard.id)}`,
+        `yardName=${encodeURIComponent(this.rescueYard.name)}`,
+      ].join('&')
+      uni.navigateTo({ url: `/pages/adoption/petDetail?${query}` })
+    },
+    openRescueYard() {
+      openYardDetail(this.rescueYard)
+    },
     openEvidenceList() {
       const rescueId = this.currentRescue.id
-      uni.navigateTo({ url: `/pages/meMore/adoptionProofList?source=rescue&rescueId=${encodeURIComponent(rescueId)}&id=${encodeURIComponent(rescueId)}` })
+      uni.navigateTo({ url: `/pages/meMore/rescueProofList?source=rescue&rescueId=${encodeURIComponent(rescueId)}&id=${encodeURIComponent(rescueId)}` })
     },
     openProof() {
+      if (this.hasCurrentUserProof) return
       const rescueId = this.currentRescue.id
-      uni.navigateTo({ url: `/pages/yard/adoptionAudit?mode=proof&source=rescue&rescueId=${encodeURIComponent(rescueId)}&id=${encodeURIComponent(rescueId)}` })
+      uni.navigateTo({ url: `/pages/meMore/rescueProofForm?source=rescue&rescueId=${encodeURIComponent(rescueId)}&id=${encodeURIComponent(rescueId)}` })
     },
     openYard() { uni.navigateTo({ url: '/pages/commodityDetails/index?id=1' }) },
     selectAlbumFilter(filter) {
@@ -354,6 +564,14 @@ export default {
   background: #f5f5f5
 }
 
+.feature-page--rescue-detail .rescue-detail-hero {
+  display: flex;
+  height: 84px;
+  min-height: 84px;
+  flex-direction: column;
+  background: #fcf276;
+}
+
 .feature-scroll {
   flex: 1;
   min-height: 0;
@@ -362,178 +580,170 @@ export default {
 
 .rescue-head {
   display: flex;
-  align-items: center
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .rescue-head image {
-  width: 64rpx;
-  height: 64rpx;
-  margin-right: 14rpx;
-  border-radius: 50%
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
 }
 
 .rescue-head .rescue-avatar {
-  margin-right: 14rpx;
-  border-radius: 50%
+  border-radius: 50%;
 }
 
-.rescue-head>view {
+.rescue-identity {
   display: flex;
-  flex: 1;
-  flex-direction: column;
-  font-size: 24rpx
-}
-
-.rescue-author-line {
-  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
   align-items: center;
-  gap: 4px
+  gap: 4px;
 }
 
-.help-type {
-  margin-left: 4px
+.rescue-owner-name {
+  min-width: 0;
+  overflow: hidden;
+  color: #333;
+  font-size: 15px;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rescue-meta {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .muted {
   color: #999;
-  font-size: 20rpx
+  font-size: 12px;
+  line-height: 17px;
 }
 
 .rescue-amount {
   display: block;
-  margin-top: 18rpx;
+  margin-top: 12px;
   color: #ff3d48;
-  font-size: 42rpx
+  font-size: 21px;
+  line-height: 1.1;
 }
 
 .rescue-amount text {
-  font-size: 22rpx
+  color: #ee8002;
+  font-size: 11px;
 }
 
 .rescue-copy {
   display: block;
-  margin-top: 12rpx;
-  font-size: 26rpx;
-  line-height: 36rpx
+  margin-top: 7px;
+  font-size: 14.5px;
+  line-height: 20px;
+  word-break: break-all;
 }
 
 .rescue-gallery {
   display: flex;
-  margin-top: 18rpx
+  margin-top: 18px;
 }
 
 .rescue-gallery image {
   width: 25%;
-  height: 146rpx
+  height: auto;
+  aspect-ratio: 1;
 }
 
 .rescue-intro {
-  padding: 30rpx 44rpx
+  padding: 30px 44px;
 }
 
 .rescue-question {
   display: block;
-  font-size: 34rpx;
-  font-weight: 700
+  font-size: 34px;
+  font-weight: 700;
 }
 
 .rescue-intro>text:last-child {
-  font-size: 22rpx
-}
-
-.detail-section {
-  margin: 20rpx 26rpx;
-  padding: 28rpx
+  font-size: 22px;
 }
 
 .detail-gallery {
   display: flex;
   flex-wrap: wrap;
-  gap: 4rpx;
-  margin-top: 28rpx
+  gap: 4px;
+  margin-top: 28px;
 }
 
-.detail-gallery image {
-  width: calc((100% - 12rpx) / 4);
-  height: auto;
+.detail-gallery-cell {
+  width: calc((100% - 12px) / 4);
+  min-width: 0;
   aspect-ratio: 1;
 }
 
-.detail-section>text {
-  display: block;
-  margin-top: 18rpx;
-  font-size: 23rpx
-}
-
-.section-title {
-  font-size: 30rpx !important;
-  font-weight: 500
-}
-
-.animal-row {
-  display: flex;
-  gap: 24rpx;
-  margin-top: 24rpx
-}
-
-.animal-row image {
-  width: 92rpx;
-  height: 92rpx;
-  border-radius: 50%
+.detail-gallery-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
 }
 
 .invite-avatars {
   display: flex;
   justify-content: space-around;
-  padding: 34rpx 50rpx 0
+  padding: 34px 50px 0;
 }
 
 .invite-avatars image {
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: 50%
+  width: 72px;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
 }
 
 .joined-text {
   display: block;
   width: max-content;
-  margin: 16rpx auto;
-  padding: 8rpx 18rpx;
-  border-radius: 12rpx;
+  margin: 16px auto;
+  padding: 8px 18px;
+  border-radius: 12px;
   background: #fff;
-  color: #08bb58
+  color: #08bb58;
 }
 
 .invite-card {
-  margin: 20rpx 10rpx;
-  padding: 28rpx 36rpx
+  margin: 20px 10px;
+  padding: 28px 36px;
 }
 
 .invite-title {
   display: flex;
   align-items: center;
   color: #06b958;
-  font-size: 27rpx;
-  font-weight: 500
+  font-size: 27px;
+  font-weight: 500;
 }
 
 .invite-title image {
-  width: 72rpx;
-  height: 72rpx;
-  margin-right: 18rpx;
-  border-radius: 50%
+  width: 72px;
+  height: auto;
+  aspect-ratio: 1;
+  margin-right: 18px;
+  border-radius: 50%;
 }
 
 .invite-card>text {
   display: block;
-  margin: 28rpx 0;
+  margin: 28px 0;
   color: #888;
-  font-size: 25rpx
+  font-size: 25px;
 }
 
 .invite-button {
-  width: 270rpx;
-  margin: 50rpx auto 0
+  width: 100%;
+  max-width: 270px;
+  margin: 50px auto 0;
 }
 
 .feature-page--invite .feature-scroll {
@@ -863,15 +1073,18 @@ export default {
   margin-top: 74px
 }
 
-.feature-page--rescue-detail .detail-section {
-  width: calc(100% - 30px);
+.feature-page--rescue-detail .rescue-detail-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 15px;
   box-sizing: border-box;
-  margin-right: 15px;
-  margin-left: 15px
 }
 
 .feature-page--rescue-detail .feature-scroll {
-  background: linear-gradient(180deg, #fcf276 0, #fcf276 181px, #f5f5f5 181px, #f5f5f5 100%);
+  background: linear-gradient(180deg, #fcf276 0, #fcf276 97px, #f5f5f5 97px, #f5f5f5 100%);
+  padding-bottom: calc(32px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
 }
 
 .feature-page--rescue-detail .rescue-intro {
@@ -891,47 +1104,23 @@ export default {
   line-height: 17px;
 }
 
-.feature-page--rescue-detail .detail-section--case {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  margin-top: 0;
-  padding: 13px 17px 17px;
-}
-
 .feature-page--rescue-detail .detail-section--case .rescue-head image {
   width: 34px;
   height: 34px;
-  margin-right: 7px;
+  margin-right: 0;
   flex: none;
 }
 
 .feature-page--rescue-detail .detail-section--case .rescue-head .rescue-avatar {
-  margin-right: 7px;
+  margin-right: 0;
   flex: none;
-}
-
-.feature-page--rescue-detail .detail-section--case>.rescue-amount {
-  margin-top: 12px;
-  font-size: 21px !important
-}
-
-.feature-page--rescue-detail .detail-section--case>.rescue-amount text {
-  font-size: 11px
 }
 
 .feature-page--rescue-detail .detail-views {
   display: block;
   margin-top: 13px;
   color: #999;
-  font-size: 11px
-}
-
-.feature-page--rescue-detail .detail-section--case .rescue-copy {
-  margin-top: 7px;
-  font-size: 14.5px;
-  line-height: 20px;
-  word-break: break-all
+  font-size: 11px;
 }
 
 .feature-page--rescue-detail .detail-section--case .detail-gallery {
@@ -939,57 +1128,70 @@ export default {
   margin-top: 16px
 }
 
-.feature-page--rescue-detail .detail-section--case .detail-gallery image {
+.feature-page--rescue-detail .detail-section--case .detail-gallery-cell {
   width: calc((100% - 3px) / 4);
 }
 
-.feature-page--rescue-detail .detail-section:not(.detail-section--case) {
-  margin-top: 10px;
-  padding: 15px 17px;
+.feature-page--rescue-detail .rescue-detail-scroll-spacer {
+  height: 100px;
+  background: #f5f5f5;
 }
 
 .feature-page--rescue-detail .applicant-row {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
   gap: 12px;
-  margin-top: 10px;
   color: #555;
   font-size: 12px;
   line-height: 18px;
 }
 
-.feature-page--rescue-detail .applicant-row text:last-child {
-  color: #333;
-  text-align: right;
+.feature-page--rescue-detail .applicant-info-card .applicant-row {
+  color: #333333;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
 }
 
-.feature-page--rescue-detail .animal-row {
-  align-items: flex-start;
-  gap: 20px;
-  margin-top: 15px;
+.feature-page--rescue-detail .applicant-row :deep(.paw-tag) {
+  background: #f4f4f4;
+  color: #666666;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 16px;
 }
 
-.feature-page--rescue-detail .animal-cell {
+.feature-page--rescue-detail .applicant-row :deep(.paw-tag text) {
+  color: #666666;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.feature-page--rescue-detail .applicant-value {
   display: flex;
-  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
-  color: #333;
-  font-size: 12px;
 }
 
-.feature-page--rescue-detail .animal-cell image {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
+.feature-page--rescue-detail .applicant-value-text {
+  min-width: 0;
+  color: #333333;
+  font-size: 14px;
+  font-weight: 400;
+  overflow-wrap: anywhere;
 }
 
-.feature-page--rescue-detail .detail-section--evidence {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-bottom: 17px;
+.feature-page--rescue-detail .applicant-value :deep(.paw-badge) {
+  flex: 0 0 auto;
+}
+
+.feature-page--rescue-detail .applicant-value text {
+  color: #333333;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .feature-page--rescue-detail .evidence-heading {
@@ -998,72 +1200,137 @@ export default {
   justify-content: space-between;
 }
 
-.feature-page--rescue-detail .evidence-heading .section-title {
-  margin-top: 0;
-}
-
-.feature-page--rescue-detail .evidence-link {
-  margin-top: 0;
-  color: #888;
-  font-size: 12px;
-}
-
-.feature-page--rescue-detail .evidence-row {
+.feature-page--rescue-detail .evidence-title {
   display: flex;
-  align-items: flex-start;
+  min-width: 0;
+  align-items: baseline;
   gap: 8px;
 }
 
-.feature-page--rescue-detail .evidence-avatar {
-  flex: none;
-}
-
-.feature-page--rescue-detail .evidence-copy {
+.feature-page--rescue-detail .evidence-link {
   display: flex;
-  min-width: 0;
-  flex: 1;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.feature-page--rescue-detail .evidence-author {
-  display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #333;
-  font-size: 12px;
+  margin-top: 0;
+  color: #888;
+  font-size: 14px;
 }
 
-.feature-page--rescue-detail .evidence-text {
+.feature-page--rescue-detail .evidence-people-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.feature-page--rescue-detail .evidence-person {
+  display: flex;
+  min-width: 48px;
+  flex: 0 0 48px;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.feature-page--rescue-detail .evidence-person-avatar {
+  flex: 0 0 48px;
+}
+
+.feature-page--rescue-detail .evidence-person-name {
+  max-width: 72px;
+  overflow: hidden;
+  color: #333;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feature-page--rescue-detail .evidence-person-relation {
+  max-width: 72px;
+  overflow: hidden;
+  color: #999;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feature-page--rescue-detail .evidence-quote {
+  margin-top: 18px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #f5f5f5;
+}
+
+.feature-page--rescue-detail .evidence-quote-text {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #999;
+  font-size: 14px;
+  line-height: 20px;
+  word-break: break-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.feature-page--rescue-detail .evidence-action-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 28px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #fffaf0;
+}
+
+.feature-page--rescue-detail .evidence-proof-count {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: baseline;
+  gap: 4px;
   color: #333;
   font-size: 12px;
   line-height: 18px;
-  word-break: break-all;
+  white-space: nowrap;
 }
 
-.feature-page--rescue-detail .evidence-copy .muted {
-  margin-top: 0;
+.feature-page--rescue-detail .evidence-proof-count-number {
+  color: #ee8002;
+  font-size: 22px;
+  line-height: 26px;
 }
 
-.feature-page--rescue-detail .evidence-action {
-  width: 100%;
-  margin-top: 2px;
+.feature-page--rescue-detail .evidence-proof-button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.feature-page--rescue-detail .evidence-proof-button :deep(.paw-button) {
+  background: #ffaa00;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.feature-page--rescue-detail .evidence-proof-button :deep(.paw-button--disabled) {
+  background: #eee;
+  color: #aaa;
 }
 
 .feature-page--rescue-detail .detail-note {
   display: block;
-  margin-top: 10px;
-  color: #666;
+  margin-top: 0;
+  color: #999999;
   font-size: 12px;
+  font-weight: 400;
   line-height: 18px;
-}
-
-.feature-page--rescue-detail .rescue-author-copy {
-  display: flex;
-  min-width: 0;
-  flex: 1;
-  flex-direction: column;
-  gap: 4px;
 }
 
 .feature-page--rescue-detail .rescue-status {

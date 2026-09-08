@@ -92,42 +92,8 @@
 					</view>
 				</view>
 
-				<view v-if="!shippingPick" class="card addr-card" @tap="openPickShipping">
-					<view class="address-icon">
-						<image class="address-icon__circle" src="/static/figma/create-yard/address-pin-circle.svg"
-							mode="aspectFit" />
-						<image class="address-icon__pin" src="/static/figma/create-yard/address-pin.png"
-							mode="aspectFit" />
-					</view>
-					<view class="addr-main">
-						<view class="addr-line1-row">
-							<text class="addr-title">请填写收货地址，用于接收猫粮</text>
-							<view class="addr-action">
-								<text>添加</text>
-								<image src="/static/figma/create-yard/arrow-right.svg" mode="aspectFit" />
-							</view>
-						</view>
-						<text class="addr-sub">不对外展示，可放心填写</text>
-					</view>
-				</view>
-				<view v-else class="card addr-card addr-card--picked" @tap="openPickShipping">
-					<view class="address-icon">
-						<image class="address-icon__circle" src="/static/figma/create-yard/address-pin-circle.svg"
-							mode="aspectFit" />
-						<image class="address-icon__pin" src="/static/figma/create-yard/address-pin.png"
-							mode="aspectFit" />
-					</view>
-					<view class="addr-main">
-						<view class="addr-line1-row">
-							<text class="addr-line1">{{ shippingDetailText }}</text>
-							<view class="addr-action addr-action--edit">
-								<text>修改</text>
-								<image src="/static/figma/create-yard/arrow-right.svg" mode="aspectFit" />
-							</view>
-						</view>
-						<text class="addr-line2">{{ shippingPick.name }} {{ shippingPick.phone }}</text>
-					</view>
-				</view>
+				<PawAddressPickerCard :address="shippingPick" kind="shipping" :use-default-address="true"
+					return-url="/pages/yard/createCatYard" @select="onShippingAddressSelected" />
 			</view>
 		</scroll-view>
 
@@ -159,13 +125,14 @@ import PawLocationPickerSheet from '@/components/location/PawLocationPickerSheet
 import PawImageCropper from '@/components/form/PawImageCropper.vue'
 import PawNoticeModal from '@/components/PawNoticeModal.vue'
 import PawRealNamePrompt from '@/components/auth/PawRealNamePrompt.vue'
+import PawAddressPickerCard from '@/components/address/PawAddressPickerCard.vue'
 import { isRealNameVerified } from '@/utils/realNameMock.js'
 import { PAW_MSG_VOICE_LEVEL, PAW_MSG_VOICE_DAY_LIMIT } from '@/utils/pawNoticeMessages.js'
 import { getAddressById, getAddressList } from '@/utils/addressMock.js'
 
 export default {
 	name: 'CreateCatYardPage',
-	components: { PawPageNav, PawSafeArea, PawVoiceRecorderSheet, PawLocationPickerSheet, PawImageCropper, PawNoticeModal, PawRealNamePrompt },
+	components: { PawPageNav, PawSafeArea, PawVoiceRecorderSheet, PawLocationPickerSheet, PawImageCropper, PawNoticeModal, PawRealNamePrompt, PawAddressPickerCard },
 	data() {
 		return {
 			animalKind: 'cat',
@@ -206,10 +173,6 @@ export default {
 		adoptLen() {
 			return (this.adoptMsg || '').length
 		},
-		shippingDetailText() {
-			if (!this.shippingPick) return ''
-			return [...(this.shippingPick.regionParts || []), this.shippingPick.detail || ''].filter(Boolean).join(' ')
-		}
 	},
 	onUnload() {
 		if (this.recorderManager && (this.recording || this.recorderStarted)) {
@@ -339,26 +302,10 @@ export default {
 		clearLocDetail() {
 			this.locDetail = ''
 		},
-		openPickShipping() {
-			const selectedId = this.shippingPick && this.shippingPick.id
-				? `&selectedId=${encodeURIComponent(this.shippingPick.id)}`
-				: ''
-			uni.navigateTo({
-				url: `/pages/meMore/shippingAddress?kind=shipping&pick=1&returnUrl=${encodeURIComponent('/pages/yard/createCatYard')}${selectedId}`,
-				events: {
-					addressPicked: (payload = {}) => {
-						if (!payload || !payload.detail) return
-						this.shippingSelectedId = payload.id ? String(payload.id) : ''
-						this.shippingPick = {
-							id: payload.id,
-							name: payload.name || '',
-							phone: payload.phone || '',
-							regionParts: payload.regionParts || [],
-							detail: payload.detail || ''
-						}
-					}
-				}
-			})
+		onShippingAddressSelected(address = {}) {
+			if (!address || !address.id) return
+			this.shippingSelectedId = String(address.id)
+			this.shippingPick = { ...address, id: String(address.id) }
 		},
 		onSaveYard() {
 			const title = (this.yardName || '').trim() || '我就是要喂猫'
@@ -874,94 +821,6 @@ export default {
 	height: 206px;
 	padding: 18px 12px 5px;
 	border-radius: 12px;
-}
-
-.addr-card {
-	display: flex;
-	height: 68px;
-	align-items: center;
-	padding: 0 8px 0 6px;
-	border-radius: 20px;
-}
-
-.address-icon {
-	position: relative;
-	display: flex;
-	flex: 0 0 35px;
-	width: 35px;
-	height: 35px;
-	align-items: center;
-	justify-content: center;
-}
-
-.address-icon__circle {
-	display: block;
-	width: 35px;
-	height: 35px;
-}
-
-.address-icon__pin {
-	position: absolute;
-	top: 8px;
-	left: 8px;
-	display: block;
-	width: 20px;
-	height: 19px;
-}
-
-.addr-main {
-	display: flex;
-	flex: 1 1 auto;
-	min-width: 0;
-	flex-direction: column;
-	margin-left: 13px;
-}
-
-.addr-line1-row {
-	display: flex;
-	width: 100%;
-	min-width: 0;
-	align-items: center;
-}
-
-.addr-title,
-.addr-line1 {
-	display: block;
-	flex: 1 1 auto;
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	color: #333;
-	font-size: 14px;
-	font-weight: 500;
-	line-height: 20px;
-	white-space: nowrap;
-}
-
-.addr-sub,
-.addr-line2 {
-	margin-top: 2px;
-	color: #999;
-	font-size: 13px;
-	line-height: 19px;
-	white-space: nowrap;
-}
-
-.addr-action {
-	display: flex;
-	flex: 0 0 auto;
-	align-items: center;
-	gap: 2px;
-	margin-left: 8px;
-	color: #fd6302;
-	font-size: 13px;
-	line-height: 20px;
-}
-
-.addr-action image {
-	display: block;
-	width: 16px;
-	height: 16px;
 }
 
 .footer-safe {

@@ -119,7 +119,7 @@ export default {
         const preparedCurrentIndex = Math.min(currentIndex, preparedUrls.length - 1)
         try {
           uni.previewImage({
-            current: preparedCurrentIndex,
+            current: preparedUrls[preparedCurrentIndex],
             urls: preparedUrls,
             success: () => this.$emit('preview-opened', {
               current: preparedUrls[preparedCurrentIndex],

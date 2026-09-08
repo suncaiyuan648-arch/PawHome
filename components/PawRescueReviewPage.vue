@@ -2,7 +2,8 @@
   <view class="rescue-review-page" data-qa="qa-rescue-review-page">
     <PawPageNav title="救助评审" :title-centered="true" background="#f5f5f5" fallback-url="/pages/me/index" />
 
-    <scroll-view class="rescue-review-scroll" scroll-y :show-scrollbar="false">
+    <view class="rescue-review-summary-shell" :class="{ 'rescue-review-summary-shell--hidden': !showSummary }"
+      data-qa="qa-rescue-review-summary">
       <view class="fund-card">
         <text class="fund-name">{{ fundSummary.name }}</text>
         <text class="fund-balance">{{ fundSummary.balance }}</text>
@@ -19,8 +20,10 @@
         <image class="fund-note__icon" src="/static/figma/feature/rescue-fund-info.svg" mode="aspectFit" />
         <text>{{ fundSummary.note }}</text>
       </view>
+    </view>
 
-      <view class="fund-tabs" data-qa="qa-rescue-fund-tabs">
+    <view class="fund-tabs-shell" data-qa="qa-rescue-fund-tabs">
+      <view class="fund-tabs">
         <view v-for="stat in fundSummary.statusStats" :key="stat.status" class="fund-tab"
           :class="{ 'fund-tab--active': activeFundStatus === stat.status }"
           :data-qa="'qa-rescue-fund-tab-' + stat.status" @tap="selectFundStatus(stat.status)">
@@ -30,6 +33,9 @@
           </view>
         </view>
       </view>
+    </view>
+
+    <scroll-view class="rescue-review-scroll" scroll-y :show-scrollbar="false" @scroll="handleScroll">
 
       <view v-for="item in visibleRescueItems" :key="item.id" class="rescue-card paw-surface"
         data-qa="qa-rescue-fund-record" :id="'qa-rescue-fund-record-' + item.id" @tap="openRescueDetail(item.id)">
@@ -39,7 +45,7 @@
           <view class="rescue-author-copy">
             <view class="rescue-author-line">
               <text @tap.stop="openRescueOwner(item)">{{ item.ownerName }}</text>
-              <LevelCapsule :level="item.ownerLevel" inline />
+              <LevelBadge :level="item.ownerLevel" inline />
             </view>
             <text class="muted">{{ item.createdLabel }}</text>
           </view>
@@ -61,13 +67,13 @@
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawStatusPill from '@/components/PawStatusPill.vue'
 import PawAvatar from '@/components/identity/PawAvatar.vue'
-import LevelCapsule from '@/components/LevelCapsule.vue'
+import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import { getRescueRecords, getRescueReviewSummary } from '@/utils/rescueStorage.js'
 import { openUserProfile } from '@/utils/profileNav.js'
 
 export default {
   name: 'PawRescueReviewPage',
-  components: { PawPageNav, PawStatusPill, PawAvatar, LevelCapsule },
+  components: { PawPageNav, PawStatusPill, PawAvatar, LevelBadge },
   options: {
     // Keep the page root in normal flow when the component is mounted by the
     // route wrapper on WeChat.
@@ -78,7 +84,10 @@ export default {
   data() {
     return {
       rescueItems: getRescueRecords(),
-      activeFundStatus: 'pending'
+      activeFundStatus: 'pending',
+      showSummary: true,
+      lastScrollTop: 0,
+      suppressSummaryIntentUntil: 0
     }
   },
   computed: {
@@ -93,6 +102,23 @@ export default {
     this.rescueItems = getRescueRecords()
   },
   methods: {
+    handleScroll(event) {
+      const scrollTop = Math.max(0, Number(event?.detail?.scrollTop) || 0)
+      const scrollDelta = scrollTop - this.lastScrollTop
+
+      if (scrollTop <= 0) {
+        this.setSummaryVisibility(true)
+      } else if (Date.now() >= this.suppressSummaryIntentUntil && Math.abs(scrollDelta) >= 1) {
+        this.setSummaryVisibility(scrollDelta < 0)
+      }
+
+      this.lastScrollTop = scrollTop
+    },
+    setSummaryVisibility(visible) {
+      if (this.showSummary === visible) return
+      this.showSummary = visible
+      this.suppressSummaryIntentUntil = Date.now() + 260
+    },
     selectFundStatus(status) {
       const nextStatus = String(status || '').trim()
       if (!this.fundSummary.statusStats.some((stat) => stat.status === nextStatus)) return
@@ -134,6 +160,23 @@ export default {
   flex: 1 1 auto;
   box-sizing: border-box;
   padding-bottom: 24px;
+}
+
+.rescue-review-summary-shell {
+  display: flex;
+  min-height: 0;
+  max-height: 228px;
+  flex: 0 0 auto;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 1;
+  transition: max-height 220ms ease, opacity 180ms ease;
+}
+
+.rescue-review-summary-shell--hidden {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .fund-card {
@@ -231,10 +274,21 @@ export default {
   flex: 1 1 auto;
 }
 
+.fund-tabs-shell {
+  display: flex;
+  min-height: 76px;
+  flex: 0 0 76px;
+  align-items: flex-start;
+  padding: 24px 12px 8px;
+  box-sizing: border-box;
+  background: #f5f5f5;
+  z-index: 2;
+}
+
 .fund-tabs {
   display: flex;
-  width: calc(100% - 24px);
-  margin: 24px 12px 0;
+  width: 100%;
+  margin: 0;
 }
 
 .fund-tab {
@@ -345,6 +399,7 @@ export default {
 }
 
 .rescue-amount text {
+  color: #ee8002;
   font-size: 11px;
 }
 

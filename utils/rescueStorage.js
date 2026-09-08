@@ -11,6 +11,18 @@ const RESCUE_REVIEW_STATUSES = [
 	{ status: 'rejected', statusText: '投票否决', count: 2 },
 ]
 
+export const RESCUE_APPLICATION_STATUS_META = Object.freeze({
+	platform_pending: { text: '平台审核中', tone: 'pending' },
+	platform_approved: { text: '平台审核成功', tone: 'success' },
+	platform_rejected: { text: '平台审核未通过', tone: 'danger' }
+})
+
+export const RESCUE_APPLICATION_TRANSITIONS = Object.freeze({
+	platform_pending: Object.freeze(['platform_approved', 'platform_rejected']),
+	platform_approved: Object.freeze([]),
+	platform_rejected: Object.freeze([])
+})
+
 function createDemoRescue(index, status, statusText) {
 	const id = `rescue-demo-${String(index).padStart(3, '0')}`
 	const ownerName = index <= 2 ? '我就是要喂猫' : `救助申请人${index}`
@@ -29,13 +41,16 @@ function createDemoRescue(index, status, statusText) {
 		receiver: { name: ownerName, account: `13900000${String(index).padStart(3, '0')}` },
 		media: [DEFAULT_RESCUE_MEDIA, DEFAULT_RESCUE_MEDIA, DEFAULT_RESCUE_MEDIA, DEFAULT_RESCUE_MEDIA],
 		animals: [
-			{ id: `${id}-pet-1`, name: `救助猫咪${index}`, avatar: '/static/figma/pets/pet-orange.png' },
-			{ id: `${id}-pet-2`, name: `陪伴猫咪${index}`, avatar: '/static/figma/pets/pet-dog.png' },
+			{ id: `${id}-pet-1`, yardPetId: 'roster-cat-1', name: `救助猫咪${index}`, avatar: '/static/figma/pets/pet-orange.png' },
+			{ id: `${id}-pet-2`, yardPetId: 'roster-dog-1', name: `陪伴猫咪${index}`, avatar: '/static/figma/pets/pet-dog.png' },
 		],
+		yardId: '1',
+		yardName: '我就是要喂猫',
+		yardAvatar: '/static/figma/yard-cover-exact.png',
 		evidenceCount: 22 + index,
 		proofList: index === 1 ? [
-			{ id: `${id}-proof-1`, name: '焦俊梅', avatar: '/static/figma/pets/pet-orange.png', story: '情况属实，希望大家投票为真实救助。', createdAt: '昨天 20:45' },
-			{ id: `${id}-proof-2`, name: '张梦梦', avatar: '/static/figma/pets/pet-dog.png', story: '我去现场看过，情况属实。', createdAt: '昨天 20:46' },
+			{ id: `${id}-proof-1`, name: '焦俊梅', relationship: '同学', avatar: '/static/figma/pets/pet-orange.png', story: '是真的，希望大家投票为真实救助。', createdAt: '昨天 20:45' },
+			{ id: `${id}-proof-2`, name: '张梦梦', relationship: '老师', avatar: '/static/figma/pets/pet-dog.png', story: '我去现场看过，情况属实。', createdAt: '昨天 20:46' },
 		] : [],
 		applicantName: ownerName,
 		ownerAvatar: avatar,
@@ -76,6 +91,7 @@ function normalizeAnimal(animal, index, rescueId) {
 	return {
 		...animal,
 		id: normalizeId(animal.id || animal.petId) || `${rescueId}-pet-${index}`,
+		yardPetId: normalizeId(animal.yardPetId || animal.petId || animal.petDetailId),
 		name: normalizeId(animal.name) || '猫咪',
 		avatar: normalizeId(animal.avatar || animal.image) || DEFAULT_PET_AVATAR,
 	}
@@ -114,6 +130,7 @@ function normalizeProof(proof, index, rescueId) {
 		...proof,
 		id: normalizeId(proof.id) || `${rescueId}-proof-${index}`,
 		name: normalizeId(proof.name || proof.userName) || '匿名用户',
+		relationship: normalizeId(proof.relationship || proof.relation || proof.role) || '证实人',
 		avatar: normalizeId(proof.avatar || proof.userAvatar) || DEFAULT_APPLICANT_AVATAR,
 		media: normalizeMedia(proof.media || proof.mediaPaths || proof.proofPhotos),
 		level: Number(proof.level) || 1,
@@ -137,9 +154,16 @@ export function normalizeRescueRecord(record) {
 	const amount = Number(record.amount)
 	const status = normalizeId(record.status) || 'pending'
 	const statusText = normalizeId(record.statusText) || (status === 'paid' ? '打款成功' : '待投票')
+	const applicationStatus = normalizeId(record.applicationStatus) || (
+		status === 'paid' ? 'platform_approved' : status === 'rejected' ? 'platform_rejected' : 'platform_pending'
+	)
 	const ownerName = normalizeId(record.ownerName || applicant.name) || '逢猫'
 	const ownerAvatar = normalizeId(record.ownerAvatar || applicant.avatar) || DEFAULT_APPLICANT_AVATAR
 	const ownerLevel = Number(record.ownerLevel || applicant.level) || 1
+	const yard = record.yard && typeof record.yard === 'object' ? record.yard : {}
+	const yardId = normalizeId(record.yardId || yard.id) || '1'
+	const yardName = normalizeId(record.yardName || yard.name) || '我就是要喂猫'
+	const yardAvatar = normalizeId(record.yardAvatar || yard.avatar) || '/static/figma/yard-cover-exact.png'
 	const mediaPaths = normalizeMedia(
 		Array.isArray(record.mediaPaths) && record.mediaPaths.length ? record.mediaPaths : record.media
 	)
@@ -158,8 +182,11 @@ export function normalizeRescueRecord(record) {
 		...record,
 		id,
 		rescueId: id,
+		applicationType: 'rescue',
 		status,
 		statusText,
+		applicationStatus,
+		applicationStatusText: RESCUE_APPLICATION_STATUS_META[applicationStatus]?.text || '平台审核中',
 		statusTone: normalizeId(record.statusTone) || (status === 'pending' ? 'success' : 'neutral'),
 		applicant,
 		applicantName: applicant.name,
@@ -182,6 +209,9 @@ export function normalizeRescueRecord(record) {
 		ownerAvatar,
 		ownerPawId: normalizeId(record.ownerPawId || applicant.id),
 		ownerLevel,
+		yardId,
+		yardName,
+		yardAvatar,
 		applicantRows,
 	}
 }
@@ -218,6 +248,15 @@ export function getRescueById(id, options = {}) {
 	const rescueId = normalizeId(id)
 	if (!rescueId) return null
 	return getRescueRecords(options).find((record) => record.id === rescueId || record.rescueId === rescueId) || null
+}
+
+export function hasRescueProofByUser(idOrRecord, pawId) {
+	const record = idOrRecord && typeof idOrRecord === 'object'
+		? normalizeRescueRecord(idOrRecord)
+		: getRescueById(idOrRecord)
+	const actorId = normalizeId(pawId)
+	if (!record || !actorId) return false
+	return record.proofList.some((proof) => normalizeId(proof && (proof.pawId || proof.userId || proof.author?.pawId)) === actorId)
 }
 
 /**
@@ -271,6 +310,7 @@ export function createRescue(input = {}) {
 		rescueId: id,
 		status: source.status || 'pending',
 		statusText: source.statusText || '待投票',
+		applicationStatus: source.applicationStatus || 'platform_pending',
 		applicant: source.applicant || {
 			id: source.applicantId,
 			name: source.applicantName,
@@ -290,6 +330,43 @@ export function createRescue(input = {}) {
 	next.unshift(record)
 	saveRescues(next)
 	return getRescueById(record.id, { includeDemo: false })
+}
+
+/** 更新真实救助申请；演示记录首次更新时复制为同 ID 的本地记录。 */
+export function updateRescue(id, patch = {}) {
+	const rescueId = normalizeId(id)
+	if (!rescueId) return null
+	const saved = getSavedRescues()
+	const index = saved.findIndex((item) => item.id === rescueId)
+	if (index >= 0) {
+		saved[index] = normalizeRescueRecord({ ...saved[index], ...(patch || {}), id: rescueId })
+		saveRescues(saved)
+		return getRescueById(rescueId, { includeDemo: false })
+	}
+	const demo = getRescueRecords().find((item) => item.id === rescueId)
+	if (!demo) return null
+	const localCopy = normalizeRescueRecord({ ...demo, ...(patch || {}), id: rescueId })
+	if (!localCopy) return null
+	saved.unshift(localCopy)
+	saveRescues(saved)
+	return getRescueById(rescueId, { includeDemo: false })
+}
+
+export function canTransitionRescueApplication(fromStatus, toStatus) {
+	const from = normalizeId(fromStatus)
+	const to = normalizeId(toStatus)
+	return Boolean(from && to && (from === to || (RESCUE_APPLICATION_TRANSITIONS[from] || []).includes(to)))
+}
+
+export function transitionRescueApplication(id, toStatus, patch = {}) {
+	const record = getRescueById(id)
+	const nextStatus = normalizeId(toStatus)
+	if (!record || !canTransitionRescueApplication(record.applicationStatus, nextStatus)) return null
+	return updateRescue(record.id, {
+		...patch,
+		applicationStatus: nextStatus,
+		applicationStatusText: RESCUE_APPLICATION_STATUS_META[nextStatus]?.text || nextStatus
+	})
 }
 
 /** Appends one independent proof submission and keeps evidenceCount in sync. */

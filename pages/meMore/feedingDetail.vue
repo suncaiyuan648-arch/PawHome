@@ -1,5 +1,8 @@
 <template>
-	<PawFeedingDetailFigma v-if="figmaVariant" :variant="figmaVariant" />
+	<PawFeedingDetailFigma v-if="figmaVariant || detailPerspective"
+		:variant="detailPerspective === 'yard-owner' ? 91 : (figmaVariant || 90)" :perspective="detailPerspective"
+		:order-detail="detail" :order-id="recordId" :record-id="recordId"
+		:show-feedback="detailPerspective === 'yard-owner' || figmaVariant === 91" @feedback="onFeedback" />
 	<view v-else class="detail-page">
 		<view class="nav-wrap nav-wrap--yellow" :style="{ paddingTop: statusBarHeight + 'px' }">
 			<view class="nav-row">
@@ -21,18 +24,13 @@
 						<view class="head-info">
 							<view class="title-row">
 								<text class="yard-name" @click.stop="openOwnerFromDetail">{{ detail.yardName }}</text>
-								<YardTagPill :label="detail.yardTag" @click.stop="openYardFromDetail" />
+								<LevelBadge :level="detail.ownerLevel || detail.level || 1" />
 							</view>
 							<text class="feed-line feed-line--bold">{{ detail.feedAmountLine }}</text>
 							<text class="time-small">{{ detail.time }}</text>
 						</view>
 						<view class="head-right-col">
-							<text class="head-status"
-								:class="detail.headerStatusTone === 'green' ? 'head-status--green' : 'head-status--red'">{{
-									detail.headerStatusText }}</text>
-							<view class="progress-pill">
-								<text>已反馈{{ detail.feedbackProgress }}次</text>
-							</view>
+							<PawFeedingFeedbackTag :text="`已反馈${detail.feedbackProgress}次`" tone="progress" />
 						</view>
 					</view>
 					<view class="order-no-row">
@@ -91,19 +89,23 @@
 			<view class="food-summary-action">我知道了</view>
 		</view>
 	</view>
+	<PawToast ref="toast" />
 </template>
 
 <script>
 import { feedingDetailById } from "@/utils/feedingDemo.js";
+import { getFeedingOrderDetail } from "@/utils/feedingOrderMockApi.js";
 import { goBackSmart } from "@/utils/navBack.js";
 import { openUserProfile, openYardDetail } from "@/utils/profileNav.js";
 import { safeImgSrc } from "@/utils/safeImgSrc.js";
-import YardTagPill from "@/components/YardTagPill.vue";
+import PawFeedingFeedbackTag from "@/components/feeding/PawFeedingFeedbackTag.vue";
+import LevelBadge from "@/components/customBadge/LevelBadge.vue";
 import PawFeedingDetailFigma from "@/components/PawFeedingDetailFigma.vue";
 import PawIcon from "@/components/PawIcon/PawIcon.vue";
+import PawToast from "@/components/feedback/PawToast.vue";
 
 export default {
-	components: { YardTagPill, PawFeedingDetailFigma, PawIcon },
+	components: { PawFeedingFeedbackTag, LevelBadge, PawFeedingDetailFigma, PawIcon, PawToast },
 	data() {
 		return {
 			statusBarHeight: 20,
@@ -111,6 +113,7 @@ export default {
 			detail: null,
 			recordId: "",
 			figmaVariant: 0,
+			detailPerspective: "",
 			showFoodSummary: false,
 		};
 	},
@@ -127,11 +130,30 @@ export default {
 		} catch (e) { }
 		// #endif
 		const id = options.id ? decodeURIComponent(options.id) : "";
-		this.recordId = id;
-		this.detail = feedingDetailById[id] || feedingDetailById.f1;
+		const orderId = options.orderId ? decodeURIComponent(options.orderId) : id;
+		this.recordId = orderId;
+		this.detailPerspective = this.normalizePerspective(options.type);
+		if (this.detailPerspective) {
+			getFeedingOrderDetail({
+				type: this.detailPerspective,
+				userPawId: options.userPawId,
+				yardOwnerId: options.yardOwnerId || options.ownerPawId,
+				yardId: options.yardId,
+				orderId
+			}).then(result => {
+				if (result && result.success) this.detail = result.data;
+			});
+		} else {
+			this.detail = feedingDetailById[id] || feedingDetailById.f1;
+		}
 		this.showFoodSummary = options.popup === 'food-summary';
 	},
 	methods: {
+		normalizePerspective(value) {
+			if (value === 'yard' || value === 'yard-owner' || value === 'owner') return 'yard-owner';
+			if (value === 'mine' || value === 'cloud-parent' || value === 'cloud') return 'cloud-parent';
+			return '';
+		},
 		resolveFigmaVariant(options = {}) {
 			let value = Number(options.variant) || 0;
 			// #ifdef H5
@@ -149,7 +171,11 @@ export default {
 			return !!(log && log.length);
 		},
 		goBack() {
-			goBackSmart({ fallbackUrl: "/pages/me/index" });
+			goBackSmart({
+				fallbackUrl: this.detailPerspective === "yard-owner"
+					? "/pages/meMore/yardFeedOrders"
+					: "/pages/meMore/myFeedings"
+			});
 		},
 		openOwnerFromDetail() {
 			const d = this.detail;
@@ -168,9 +194,14 @@ export default {
 		copyOrderNo() {
 			const no = this.detail && this.detail.orderNo;
 			if (!no) return;
-			uni.setClipboardData({
+			const clipboardApi = typeof wx !== "undefined" ? wx : uni;
+			clipboardApi.setClipboardData({
 				data: String(no),
-				success: () => uni.showToast({ title: "已复制", icon: "none" }),
+				showToast: false,
+				success: () => {
+					if (typeof clipboardApi.hideToast === "function") clipboardApi.hideToast();
+					if (this.$refs.toast) this.$refs.toast.show("已复制");
+				},
 			});
 		},
 		previewTimeline(row) {
@@ -180,6 +211,16 @@ export default {
 		},
 		onFeedbackTap() {
 			uni.showToast({ title: "反馈", icon: "none" });
+		},
+		onFeedback(detail) {
+			const d = detail || this.detail || {};
+			const query = [
+				'type=yard-owner',
+				'yardOwnerId=' + encodeURIComponent(d.yardOwnerId || 'yard-owner-1'),
+				'yardId=' + encodeURIComponent(d.yardId || '1'),
+				'orderId=' + encodeURIComponent(d.orderId || this.recordId || '')
+			].join('&');
+			uni.navigateTo({ url: '/pages/publishDynamic/postFeed?' + query });
 		},
 	},
 };
@@ -257,6 +298,9 @@ export default {
 }
 
 .order-head {
+	display: flex;
+	flex-direction: column;
+	gap: 24rpx;
 	background: #ffffff;
 	border-radius: 24rpx;
 	padding: 28rpx 24rpx;
@@ -268,6 +312,7 @@ export default {
 	display: flex;
 	flex-direction: row;
 	align-items: flex-start;
+	gap: 20rpx;
 }
 
 .head-avatar-wrap {
@@ -289,12 +334,13 @@ export default {
 .head-info {
 	flex: 1;
 	min-width: 0;
-	margin-left: 20rpx;
+	display: flex;
+	flex-direction: column;
+	gap: 10rpx;
 }
 
 .head-right-col {
 	flex-shrink: 0;
-	margin-left: 12rpx;
 	max-width: 40%;
 	display: flex;
 	flex-direction: column;
@@ -319,7 +365,6 @@ export default {
 
 .feed-line {
 	display: block;
-	margin-top: 10rpx;
 	font-size: 26rpx;
 	color: #333333;
 	line-height: 36rpx;
@@ -331,29 +376,12 @@ export default {
 
 .time-small {
 	display: block;
-	margin-top: 8rpx;
 	font-size: 22rpx;
 	color: #999999;
 	line-height: 30rpx;
 }
 
-.head-status {
-	font-size: 22rpx;
-	font-weight: 500;
-	line-height: 30rpx;
-	text-align: right;
-}
-
-.head-status--red {
-	color: #ff2741;
-}
-
-.head-status--green {
-	color: #07c160;
-}
-
 .order-no-row {
-	margin-top: 24rpx;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -370,18 +398,6 @@ export default {
 .copy-link {
 	font-size: 24rpx;
 	color: #2b7cff;
-	line-height: 34rpx;
-}
-
-.progress-pill {
-	padding: 8rpx 16rpx;
-	border-radius: 8rpx;
-	background: #eef2f8;
-}
-
-.progress-pill text {
-	font-size: 24rpx;
-	color: #666666;
 	line-height: 34rpx;
 }
 

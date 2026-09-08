@@ -57,7 +57,7 @@
 						<view class="order-top">
 							<view class="order-name-row" @click.stop="openOrderUser(selectedOrder)">
 								<text class="order-name">{{ selectedOrder.userName }}</text>
-								<LevelCapsule :level="selectedOrder.level" />
+								<LevelBadge :level="selectedOrder.level" />
 							</view>
 							<text v-if="selectedOrder.timedOut" class="order-timeout">已超时</text>
 							<text v-else class="order-countdown">{{ selectedOrder.countdown }}</text>
@@ -106,14 +106,15 @@
 import { goBackSmart } from '@/utils/navBack.js'
 import { openUserProfile } from '@/utils/profileNav.js'
 import { getPawHomeYardMock } from '@/utils/yardMock.js'
-import LevelCapsule from '@/components/LevelCapsule.vue'
+import { getFeedingOrders } from '@/utils/feedingOrderMockApi.js'
+import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawUploadTile from '@/components/form/PawUploadTile.vue'
 import PawOrderSelectSheet from '@/components/PawOrderSelectSheet.vue'
 import PawPetSelectSheet from '@/components/PawPetSelectSheet.vue'
 
 export default {
-	components: { LevelCapsule, PawIcon, PawUploadTile, PawOrderSelectSheet, PawPetSelectSheet },
+	components: { LevelBadge, PawIcon, PawUploadTile, PawOrderSelectSheet, PawPetSelectSheet },
 	data() {
 		const yard = getPawHomeYardMock()
 		const mockOrders = yard.feedingOrders.map(order => ({ ...order, avatar: order.userAvatar }))
@@ -173,8 +174,43 @@ export default {
 			this.tempOrderIds = [...this.selectedOrderIds]
 			this.applyOrderSelection()
 		}
+		const orderId = options.orderId || options.id
+		if (orderId) this.selectOrderById(orderId, options.yardId, options.yardOwnerId)
 	},
 	methods: {
+		normalizeOrderForPublish(order) {
+			if (!order) return null
+			return {
+				...order,
+				userName: order.userName || order.name || '平安是福',
+				userAvatar: order.userAvatar || order.yardAvatar || order.avatar || '/static/figma/publish/order-avatar.png',
+				kg: order.kg || 4,
+				feedbackTag: order.feedbackTag || order.topText || '待反馈',
+				petIds: Array.isArray(order.petIds) ? order.petIds : []
+			}
+		},
+		selectOrderById(orderId, yardId, yardOwnerId) {
+			const id = String(orderId || '')
+			if (!id) return
+			const local = this.mockOrders.find(order => String(order.id) === id)
+			if (local) {
+				this.selectedOrderIds = [id]
+				this.tempOrderIds = [id]
+				this.applyOrderSelection()
+				return
+			}
+			getFeedingOrders({ variant: 'yard', yardOwnerId: yardOwnerId || '', yardId: yardId || '1' }).then(result => {
+				const item = result && result.success && result.data
+					? result.data.items.find(order => String(order.id) === id)
+					: null
+				const normalized = this.normalizeOrderForPublish(item)
+				if (!normalized) return
+				this.mockOrders = this.mockOrders.concat(normalized)
+				this.selectedOrderIds = [id]
+				this.tempOrderIds = [id]
+				this.applyOrderSelection()
+			})
+		},
 		goBack() {
 			goBackSmart({ fallbackUrl: '/pages/index/index' })
 		},
@@ -572,11 +608,6 @@ export default {
 	font-weight: 700;
 	color: #222;
 	line-height: 42rpx;
-}
-
-.order-name-row .lv-cap {
-	flex-shrink: 0;
-	margin-left: 10rpx;
 }
 
 .order-timeout {

@@ -5,10 +5,9 @@
 		<scroll-view class="main-scroll" scroll-y :show-scrollbar="false" :bounces="false">
 			<view class="list-pad">
 				<view class="page-heading">
-					<text class="page-heading__title">我的领养</text>
-					<view v-if="listBadgeCount" class="page-heading__badge">
-						<text>{{ listBadgeCount }}</text>
-					</view>
+					<PawBadge class="page-heading__badge" :count="listBadgeCount">
+						<text class="page-heading__title">我的领养</text>
+					</PawBadge>
 				</view>
 				<view v-if="pageState === 'empty'" class="empty-state">
 					<image src="/static/figma/empty-adoption.png" mode="scaleToFill"></image>
@@ -54,12 +53,13 @@ import { openUserProfile } from '@/utils/profileNav.js'
 import { getAdoptionRecords, toAdoptionCard } from '@/utils/adoptionStorage.js'
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawButton from '@/components/base/PawButton.vue'
+import PawBadge from '@/components/base/PawBadge.vue'
 import PawAvatar from '@/components/identity/PawAvatar.vue'
 import PawImage from '@/components/base/PawImage.vue'
 import PawStatusPill from '@/components/PawStatusPill.vue'
 
 export default {
-	components: { PawPageNav, PawButton, PawAvatar, PawImage, PawStatusPill },
+	components: { PawPageNav, PawButton, PawBadge, PawAvatar, PawImage, PawStatusPill },
 	data() {
 		return {
 			pageState: 'list',
@@ -161,22 +161,7 @@ export default {
 }
 
 .page-heading__badge {
-	display: flex;
-	width: 15px;
-	height: 13px;
-	align-items: center;
-	justify-content: center;
-	box-sizing: border-box;
-	padding: 1px 4px;
-	border-radius: 7.5px;
-	background: #ff2741;
-}
-
-.page-heading__badge text {
-	color: #ffffff;
-	font-size: 10px;
-	font-weight: 500;
-	line-height: 11px;
+	flex: 0 0 auto;
 }
 
 .adopt-card {

@@ -80,4 +80,8 @@ export default {
 .paw-status--outline.paw-status--neutral {
   color: #777777;
 }
+
+.paw-status--outline.paw-status--brand {
+  color: var(--paw-color-brand, #ffe60f);
+}
 </style>

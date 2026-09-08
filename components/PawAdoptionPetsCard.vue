@@ -1,9 +1,15 @@
 <template>
-  <view class="paw-adoption-pets-card" :style="cardStyle">
-    <text class="paw-adoption-pets-card__title">{{ title }}（{{ petList.length }}）</text>
+  <PawCard class="paw-adoption-pets-card" :style="layoutStyle" :padding="cardPadding" border="none">
+    <template #title>
+      <view class="paw-adoption-pets-card__title">
+        <text>{{ title }}</text>
+        <text class="paw-adoption-pets-card__count">({{ petList.length }})</text>
+      </view>
+    </template>
     <view class="paw-adoption-pets-card__pet-row">
       <view v-for="(pet, index) in petList" :key="pet.id || pet.petId || 'pet-' + index"
-        class="paw-adoption-pets-card__pet-cell" :data-qa="qaPrefix ? qaPrefix + (pet.id || pet.petId || index) : null">
+        class="paw-adoption-pets-card__pet-cell" :data-qa="qaPrefix ? qaPrefix + (pet.id || pet.petId || index) : null"
+        @tap.stop="onPetTap(pet, index)">
         <PawImage class="paw-adoption-pets-card__pet-avatar" :src="petAvatarSrc(pet)" :size="48" :radius="24"
           :preview="false" :clickable="petClickable" @click.stop="onPetTap(pet, index)" />
         <text class="paw-adoption-pets-card__pet-name" @tap.stop="onPetTap(pet, index)">{{ pet.name }}</text>
@@ -17,25 +23,28 @@
         <text class="paw-adoption-pets-card__pet-name paw-adoption-pets-card__pet-name--invisible">占位</text>
       </view>
     </view>
-    <view v-if="showOwner" class="paw-adoption-pets-card__yard-row" @tap.stop="onYardTap">
-      <PawImage class="paw-adoption-pets-card__yard-avatar" :src="yardAvatar" :size="34" :radius="17" :preview="false"
-        :clickable="yardClickable" @click.stop="onYardTap" />
-      <view class="paw-adoption-pets-card__yard-name-line">
-        <text class="paw-adoption-pets-card__yard-name" @tap.stop="onYardTap">{{ yardName }}</text>
-        <YardTagPill :label="yardTag" />
+    <template #footer>
+      <view v-if="showOwner" class="paw-adoption-pets-card__yard-row" @tap.stop="onYardTap">
+        <PawImage class="paw-adoption-pets-card__yard-avatar" :src="yardAvatar" :size="34" :radius="17" :preview="false"
+          :clickable="yardClickable" @click.stop="onYardTap" />
+        <view class="paw-adoption-pets-card__yard-name-line">
+          <text class="paw-adoption-pets-card__yard-name" @tap.stop="onYardTap">{{ yardName }}</text>
+          <YardBadge :label="yardTag" :yard-id="yardClickable ? yardId : ''" :yard-name="yardName" />
+        </view>
       </view>
-    </view>
-  </view>
+    </template>
+  </PawCard>
 </template>
 
 <script>
 import { adoptionPetAvatarSrc as petAvatarSrc } from '@/utils/adoptionPetDisplay.js'
+import PawCard from '@/components/base/PawCard.vue'
+import YardBadge from '@/components/customBadge/YardBadge.vue'
 import PawImage from '@/components/base/PawImage.vue'
-import YardTagPill from '@/components/YardTagPill.vue'
 
 export default {
   name: 'PawAdoptionPetsCard',
-  components: { PawImage, YardTagPill },
+  components: { PawCard, YardBadge, PawImage },
   options: {
     // The card's root is the layout box. This keeps its min-height and
     // content-driven height in the parent flex column on WeChat.
@@ -47,12 +56,14 @@ export default {
     title: { type: String, default: '申请领养的猫咪' },
     pets: { type: Array, default: () => [] },
     yardName: { type: String, default: '我就是要喂猫' },
+    yardId: { type: [Number, String], default: '' },
     yardAvatar: { type: String, default: '' },
     yardTag: { type: String, default: '小院' },
     showAdd: { type: Boolean, default: true },
     showOwner: { type: Boolean, default: true },
     petClickable: { type: Boolean, default: true },
     yardClickable: { type: Boolean, default: true },
+    cardPadding: { type: String, default: '15px 20px 12px 18px' },
     minHeight: { type: [Number, String], default: 296 },
     marginBottom: { type: [Number, String], default: 12 },
     qaPrefix: { type: String, default: '' }
@@ -62,7 +73,7 @@ export default {
     petList() {
       return Array.isArray(this.pets) ? this.pets : []
     },
-    cardStyle() {
+    layoutStyle() {
       const style = {}
       const minHeight = Number(this.minHeight)
       const marginBottom = Number(this.marginBottom)
@@ -88,24 +99,13 @@ export default {
 
 <style scoped>
 .paw-adoption-pets-card {
-  display: flex;
-  width: 100%;
-  min-width: 0;
-  min-height: 0;
   flex: 0 0 auto;
-  flex-direction: column;
-  box-sizing: border-box;
-  padding: 15px 20px 12px 18px;
-  border-radius: 10px;
-  background: #fff;
 }
 
 .paw-adoption-pets-card__title {
-  display: block;
-  flex: 0 0 auto;
-  color: #333;
-  font-size: 16px;
-  line-height: 23px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .paw-adoption-pets-card__pet-row {

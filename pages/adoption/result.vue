@@ -15,24 +15,29 @@ const configs = {
   },
   '81': {
     title: '已同意领养申请',
-    body: '恭喜您，领养申请已通过。请前往小院完成后续领养流程。',
+    body: '没尝过家的味道\n总在流浪\n谢谢你\n让我知道\n被偏爱是什么样',
     buttonText: '好的'
   },
   '82': {
     title: '已确认领养',
-    body: '恭喜您成功帮助小咪找到新家，小咪及小院的小伙伴前往新家啦！',
-    buttonText: '查看详情'
+    body: '恭喜您成功帮助小咪找到新\n家，小咪将从您的小院前往\n新家啦！',
+    buttonText: '查看详情',
+    descriptionMaxWidth: 254
   },
   '83': {
     title: '已驳回',
-    body: '驳回后，领养申请信息将不再对申请人可见。',
+    body: '驳回后领养信息中申请人不再\n可见',
     buttonText: '查看详情',
-    failed: true
+    failed: true,
+    failureIconName: 'status/adoption-rejected',
+    failureTone: 'brand',
+    descriptionMaxWidth: 254
   },
   '84': {
     title: '太棒了',
-    body: '等待院主和领养者核实确认领养的信息，您将有机会获得流浪猫的一份猫粮礼物！',
-    buttonText: '查看领养进度'
+    body: '等待院主和领养审核团确认您的领养为真后将有机会抽取逢猫的一份猫粮礼物！祝贺小咪找到新家！',
+    buttonText: '查看领养进度',
+    descriptionMaxWidth: 254
   },
   '85': {
     title: '申请成功',
@@ -55,7 +60,11 @@ export default {
   data() {
     return {
       variant: '80',
-      recordId: ''
+      recordId: '',
+      orderId: '',
+      nextMode: '',
+      reviewerRole: '',
+      reviewerId: ''
     }
   },
   computed: {
@@ -66,6 +75,10 @@ export default {
   onLoad(options = {}) {
     this.variant = String(options.variant || '80')
     this.recordId = decodeQueryValue(options.id || options.recordId) || getLastAdoptionId()
+    this.orderId = decodeQueryValue(options.orderId)
+    this.nextMode = decodeQueryValue(options.nextMode)
+    this.reviewerRole = decodeQueryValue(options.reviewerRole)
+    this.reviewerId = decodeQueryValue(options.reviewerId)
   },
   methods: {
     goBack() {
@@ -74,25 +87,42 @@ export default {
     recordQuery(separator = '?') {
       return this.recordId ? `${separator}id=${encodeURIComponent(this.recordId)}` : ''
     },
+    orderDetailQuery() {
+      const params = []
+      if (this.recordId) params.push(`id=${encodeURIComponent(this.recordId)}`)
+      if (this.orderId) params.push(`orderId=${encodeURIComponent(this.orderId)}`)
+      return params.length ? `?${params.join('&')}` : ''
+    },
     onAction() {
+      if (['81', '82', '83'].includes(this.variant) && this.nextMode) {
+        const params = [
+          `mode=${encodeURIComponent(this.nextMode)}`,
+          `id=${encodeURIComponent(this.recordId)}`,
+          this.reviewerRole && `reviewerRole=${encodeURIComponent(this.reviewerRole)}`,
+          this.reviewerId && `reviewerId=${encodeURIComponent(this.reviewerId)}`
+        ].filter(Boolean).join('&')
+        uni.redirectTo({
+          url: `/pages/yard/adoptionAudit?${params}`,
+          fail: () => this.goBack()
+        })
+        return
+      }
       const routes = {
-        // Figma 80：领取结果 → 奖励订单详情（Figma 92）。
-        '80': `/pages/meMore/feedingDetail92${this.recordQuery()}`,
+        // Figma 80：订单详情暂未接入，先回到领养单完成页。
+        '80': `/pages/meMore/adoptionFlow?frame=57${this.recordQuery('&')}&notice=order-detail-pending`,
         // Figma 81：同意申请 → 待申请人前往领养。
-        '81': `/pages/meMore/adoptionFlow?frame=50${this.recordQuery('&')}`,
-        // Figma 82/83：审核结果 → 同一条领养记录的状态页。
-        '82': `/pages/meMore/adoptionFlow?frame=53${this.recordQuery('&')}`,
-        '83': `/pages/meMore/adoptionFlow?frame=52${this.recordQuery('&')}`,
-        // Figma 84/85：结果 → 对应的领养进度状态。
+        '81': `/pages/yard/adoptionAudit?mode=ownerPending${this.recordQuery('&')}`,
+        // Figma 82/83：管理审批结果 → 管理审批单页面。
+        '82': `/pages/yard/adoptionAudit?mode=ownerConfirmed${this.recordQuery('&')}`,
+        '83': `/pages/yard/adoptionAudit?mode=ownerConfirmRejected${this.recordQuery('&')}`,
+        // Figma 84：确认领养结果 → 等待院主确认领养；Figma 85：申请成功 → 等待院主审核。
         '84': `/pages/meMore/adoptionFlow?frame=55${this.recordQuery('&')}`,
         '85': `/pages/meMore/adoptionFlow?frame=44${this.recordQuery('&')}`
       }
       const url = routes[this.variant]
       if (!url) return this.goBack()
-      uni.navigateTo({
-        url,
-        fail: () => this.goBack()
-      })
+      const navigate = this.variant === '84' ? uni.redirectTo : uni.navigateTo
+      navigate({ url, fail: () => this.goBack() })
     }
   }
 }

@@ -7,11 +7,12 @@
           <PawIcon name="navigation/back" size="base" color="#282827" label="返回" />
         </view>
 
-        <view v-if="$slots.content" class="paw-nav__content" :style="contentStyle" data-qa="page-nav-content">
+        <view v-if="contentSlotEnabled && $slots.content" class="paw-nav__content" :style="contentStyle"
+          data-qa="page-nav-content">
           <slot name="content" />
         </view>
         <text v-else class="paw-nav__title" :class="{ 'paw-nav__title--light': light }" :style="titleStyle">{{ title
-        }}</text>
+          }}</text>
 
         <!-- Transparent reserve only. WeChat renders the native capsule itself. -->
         <view class="paw-nav__native-reserve" :style="reserveStyle" aria-hidden="true" />
@@ -38,7 +39,10 @@ export default {
   },
   props: {
     title: { type: String, default: '' },
-    titleCentered: { type: Boolean, default: false },
+    // Standard page titles align to the viewport center. Set this to false
+    // only for a design that intentionally anchors the title between the
+    // back button and the native capsule reserve.
+    titleCentered: { type: Boolean, default: true },
     // Slot content is left-aligned by default; use center or custom when the
     // content itself, rather than the title, needs a different anchor.
     slotPosition: {
@@ -47,12 +51,14 @@ export default {
       validator: value => ['left', 'center', 'custom'].includes(value)
     },
     slotStyle: { type: Object, default: () => ({}) },
+    contentSlotEnabled: { type: Boolean, default: true },
     background: { type: String, default: 'transparent' },
     light: { type: Boolean, default: false },
     showBack: { type: Boolean, default: true },
     autoBack: { type: Boolean, default: true },
     fallbackUrl: { type: String, default: '/pages/index/index' },
     contentInsetLeft: { type: Number, default: 44 },
+    nativeCapsuleGap: { type: Number, default: 8 },
     backHitWidth: { type: Number, default: 44 }
   },
   emits: ['back', 'layout'],
@@ -90,7 +96,7 @@ export default {
       }
       return {
         left: this.contentInsetLeft + 'px',
-        right: this.nav.rightReservedWidth + 'px',
+        right: this.nav.rightReservedWidth + this.nativeCapsuleGap + 'px',
         justifyContent: 'flex-start'
       }
     },

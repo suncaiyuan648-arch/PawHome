@@ -1,13 +1,14 @@
 <template>
   <view class="roster-page" :class="['roster-page--' + variant, { 'roster-page--managed': managed }]">
-    <PawPageNav background="#ffffff" :auto-back="false" :content-inset-left="managed ? 44 : 33" @back="$emit('back')">
+    <PawPageNav :title="variant === 'mine' ? '我的云养' : (variant === 'owned' ? '我的宠物' : '小院成员')"
+      :content-slot-enabled="managed" background="#ffffff" :auto-back="false" :content-inset-left="44"
+      @back="$emit('back')">
       <template #content>
-        <view v-if="managed" class="managed-nav-content">
+        <view class="managed-nav-content">
           <image class="managed-nav-avatar" :src="yardAvatar" mode="aspectFill" />
           <text class="managed-nav-name">{{ yardName }}</text>
           <text class="managed-nav-tag">小院</text>
         </view>
-        <text v-else class="title">{{ variant === 'mine' ? '我的云养' : (variant === 'owned' ? '我的宠物' : '小院成员') }}</text>
       </template>
     </PawPageNav>
 
@@ -17,12 +18,12 @@
       </view>
 
       <view class="tabs">
-        <text :class="{ active: speciesFilter === 'all' }" @tap="selectSpecies('all')">全部({{ pets.length }})</text>
-        <text :class="{ active: speciesFilter === 'cat' }" @tap="selectSpecies('cat')">猫咪({{ catCount }})</text>
-        <text :class="{ active: speciesFilter === 'dog' }" @tap="selectSpecies('dog')">狗狗({{ dogCount }})</text>
+        <text :class="{ active: speciesFilter === 'all' }" @tap="selectSpecies('all')">全部({{ filterCountAll }})</text>
+        <text :class="{ active: speciesFilter === 'cat' }" @tap="selectSpecies('cat')">猫咪({{ filterCountCat }})</text>
+        <text :class="{ active: speciesFilter === 'dog' }" @tap="selectSpecies('dog')">狗狗({{ filterCountDog }})</text>
         <view class="sort">
           <text>智能排序</text>
-          <PawIcon name="navigation/sort-arrow" :size="8" :rotate="-90" />
+          <PawIcon name="navigation/sort-arrow" :size="8" />
         </view>
         <view class="layout-toggle" data-qa="yard-pet-layout-toggle" @tap="toggleLayout">
           <PawIcon name="navigation/list" :size="19" />
@@ -36,7 +37,26 @@
     </view>
 
     <scroll-view class="roster-scroll" scroll-y :show-scrollbar="false">
-      <view v-if="layoutMode === 'status'" class="status-groups">
+      <view v-if="variant === 'mine' && layoutMode === 'yard'" class="mine-yard-groups">
+        <view v-if="!visibleMineYardGroups.length" class="roster-empty">没有找到相关宠物</view>
+        <view v-for="group in visibleMineYardGroups" :key="group.yard.id" class="mine-yard-card">
+          <view class="mine-yard-pets" @tap.stop="onMineYardPetsClick(group)">
+            <view v-for="pet in group.pets" :key="pet.id" class="mine-yard-pet">
+              <image :src="pet.avatar" mode="aspectFill" />
+              <text>{{ pet.name }}</text>
+            </view>
+          </view>
+          <view class="mine-yard-footer">
+            <view class="mine-yard-summary" @tap.stop="onYardClick(group.yard)">
+              <image :src="group.yard.avatar" mode="aspectFill" />
+              <text>{{ group.yard.name }}</text>
+              <YardBadge :yard-id="group.yard.id" :yard-name="group.yard.name" />
+            </view>
+            <text class="mine-yard-count">{{ group.pets.length }}只</text>
+          </view>
+        </view>
+      </view>
+      <view v-else-if="layoutMode === 'status'" class="status-groups">
         <view v-if="!visibleStatusGroups.length" class="roster-empty">没有找到相关宠物</view>
         <view v-for="group in visibleStatusGroups" :key="group.key" class="status-group"
           :class="'status-group--' + group.key">
@@ -55,34 +75,37 @@
         </view>
       </view>
 
-      <view v-else-if="variant === 'yard'" class="yard-card-list">
+      <view v-else-if="variant === 'yard' || variant === 'mine'" class="yard-card-list"
+        :class="{ 'yard-card-list--mine': variant === 'mine' }">
         <view v-if="!visiblePets.length" class="roster-empty">没有找到相关宠物</view>
-        <view v-for="(pet, index) in visiblePets" :key="pet.id" class="yard-pet-card"
-          :class="'yard-pet-card--' + pet.state">
-          <view class="yard-pet-card__main">
-            <view class="yard-pet-card__photo-area" @tap.stop="$emit('pet-click', pet)">
+        <view v-for="(pet, index) in visiblePets" :key="pet.id" class="yard-pet-card" :class="['yard-pet-card--' + pet.state, {
+          'yard-pet-card--mine': variant === 'mine',
+          'yard-pet-card--mine-tail': isMineTail(pet, index)
+        }]">
+          <view class="yard-pet-card__main" @tap.stop="$emit('pet-click', pet)">
+            <view class="yard-pet-card__photo-area">
               <image class="yard-pet-card__photo" :src="pet.avatar" mode="aspectFill" />
             </view>
             <view class="yard-pet-card__content">
               <view class="yard-pet-card__heading-row">
                 <view class="yard-pet-card__name-row">
-                  <text class="yard-pet-card__name" @tap.stop="$emit('pet-click', pet)">{{ pet.name }}</text>
+                  <text class="yard-pet-card__name">{{ pet.name }}</text>
                   <text class="yard-pet-card__status">{{ cardStatusLabel(pet) }}</text>
                 </view>
                 <text v-if="pet.state === 'cloud'" class="yard-pet-card__streak">已连续云养25天</text>
               </view>
-              <text class="yard-pet-card__desc" @tap.stop="$emit('pet-click', pet)">{{ pet.desc }}</text>
+              <text class="yard-pet-card__desc">{{ pet.desc }}</text>
               <view class="yard-pet-card__tags">
                 <text v-for="tag in pet.cardTags" :key="tag" :class="yardTagClass(tag)">{{ tag }}</text>
               </view>
               <text class="yard-pet-card__quote">“云家长寄语：寄语寄语寄语寄语寄语寄语...”</text>
-              <text v-if="pet.state === 'cloud'" class="yard-pet-card__remaining">剩余云养天数：<text
+              <text v-if="pet.state === 'cloud' && variant !== 'mine'" class="yard-pet-card__remaining">剩余云养天数：<text
                   class="yard-pet-card__remaining-value">16</text>/30天</text>
               <text v-else-if="pet.stateTime" class="yard-pet-card__remaining yard-pet-card__state-time">{{
                 pet.stateTimeLabel }}：{{ pet.stateTime }}</text>
             </view>
           </view>
-          <view class="yard-pet-card__footer">
+          <view v-if="variant === 'yard'" class="yard-pet-card__footer">
             <view class="yard-owner">
               <image :src="cardOwner(pet, index).avatar" mode="aspectFill"
                 @tap.stop="onOwnerClick(cardOwner(pet, index))" />
@@ -91,7 +114,7 @@
                   <text class="yard-owner__name" @tap.stop="onOwnerClick(cardOwner(pet, index))">{{
                     cardOwner(pet, index).name }}</text>
                   <view v-if="cardOwner(pet, index).level" class="yard-owner__level-wrap">
-                    <LevelCapsule :level="cardOwner(pet, index).level" :inline="true" />
+                    <LevelBadge :level="cardOwner(pet, index).level" :inline="true" />
                   </view>
                 </view>
                 <text v-if="cardOwnerTag(pet)" class="yard-owner__tag">{{ cardOwnerTag(pet) }}</text>
@@ -105,8 +128,15 @@
               <view v-if="pet.state === 'pending' || pet.state === 'cloud'" class="yard-pet-card__action-icon"
                 :class="{ 'yard-pet-card__action-icon--pending': pet.state === 'pending' }">
                 <PawIcon :name="pet.state === 'pending' ? 'navigation/action-arrow' : 'navigation/clock-disabled'"
-                  :size="14" :rotate="pet.state === 'pending' ? 180 : 0" />
+                  :size="14" />
               </view>
+            </view>
+          </view>
+          <view v-if="variant === 'mine' && isMineTail(pet, index)" class="mine-extra">
+            <text class="mine-extra__days">剩余云养天数：<text>3/3</text>天</text>
+            <view class="mine-extra__status">
+              <text class="mine-extra__status-tag">待领养生效</text>
+              <text>物流运输中，等待小院签收…</text>
             </view>
           </view>
         </view>
@@ -120,7 +150,7 @@
               <view class="pet-title-row">
                 <text class="pet-name">{{ pet.name }}</text>
                 <text class="green">{{ pet.status }}</text>
-                <text class="orange">{{ variant === 'mine' ? '云养中' : '待云养' }}</text>
+                <text class="orange">待云养</text>
               </view>
               <text class="desc">{{ pet.desc }}</text>
             </view>
@@ -138,8 +168,7 @@
               <text class="yard-tag">小毛毛球的第3任云家长</text>
             </view>
             <text v-else>剩余云养天数：16/30天</text>
-            <view class="pet-action" :class="{ disabled: variant === 'mine' && index === 1 }"
-              @tap.stop="onCardAction(pet)">
+            <view class="pet-action" @tap.stop="onCardAction(pet)">
               {{ index === 0 ? '前往云养' :
                 '云养中' }}</view>
           </view>
@@ -152,81 +181,106 @@
 <script>
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawSearchBar from '@/components/navigation/PawSearchBar.vue'
-import LevelCapsule from '@/components/LevelCapsule.vue'
+import LevelBadge from '@/components/customBadge/LevelBadge.vue'
+import YardBadge from '@/components/customBadge/YardBadge.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
-import { getPawHomeYardMock } from '@/utils/yardMock.js'
+import { getPetRoster } from '@/utils/petRosterMockApi.js'
 
 export default {
   name: 'PawPetRoster',
-  components: { PawPageNav, PawSearchBar, LevelCapsule, PawIcon },
+  components: { PawPageNav, PawSearchBar, LevelBadge, YardBadge, PawIcon },
   props: {
     variant: { type: String, default: 'yard' },
+    userPawId: { type: String, default: '' },
+    yardId: { type: String, default: '' },
     ownerPawId: { type: String, default: '' },
     managed: { type: Boolean, default: false },
     yardName: { type: String, default: '小院成员' },
     yardAvatar: { type: String, default: '/static/figma/yard-cover-exact.png' }
   },
-  emits: ['back', 'add-pet', 'pet-click', 'owner-click', 'feed-click'],
+  emits: ['back', 'add-pet', 'pet-click', 'owner-click', 'yard-click', 'yard-pets-click', 'feed-click'],
   data() {
-    const yardMock = getPawHomeYardMock()
     const statusCatAvatar = '/static/figma/pets/pet-orange.png'
     const statusDogAvatar = '/static/figma/pets/pet-dog.png'
-    const pets = yardMock.pets
-    const statusDefinitions = yardMock.statusDefinitions
     return {
       layoutMode: this.managed || this.variant === 'status' ? 'status' : 'list',
       inputKeyword: '',
       keyword: '',
       speciesFilter: 'all',
-      yardOwnerAvatar: yardMock.owner.avatar,
+      yardOwnerAvatar: '/static/figma/dynamic-detail/author.png',
       yardOwnerPlaceholder: '/static/figma/yard-cats/owner-placeholder.svg',
       statusCatAvatar,
       statusDogAvatar,
-      pets,
-      statusGroups: statusDefinitions.map((group) => ({
-        ...group,
-        pets: pets.filter((item) => item.state === group.key)
-      }))
+      pets: [],
+      statusGroups: [],
+      yardGroups: [],
+      filterCountsFromApi: { all: 0, cat: 0, dog: 0 },
+      loading: false,
+      requestSerial: 0
     }
   },
   computed: {
-    normalizedKeyword() {
-      return this.keyword.trim().toLowerCase()
+    filterCountAll() {
+      return this.filterCountsFromApi.all
     },
-    matchesKeyword() {
-      const keyword = this.normalizedKeyword
-      return (pet) => {
-        if (!keyword) return true
-        return [pet.name, pet.breed, pet.speciesLabel, pet.desc]
-          .some((value) => String(value || '').toLowerCase().includes(keyword))
-      }
+    filterCountCat() {
+      return this.filterCountsFromApi.cat
     },
-    catCount() {
-      return this.pets.filter((pet) => pet.species === 'cat').length
-    },
-    dogCount() {
-      return this.pets.filter((pet) => pet.species === 'dog').length
+    filterCountDog() {
+      return this.filterCountsFromApi.dog
     },
     visiblePets() {
-      const stateOrder = { pending: 0, cloud: 1, adopted: 2, missing: 3, dead: 4 }
-      return this.pets.filter((pet) => {
-        const matchesSpecies = this.speciesFilter === 'all' || pet.species === this.speciesFilter
-        return matchesSpecies && this.matchesKeyword(pet)
-      }).sort((a, b) => (stateOrder[a.state] ?? 99) - (stateOrder[b.state] ?? 99))
+      return this.pets
     },
     visibleStatusGroups() {
       return this.statusGroups
-        .map((group) => ({
-          ...group,
-          pets: group.pets.filter((pet) => {
-            const matchesSpecies = this.speciesFilter === 'all' || pet.species === this.speciesFilter
-            return matchesSpecies && this.matchesKeyword(pet)
-          })
-        }))
-        .filter((group) => group.pets.length)
+    },
+    visibleMineYardGroups() {
+      return this.yardGroups
+    }
+  },
+  created() {
+    this.loadRoster()
+  },
+  watch: {
+    variant() {
+      this.loadRoster()
+    },
+    userPawId() {
+      this.loadRoster()
+    },
+    yardId() {
+      this.loadRoster()
     }
   },
   methods: {
+    async loadRoster() {
+      const requestSerial = ++this.requestSerial
+      this.loading = true
+      const response = await getPetRoster({
+        variant: this.variant,
+        userPawId: this.userPawId,
+        yardId: this.yardId,
+        species: this.speciesFilter,
+        keyword: this.keyword
+      })
+      if (requestSerial !== this.requestSerial) return
+      if (!response || !response.success) {
+        this.pets = []
+        this.statusGroups = []
+        this.yardGroups = []
+        this.filterCountsFromApi = { all: 0, cat: 0, dog: 0 }
+        this.loading = false
+        return
+      }
+      const data = response.data || {}
+      this.pets = Array.isArray(data.items) ? data.items : []
+      this.statusGroups = Array.isArray(data.statusGroups) ? data.statusGroups : []
+      this.yardGroups = Array.isArray(data.yardGroups) ? data.yardGroups : []
+      this.filterCountsFromApi = data.filterCounts || { all: 0, cat: 0, dog: 0 }
+      if (data.yardOwner && data.yardOwner.avatar) this.yardOwnerAvatar = data.yardOwner.avatar
+      this.loading = false
+    },
     statusPetAvatar(pet) {
       return pet.species === 'dog' ? this.statusDogAvatar : this.statusCatAvatar
     },
@@ -237,12 +291,18 @@ export default {
     },
     onSearch(value) {
       this.keyword = String(value || '').trim()
+      this.loadRoster()
     },
     toggleLayout() {
+      if (this.variant === 'mine') {
+        this.layoutMode = this.layoutMode === 'list' ? 'yard' : 'list'
+        return
+      }
       this.layoutMode = this.layoutMode === 'list' ? 'status' : 'list'
     },
     selectSpecies(filter) {
       this.speciesFilter = filter
+      this.loadRoster()
     },
     cardStatusLabel(pet) {
       const labels = { pending: '待云养', cloud: '已云养', adopted: '已领养', missing: '失踪', dead: '死亡' }
@@ -265,6 +325,17 @@ export default {
     onCardAction(pet) {
       if (!pet || pet.state !== 'pending' || !pet.id) return
       this.$emit('feed-click', pet)
+    },
+    onMineYardPetsClick(group) {
+      if (!group || !group.yard || !group.yard.id) return
+      this.$emit('yard-pets-click', group.yard)
+    },
+    onYardClick(yard) {
+      if (!yard || !yard.id) return
+      this.$emit('yard-click', yard)
+    },
+    isMineTail(pet, index) {
+      return Boolean(pet && this.variant === 'mine' && index === this.visiblePets.length - 1)
     },
     cardOwnerTag(pet) {
       return pet.state === 'cloud' || pet.state === 'adopted' ? '小毛毛球的第3任云家长' : ''
@@ -465,6 +536,103 @@ export default {
   box-sizing: border-box;
 }
 
+.yard-card-list--mine {
+  padding-top: 8px;
+}
+
+.mine-yard-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 8px 24px;
+  box-sizing: border-box;
+}
+
+.mine-yard-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 136px;
+  padding: 24px 12px 12px;
+  border-radius: 15px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.mine-yard-pets {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.mine-yard-pet {
+  display: flex;
+  width: 48px;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mine-yard-pet image {
+  display: block;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.mine-yard-pet text {
+  display: block;
+  width: 52px;
+  margin-top: 5px;
+  overflow: hidden;
+  color: #333;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mine-yard-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 34px;
+  margin-top: 20px;
+}
+
+.mine-yard-summary {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.mine-yard-summary image {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 50%;
+}
+
+.mine-yard-summary>text {
+  overflow: hidden;
+  color: #333;
+  font-size: 15px;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mine-yard-count {
+  flex: none;
+  color: #999;
+  font-size: 14px;
+  line-height: 20px;
+}
+
 .roster-empty {
   padding: 32px 0;
   color: #999;
@@ -629,6 +797,14 @@ export default {
   box-sizing: border-box;
 }
 
+.yard-pet-card--mine {
+  min-height: 151px;
+}
+
+.yard-pet-card--mine-tail {
+  min-height: 194px;
+}
+
 .yard-pet-card__main {
   display: flex;
   align-items: flex-start;
@@ -779,6 +955,48 @@ export default {
 
 .yard-pet-card__remaining-value {
   color: #333;
+}
+
+.mine-extra {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 4px;
+  margin-left: 105px;
+  color: #ff9b46;
+  font-size: 12px;
+  line-height: 17px;
+  white-space: nowrap;
+}
+
+.mine-extra__days {
+  color: #5396ff;
+}
+
+.mine-extra__days text {
+  color: #5396ff;
+}
+
+.mine-extra__status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.mine-extra__status-tag {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  height: 21px;
+  padding: 0 4px;
+  border: 1px solid #ee8002;
+  border-radius: 5px;
+  box-sizing: border-box;
+  color: #ee8002;
+  font-size: 12px;
+  line-height: 19px;
 }
 
 .yard-pet-card__footer {

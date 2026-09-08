@@ -30,12 +30,6 @@
     "pages/me/index.vue": {
       "page-local-native-nav-layout": 1
     },
-    "pages/meMore/adoptionApplyContent.vue": {
-      "page-local-native-nav-layout": 1
-    },
-    "pages/meMore/adoptionDetail.vue": {
-      "page-local-native-nav-layout": 1
-    },
     "pages/meMore/annualReport.vue": {
       "fake-status-bar": 2,
       "figma-native-chrome-asset": 1,

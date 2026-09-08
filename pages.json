@@ -172,24 +172,8 @@
           "style": { "navigationStyle": "custom", "backgroundColor": "#FFFFFF" }
         },
         {
-          // 领养详情：查看用户领养申请或领养记录详情。
-          "path": "adoptionDetail",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F5F5F5"
-          }
-        },
-        {
           // 领养流程：展示领养业务的当前步骤和流程状态。
           "path": "adoptionFlow",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F5F5F5"
-          }
-        },
-        {
-          // 领养申请内容：查看或补充领养申请资料。
-          "path": "adoptionApplyContent",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F5F5F5"
@@ -201,13 +185,26 @@
           "style": { "navigationStyle": "custom", "backgroundColor": "#F5F5F5" }
         },
         {
-          // 领养凭证列表：查看领养流程中提交的证明材料。
-          "path": "adoptionProofList",
+          // 救助证实列表：查看救助申请的证实信息。
+          "path": "rescueProofList",
+          "style": { "navigationStyle": "custom", "backgroundColor": "#F5F5F5" }
+        },
+        {
+          // 救助证实信息：填写独立的救助证实资料。
+          "path": "rescueProofForm",
           "style": { "navigationStyle": "custom", "backgroundColor": "#F5F5F5" }
         },
         {
           // 我的资产：展示用户勋章、宠物等个人资产。
           "path": "myAssets",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          // 我的云养宠物：独立页面复用小院宠物列表的视觉骨架和卡片。
+          "path": "myCloudPets",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F5F5F5"

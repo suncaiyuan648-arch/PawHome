@@ -17,9 +17,7 @@
 						<view class="profile-info">
 							<view class="name-row" data-qa="qa-me-profile">
 								<text class="profile-name">浮生孤影</text>
-								<view data-qa="qa-me-level" @click.stop="goLevelPage">
-									<LevelCapsule level="1" />
-								</view>
+								<LevelBadge data-qa="qa-me-level" level="1" @click.stop="goLevelPage" />
 							</view>
 							<text class="paw-id">逢猫号：2876598765</text>
 						</view>
@@ -29,7 +27,7 @@
 					</view>
 					<view class="stats-row">
 						<view class="stat-cell" data-qa="qa-me-cloud-pets" @click="goMyCloudPets">
-							<PawBadge class="stat-badge" text="新反馈" size="small">
+							<PawBadge class="stat-badge" text="新反馈">
 								<text class="stat-num">11只</text>
 							</PawBadge>
 							<text class="stat-label">我的云养宠物</text>
@@ -39,7 +37,7 @@
 							<text class="stat-label">我的宠物</text>
 						</view>
 						<view class="stat-cell" data-qa="qa-me-my-adoption" @click="goMyAdoption">
-							<PawBadge class="stat-badge" text="新进度" size="small">
+							<PawBadge class="stat-badge" text="新进度">
 								<text class="stat-num">22只</text>
 							</PawBadge>
 							<text class="stat-label">我的领养</text>
@@ -76,7 +74,7 @@
 						<text class="card-title card-title--blue">我的小院</text>
 						<view class="card-link" @click="goManagedYard">
 							<text>查看</text>
-							<PawIcon class="link-chevron" name="navigation/yard-link-chevron" size="xs" :rotate="180" />
+							<PawIcon class="link-chevron" name="navigation/order-chevron-right" size="sm" />
 						</view>
 					</view>
 					<view class="yard-body">
@@ -115,7 +113,7 @@
 				</view>
 
 				<view v-for="review in reviewCards" :key="review.title" class="review-card card card--elevated"
-					@click="goJuryPanel(review.reviewType)">
+					:data-qa="`qa-me-${review.reviewType}-review`" @tap="goJuryPanel(review.reviewType)">
 					<view class="card-header card-header--review">
 						<text class="card-title">{{ review.title }}</text>
 						<text class="card-sub">{{ review.question }}</text>
@@ -146,7 +144,9 @@
 				<view class="drawer-pad">
 					<view v-for="(section, si) in menuSections" :key="si" class="menu-section"
 						:class="`menu-section--${si + 1}`">
-						<view v-for="(label, ri) in section" :key="ri" class="menu-row" @tap.stop="onMenuRow(label)">
+						<view v-for="(label, ri) in section" :key="ri" class="menu-row"
+							:data-qa="label === '领养评审' ? 'qa-me-menu-adoption-review' : ''"
+							@tap.stop="onMenuRow(label)">
 							<text class="menu-row-label">{{ label }}</text>
 							<PawChevron class="menu-row-chevron" :size="8" />
 						</view>
@@ -184,20 +184,19 @@
 
 <script>
 import CustomTabber from '@/components/CustomTabber/index.vue'
-import LevelCapsule from '@/components/LevelCapsule.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawBadge from '@/components/base/PawBadge.vue'
+import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import PawChevron from '@/components/base/PawChevron.vue'
 import PawImage from '@/components/base/PawImage.vue'
 import PawMemberBanner from '@/components/PawMemberBanner/PawMemberBanner.vue'
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawVoteRatioBar from '@/components/PawVoteRatioBar.vue'
-import { getLastAdoptionId } from '@/utils/adoptionStorage.js'
 import { getMemberLevelTitle } from '@/utils/memberLevel.js'
 
 export default {
-	components: { CustomTabber, LevelCapsule, PawIcon, PawBadge, PawChevron, PawImage, PawMemberBanner, PawBottomSheet, PawPageNav, PawVoteRatioBar },
+	components: { CustomTabber, PawIcon, PawBadge, LevelBadge, PawChevron, PawImage, PawMemberBanner, PawBottomSheet, PawPageNav, PawVoteRatioBar },
 	data() {
 		return {
 			pageState: 'default',
@@ -378,12 +377,20 @@ export default {
 				uni.navigateTo({ url: '/pages/feature/index?mode=invite' })
 				return
 			}
-			if (label === '投喂订单' || label === '我的投喂订单') {
+			if (label === '投喂订单') {
 				uni.navigateTo({ url: '/pages/meMore/yardFeedOrders' })
+				return
+			}
+			if (label === '我的投喂订单') {
+				uni.navigateTo({ url: '/pages/meMore/myFeedings' })
 				return
 			}
 			if (label === '我申请的领养') {
 				this.goMyAdoption()
+				return
+			}
+			if (label === '领养评审') {
+				this.goJuryPanel('adoption')
 				return
 			}
 			this.toast(label)
@@ -392,7 +399,7 @@ export default {
 			uni.navigateTo({ url: '/pages/meMore/myAdoption' })
 		},
 		goMyCloudPets() {
-			uni.navigateTo({ url: '/pages/meMore/myAssets?mode=pets&state=mine' })
+			uni.navigateTo({ url: '/pages/meMore/myCloudPets' })
 		},
 		goManagedYard() {
 			uni.navigateTo({ url: '/pages/yard/yardCats?state=managed' })
@@ -413,8 +420,7 @@ export default {
 			uni.navigateTo({ url: '/pages/meMore/yardFeedOrders' })
 		},
 		goAdoptionAudit() {
-			const id = getLastAdoptionId()
-			uni.navigateTo({ url: '/pages/yard/adoptionAudit' + (id ? '?id=' + encodeURIComponent(id) : '') })
+			uni.navigateTo({ url: '/pages/yard/adoptionAudit' })
 		},
 		goJuryPanel(reviewType = '') {
 			if (reviewType === 'rescue') {
@@ -554,13 +560,14 @@ export default {
 .name-row {
 	display: flex;
 	align-items: center;
-	flex-wrap: wrap;
-	gap: 7px;
+	flex-wrap: nowrap;
+	gap: 5px;
 }
 
 .profile-name {
-	flex: 1;
+	flex: 0 1 auto;
 	min-width: 0;
+	max-width: 100%;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -568,10 +575,6 @@ export default {
 	font-weight: 700;
 	color: #111111;
 	line-height: 23px;
-}
-
-.name-row .lv-cap {
-	flex-shrink: 0;
 }
 
 .paw-id {
@@ -659,14 +662,10 @@ export default {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	gap: 2px;
+	gap: 0;
 	font-size: 11px;
 	color: #999999;
 	line-height: 18px;
-}
-
-.orders-card .card-link {
-	gap: 5px;
 }
 
 .card-link .link-chevron {

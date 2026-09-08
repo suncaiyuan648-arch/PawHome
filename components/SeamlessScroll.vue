@@ -14,7 +14,7 @@
           </view>
           <view class="info-name">
             <text>{{ item.text }}</text>
-            <LevelCapsule :level="item.level != null ? item.level : 1" />
+            <LevelBadge :level="item.level != null ? item.level : 1" />
           </view>
         </view>
         <view class="ranking">
@@ -27,12 +27,12 @@
 
 <script>
 import { safeImgSrc } from "@/utils/safeImgSrc.js";
-import LevelCapsule from "@/components/LevelCapsule.vue";
+import LevelBadge from "@/components/customBadge/LevelBadge.vue";
 import PawAvatar from "@/components/identity/PawAvatar.vue";
 
 export default {
   name: "SeamlessScroll",
-  components: { LevelCapsule, PawAvatar },
+  components: { LevelBadge, PawAvatar },
   props: {
     /** 项可为 { text, level?, avatar?, rankTitle?, pawId? }；数据由页面传入。 */
     items: {

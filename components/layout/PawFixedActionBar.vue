@@ -2,7 +2,9 @@
   <view class="paw-fixed-action-bar" :class="{
     'paw-fixed-action-bar--safe': safeArea,
     'paw-fixed-action-bar--primary-full': primaryFullWidth,
-    'paw-fixed-action-bar--stacked': stacked
+    'paw-fixed-action-bar--primary-end': primaryEnd,
+    'paw-fixed-action-bar--stacked': stacked,
+    'paw-fixed-action-bar--dual': secondaryAction
   }">
     <view v-if="stacked" class="paw-fixed-action-bar__top">
       <slot name="top"></slot>
@@ -18,11 +20,22 @@
           :size="action.iconSize || 21" :color="action.iconColor || '#222'" />
         <text>{{ action.label }}</text>
       </button>
+      <PawButton v-if="secondaryAction" class="paw-fixed-action-bar__secondary" :qa="secondaryAction.qa || ''"
+        :text="secondaryAction.label" :tone="secondaryAction.tone || 'ghost'" :size="secondaryAction.size || 'md'"
+        :shape="secondaryAction.shape || 'rounded'" block flush nowrap :loading="!!secondaryAction.loading"
+        :disabled="!!secondaryAction.disabled" :style="secondaryStyle" @click="$emit('secondary', secondaryAction)">
+        <PawIcon v-if="secondaryAction.iconName" class="paw-fixed-action-bar__secondary-paw-icon"
+          :name="secondaryAction.iconName" :size="secondaryAction.iconSize || 32"
+          :color="secondaryAction.iconColor || '#282827'" />
+        <image v-else-if="secondaryAction.image" class="paw-fixed-action-bar__secondary-icon"
+          :src="secondaryAction.image" mode="aspectFit" />
+        <text v-else class="paw-fixed-action-bar__secondary-label">{{ secondaryAction.label }}</text>
+      </PawButton>
       <PawButton v-if="primaryAction" class="paw-fixed-action-bar__primary"
         :class="{ 'paw-fixed-action-bar__primary--full': primaryFullWidth }" :qa="primaryAction.qa || ''"
         :text="primaryAction.label" :tone="primaryAction.tone || 'brand'" :size="primaryAction.size || 'md'" block flush
-        nowrap :loading="!!primaryAction.loading" :disabled="!!primaryAction.disabled"
-        @click="$emit('primary', primaryAction)">
+        :shape="primaryAction.shape || (secondaryAction ? 'rounded' : 'pill')" nowrap :loading="!!primaryAction.loading"
+        :disabled="!!primaryAction.disabled" :style="primaryStyle" @click="$emit('primary', primaryAction)">
         <PawIcon v-if="primaryAction.iconName" class="paw-fixed-action-bar__primary-paw-icon"
           :name="primaryAction.iconName" :size="primaryAction.iconSize || 32"
           :color="primaryAction.iconColor || '#282827'" />
@@ -43,12 +56,36 @@ export default {
   components: { PawButton, PawIcon },
   props: {
     actions: { type: Array, default: () => [] },
+    secondaryAction: { type: Object, default: null },
     primaryAction: { type: Object, default: null },
+    primaryWidth: { type: [Number, String], default: 188 },
+    primaryEnd: { type: Boolean, default: false },
     safeArea: { type: Boolean, default: true },
     primaryFullWidth: { type: Boolean, default: false },
     stacked: { type: Boolean, default: false }
   },
-  emits: ['action', 'primary'],
+  emits: ['action', 'primary', 'secondary'],
+  computed: {
+    secondaryStyle() {
+      return this.secondaryAction && this.secondaryAction.shape === 'rounded'
+        ? { borderRadius: '8px' }
+        : {}
+    },
+    primaryStyle() {
+      if (!this.primaryAction) return {}
+      const style = {}
+      if (!this.secondaryAction && !this.primaryFullWidth) {
+        const width = Number(this.primaryWidth)
+        if (Number.isFinite(width) && width > 0) {
+          style.width = `${width}px`
+          style.flex = `0 0 ${width}px`
+        }
+      }
+      const shape = this.primaryAction.shape || (this.secondaryAction ? 'rounded' : 'pill')
+      if (shape === 'rounded') style.borderRadius = '8px'
+      return style
+    }
+  },
   methods: {
     onAction(action) {
       if (!action.disabled) this.$emit('action', action)
@@ -106,6 +143,10 @@ export default {
   height: 42px;
   align-items: flex-start;
   justify-content: space-between;
+}
+
+.paw-fixed-action-bar--primary-end .paw-fixed-action-bar__content {
+  justify-content: flex-end;
 }
 
 .paw-fixed-action-bar__action {
@@ -172,6 +213,30 @@ export default {
   color: #282827;
   font-size: 15px;
   font-weight: 500;
+  white-space: nowrap;
+}
+
+.paw-fixed-action-bar--dual .paw-fixed-action-bar__content {
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.paw-fixed-action-bar--dual .paw-fixed-action-bar__secondary,
+.paw-fixed-action-bar--dual .paw-fixed-action-bar__primary {
+  min-width: 0;
+  flex: 1 1 0;
+  width: auto;
+}
+
+.paw-fixed-action-bar__secondary {
+  height: 42px;
+  min-height: 42px;
+  margin: 0;
+}
+
+.paw-fixed-action-bar__secondary-label {
+  display: block;
+  line-height: 20px;
   white-space: nowrap;
 }
 

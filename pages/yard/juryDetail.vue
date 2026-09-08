@@ -1,12 +1,13 @@
 <template>
-  <view class="jury-detail-page" data-qa="qa-jury-detail">
+  <view class="jury-detail-page" :class="`jury-detail-page--${isRescue ? 'rescue' : 'adoption'}`"
+    data-qa="qa-jury-detail">
     <view class="jury-detail-hero" :class="{ 'jury-detail-hero--voted': voted }">
-      <PawPageNav title="逢猫评审团" background="#1866fc" :light="true" :title-centered="true" :auto-back="false"
-        @back="goBack" />
+      <PawPageNav :title="juryTitle" :background="juryBackground" :light="!isRescue" :title-centered="true"
+        :auto-back="false" @back="goBack" />
       <view class="jury-detail-hero__copy">
-        <text class="jury-detail-hero__title">{{ voted ? '感谢您的认真审查' : 'Ta的领养是真的吗？' }}</text>
+        <text class="jury-detail-hero__title">{{ voted ? '感谢您的认真审查' : heroTitle }}</text>
         <text class="jury-detail-hero__subtitle">
-          {{ voted ? '您的宝贵意见是逢猫审查虚假领养的重要参考' : '请您审查该申请人是否为虚假领养及虐猫群体的恶意领养' }}
+          {{ voted ? votedSubtitle : heroSubtitle }}
         </text>
       </view>
     </view>
@@ -58,7 +59,7 @@
         </view>
 
         <view class="jury-detail-card jury-pets-card" data-qa="qa-jury-detail-pets">
-          <text class="jury-pets-card__title">申请领养的猫咪（{{ item.pets.length }}）</text>
+          <text class="jury-pets-card__title">{{ petSectionTitle }}（{{ item.pets.length }}）</text>
           <view class="jury-pets-card__list">
             <view v-for="pet in item.pets" :key="pet.id" class="jury-pets-card__pet" :data-qa="`qa-jury-pet-${pet.id}`"
               @tap.stop="openPet(pet)">
@@ -102,6 +103,7 @@ import { goBackSmart } from '@/utils/navBack.js'
 import { PAW_MSG_VOTE_DAY_LIMIT } from '@/utils/pawNoticeMessages.js'
 import { JURY_ITEM_STATUS } from '@/utils/juryMock.js'
 import { openUserProfile, openYardDetail } from '@/utils/profileNav.js'
+import { advanceApplication, getApplication } from '@/utils/applicationMockApi.js'
 import {
   getJuryItemById,
   getJuryItems,
@@ -125,6 +127,19 @@ export default {
     }
   },
   computed: {
+    isRescue() { return (this.item && this.item.reviewType) === 'rescue' || this.reviewType === 'rescue' },
+    juryTitle() { return this.isRescue ? '救助评审' : '领养评审' },
+    juryBackground() { return this.isRescue ? '#fff6b8' : '#1866fc' },
+    heroTitle() { return this.isRescue ? 'Ta的救助申请是真的吗？' : 'Ta的领养是真的吗？' },
+    heroSubtitle() {
+      return this.isRescue
+        ? '请您审查该申请人是否为虚假救助及材料造假'
+        : '请您审查该申请人是否为虚假领养及虐猫群体的恶意领养'
+    },
+    votedSubtitle() {
+      return this.isRescue ? '您的宝贵意见是逢猫审查虚假救助的重要参考' : '您的宝贵意见是逢猫审查虚假领养的重要参考'
+    },
+    petSectionTitle() { return this.isRescue ? '申请救助的动物' : '申请领养的猫咪' },
     voted() {
       const item = this.item || {}
       return Boolean(item.hasVoted || item.vote || item.status === JURY_ITEM_STATUS.voted || item.status === JURY_ITEM_STATUS.closed)
@@ -249,11 +264,32 @@ export default {
         return
       }
       this.selectedVote = result.vote
+      this.syncAdoptionApplication(result.vote)
       this.refreshItem()
       this.showVoteResult = true
     },
     closeVoteLimit() {
       this.showVoteLimitModal = false
+    },
+    syncAdoptionApplication(vote) {
+      const item = this.item
+      if (!item || !item.recordId) return
+      const type = item.reviewType === 'rescue' ? 'rescue' : 'adoption'
+      if (!getApplication(type, item.recordId).success) return
+      const nextStatus = type === 'rescue'
+        ? (vote === 'real' ? 'platform_approved' : 'platform_rejected')
+        : (vote === 'real' ? 'adoption_confirmed' : 'rejected')
+      const result = advanceApplication(type, item.recordId, nextStatus, {
+        juryVotedAt: Date.now(),
+        juryVote: vote,
+        ...(vote === 'fake'
+          ? {
+            ...(type === 'rescue' ? {} : { failureStage: 'jury_confirm' }),
+            rejectNote: type === 'rescue' ? '评审团未通过本次救助审核。' : '评审团未通过本次领养确认。'
+          }
+          : {})
+      })
+      if (!result.success) uni.showToast({ title: result.error.message || '审批单状态未更新', icon: 'none' })
     },
     onVoteDialogClose() {
       this.showVoteResult = false
@@ -341,7 +377,11 @@ export default {
   width: 100%;
   height: 100vh;
   flex-direction: column;
-  background: #f5f5f5;
+  background: #eaf2ff;
+}
+
+.jury-detail-page--rescue {
+  background: #fff6b8;
 }
 
 .jury-detail-hero {
@@ -350,6 +390,18 @@ export default {
   min-height: 279px;
   flex-direction: column;
   background: #1866fc;
+}
+
+.jury-detail-page--rescue .jury-detail-hero {
+  background: #ffe766;
+}
+
+.jury-detail-page--rescue .jury-detail-hero__title {
+  color: #3f3415;
+}
+
+.jury-detail-page--rescue .jury-detail-hero__subtitle {
+  color: #776a39;
 }
 
 .jury-detail-hero__copy {

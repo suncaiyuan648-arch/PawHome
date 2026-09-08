@@ -1,31 +1,44 @@
 <template>
   <view class="af-page"
-    :class="['af-frame-' + frameNumber, { 'af-yellow': yellowTop, 'af-gradient': gradientTop, 'af-has-footer': hasFooter }]">
-    <PawPageNav :title="navTitle" :title-centered="true" :background="navBackground" fallback-url="/pages/me/index" />
+    :class="['af-frame-' + frameNumber, { 'af-gradient': gradientTop, 'af-has-footer': hasFooter }]">
+    <PawPageNav :title="navTitle" :background="navBackground" fallback-url="/pages/me/index" />
 
     <scroll-view class="af-scroll" scroll-y :show-scrollbar="false">
       <view class="af-content">
-        <view class="af-heading">
+        <view v-if="showStatusHeading" class="af-heading">
           <PawIcon v-if="statusIconName" class="af-heading-status-image" :name="statusIconName"
             :size="statusIconSize" />
           <text>{{ statusText }}</text>
         </view>
 
-        <view v-if="progressMode" class="af-progress-card">
-          <view class="af-progress-track">
-            <view v-for="step in 4" :key="step" class="af-progress-segment" :class="{ active: step <= progressStep }">
-              <view class="af-progress-dot">
-                <uni-icons v-if="step === 4 && frameNumber === 57" type="medal-filled" color="#ff9800" :size="20" />
-                <uni-icons v-else-if="step <= progressStep" type="checkmarkempty" color="#333" :size="9" />
+        <view v-if="progressMode" class="af-progress-card" data-qa="qa-adoption-flow-progress">
+          <view class="af-progress-stage">
+            <view class="af-progress-track" :class="'is-step-' + progressStep" aria-hidden="true">
+              <view class="af-progress-line"></view>
+              <view class="af-progress-line__active"></view>
+              <view v-for="step in progressCheckSteps" :key="step.key" class="af-progress-node"
+                :class="{ active: step.active }" :style="{ left: step.offset }">
+                <view class="af-progress-node__circle">
+                  <PawIcon name="actions/selection-check" :size="9" />
+                </view>
+              </view>
+              <view class="af-progress-medal" :class="{ muted: frameNumber !== 57 }">
+                <PawIcon name="badges/adoption-reward" :size="22" />
               </view>
             </view>
-            <text class="af-progress-percent">{{ progressPercent }}</text>
+            <view class="af-progress-labels">
+              <text class="af-progress-label af-progress-label--success">领养成功</text>
+              <text class="af-progress-label af-progress-label--owner">院主确认</text>
+              <view v-if="progressReviewing" class="af-progress-label af-progress-label--review">
+                <text>评审中</text>
+                <uni-icons type="right" color="#fd6302" :size="11" />
+              </view>
+              <text class="af-progress-label af-progress-label--reward" :class="{ active: frameNumber === 57 }"
+                data-qa="qa-adoption-flow-claim-reward" @tap="onRewardAction">{{ rewardClaimed ? '已领取' : '抽取奖励'
+                }}</text>
+            </view>
           </view>
-          <view class="af-progress-labels">
-            <text v-for="item in progressLabels" :key="item.key"
-              :class="{ active: item.active, reward: item.key === 'reward' && frameNumber === 57 }">{{ item.label
-              }}</text>
-          </view>
+          <text class="af-progress-percent">{{ progressPercent }}</text>
         </view>
 
         <view v-if="showApplyCard" class="af-card af-apply-card" :class="{ 'with-user': showApplicant }">
@@ -45,7 +58,7 @@
           <view class="af-proof-photos">
             <view v-for="item in proofItems" :key="item.label" class="af-proof-item">
               <PawImage class="af-proof-photo" :src="proofPhoto" display-mode="fixed" :width="106" :height="106"
-                :radius="3" :preview="false" />
+                :radius="3" :preview="true" />
               <text class="af-proof-date">2026.01.03</text>
               <text class="af-proof-label">{{ item.label }}</text>
             </view>
@@ -54,67 +67,59 @@
         </view>
 
         <PawAdoptionPetsCard v-if="showPets" :title="petTitle" :pets="displayPets" :yard-name="ownerName"
-          :yard-avatar="ownerAvatar" :yard-tag="yardTag" :show-add="false" :show-owner="showOwner"
-          :pet-clickable="false" :yard-clickable="false" :min-height="showOwner ? 231 : 160" :margin-bottom="10"
-          qa-prefix="qa-adoption-flow-pet-" />
+          :yard-id="record && record.yardId" :yard-avatar="ownerAvatar" :yard-tag="yardTag" :show-add="false"
+          :show-owner="showOwner" :pet-clickable="true" :yard-clickable="true" :min-height="showOwner ? 231 : 160"
+          :margin-bottom="10" qa-prefix="qa-adoption-flow-pet-" @pet-click="openPetDetail"
+          @yard-click="openYardDetail" />
 
         <template v-if="showAdoptionInfo">
-          <view class="af-card af-location-card">
+          <view class="af-card af-location-card" data-qa="qa-adoption-flow-location" @tap="openLocation">
             <view class="af-location-label"><uni-icons type="location" color="#777" :size="13" /><text>小院位置</text>
             </view>
             <text class="af-location-name">{{ locationName }}</text>
-            <text class="af-distance">{{ distance }}</text>
+            <view class="af-location-action">
+              <text class="af-distance">{{ distance }}</text>
+              <PawIcon class="af-location-chevron" name="navigation/chevron-right" :size="16" />
+            </view>
           </view>
           <view class="af-card af-location-copy"><text>{{ locationCopy }}</text></view>
-          <view class="af-card af-contact-card" @tap="openContact">
+          <view class="af-card af-contact-card">
             <view class="af-contact-head">
-              <PawImage class="af-contact-avatar" :src="contactAvatar" :size="34" :radius="17" :preview="false" />
-              <text>{{ contactName }}</text>
-              <PawOwnerBadge class="af-contact-owner" />
-              <view class="af-contact-link"><text>联系方式</text><uni-icons type="right" color="#aaa" :size="13" /></view>
+              <PawImage class="af-contact-avatar" :src="contactAvatar" :size="34" :radius="17" :preview="false"
+                @tap.stop="openOwnerProfile" />
+              <text @tap.stop="openOwnerProfile">{{ contactName }}</text>
+              <PawOwnerBadge class="af-contact-owner" @tap.stop="openOwnerProfile" />
+              <view class="af-contact-link" @tap="openContact"><text>联系方式</text><uni-icons type="right" color="#aaa"
+                  :size="13" /></view>
             </view>
             <text class="af-contact-copy">{{ contactCopy }}</text>
           </view>
         </template>
 
-        <view v-if="showRejectReason" class="af-card af-link-row" @tap="openRejectReason">
-          <text>拒绝说明</text>
-          <view><text>查看</text><uni-icons type="right" color="#bbb" :size="14" /></view>
-        </view>
+        <PawAdoptionRejectReason v-if="showRejectReason" :rejector="record && record.rejector" :note="rejectNote" />
         <view v-if="showInfoLink" class="af-card af-link-row" @tap="openFrame(48)">
           <text>领养信息</text>
           <view><text>查看</text><uni-icons type="right" color="#bbb" :size="14" /></view>
         </view>
-        <view v-if="showApplyLink" class="af-card af-link-row" @tap="openFrame(49)">
+        <view v-if="showApplyLink" class="af-card af-link-row" data-qa="qa-adoption-flow-application-link"
+          @tap="openApplyContent">
           <text>申请内容</text>
           <view><text>查看</text><uni-icons type="right" color="#bbb" :size="14" /></view>
         </view>
       </view>
     </scroll-view>
 
-    <view v-if="footerMode === 'audit'" class="af-footer af-footer--dual">
-      <button class="af-btn af-btn-ghost" data-qa="qa-adoption-flow-reject"
-        @tap="onFooterAction({ key: 'audit-reject' })">拒绝</button>
-      <button class="af-btn af-btn-yellow" data-qa="qa-adoption-flow-agree"
-        @tap="onFooterAction({ key: 'audit-agree' })">同意</button>
-    </view>
-    <view v-else-if="footerMode === 'confirm'" class="af-footer af-footer--dual">
-      <button class="af-btn af-btn-ghost" data-qa="qa-adoption-flow-abandon"
-        @tap="onFooterAction({ key: 'confirm-reject' })">驳回</button>
-      <button class="af-btn af-btn-yellow" data-qa="qa-adoption-flow-confirm"
-        @tap="onFooterAction({ key: 'applicant-confirm' })">确认已领养</button>
-    </view>
-    <view v-else-if="footerMode === 'pickup'" class="af-footer af-footer--dual">
-      <button class="af-btn af-btn-ghost" data-qa="qa-adoption-flow-give-up"
-        @tap="onFooterAction({ key: 'give-up' })">放弃领养</button>
-      <button class="af-btn af-btn-yellow" data-qa="qa-adoption-flow-pickup"
-        @tap="onFooterAction({ key: 'applicant-confirm' })">确认领养抽猫粮</button>
-    </view>
-    <PawFixedActionBar v-else-if="footerMode === 'single'" :primary-action="singlePrimaryAction"
-      @primary="onFooterAction" />
+    <PawFixedActionBar v-if="footerMode" :secondary-action="secondaryAction" :primary-action="singlePrimaryAction"
+      @secondary="onFooterAction" @primary="onFooterAction" />
 
-    <PawDialog v-model="showRejectReasonDialog" title="拒绝说明" :message="rejectNote" confirm-text="我知道了"
-      :close-on-mask="true" />
+    <PawDialog v-model="showContact" variant="jury-vote-result" title="院主联系方式" :show-cancel="true" cancel-text="返回"
+      confirm-text="复制" :auto-close="false" :close-on-mask="true" @confirm="copyContact">
+      <view class="af-contact-dialog" data-qa="qa-adoption-contact-dialog">
+        <input class="af-contact-dialog__input" :value="contactPhone" disabled data-qa="qa-adoption-contact-input" />
+      </view>
+    </PawDialog>
+
+    <PawRewardOrderSheet v-model="showRewardSheet" :record-id="resolvedRecordId" @submitted="onRewardSubmitted" />
   </view>
 </template>
 
@@ -125,17 +130,20 @@ import PawDialog from '@/components/overlay/PawDialog.vue'
 import PawOwnerBadge from '@/components/identity/PawOwnerBadge.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawAdoptionPetsCard from '@/components/PawAdoptionPetsCard.vue'
+import PawAdoptionRejectReason from '@/components/adoption/PawAdoptionRejectReason.vue'
 import PawImage from '@/components/base/PawImage.vue'
+import PawRewardOrderSheet from '@/components/adoption/PawRewardOrderSheet.vue'
 import { goBackSmart } from '@/utils/navBack.js'
 import { adoptionPetAvatarSrc } from '@/utils/adoptionPetDisplay.js'
+import { openUserProfile, openYardDetail } from '@/utils/profileNav.js'
 import {
-  addAdoption,
-  getAdoptionById,
-  getDemoAdoptions,
   getLastAdoptionId,
-  transitionAdoption,
-  updateAdoption
+  getDemoAdoptions
 } from '@/utils/adoptionStorage.js'
+import {
+  advanceApplication,
+  getApplication
+} from '@/utils/applicationMockApi.js'
 
 const ASSET_ROOT = '/static/figma/adoption-flow/'
 
@@ -155,16 +163,18 @@ function queryValue(value) {
 
 export default {
   name: 'PawAdoptionFlowFigma',
-  components: { PawPageNav, PawFixedActionBar, PawDialog, PawOwnerBadge, PawIcon, PawAdoptionPetsCard, PawImage },
+  components: { PawPageNav, PawFixedActionBar, PawDialog, PawOwnerBadge, PawIcon, PawAdoptionPetsCard, PawAdoptionRejectReason, PawImage, PawRewardOrderSheet },
   props: {
     frame: { type: [Number, String], default: '' },
-    recordId: { type: String, default: '' }
+    recordId: { type: String, default: '' },
+    openContact: { type: Boolean, default: false }
   },
   data() {
     return {
       record: null,
       resolvedRecordId: '',
-      showRejectReasonDialog: false,
+      showContact: false,
+      showRewardSheet: false,
       assets: {
         applyOne: ASSET_ROOT + '04a93fa17267335f49e6e818f8caa78dd3afc80b.png',
         applyTwo: ASSET_ROOT + 'b61b026ea991c01c6257c909021245fd64956837.png',
@@ -178,91 +188,107 @@ export default {
     }
   },
   watch: {
-    recordId: { immediate: true, handler() { this.loadRecord() } }
+    recordId: { immediate: true, handler() { this.loadRecord() } },
+    openContact: { immediate: true, handler(value) { this.showContact = Boolean(value) } }
   },
   computed: {
     frameNumber() {
       const explicitFrame = Number(this.frame)
-      if (explicitFrame >= 44 && explicitFrame <= 57) return explicitFrame
+      if ([48, 49].includes(explicitFrame)) return explicitFrame
       const framesByStatus = {
+        // 申请者页面只消费申请者状态；审批者和评审团有各自的页面。
+        cloud_pending: 44,
+        cloud_rejected: 45,
         pending: 44,
         rejected: 45,
-        pickup: 50,
+        pickup: 54,
         owner_confirm: 55,
+        owner_confirm_pending: 55,
+        owner_confirm_rejected: 45,
         jury_confirm: 56,
+        jury_confirm_pending: 56,
+        jury_confirm_rejected: 45,
+        adoption_confirmed: 57,
         reward: 57,
         reward_done: 57,
-        abandoned: 53
+        abandoned: 45
       }
       return framesByStatus[this.record && this.record.status] || 44
     },
     navTitle() {
       if (this.frameNumber === 48) return '领养信息'
       if (this.frameNumber === 49) return '申请内容'
+      if (this.progressMode) return '领养进度'
       return '领养申请'
     },
-    navBackground() { return 'transparent' },
+    navBackground() {
+      if (this.frameNumber === 48) return '#f5f5f5'
+      return 'linear-gradient(to bottom, #fffcdc 0%, #ffffff 100%)'
+    },
     statusText() {
+      if (this.record && this.record.status === 'cloud_pending') return '等待云家长审核中......'
+      if (this.record && this.record.status === 'adoption_confirmed') return '领养确认成功'
+      if (this.record && this.record.status === 'abandoned') return '已放弃领养'
       return ({
         44: '等待院主审核中......', 45: '已拒绝领养申请', 46: '等待院主审核中......',
         47: '等待云家长审核中......', 50: '院主已同意，待申请人前往领养',
-        51: '申请人已领养，待院主确认', 52: '已驳回', 53: '领养成功',
+        51: '申请人已领养，待院主确认', 52: '审批未通过，流程已结束', 53: '领养确认成功',
         54: '院主已同意，待申请人前往领养', 55: '申请人已领养，待院主确认',
-        56: '院主已确认，待评审团确认', 57: '恭喜您！获得领养礼物！'
+        56: '院主确认成功，待评审团确认', 57: '恭喜您！获得领养礼物！'
       })[this.frameNumber] || '领养申请'
     },
+    rejectedStatus() { return this.frameNumber === 45 },
     statusIconName() {
-      if ([44, 46, 47, 50, 54].includes(this.frameNumber)) return 'navigation/clock-disabled'
-      if ([45, 52].includes(this.frameNumber)) return 'navigation/clear'
+      if (this.frameNumber === 54) return 'status/check'
+      if (this.frameNumber === 44) return 'navigation/clock'
+      if (this.rejectedStatus) return 'status/rejected'
       return 'status/check'
     },
-    statusIconSize() { return [44, 46, 47, 50, 54].includes(this.frameNumber) ? 17 : 19 },
-    yellowTop() { return [46, 47, 50, 51, 52, 53].includes(this.frameNumber) },
-    gradientTop() { return [44, 45, 54, 55, 56, 57].includes(this.frameNumber) },
+    statusIconSize() { return [44, 45, 54].includes(this.frameNumber) ? 17 : 19 },
+    yellowTop() { return false },
+    gradientTop() { return this.frameNumber !== 48 },
     progressMode() { return this.frameNumber >= 55 && this.frameNumber <= 57 },
     progressStep() { return this.frameNumber === 55 ? 1 : this.frameNumber === 56 ? 2 : 4 },
-    progressPercent() {
-      if (this.frameNumber === 57) return '100%'
-      if (this.frameNumber === 56) return '50%'
-      if (this.frameNumber === 55) return '25%'
-      return '0%'
-    },
-    progressLabels() {
+    progressPercent() { return this.frameNumber === 57 ? '100%' : '0%' },
+    progressCheckSteps() {
       return [
-        { key: 'success', label: '领养成功', active: this.progressStep >= 1 },
-        { key: 'owner', label: '院主确认', active: this.progressStep >= 2 },
-        { key: 'review', label: this.frameNumber === 56 ? '评审中' : '', active: false },
-        { key: 'reward', label: '抽取奖励', active: this.progressStep >= 4 }
+        { key: 'adoption', offset: '0px', active: this.progressStep >= 1 },
+        { key: 'owner', offset: '28.185%', active: this.progressStep >= 2 }
       ]
     },
-    showApplicant() { return [46, 47, 49].includes(this.frameNumber) },
-    showApplyCard() { return [44, 45, 46, 47, 49].includes(this.frameNumber) },
-    showProofCard() { return [51, 52, 53, 55, 56, 57].includes(this.frameNumber) },
-    showPets() { return [44, 45, 46, 47, 49, 50, 52, 53, 54, 55, 56, 57].includes(this.frameNumber) },
-    showOwner() { return this.showPets && this.frameNumber !== 53 },
-    showAdoptionInfo() { return [48, 50, 54].includes(this.frameNumber) },
+    progressReviewing() { return this.frameNumber === 56 },
+    rewardClaimed() { return Boolean(this.record && this.record.status === 'reward_done') },
+    showStatusHeading() { return ![48, 49].includes(this.frameNumber) },
+    showApplicant() { return false },
+    showApplyCard() { return [44, 45, 49].includes(this.frameNumber) },
+    showProofCard() { return [55, 56, 57].includes(this.frameNumber) },
+    showPets() { return [44, 45, 49, 54, 55, 56, 57].includes(this.frameNumber) },
+    showOwner() { return this.showPets },
+    showAdoptionInfo() { return [48, 54].includes(this.frameNumber) },
     showRejectReason() { return this.frameNumber === 45 },
-    showInfoLink() { return [51, 52, 53, 55, 56, 57].includes(this.frameNumber) },
-    showApplyLink() { return [50, 51, 52, 53, 54, 55, 56, 57].includes(this.frameNumber) },
-    petTitle() { return this.frameNumber === 53 ? '领走的猫咪' : '申请领养的猫咪' },
+    showInfoLink() { return [55, 56, 57].includes(this.frameNumber) },
+    showApplyLink() { return [54, 55, 56, 57].includes(this.frameNumber) },
+    petTitle() { return this.frameNumber === 57 ? '领走的猫咪' : '申请领养的猫咪' },
     footerMode() {
-      if ([46, 47].includes(this.frameNumber)) return 'audit'
-      if (this.frameNumber === 51) return 'confirm'
-      if (this.frameNumber === 54) return 'pickup'
-      if ([50, 52, 53, 55, 56, 57].includes(this.frameNumber)) return 'single'
+      if (this.frameNumber === 54) return 'dual'
       return ''
     },
     hasFooter() { return !!this.footerMode },
     singlePrimaryAction() {
+      if (this.record && this.record.status === 'reward_done') return null
+      if (this.record && this.record.status === 'adoption_confirmed') {
+        return { key: 'start-reward', label: '开始申请猫粮', qa: 'qa-adoption-flow-start-reward' }
+      }
       const actions = {
-        50: { key: 'view-detail', label: '查看详情', qa: 'qa-adoption-flow-view-detail' },
-        52: { key: 'view-detail', label: '查看详情', qa: 'qa-adoption-flow-view-detail' },
-        53: { key: 'view-detail', label: '查看详情', qa: 'qa-adoption-flow-view-detail' },
-        55: { key: 'owner-confirm', label: '进入院主确认', qa: 'qa-adoption-flow-owner-confirm' },
-        56: { key: 'jury-approve', label: '评审通过', qa: 'qa-adoption-flow-jury-approve' },
-        57: { key: 'claim-reward', label: '领取奖励', qa: 'qa-adoption-flow-claim-reward' }
+        50: { key: 'open-evidence', label: '确认领养领猫粮', qa: 'qa-adoption-flow-open-evidence' },
+        54: { key: 'open-evidence', label: '确认领养抽猫粮', qa: 'qa-adoption-flow-open-evidence' },
+        53: { key: 'start-reward', label: '开始申请猫粮', qa: 'qa-adoption-flow-start-reward' }
       }
       return actions[this.frameNumber] || null
+    },
+    secondaryAction() {
+      if (this.frameNumber !== 54) return null
+      return { key: 'abandon-adoption', label: '放弃领养', qa: 'qa-adoption-flow-abandon' }
     },
     displayPets() {
       const list = this.record && Array.isArray(this.record.pets) ? this.record.pets : []
@@ -288,82 +314,133 @@ export default {
     contactName() { return (this.record && this.record.ownerNick) || '芝' },
     contactAvatar() { return (this.record && this.record.ownerAvatar) || this.assets.contact },
     contactCopy() { return (this.record && this.record.ownerMessage) || '如果领养的话可以联系我，我带你指路，最好带上笼子和网兜，小猫害怕陌生人靠近会跑远。' },
-    rejectNote() { return (this.record && this.record.rejectNote) || '当前申请暂未通过，请关注其他小院。' }
+    contactPhone() {
+      return (this.record && (this.record.ownerPhone || this.record.ownerMobile || this.record.contactPhone)) || '19078676542'
+    },
+    rejectNote() { return (this.record && this.record.rejectNote) || '当前申请暂未通过，请关注其他小院。' },
+    locationAddress() {
+      const value = this.record && this.record.locationAddress
+      return value || (this.record && this.record.address) || this.locationName
+    },
+    navigationLocation() {
+      const record = this.record || {}
+      const location = record.location && typeof record.location === 'object' ? record.location : {}
+      const latitude = Number(record.latitude ?? record.locationLatitude ?? location.latitude)
+      const longitude = Number(record.longitude ?? record.locationLongitude ?? location.longitude)
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null
+      return { latitude, longitude }
+    }
   },
   methods: {
     loadRecord() {
       const options = pageOptions()
       const id = queryValue(this.recordId || options.id || options.recordId || getLastAdoptionId() || 'demo-pending')
       this.resolvedRecordId = id
-      let record = getAdoptionById(id)
-      if (!record) record = getDemoAdoptions().find(item => item.id === id) || null
-      this.record = record
-    },
-    ensureSavedRecord() {
-      const id = this.resolvedRecordId
-      if (!id) return false
-      if (!getAdoptionById(id)) {
-        const demo = getDemoAdoptions().find(item => item.id === id)
-        if (demo) addAdoption({ ...demo, pets: Array.isArray(demo.pets) ? demo.pets.map(p => ({ ...p })) : [] })
-      }
-      return !!getAdoptionById(id)
-    },
-    updateRecord(patch) {
-      if (!this.ensureSavedRecord()) {
-        uni.showToast({ title: '领养记录不存在', icon: 'none' })
-        return false
-      }
-      const nextStatus = patch && patch.status
-      const updated = nextStatus
-        ? transitionAdoption(this.resolvedRecordId, nextStatus, { ...patch, status: undefined })
-        : updateAdoption(this.resolvedRecordId, patch)
-      if (updated) this.record = updated
-      return updated
+      const result = getApplication('adoption', id)
+      this.record = result.success ? result.data : (getDemoAdoptions().find(item => item.id === id) || null)
     },
     flowUrl(frame) {
       return '/pages/meMore/adoptionFlow?frame=' + encodeURIComponent(frame) + '&id=' + encodeURIComponent(this.resolvedRecordId)
     },
     openFrame(frame) { uni.navigateTo({ url: this.flowUrl(frame) }) },
-    openContact() { uni.navigateTo({ url: '/pages/meMore/adoptionDetail?popup=contact&id=' + encodeURIComponent(this.resolvedRecordId) }) },
-    openRejectReason() { this.showRejectReasonDialog = true },
+    openApplyContent() {
+      this.openFrame(49)
+    },
+    openPetDetail(pet, index) {
+      const petId = pet && (pet.id || pet.petId || pet.yardPetId) ? String(pet.id || pet.petId || pet.yardPetId) : ''
+      const params = [
+        'state=35',
+        'managed=0',
+        `idx=${encodeURIComponent(index)}`,
+        petId && `petId=${encodeURIComponent(petId)}`,
+        `yardId=${encodeURIComponent((this.record && this.record.yardId) || '1')}`,
+        `yardName=${encodeURIComponent(this.ownerName || '')}`
+      ].filter(Boolean).join('&')
+      uni.navigateTo({ url: '/pages/adoption/petDetail?' + params })
+    },
+    openYardDetail() {
+      openYardDetail({
+        yardId: (this.record && this.record.yardId) || '1',
+        yardName: this.ownerName
+      })
+    },
+    openLocation() {
+      const location = this.navigationLocation
+      if (!location || typeof uni.openLocation !== 'function') {
+        uni.showModal({
+          title: '暂无法导航',
+          content: `${this.locationName}\n${this.locationAddress}\n当前地址还没有配置地图坐标，请补充后重试。`,
+          showCancel: false
+        })
+        return
+      }
+      uni.openLocation({
+        ...location,
+        name: this.locationName,
+        address: this.locationAddress,
+        scale: 16,
+        fail: () => uni.showToast({ title: '暂时无法打开地图', icon: 'none' })
+      })
+    },
+    openContact() { this.showContact = true },
+    openOwnerProfile() {
+      openUserProfile({
+        pawId: (this.record && (this.record.ownerPawId || this.record.ownerId)) || 'owner-1',
+        nickname: this.contactName,
+        avatar: this.contactAvatar
+      })
+    },
+    copyContact() {
+      uni.setClipboardData({
+        data: this.contactPhone,
+        success: () => uni.showToast({ title: '已复制', icon: 'none' })
+      })
+    },
+    openRewardSheet() {
+      if (this.frameNumber !== 57) return
+      this.showRewardSheet = true
+    },
+    onRewardAction() {
+      if (this.rewardClaimed) {
+        uni.showToast({ title: '待接入订单详情页', icon: 'none' })
+        return
+      }
+      this.openRewardSheet()
+    },
+    onRewardSubmitted(payload = {}) {
+      this.showRewardSheet = false
+      const orderId = payload.order && payload.order.id ? `&orderId=${encodeURIComponent(payload.order.id)}` : ''
+      uni.navigateTo({
+        url: `/pages/adoption/result?variant=80&id=${encodeURIComponent(this.resolvedRecordId)}${orderId}`
+      })
+    },
     goBack() { goBackSmart({ fallbackUrl: '/pages/me/index' }) },
     onFooterAction(action) {
       const key = action && action.key
-      if (key === 'audit-agree') {
-        if (this.updateRecord({ status: 'pickup', approvedAt: Date.now(), approvedBy: 'owner' })) this.openFrame(50)
+      if (key === 'abandon-adoption') {
+        const result = advanceApplication('adoption', this.resolvedRecordId, 'abandoned', { abandonedAt: Date.now() })
+        if (!result.success) {
+          uni.showToast({ title: result.error.message, icon: 'none' })
+          return
+        }
+        this.record = result.data
         return
       }
-      if (key === 'audit-reject') {
-        if (this.updateRecord({ status: 'rejected', rejectNote: this.rejectNote, rejectedAt: Date.now() })) this.openFrame(45)
+      if (key === 'open-evidence') {
+        uni.navigateTo({ url: '/pages/meMore/adoptionConfirm?recordId=' + encodeURIComponent(this.resolvedRecordId) })
         return
       }
-      if (key === 'applicant-confirm') {
-        if (this.updateRecord({ status: 'owner_confirm', applicantConfirmedAt: Date.now() })) this.openFrame(55)
-        return
-      }
-      if (key === 'confirm-reject') {
-        if (this.updateRecord({ status: 'rejected', rejectNote: this.rejectNote, rejectedAt: Date.now() })) this.openFrame(52)
-        return
-      }
-      if (key === 'give-up') {
-        if (this.updateRecord({ status: 'abandoned', abandonedAt: Date.now() })) this.openDetail()
-        return
-      }
-      if (key === 'owner-confirm') {
-        uni.navigateTo({ url: '/pages/yard/adoptionAudit?mode=ownerConfirm&id=' + encodeURIComponent(this.resolvedRecordId) })
-        return
-      }
-      if (key === 'jury-approve') {
-        if (this.updateRecord({ status: 'reward', juryConfirmedAt: Date.now() })) this.openFrame(57)
-        return
-      }
-      if (key === 'claim-reward') {
+      if (key === 'start-reward') {
+        const result = advanceApplication('adoption', this.resolvedRecordId, 'reward', { rewardStartedAt: Date.now() })
+        if (!result.success) {
+          uni.showToast({ title: result.error.message, icon: 'none' })
+          return
+        }
+        this.record = result.data
         uni.navigateTo({ url: '/pages/adoption/submitOrder?recordId=' + encodeURIComponent(this.resolvedRecordId) })
         return
       }
-      if (key === 'view-detail') this.openDetail()
-    },
-    openDetail() { uni.navigateTo({ url: '/pages/meMore/adoptionDetail?id=' + encodeURIComponent(this.resolvedRecordId) }) }
+    }
   }
 }
 </script>
@@ -384,10 +461,6 @@ export default {
   background: linear-gradient(to bottom, #fffcdc 0%, #fff 13.225%, #f5f5f5 21.49%, #f5f5f5 100%);
 }
 
-.af-page.af-yellow {
-  background: linear-gradient(180deg, #fcf276 0, #fcf276 279px, #f5f5f5 279px, #f5f5f5 100%);
-}
-
 .af-scroll {
   flex: 1;
   min-height: 0;
@@ -405,7 +478,7 @@ export default {
 
 .af-heading {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 7px;
   min-height: 71px;
   padding: 26px 3px 16px;
@@ -434,7 +507,6 @@ export default {
 }
 
 .af-apply-card {
-  min-height: 285px;
   padding: 9px 10px;
 }
 
@@ -483,7 +555,6 @@ export default {
 
 .af-apply-copy {
   display: block;
-  min-height: 110px;
   margin: 0 7px;
   overflow: hidden;
   font-size: 15px;
@@ -570,8 +641,19 @@ export default {
 }
 
 .af-distance {
-  margin-left: auto;
   color: #777;
+}
+
+.af-location-action {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.af-location-chevron {
+  flex-shrink: 0;
 }
 
 .af-location-copy {
@@ -584,16 +666,16 @@ export default {
   overflow: hidden;
   color: #8b8b8b;
   font-size: 15px;
-  line-height: 15px;
+  line-height: normal;
 }
 
 .af-contact-card {
-  min-height: 201px;
-  padding: 8px 10px;
+  min-height: 199px;
+  padding: 9px 10px;
 }
 
 .af-contact-head {
-  min-height: 36px;
+  min-height: 34px;
   gap: 6px;
 }
 
@@ -612,11 +694,32 @@ export default {
 
 .af-contact-copy {
   display: block;
-  margin-top: 11px;
+  margin-top: 10px;
   overflow: hidden;
   font-size: 16px;
   font-weight: 500;
-  line-height: 16px;
+  line-height: normal;
+}
+
+.af-contact-dialog {
+  padding: 20px 20px;
+  box-sizing: border-box;
+}
+
+.af-contact-dialog__input {
+  display: block;
+  width: 100%;
+  height: 72px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background: #f5f5f5;
+  color: #111;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 72px;
+  text-align: center;
+  opacity: 1;
 }
 
 .af-link-row {
@@ -636,93 +739,182 @@ export default {
 }
 
 .af-progress-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 72px;
   margin-bottom: 10px;
-  padding: 25px 17px 8px;
-  border-radius: 6px;
+  box-sizing: border-box;
+  border-radius: 10px;
   background: #fff;
 }
 
+.af-progress-stage {
+  display: flex;
+  min-width: 0;
+  flex: 0 0 41px;
+  flex-direction: column;
+  margin: 16px 51px 0 35px;
+}
+
 .af-progress-track {
-  display: flex;
-  align-items: center;
-  height: 16px;
+  position: relative;
+  top: auto;
+  right: auto;
+  left: auto;
+  width: 100%;
+  height: 22px;
+  flex: 0 0 22px;
 }
 
-.af-progress-segment {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  height: 16px;
-  border-top: 8px solid #dedede;
+.af-progress-line,
+.af-progress-line__active {
+  position: absolute;
+  top: 4.93px;
+  right: 0;
+  left: 0;
+  height: 15px;
 }
 
-.af-progress-segment.active {
-  border-top-color: #ffea00;
+.af-progress-line::before,
+.af-progress-line__active {
+  top: 3.5px;
+  height: 8px;
+  border-radius: 4px;
 }
 
-.af-progress-segment:first-child {
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
+.af-progress-line::before {
+  position: absolute;
+  right: 0;
+  left: 5px;
+  background: #ececec;
+  content: '';
 }
 
-.af-progress-segment:last-of-type {
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
+.af-progress-line__active {
+  top: 8.43px;
+  left: 0;
+  right: auto;
+  width: 17px;
+  background: #ffe60f;
 }
 
-.af-progress-dot {
+.af-progress-track.is-step-2 .af-progress-line__active {
+  width: calc(28.185% + 7.5px);
+}
+
+.af-progress-track.is-step-4 .af-progress-line__active {
+  width: 100%;
+}
+
+.af-progress-node {
+  position: absolute;
+  top: 4.93px;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
-  margin-left: -1px;
-  border-radius: 50%;
-  background: #dedede;
+  width: 15px;
+  height: 15px;
 }
 
-.af-progress-segment.active .af-progress-dot {
-  background: #ffea00;
+.af-progress-node__circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #ececec;
+}
+
+.af-progress-node.active .af-progress-node__circle {
+  background: #ffe60f;
+}
+
+.af-progress-node:not(.active) .paw-icon {
+  opacity: .5;
+}
+
+.af-progress-medal {
+  position: absolute;
+  top: 0;
+  right: -11.2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.af-progress-medal.muted {
+  filter: grayscale(1);
+  opacity: .62;
 }
 
 .af-progress-percent {
-  margin-left: 3px;
-  color: #999;
+  position: absolute;
+  top: 20px;
+  right: 8px;
+  left: auto;
+  color: #666;
   font-size: 10px;
+  line-height: 14px;
 }
 
 .af-progress-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 5px;
-  color: #777;
-  font-size: 11px;
+  position: relative;
+  top: auto;
+  right: auto;
+  left: auto;
+  width: 100%;
+  height: 17px;
+  flex: 0 0 17px;
+  margin-top: 2px;
 }
 
-.af-progress-labels text {
-  flex: 1;
+.af-progress-label {
+  position: absolute;
+  color: #666;
+  font-size: 11px;
+  line-height: 15px;
   white-space: nowrap;
 }
 
-.af-progress-labels text:nth-child(2),
-.af-progress-labels text:nth-child(3) {
-  text-align: center;
+.af-progress-label--success {
+  left: 7.5px;
+  transform: translateX(-50%);
 }
 
-.af-progress-labels text:last-child {
-  text-align: right;
+.af-progress-label--owner {
+  left: calc(28.185% + 7.5px);
+  transform: translateX(-50%);
 }
 
-.af-progress-labels text.reward {
-  flex: 0 0 auto;
-  padding: 2px 6px;
-  border-radius: 3px;
-  background: #7a4a13;
-  color: #fff;
+.af-progress-label--review {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  left: 57.3%;
+  color: #fd6302;
 }
 
-.af-progress-labels text.active {
-  color: #ff6b00;
+.af-progress-label--reward {
+  right: auto;
+  left: 100%;
+  transform: translateX(-50%);
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: #ececec;
+  color: #333;
+  line-height: 15px;
+}
+
+.af-progress-label--reward.active {
+  background: #ffe60f;
+}
+
+.af-progress-label--reward {
+  cursor: pointer;
 }
 
 .af-footer {
@@ -772,8 +964,66 @@ export default {
   color: #111;
 }
 
-.af-frame-48,
-.af-frame-49 {
-  background: #f5f5f5;
+/* Figma node 62:31825: the adoption-information view starts directly below
+ * the fixed navigation and contains only location, reminder, and owner-note
+ * cards on the flat gray canvas. */
+.af-frame-48 .af-content {
+  padding-top: 5px;
+}
+
+.af-frame-48 .af-card {
+  border-radius: 9px;
+}
+
+.af-frame-48 .af-location-card {
+  min-height: 44px;
+  padding-right: 8px;
+  padding-left: 8px;
+  gap: 5px;
+}
+
+.af-frame-48 .af-location-copy {
+  min-height: 160px;
+  padding: 11px 10px;
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, .05);
+}
+
+.af-frame-48 .af-contact-card {
+  min-height: 199px;
+  padding: 9px 10px;
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, .05);
+}
+
+/* The owner-approved state follows Figma node 62:32023. Stable card and
+ * typography dimensions stay in px; the page keeps its flex-based content
+ * flow and shared fixed action bar spacing. */
+.af-frame-54 .af-card {
+  margin-bottom: 10px;
+  border-radius: 9px;
+}
+
+.af-frame-54 .af-location-card {
+  min-height: 44px;
+  padding-right: 8px;
+  padding-left: 8px;
+  gap: 5px;
+}
+
+.af-frame-54 .af-location-action {
+  gap: 3px;
+}
+
+.af-frame-54 .af-location-copy {
+  min-height: 160px;
+  padding: 11px 10px;
+}
+
+.af-frame-54 .af-contact-card {
+  min-height: 199px;
+  padding: 9px 10px;
+}
+
+.af-frame-54 .af-link-row {
+  min-height: 50px;
 }
 </style>

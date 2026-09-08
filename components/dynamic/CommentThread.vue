@@ -1,22 +1,27 @@
 <template>
   <view class="comment-thread">
-    <text v-if="total" class="comment-thread__title">{{ total }}</text>
-    <slot name="before" />
+    <view v-if="total" class="comment-thread__title">
+      <slot name="title">
+        <text>{{ total }}</text>
+        <text v-if="titleCount !== ''">({{ titleCount }})</text>
+      </slot>
+    </view>
+    <slot v-if="!readonly" name="before" />
     <PawEmptyState v-if="empty" class="comment-thread__empty" image="/static/figma/dynamic-detail/comment-empty.svg"
-      title="还没有评论" action-text="抢首评" compact @action="$emit('empty-action')" />
+      title="还没有评论" :action-text="readonly ? '' : '抢首评'" compact @action="!readonly && $emit('empty-action')" />
     <template v-else>
       <CommentItem v-for="(comment, index) in visibleComments" :key="comment.id"
         :class="{ 'comment-item--first': index === 0, 'comment-item--second': index === 1, 'comment-item--voice': comment.kind === 'voice' }"
-        :comment="comment" :reply-preview-count="replyPreviewCount" :playing="playingId === comment.id"
-        @user-click="$emit('user-click', $event)" @reply="$emit('reply', $event)" @like="$emit('like', $event)"
-        @voice-play="onVoicePlay" />
+        :comment="comment" :readonly="readonly" :reply-preview-count="replyPreviewCount"
+        :playing="playingId === comment.id" @user-click="$emit('user-click', $event)" @reply="$emit('reply', $event)"
+        @like="$emit('like', $event)" @voice-play="onVoicePlay" />
       <view v-if="hiddenCommentCount > 0" id="qa-dynamic-detail-expand-comments" class="comment-thread__expand"
         @tap.stop="toggleComments">
         <PawDivider class="comment-thread__expand-line" :width="34" :thickness="0.3" /><text>{{
           commentsExpanded ? '收起评论' : `展开 ${hiddenCommentCount} 条评论` }}</text>
       </view>
     </template>
-    <slot name="after" />
+    <slot v-if="!readonly" name="after" />
   </view>
 </template>
 
@@ -31,7 +36,9 @@ export default {
   props: {
     comments: { type: Array, default: () => [] },
     total: { type: String, default: '' },
+    titleCount: { type: [String, Number], default: '' },
     empty: { type: Boolean, default: false },
+    readonly: { type: Boolean, default: false },
     commentPreviewCount: { type: Number, default: 3 },
     replyPreviewCount: { type: Number, default: 1 }
   },
@@ -70,6 +77,12 @@ export default {
   font-size: 13px;
   font-weight: 500;
   line-height: 19px;
+}
+
+.comment-thread__title text {
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 .comment-thread__expand {

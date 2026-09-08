@@ -1,6 +1,7 @@
 <template>
-	<view class="jury-page" data-qa="qa-jury-panel">
-		<PawPageNav title="逢猫评审团" background="#f7f7f7" :title-centered="true" :auto-back="false" @back="goBack" />
+	<view class="jury-page" :class="`jury-page--${reviewType || 'adoption'}`" data-qa="qa-jury-panel">
+		<PawPageNav :title="pageTitle" :background="pageBackground" :title-centered="true" :auto-back="false"
+			@back="goBack" />
 
 		<view class="jury-stats-shell" data-qa="qa-jury-stats-sticky">
 			<view class="jury-stats" data-qa="qa-jury-tabs">
@@ -54,6 +55,8 @@ export default {
 		}
 	},
 	computed: {
+		pageTitle() { return this.reviewType === 'rescue' ? '救助评审' : '领养评审' },
+		pageBackground() { return this.reviewType === 'rescue' ? '#fff6b8' : '#f7f7f7' },
 		itemsWithState() {
 			return this.juryItems.map((item) => ({
 				...item,
@@ -72,10 +75,6 @@ export default {
 	},
 	onLoad(options = {}) {
 		this.reviewType = this.normalizeReviewType(options.reviewType || options.type || options.juryType)
-		if (this.reviewType === 'rescue') {
-			uni.redirectTo({ url: '/pages/yard/rescueReview' })
-			return
-		}
 		if (options.tab === 'finished' || options.state === 'finished') this.activeTab = 'finished'
 		this.loadJuryState()
 	},
@@ -122,6 +121,11 @@ export default {
 	min-height: 0;
 	flex-direction: column;
 	background: #f7f7f7;
+	color: #333;
+}
+
+.jury-page--rescue {
+	background: #fff6b8;
 }
 
 .jury-scroll {
@@ -139,7 +143,7 @@ export default {
 	justify-content: center;
 	padding: 28px 12px 4px;
 	box-sizing: border-box;
-	background: #f7f7f7;
+	background: inherit;
 }
 
 .jury-stats {

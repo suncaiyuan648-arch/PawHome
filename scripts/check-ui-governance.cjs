@@ -15,8 +15,6 @@ const legacyCustomNavPages = new Set([
   'pages/index/index.vue',
   'pages/me/index.vue',
   'pages/meMore/addShippingAddress.vue',
-  'pages/meMore/adoptionApplyContent.vue',
-  'pages/meMore/adoptionDetail.vue',
   'pages/meMore/annualReport.vue',
   'pages/meMore/browsingHistory.vue',
   'pages/meMore/feedingDetail.vue',

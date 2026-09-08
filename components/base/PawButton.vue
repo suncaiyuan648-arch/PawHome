@@ -150,6 +150,11 @@ export default {
   color: #fff;
 }
 
+.paw-button--accent {
+  background: #ee8002;
+  color: #fff;
+}
+
 .paw-button--danger {
   background: var(--paw-color-danger, #ff3d3d);
   color: #fff;

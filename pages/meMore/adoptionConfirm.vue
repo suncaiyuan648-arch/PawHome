@@ -10,7 +10,8 @@ export default {
   onLoad(options = {}) { this.recordId = options.id || options.recordId || getLastAdoptionId() },
   methods: {
     onSubmitted() {
-      uni.redirectTo({ url: `/pages/adoption/result?variant=84&id=${encodeURIComponent(this.recordId)}` })
+      const query = this.recordId ? `?variant=84&id=${encodeURIComponent(this.recordId)}` : '?variant=84'
+      uni.redirectTo({ url: `/pages/adoption/result${query}` })
     }
   }
 }

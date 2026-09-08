@@ -29,7 +29,7 @@
 							<view class="name-more-row">
 								<view class="name-line">
 									<text class="nickname">{{ displayNickname }}</text>
-									<LevelCapsule level="1" />
+									<LevelBadge level="1" />
 								</view>
 								<view class="profile-more-wrap" :style="navTrailingInsetStyle">
 									<view class="nav-more-trigger" @click.stop="openMoreActionSheet">
@@ -105,7 +105,7 @@
 						<image class="review-avatar" :src="item.avatar" mode="aspectFill"></image>
 						<view class="review-main">
 							<view class="review-name-line"><text class="review-name">{{ item.name }}</text>
-								<LevelCapsule level="1" />
+								<LevelBadge level="1" />
 							</view>
 							<text class="review-copy">{{ item.copy }}</text>
 							<text class="review-meta">{{ item.time }}　{{ item.region }}　回复</text>
@@ -152,7 +152,7 @@
 							<view class="adopt-head-left">
 								<image class="adopt-av" :src="row.userAvatar" mode="aspectFill"></image>
 								<text class="adopt-name">{{ row.userName }}</text>
-								<YardTagPill class="yard-tag-pill--ml" />
+								<YardBadge />
 							</view>
 							<view class="adopt-status">
 								<view class="adopt-status-dot"></view>
@@ -176,7 +176,7 @@
 						<view class="donate-mid">
 							<view class="donate-title-row">
 								<text class="donate-name">{{ row.userName }}</text>
-								<YardTagPill />
+								<YardBadge />
 							</view>
 							<text class="donate-action">{{ row.actionText }}</text>
 							<text class="donate-time">{{ row.timeStr }}</text>
@@ -307,8 +307,8 @@
 
 <script>
 import { goBackSmart } from '@/utils/navBack.js'
-import YardTagPill from '@/components/YardTagPill.vue'
-import LevelCapsule from '@/components/LevelCapsule.vue'
+import YardBadge from '@/components/customBadge/YardBadge.vue'
+import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import PawVerifiedBadge from '@/components/identity/PawVerifiedBadge.vue'
 import PawActionSheet from '@/components/overlay/PawActionSheet.vue'
 import PawLikeIcon from '@/components/base/PawLikeIcon.vue'
@@ -427,7 +427,7 @@ const mockDonateRows = () => [
 ]
 
 export default {
-	components: { YardTagPill, LevelCapsule, PawVerifiedBadge, PawActionSheet, PawLikeIcon },
+	components: { YardBadge, LevelBadge, PawVerifiedBadge, PawActionSheet, PawLikeIcon },
 	data() {
 		return {
 			donateList: mockDonateRows(),
@@ -886,11 +886,6 @@ export default {
 	color: rgba(255, 255, 255, 1);
 }
 
-.name-line .lv-cap {
-	margin-left: 12rpx;
-	flex-shrink: 0;
-}
-
 .paw-line {
 	display: block;
 	margin-top: 8rpx;
@@ -1256,6 +1251,7 @@ export default {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
+	gap: 6px;
 	min-width: 0;
 	flex: 1;
 }
@@ -1268,7 +1264,7 @@ export default {
 }
 
 .adopt-name {
-	margin-left: 12rpx;
+	margin-left: 0;
 	font-size: 28rpx;
 	font-weight: 500;
 	color: #111111;

@@ -1,9 +1,11 @@
 <template>
-  <PawBottomSheet v-model="valueProxy" :variant="variant" :height="sheetHeight" :close-on-mask="true" :safe-area="true">
+  <PawBottomSheet v-model="valueProxy" :variant="variant" :height="sheetHeight" :close-on-mask="true"
+    :safe-area="safeArea">
     <view class="paw-selection-sheet__header" :class="{ 'paw-selection-sheet__header--list': layout !== 'cards' }">
       <text v-if="title" class="paw-selection-sheet__title">{{ title }}</text>
-      <PawIcon v-if="showClose" class="paw-selection-sheet__close" name="navigation/close" :size="12" label="关闭"
-        @tap.stop="close" />
+      <view v-if="showClose" class="paw-selection-sheet__close" @tap.stop="close">
+        <PawIcon name="navigation/close" :size="16" label="关闭" />
+      </view>
     </view>
     <view v-if="layout === 'cards'" class="paw-selection-sheet__cards">
       <view v-for="item in normalizedItems" :key="item.key" class="paw-selection-sheet__card"
@@ -13,7 +15,7 @@
       <view v-for="item in normalizedItems" :key="item.key" class="paw-selection-sheet__row"
         @tap.stop="select(item.key)"><text>{{ item.label }}</text>
         <PawIcon v-if="selected === item.key" class="paw-selection-sheet__check" name="actions/selection-check"
-          :size="14.3762" />
+          :size="18" />
       </view>
     </view>
     <view v-if="confirmText" class="paw-selection-sheet__confirm">
@@ -27,7 +29,65 @@
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawButton from '@/components/base/PawButton.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
-export default { name: 'PawSelectionSheet', components: { PawBottomSheet, PawButton, PawIcon }, props: { modelValue: { type: Boolean, default: false }, title: { type: String, default: '' }, items: { type: Array, default: () => [] }, value: { type: [String, Number], default: '' }, layout: { type: String, default: 'list' }, variant: { type: String, default: 'selection' }, confirmText: { type: String, default: '' }, showClose: { type: Boolean, default: false } }, emits: ['update:modelValue', 'update:value', 'select', 'confirm'], data() { return { selected: this.value } }, watch: { value(value) { this.selected = value } }, computed: { normalizedItems() { return this.items.map((item, index) => typeof item === 'string' || typeof item === 'number' ? { key: item, label: String(item) } : { key: item.key !== undefined ? item.key : index, label: item.label || item.value || '' }) }, sheetHeight() { return this.layout === 'cards' ? '315px' : '419px' }, valueProxy: { get() { return this.modelValue }, set(value) { this.$emit('update:modelValue', value) } } }, methods: { select(key) { this.selected = key; this.$emit('update:value', key); this.$emit('select', key); if (!this.confirmText) this.$emit('update:modelValue', false) }, confirm() { this.$emit('confirm', this.selected); this.$emit('update:modelValue', false) }, close() { this.$emit('update:modelValue', false) } } }
+export default {
+  name: 'PawSelectionSheet',
+  components: { PawBottomSheet, PawButton, PawIcon },
+  props: {
+    modelValue: { type: Boolean, default: false },
+    title: { type: String, default: '' },
+    items: { type: Array, default: () => [] },
+    value: { type: [String, Number], default: '' },
+    layout: { type: String, default: 'list' },
+    variant: { type: String, default: 'selection' },
+    confirmText: { type: String, default: '' },
+    showClose: { type: Boolean, default: false },
+    safeArea: { type: Boolean, default: true },
+    height: { type: [String, Number], default: '' }
+  },
+  emits: ['update:modelValue', 'update:value', 'select', 'confirm'],
+  data() {
+    return { selected: this.value }
+  },
+  watch: {
+    value(value) {
+      this.selected = value
+    }
+  },
+  computed: {
+    normalizedItems() {
+      return this.items.map((item, index) => typeof item === 'string' || typeof item === 'number'
+        ? { key: item, label: String(item) }
+        : { key: item.key !== undefined ? item.key : index, label: item.label || item.value || '' })
+    },
+    sheetHeight() {
+      if (this.height) return this.height
+      return this.layout === 'cards' ? '315px' : '419px'
+    },
+    valueProxy: {
+      get() {
+        return this.modelValue
+      },
+      set(value) {
+        this.$emit('update:modelValue', value)
+      }
+    }
+  },
+  methods: {
+    select(key) {
+      this.selected = key
+      this.$emit('update:value', key)
+      this.$emit('select', key)
+      if (!this.confirmText) this.$emit('update:modelValue', false)
+    },
+    confirm() {
+      this.$emit('confirm', this.selected)
+      this.$emit('update:modelValue', false)
+    },
+    close() {
+      this.$emit('update:modelValue', false)
+    }
+  }
+}
 </script>
 
 <style scoped>
@@ -55,14 +115,18 @@ export default { name: 'PawSelectionSheet', components: { PawBottomSheet, PawBut
 }
 
 .paw-selection-sheet__close {
-  margin-top: -1px;
-  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
 }
 
 .paw-selection-sheet__header--list .paw-selection-sheet__close {
   position: absolute;
-  top: 23px;
-  right: 22px;
+  top: 16px;
+  right: 16px;
   margin: 0;
 }
 

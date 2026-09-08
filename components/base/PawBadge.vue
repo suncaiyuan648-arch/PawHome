@@ -2,7 +2,7 @@
 	<view class="paw-badge" :class="rootClasses">
 		<slot />
 		<view v-if="indicatorVisible" class="paw-badge__indicator" :class="indicatorClasses" :style="indicatorStyle">
-			<text v-if="!dot">{{ displayCount }}</text>
+			<text v-if="!dot" :style="indicatorTextStyle">{{ displayCount }}</text>
 		</view>
 	</view>
 </template>
@@ -20,6 +20,7 @@ export default {
 		showZero: { type: Boolean, default: false },
 		overflowCount: { type: Number, default: 99 },
 		color: { type: String, default: '' },
+		textColor: { type: String, default: '' },
 		offset: { type: Array, default: () => [0, 0] }
 	},
 	computed: {
@@ -63,6 +64,9 @@ export default {
 			if (offsetX || offsetY) style.transform = `translate(${offsetX}px, ${offsetY}px)`
 			if (this.color) style.backgroundColor = this.color
 			return style
+		},
+		indicatorTextStyle() {
+			return this.textColor ? { color: this.textColor } : {}
 		}
 	}
 }
@@ -87,9 +91,8 @@ export default {
 	left: calc(100% - 8px);
 	bottom: calc(100% - 10px);
 	z-index: 1;
-	min-width: 18px;
 	height: 15px;
-	padding: 0 3px;
+	padding: 0 6px;
 	box-sizing: border-box;
 	border-radius: 999px;
 	background: #ff2741;
@@ -164,4 +167,17 @@ export default {
 	background: #ff2741;
 	color: #ffffff;
 }
+</style>
+
+<style>
+/* #ifdef MP-WEIXIN */
+:host {
+	display: inline-flex;
+	align-items: center;
+	box-sizing: border-box;
+	line-height: 0;
+	vertical-align: middle;
+}
+
+/* #endif */
 </style>

@@ -17,19 +17,19 @@
           <view class="aps-grid">
             <view v-for="(c, i) in catOptions" :key="c.id" class="aps-cell"
               :class="{ 'aps-cell--disabled': c.disabled }" :data-selected="selectedIds.includes(i)">
-              <view v-if="!c.disabled" class="aps-av-hit" @tap.stop="openPetDetail(i)">
+              <view v-if="!c.disabled" class="aps-av-hit">
                 <view class="aps-ring" :class="{
                   'aps-ring--on': selectedIds.includes(i),
                   'aps-ring--off': !selectedIds.includes(i),
                 }">
                   <PawImage class="aps-img" :src="c.avatar" display-mode="fixed" width="100%" height="100%" radius="50%"
-                    :preview="false" @click="openPetDetail(i)" />
+                    :preview="false" @click.stop="toggleSelect(i)" />
                 </view>
               </view>
-              <view v-else class="aps-av-hit" @tap.stop="onDisabledPetTap">
+              <view v-else class="aps-av-hit">
                 <view class="aps-ring aps-ring--dim">
                   <PawImage class="aps-img" :src="c.avatar" display-mode="fixed" width="100%" height="100%" radius="50%"
-                    :preview="false" @click="onDisabledPetTap" />
+                    :preview="false" @click.stop="onDisabledPetTap" />
                 </view>
               </view>
               <view class="aps-name-hit" @tap.stop="toggleSelect(i)">
@@ -209,17 +209,6 @@ export default {
     },
     onAfterClose() {
       this.$emit('close')
-    },
-    openPetDetail(i) {
-      const c = this.catOptions[i]
-      if (!c || c.disabled) return
-      const params = [
-        `idx=${i}`,
-        `petId=${encodeURIComponent(c.id)}`,
-        `yardName=${encodeURIComponent(this.yardName || '')}`,
-        `yardId=${encodeURIComponent(this.yardId || '')}`
-      ].join('&')
-      uni.navigateTo({ url: `/pages/adoption/petDetail?${params}` })
     },
     onDisabledPetTap() {
       uni.showToast({ title: '该猫咪暂不可选', icon: 'none' })

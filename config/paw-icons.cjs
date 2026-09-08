@@ -85,6 +85,12 @@ module.exports = {
     figmaNodeId: '62:43079',
     sourceLabel: 'Figma node 62:43079'
   },
+  'navigation/clock': {
+    sourceFrame: { width: 17, height: 17 },
+    slot: 20,
+    figmaNodeId: '62:31433',
+    sourceLabel: 'Figma node 62:31433'
+  },
   'navigation/expand-arrow': {
     sourceFrame: { width: 12, height: 6 },
     slot: 16,
@@ -234,6 +240,13 @@ module.exports = {
     slot: 20,
     figmaNodeId: '62:28222',
     sourceLabel: 'Figma node 62:28222'
+  },
+  'actions/copy': {
+    sourceFrame: { width: 10, height: 10.6335 },
+    slot: 12,
+    preserveRects: true,
+    figmaNodeId: '62:36924',
+    sourceLabel: 'Figma node 62:36924'
   },
   'actions/agreement-check': {
     sourceFrame: { width: 12, height: 13 },
@@ -392,6 +405,18 @@ module.exports = {
     figmaNodeId: '62:32653',
     sourceLabel: 'Figma node 62:32653'
   },
+  'status/rejected': {
+    sourceFrame: { width: 17, height: 17 },
+    slot: 20,
+    figmaNodeId: '62:32354',
+    sourceLabel: 'Figma nodes 62:32354 + 62:32360 normalized into one frame'
+  },
+  'status/adoption-rejected': {
+    sourceFrame: { width: 24, height: 24 },
+    slot: 24,
+    figmaNodeId: '62:39293',
+    sourceLabel: 'Figma node 62:39293 (Frame)'
+  },
   'status/success-check': {
     sourceFrame: { width: 18, height: 18 },
     slot: 20,
@@ -427,6 +452,11 @@ module.exports = {
     slot: 24,
     figmaNodeId: '62:35695',
     sourceLabel: 'Figma node 62:35695'
+  },
+  'badges/adoption-reward': {
+    sourceFrame: { width: 21.114, height: 22.1211 },
+    slot: 24,
+    sourceLabel: 'Figma adoption flow reward medal'
   },
   'brand/share-poster': {
     sourceFrame: { width: 27, height: 27 },
@@ -501,6 +531,7 @@ module.exports = {
     'navigation/list': 'assets/paw-icons/source/navigation/list.svg',
     'navigation/action-arrow': 'assets/paw-icons/source/navigation/action-arrow.svg',
     'navigation/clock-disabled': 'assets/paw-icons/source/navigation/clock-disabled.svg',
+    'navigation/clock': 'assets/paw-icons/source/navigation/clock.svg',
     'navigation/expand-arrow': 'assets/paw-icons/source/navigation/expand-arrow.svg',
     'navigation/value-close': 'assets/paw-icons/source/navigation/value-close.svg',
     'navigation/form-amount-chevron': 'assets/paw-icons/source/navigation/form-amount-chevron.svg',
@@ -526,6 +557,7 @@ module.exports = {
     'actions/manage-album': 'assets/paw-icons/source/actions/manage-album.svg',
     'actions/delete': 'assets/paw-icons/source/actions/delete.svg',
     'actions/selection-check': 'assets/paw-icons/source/actions/selection-check.svg',
+    'actions/copy': 'assets/paw-icons/source/actions/copy.svg',
     'actions/agreement-check': 'assets/paw-icons/source/actions/agreement-check.svg',
     'actions/yard-feed': 'assets/paw-icons/source/actions/yard-feed.svg',
     'actions/yard-audit': 'assets/paw-icons/source/actions/yard-audit.svg',
@@ -551,12 +583,15 @@ module.exports = {
     'common/message-pet': 'assets/paw-icons/source/common/message-pet.svg',
     'status/check-outline': 'assets/paw-icons/source/status/check-outline.svg',
     'status/check': 'assets/paw-icons/source/status/check.svg',
+    'status/rejected': 'assets/paw-icons/source/status/rejected.svg',
+    'status/adoption-rejected': 'assets/paw-icons/source/status/adoption-rejected.svg',
     'status/success-check': 'assets/paw-icons/source/status/success-check.svg',
     'status/jury-real': 'assets/paw-icons/source/status/jury-real.svg',
     'status/jury-fake': 'assets/paw-icons/source/status/jury-fake.svg',
     'badges/crown-left': 'assets/paw-icons/source/badges/crown-left.svg',
     'badges/crown-center': 'assets/paw-icons/source/badges/crown-center.svg',
     'badges/crown-right': 'assets/paw-icons/source/badges/crown-right.svg',
+    'badges/adoption-reward': 'assets/paw-icons/source/badges/adoption-reward.svg',
     'brand/share-poster': 'assets/paw-icons/source/brand/share-poster.svg',
     'brand/share-link': 'assets/paw-icons/source/brand/share-link.svg',
     'brand/share-wechat': 'assets/paw-icons/source/brand/share-wechat.svg',

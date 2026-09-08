@@ -76,7 +76,7 @@ pages/dynamicDetail/index?yardId=1&state=comments-empty
 如果改了 YardSummaryCard：验证首页小院态 + 动态详情。
 如果改了 PawPageNav：验证至少两个普通页面。
 如果改了 PawBottomSheet：验证 ReplyComposer + Share。
-如果改了 LevelCapsule：验证评论 + 排行。
+如果改了 LevelBadge：验证评论 + 排行。
 
 使用运行时 screenshot 和 geometry，而不是只读 CSS。
 ```
