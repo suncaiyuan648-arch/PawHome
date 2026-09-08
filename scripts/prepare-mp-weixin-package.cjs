@@ -211,8 +211,11 @@ async function optimizeRaster(file) {
   // package below the DevTools quality threshold after code is included.
   // Re-encode every referenced raster (not only files above 200K), otherwise many
   // just-under-limit originals can still push the main package over 2MB.
-  const dimensions = [350, 320, 280, 240]
-  const qualities = [40, 36, 32]
+  // The widest rendered image slot is about 350px, but 320px is sufficient
+  // for the mobile package and leaves headroom for DevTools' package-size
+  // accounting. Keep the source aspect ratio and never enlarge small assets.
+  const dimensions = [320, 300, 280, 240]
+  const qualities = [36, 32, 40]
   let best = null
 
   for (const dimension of dimensions) {
