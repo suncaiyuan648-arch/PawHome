@@ -150,6 +150,27 @@ function collectStaticReferences(modulePackages) {
   return { exact, prefixes }
 }
 
+function collectGeneratedStaticReferences(references) {
+  let added = 0
+  const generatedFiles = [
+    path.join(outputRoot, 'common', 'assets.js'),
+    path.join(outputRoot, 'static', 'customicons.css')
+  ].filter(file => fs.existsSync(file))
+
+  for (const file of generatedFiles) {
+    for (const reference of extractStaticReferences(fs.readFileSync(file, 'utf8'))) {
+      if (reference.type !== 'exact') continue
+      if (!references.exact.has(reference.value)) references.exact.set(reference.value, [])
+      references.exact.get(reference.value).push({
+        file,
+        packages: new Set(['main'])
+      })
+      added += 1
+    }
+  }
+  return added
+}
+
 function isRootModule(file) {
   const relative = relativeToRoot(file)
   return relative === 'App.vue' || !relative.startsWith('pages/')
@@ -245,6 +266,48 @@ function expandPrefixAssignments(assignments, references, allAssets) {
   }
 }
 
+function buildAssetAliases(allAssets) {
+  const assetsByHash = new Map()
+  for (const relative of allAssets) {
+    const hash = sha256(path.join(sourceStaticRoot, relative))
+    if (!assetsByHash.has(hash)) assetsByHash.set(hash, [])
+    assetsByHash.get(hash).push(relative)
+  }
+
+  const aliases = new Map()
+  for (const assets of assetsByHash.values()) {
+    if (assets.length < 2) continue
+    const canonical = assets[0]
+    for (const duplicate of assets.slice(1)) aliases.set(duplicate, canonical)
+  }
+  return aliases
+}
+
+function deduplicateAssignments(assignments, aliases) {
+  let deduplicated = 0
+  for (const [duplicate, canonical] of aliases) {
+    const duplicateOwners = assignments.get(duplicate)
+    if (!duplicateOwners) continue
+    const canonicalOwners = assignments.get(canonical) || []
+    assignments.set(canonical, [...new Set([...canonicalOwners, ...duplicateOwners])].sort())
+    assignments.delete(duplicate)
+    deduplicated += 1
+  }
+  return deduplicated
+}
+
+function rewriteAssetAliases(packageRoot, aliases) {
+  if (!aliases.size) return
+  for (const file of walkFiles(packageRoot)) {
+    if (!TEXT_EXTENSIONS.has(path.extname(file).toLowerCase())) continue
+    let source = fs.readFileSync(file, 'utf8')
+    for (const [duplicate, canonical] of aliases) {
+      source = source.split(`/static/${duplicate}`).join(`/static/${canonical}`)
+    }
+    fs.writeFileSync(file, source)
+  }
+}
+
 function buildPrefixRules(assignments, references, packageName, allAssets) {
   const rules = []
   for (const prefix of references.prefixes) {
@@ -320,12 +383,14 @@ async function main() {
   const routes = loadPackageRoutes()
   const modulePackages = collectModulePackages(routes)
   const references = collectStaticReferences(modulePackages)
+  const generatedStaticReferences = collectGeneratedStaticReferences(references)
   const sourceAssets = walkFiles(sourceStaticRoot)
     .map(file => normalizePath(path.relative(sourceStaticRoot, file)))
     .filter(relative => !relative.startsWith(PAW_ICON_BUILD_ONLY_PREFIX))
     .filter(relative => !isDuplicateAsset(relative))
 
   const assignments = new Map()
+  const assetAliases = buildAssetAliases(sourceAssets)
   let omitted = 0
   for (const relative of sourceAssets) {
     const owners = referenceOwners(relative, references)
@@ -336,6 +401,7 @@ async function main() {
     addAssignment(assignments, relative, owners)
   }
   expandPrefixAssignments(assignments, references, sourceAssets)
+  const deduplicated = deduplicateAssignments(assignments, assetAliases)
 
   fs.rmSync(outputStaticRoot, { recursive: true, force: true })
   for (const packageName of new Set([...assignments.values()].flat())) {
@@ -375,12 +441,17 @@ async function main() {
   // production upload package or pull its audit-only metrics into the main package.
   removeDevelopmentArtifacts()
 
+  // Identical source assets may be referenced under different semantic paths.
+  // Keep one canonical copy in the package, then rewrite generated references
+  // before subpackage routing prefixes are applied.
+  rewriteAssetAliases(outputRoot, assetAliases)
+
   const packageRoots = [...new Set([...routes.values()].filter(packageName => packageName !== 'main' && packageName !== DEV_PACKAGE_ROOT))]
   for (const packageName of packageRoots) rewritePackageReferences(packageName, assignments, references, sourceAssets)
 
   const mainBytes = sumPackage('main', packageRoots)
   const packageSizes = Object.fromEntries(packageRoots.map(packageName => [packageName, sumPackage(packageName, packageRoots)]))
-  console.log(`[PawHome] prepared upload package: copied=${copied}, optimized=${optimized}, omitted=${omitted}, staticBytes=${formatSize(copiedBytes)}`)
+  console.log(`[PawHome] prepared upload package: copied=${copied}, optimized=${optimized}, deduplicated=${deduplicated}, generatedRefs=${generatedStaticReferences}, omitted=${omitted}, staticBytes=${formatSize(copiedBytes)}`)
   console.log(`[PawHome] main package=${formatSize(mainBytes)} (hard limit ${formatSize(MAX_PACKAGE_BYTES)})`)
   for (const [packageName, bytes] of Object.entries(packageSizes)) {
     console.log(`[PawHome] ${packageName}=${formatSize(bytes)} (hard limit ${formatSize(MAX_PACKAGE_BYTES)})`)
