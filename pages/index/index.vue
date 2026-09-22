@@ -165,9 +165,9 @@ export default {
 			zan2: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAcCAYAAAB/E6/TAAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAE4SURBVEiJvZYxVoNAFEXvo05va+EyACcLcQG6iZBduAnX4IRhAR4b25xjZW/NtwiJRCFMQuBVw5n5//Lf8IcRZ8jS1CGtAAeAtFZZFjGxiobkeYHZqmPKK4TlUHwSC+qESG+AszR1VwFZnhc98EUD7Kr0fNAJ3cUujAN1782vpM1oUK9tO22H4qNBmN2fmL0FoK79KFBTjRtKoqq6HHSib/5qEAKthrU0dSSJa6xyEbFbdtb53o+hrv2+WgFYlr1GJm+9or4wu4lYt1ZZFjpYFBt4iaS1LMtskuTH8mNPhli5uUCTV/QOgLSZZY8UguawzsP438Swmmae3DqFIJi+os/9YGrQ4QycFKQQHuYAPbcfEuDjSom/W2OvEB6PQWZPVwItWpB/F8pEVeUxWwIvI0Ees2XfrfUHCTFt74bNhAQAAAAASUVORK5CYII=',
 			selectedCity: '广州市',
 			announcementItems: [
-				{ id: 'feeding-demo-1', text: '广东汕头的花开富贵老师对小院我就是要喂猫投粮400克，积善缘，得福报~' },
-				{ id: 'feeding-demo-2', text: '广州天河的橘子汽水为幸福小院投粮300克，愿每只流浪猫都能吃饱~' },
-				{ id: 'feeding-demo-3', text: '深圳南山的猫咪守护者为阳光小院投粮500克，谢谢你的温柔投喂！' },
+				{ id: 'feeding-demo-1', feedingWeightJin: 40, text: '广东汕头的花开富贵老师对小院我就是要喂猫投粮40斤，积善缘，得福报~' },
+				{ id: 'feeding-demo-2', feedingWeightJin: 4, text: '广州天河的橘子汽水为幸福小院投粮4斤，愿每只流浪猫都能吃饱~' },
+				{ id: 'feeding-demo-3', feedingWeightJin: 0.4, text: '深圳南山的猫咪守护者为阳光小院投粮0.4斤，谢谢你的温柔投喂！' },
 				{ id: 'feeding-demo-4', text: '佛山禅城的小鱼干老师为喵星人之家投粮200克，爱心已送达~' },
 				{ id: 'feeding-demo-5', text: '东莞松山湖的春风十里为流浪猫驿站投粮800克，今日猫粮已加满！' },
 				{ id: 'feeding-demo-6', text: '珠海香洲的海边散步为暖暖小院投粮350克，让毛孩子不再挨饿~' },
@@ -244,14 +244,14 @@ export default {
 	methods: {
 		openSearchPage() {
 			uni.navigateTo({
-				url: '/pages/search/index',
+				url: '/packages/discovery/pages/search/index',
 				animationType: 'slide-in-right',
 				animationDuration: 120
 			})
 		},
 		openLeaderboard() {
 			uni.navigateTo({
-				url: '/pages/leaderboard/index',
+				url: '/packages/discovery/pages/ranking/index',
 				animationType: 'slide-in-right',
 				animationDuration: 120
 			})
@@ -297,7 +297,7 @@ export default {
 		},
 		goCitySelect() {
 			uni.navigateTo({
-				url: `/pages/citySelect/index?current=${encodeURIComponent(this.selectedCity)}`
+				url: `/packages/discovery/pages/city-picker/index?current=${encodeURIComponent(this.selectedCity)}`
 			})
 		},
 		handleFeedScroll(e) {
@@ -447,11 +447,11 @@ export default {
 		goDetail(item) {
 			const dynamicId = item && item.id ? String(item.id) : 'mock-feed-1'
 			uni.navigateTo({
-				url: `/pages/dynamicDetail/index?yardId=1&dynamicId=${encodeURIComponent(dynamicId)}`
+				url: `/packages/dynamic/pages/detail/index?yardId=1&dynamicId=${encodeURIComponent(dynamicId)}`
 			})
 		},
 		goYardDetail() {
-			uni.navigateTo({ url: '/pages/commodityDetails/index?id=1' })
+			uni.navigateTo({ url: '/packages/yard/pages/detail/index?yardId=1' })
 		},
 		openAuthorProfile() {
 			openUserProfile({

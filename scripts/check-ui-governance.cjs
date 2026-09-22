@@ -1,45 +1,26 @@
 const fs = require('fs')
 const path = require('path')
 
-const root = path.resolve(__dirname, '..')
-const pagesRoot = path.join(root, 'pages')
+const root = path.resolve(process.env.PAWHOME_PROJECT_ROOT || path.resolve(__dirname, '..'))
+const sourceRoots = ['pages', 'packages']
 const legacyCustomNavPages = new Set([
   'pages/adoption/adoptApply.vue',
   'pages/adoption/adoptApplySuccess.vue',
   'pages/adoption/petDetail.vue',
-  'pages/auth/bindPhone.vue',
-  'pages/auth/realName.vue',
-  'pages/auth/smsVerify.vue',
-  'pages/auth/verifyResult.vue',
-  'pages/citySelect/index.vue',
   'pages/index/index.vue',
   'pages/me/index.vue',
-  'pages/meMore/addShippingAddress.vue',
   'pages/meMore/annualReport.vue',
   'pages/meMore/browsingHistory.vue',
-  'pages/meMore/feedingDetail.vue',
   'pages/meMore/helpedAnimals.vue',
   'pages/meMore/level.vue',
   'pages/meMore/levelRules.vue',
   'pages/meMore/myAdoption.vue',
   'pages/meMore/myFeedings.vue',
-  'pages/meMore/regionSelector.vue',
-  'pages/meMore/settings.vue',
-  'pages/meMore/shippingAddress.vue',
+  'packages/account/pages/settings/index.vue',
   'pages/meMore/yardFeedOrders.vue',
   'pages/message/index.vue',
-  'pages/publishDynamic/postFeed.vue',
-  'pages/publishDynamic/postSuccess.vue',
   'pages/user/followFans.vue',
   'pages/user/profile.vue',
-  'pages/yard/addKitten.vue',
-  'pages/yard/adoptionAudit.vue',
-  'pages/yard/breedPicker.vue',
-  'pages/yard/catGuide.vue',
-  'pages/yard/createCatYard.vue',
-  'pages/yard/juryDetail.vue',
-  'pages/yard/yardCats.vue',
-  'pages/yard/yardCertify.vue'
 ])
 
 const violations = []
@@ -52,6 +33,7 @@ function lineAt(content, index) {
 }
 
 function visit(dir) {
+  if (!fs.existsSync(dir)) return
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const target = path.join(dir, entry.name)
     if (entry.isDirectory()) visit(target)
@@ -80,12 +62,12 @@ function inspect(file) {
   }
 }
 
-visit(pagesRoot)
+for (const sourceRoot of sourceRoots) visit(path.join(root, sourceRoot))
 
 if (violations.length) {
   console.error('UI governance check failed:')
   console.error(violations.join('\n'))
   process.exitCode = 1
 } else {
-  console.log(`UI governance check passed: no new custom navigation or handwritten identity badges; ${legacyCustomNavPages.size} legacy navigation pages remain allowlisted.`)
+  console.log(`UI governance check passed: pages/ and packages/ scanned; no new custom navigation or handwritten identity badges; ${legacyCustomNavPages.size} legacy navigation pages remain allowlisted.`)
 }

@@ -18,7 +18,7 @@
 | `PAW_MSG_VOICE_LEVEL` | 抱歉，您当前等级暂无语音权限 |
 | `PAW_MSG_VOICE_DAY_LIMIT` | 抱歉，您今日语音次数已用完 |
 | 领养入口拦截封装 | `utils/adoptEntryGate.js` | 本地 `PAW_ADOPT_ENTRY_HINT_DISMISSED`；`shouldShowAdoptEntryHint` / `dismissAdoptEntryHint`。 |
-| **AdoptEntryHintModal** | `components/AdoptEntryHintModal.vue` | 对 `PawNoticeModal` 的薄封装，默认领养次数文案，兼容旧引用。 |
+| **AdoptEntryHintModal** | `pages/adoption/components/AdoptEntryHintModal.vue` | 领养宠物详情私有的 `PawNoticeModal` 薄封装，默认领养次数文案；不作为跨域通用组件引用。 |
 
 **接入方式示例：**
 
@@ -36,7 +36,7 @@
 
 | 治理结果 | 组件 | 代码位置 | 已接入页面/组件 |
 |------|------|------|------|
-| REFINE / MERGE | `PawButton` / `PawPrimaryButton` | `components/base/PawButton.vue`、`components/PawPrimaryButton.vue` | 固定底栏、结果页、表单、投喂弹层 |
+| REFINE / PRIVATE | `PawButton` / `PawPrimaryButton` | `components/base/PawButton.vue`、`pages/auth/components/PawPrimaryButton.vue` | `PawButton` 供固定底栏、结果页、表单、投喂弹层共享；`PawPrimaryButton` 仅认证登录入口使用 |
 | NEW | `PawOverlay` / `PawDialog` / `PawBottomSheet` | `components/overlay/` | 通知、删除确认、分享、回复、选择、结果 |
 | NEW | `PawFixedActionBar` / `PawSafeArea` | `components/layout/`、`components/base/` | 动态详情、小院详情、领养详情、详情底栏 |
 | MERGE | `YardSummaryCard` | `components/yard/YardSummaryCard.vue` | 首页、动态详情、兼容旧 `YardInfoSummaryCard` |
@@ -64,7 +64,7 @@
 | 评论流 | `components/dynamic/CommentThread.vue`、`CommentItem.vue`、`VoiceComment.vue` |
 | 投粮榜条 | `components/yard/YardFeedRankStrip.vue` |
 | 小院摘要卡片 | `components/yard/YardSummaryCard.vue`；旧 `YardInfoSummaryCard` 为兼容薄封装 |
-| 小院宠物状态卡片 / 列表区 | `components/PawPetRoster.vue`（`variant="status"`） | 待云养 / 已云养 / 已领养 / 失踪 / 死亡分组：顶胶囊、横向头像+名、右下「n只」。列表页 `pages/yard/yardCats.vue?state=status`；小院详情 `commodityDetails` 六头像后 `>` 跳转。 |
+| 小院宠物状态卡片 / 列表区 | `components/PawPetRoster.vue`（`variant="status"`） | 待云养 / 已云养 / 已领养 / 失踪 / 死亡分组：顶胶囊、横向头像+名、右下「n只」。公开状态列表页 `packages/yard/pages/animals/index.vue?view=status`；管理名册使用 `packages/yard/pages/manage/animals/index.vue`；小院详情 `packages/yard/pages/detail/index.vue?yardId=...` 六头像后 `>` 跳转。 |
 | 详情底栏 | `components/layout/PawFixedActionBar.vue`；`DetailTabber` 保留业务事件兼容层 |
 
 ## 其它
@@ -80,8 +80,8 @@
 
 | 场景 | 页面/组件 | 行为说明 |
 |------|-----------|----------|
-| 当日无投票次数 | `pages/yard/juryDetail.vue` | 首次点击「挺真实/有点假」若 `mockVoteDayBlocked` 为 true 则弹出 `PAW_MSG_VOTE_DAY_LIMIT`，确认后关闭拦截。 |
+| 当日无投票次数 | `packages/adoption/pages/jury/detail/index.vue`、`packages/rescue/pages/review/detail/index.vue` | 首次点击「挺真实/有点假」若 `mockVoteDayBlocked` 为 true 则弹出 `PAW_MSG_VOTE_DAY_LIMIT`，确认后关闭拦截。 |
 | 无语音权限 / 语音次数用完 | `components/yard/YardCommentComposer.vue` | 麦克风：第 1 次 `PAW_MSG_VOICE_LEVEL`，第 2 次 `PAW_MSG_VOICE_DAY_LIMIT`，之后走原 toast。 |
-| 领养入口提示 | `pages/index/index.vue`、`pages/dynamicDetail/index.vue` | `AdoptEntryHintModal` + `adoptEntryGate.js`。 |
+| 领养入口提示 | `pages/index/index.vue`、`packages/dynamic/pages/detail/index.vue` | `AdoptEntryHintModal` + `adoptEntryGate.js`。 |
 
 接接口后：删除或改为请求结果的 `mock*` / `micStage` 等演示字段，用接口返回值驱动 `PawNoticeModal` 的 `visible` 与 `message`。

@@ -1,33 +1,32 @@
-const fs = require('fs')
-const path = require('path')
+const { checkPageRoutes, formatResult } = require('./lib/page-route-checker.cjs')
 
-const root = path.resolve(__dirname, '..')
-const pages = JSON.parse(fs.readFileSync(path.join(root, 'pages.json'), 'utf8'))
-const registered = new Set()
-
-for (const page of pages.pages || []) registered.add('/' + page.path)
-for (const pack of pages.subPackages || []) {
-  for (const page of pack.pages || []) registered.add('/' + pack.root + '/' + page.path)
-}
-
-const errors = []
-for (const route of registered) {
-  const file = path.join(root, route.slice(1) + '.vue')
-  if (!fs.existsSync(file)) errors.push(`缺少页面文件: ${route} -> ${file}`)
-}
-
-const matrixFile = path.resolve(root, '..', 'docs', 'design-audit', 'figma-state-matrix.md')
-if (fs.existsSync(matrixFile)) {
-  const markdown = fs.readFileSync(matrixFile, 'utf8')
-  const urls = [...markdown.matchAll(/`(\/pages\/[^`?]+)(?:\?[^`]*)?`/g)].map(match => match[1])
-  for (const route of new Set(urls)) {
-    if (!registered.has(route)) errors.push(`Figma 矩阵路由未注册: ${route}`)
+function explicitQaFiles(argv) {
+  const files = []
+  for (let index = 0; index < argv.length; index += 1) {
+    if (argv[index] === '--qa') {
+      if (!argv[index + 1]) throw new Error('--qa requires a matrix file path')
+      files.push(argv[++index])
+    } else if (argv[index].startsWith('--qa=')) {
+      files.push(argv[index].slice('--qa='.length))
+    }
   }
+  return files
 }
 
-if (errors.length) {
-  console.error(errors.join('\n'))
-  process.exit(1)
+let result
+try {
+  const qaFiles = explicitQaFiles(process.argv.slice(2))
+  result = checkPageRoutes(qaFiles.length ? { qaFiles, requireQaFiles: true } : {})
+} catch (error) {
+  console.error(error.message)
+  process.exitCode = 1
+  result = { issues: [{ code: 'invalid-cli', message: error.message }] }
+}
+if (result.issues.length) {
+  console.error(formatResult(result))
+  process.exitCode = 1
+} else {
+  console.log(formatResult(result))
 }
 
-console.log(`route check passed: ${registered.size} registered pages; all Figma matrix routes are registered`)
+module.exports = { checkPageRoutes, formatResult }

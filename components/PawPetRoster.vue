@@ -33,6 +33,7 @@
 
     <view v-else class="managed-roster-head">
       <text class="managed-roster-title">小院猫咪</text>
+      <view v-if="canEditYard" class="managed-add" @tap="$emit('edit-yard')"><text>编辑</text></view>
       <view class="managed-add" @tap="$emit('add-pet')"><text>添加</text></view>
     </view>
 
@@ -195,6 +196,7 @@ export default {
     yardId: { type: String, default: '' },
     ownerPawId: { type: String, default: '' },
     managed: { type: Boolean, default: false },
+    canEditYard: { type: Boolean, default: false },
     yardName: { type: String, default: '小院成员' },
     yardAvatar: { type: String, default: '/static/figma/yard-cover-exact.png' }
   },
@@ -261,6 +263,7 @@ export default {
         variant: this.variant,
         userPawId: this.userPawId,
         yardId: this.yardId,
+        managed: this.managed,
         species: this.speciesFilter,
         keyword: this.keyword
       })

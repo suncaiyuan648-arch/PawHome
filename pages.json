@@ -1,210 +1,289 @@
 {
-  // 主包页面：首屏与底部 TabBar 高频页面，随小程序首次启动加载。
   "pages": [
     {
-      // 首页：动态瀑布流、小院列表、搜索入口与排行榜入口。
       "path": "pages/index/index",
       "style": {
         "navigationStyle": "custom"
       }
     },
     {
-      // 自营：首页底部 TabBar 的自营业务入口。
       "path": "pages/selfRun/index",
       "style": {
         "navigationBarTitleText": "uni-app"
       }
     },
     {
-      // 消息中心：展示系统通知、互动消息和业务消息列表。
       "path": "pages/message/index",
       "style": {
         "navigationStyle": "custom"
       }
     },
     {
-      // 消息详情：查看单条消息或指定消息类型的详细内容。
-      "path": "pages/messageDetail/index",
-      "style": {
-        "navigationStyle": "custom",
-        "backgroundColor": "#F5F5F5"
-      }
-    },
-    {
-      // 我的：个人中心首页与用户资产、订单、设置等入口。
       "path": "pages/me/index",
       "style": {
         "navigationStyle": "custom"
       }
     }
   ],
-  // 分包页面：按业务域拆分，在用户进入对应功能时按需加载。
   "subPackages": [
     {
-      // 个人中心扩展分包。
-      "root": "pages/meMore",
+      "root": "packages/dynamic",
       "pages": [
         {
-          // 设置：账号与应用设置入口。
-          "path": "settings",
+          "path": "pages/detail/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        },
+        {
+          "path": "pages/deep-link/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        },
+        {
+          "path": "pages/editor/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/result/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        }
+      ]
+    },
+    {
+      "root": "packages/auth",
+      "pages": [
+        {
+          "path": "pages/login/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        },
+        {
+          "path": "pages/phone-bind/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        },
+        {
+          "path": "pages/sms-verify/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        },
+        {
+          "path": "pages/real-name/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        },
+        {
+          "path": "pages/verification-result/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        }
+      ]
+    },
+    {
+      "root": "packages/adoption",
+      "pages": [
+        {
+          "path": "pages/mine/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/confirmation/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/progress/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/review/list/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/review/detail/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/jury/detail/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/apply/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/result/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        },
+        {
+          "path": "pages/support/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        },
+        {
+          "path": "pages/quota/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/quota/detail/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/reward/claim/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        }
+      ]
+    },
+    {
+      "root": "packages/account",
+      "pages": [
+        {
+          "path": "pages/settings/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F7F8FA"
           }
         },
         {
-          // 收货地址：管理用户的收货地址列表。
-          "path": "shippingAddress",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F8F8F8"
-          }
-        },
-        {
-          // 新增收货地址：创建或编辑收货地址。
-          "path": "addShippingAddress",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F7F7F7"
-          }
-        },
-        {
-          // 新增服务地址：创建或编辑上门服务使用的地址。
-          "path": "addServiceAddress",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F7F7F7"
-          }
-        },
-        {
-          // 地区选择：选择省、市、区等行政区域。
-          "path": "regionSelector",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F6F6F6"
-          }
-        },
-        {
-          // 我的领养：查看用户发起或参与的领养记录。
-          "path": "myAdoption",
+          "path": "pages/tasks/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F5F5F5"
           }
         },
         {
-          // 浏览历史：查看用户最近浏览过的内容。
-          "path": "browsingHistory",
+          "path": "pages/profile/editor/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/profile/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/relations/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        },
+        {
+          "path": "pages/history/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F8F8F8"
           }
         },
         {
-          // 等级中心：展示用户等级、成长值和等级权益。
-          "path": "level",
+          "path": "pages/level/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#FFF8E8"
           }
         },
         {
-          // 等级规则：说明等级计算方式和成长规则。
-          "path": "levelRules",
+          "path": "pages/level/rules/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F3F4F6"
           }
         },
         {
-          // 年度报告：展示用户年度公益与投喂数据总结。
-          "path": "annualReport",
+          "path": "pages/annual-report/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#1A6FD4"
           }
         },
         {
-          // 帮助过的动物：展示用户帮助、投喂或救助过的动物。
-          "path": "helpedAnimals",
+          "path": "pages/helped-animals/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#FFFFFF"
           }
         },
         {
-          // 我的投喂：查看用户个人投喂记录。
-          "path": "myFeedings",
+          "path": "pages/medals/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F5F5F5"
           }
         },
         {
-          // 小院投喂订单：查看与小院相关的投喂订单列表。
-          "path": "yardFeedOrders",
+          "path": "pages/medals/map/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F5F5F5"
           }
         },
         {
-          // 投喂详情：查看单笔投喂记录的完整信息。
-          "path": "feedingDetail",
+          "path": "pages/medals/achievement/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F5F5F5"
           }
         },
         {
-          // 投喂详情 90：Figma 90 状态的投喂详情验收页面。
-          "path": "feedingDetail90",
-          "style": { "navigationStyle": "custom", "backgroundColor": "#FFFFFF" }
-        },
-        {
-          // 投喂详情 91：Figma 91 状态的投喂详情验收页面。
-          "path": "feedingDetail91",
-          "style": { "navigationStyle": "custom", "backgroundColor": "#FFFFFF" }
-        },
-        {
-          // 投喂详情 92：Figma 92 状态的投喂详情验收页面。
-          "path": "feedingDetail92",
-          "style": { "navigationStyle": "custom", "backgroundColor": "#FFFFFF" }
-        },
-        {
-          // 领养流程：展示领养业务的当前步骤和流程状态。
-          "path": "adoptionFlow",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F5F5F5"
-          }
-        },
-        {
-          // 领养确认：确认领养信息与后续流程。
-          "path": "adoptionConfirm",
-          "style": { "navigationStyle": "custom", "backgroundColor": "#F5F5F5" }
-        },
-        {
-          // 救助证实列表：查看救助申请的证实信息。
-          "path": "rescueProofList",
-          "style": { "navigationStyle": "custom", "backgroundColor": "#F5F5F5" }
-        },
-        {
-          // 救助证实信息：填写独立的救助证实资料。
-          "path": "rescueProofForm",
-          "style": { "navigationStyle": "custom", "backgroundColor": "#F5F5F5" }
-        },
-        {
-          // 我的资产：展示用户勋章、宠物等个人资产。
-          "path": "myAssets",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F5F5F5"
-          }
-        },
-        {
-          // 我的云养宠物：独立页面复用小院宠物列表的视觉骨架和卡片。
-          "path": "myCloudPets",
+          "path": "pages/invite/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F5F5F5"
@@ -213,324 +292,137 @@
       ]
     },
     {
-      // 小院详情分包。
-      "root": "pages/commodityDetails",
+      "root": "packages/animal",
       "pages": [
         {
-          // 小院详情：展示小院信息、猫咪、投喂及相关操作。
-          "path": "index",
+          "path": "pages/editor/index",
           "style": {
-            "navigationStyle": "custom"
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/breed-picker/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/mine/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/sponsored/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/detail/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/album/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
           }
         }
       ]
     },
     {
-      // 动态详情分包。
-      "root": "pages/dynamicDetail",
+      "root": "packages/yard",
       "pages": [
         {
-          // 动态详情：展示动态媒体、正文、评论和关联小院。
-          "path": "index",
+          "path": "pages/detail/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#FFFFFF"
           }
-        }
-      ]
-    },
-    {
-      // 通用功能场景分包。
-      "root": "pages/feature",
-      "pages": [
+        },
         {
-          // 功能场景页：通过 mode 参数承载救助详情、相册等复用场景。
-          "path": "index",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F5F5F5"
-          }
-        }
-      ]
-    },
-    {
-      // 城市选择分包。
-      "root": "pages/citySelect",
-      "pages": [
-        {
-          // 城市选择：切换首页当前城市。
-          "path": "index",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F3F3F3"
-          }
-        }
-      ]
-    },
-    {
-      // 搜索分包。
-      "root": "pages/search",
-      "pages": [
-        {
-          // 搜索：搜索小院、用户和相关内容。
-          "path": "index",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F5F5F5"
-          }
-        }
-      ]
-    },
-    {
-      // 排行榜分包。
-      "root": "pages/leaderboard",
-      "pages": [
-        {
-          // 排行榜：展示用户或小院的投喂排行。
-          "path": "index",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#FFF8E8"
-          }
-        }
-      ]
-    },
-    {
-      // 用户资料分包。
-      "root": "pages/user",
-      "pages": [
-        {
-          // 用户主页：展示其他用户的资料、动态和关系信息。
-          "path": "profile",
+          "path": "pages/onboarding/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F5F5F5"
           }
         },
         {
-          // 关注与粉丝：查看用户关注列表和粉丝列表。
-          "path": "followFans",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#FFFFFF"
-          }
-        }
-      ]
-    },
-    {
-      // 动态发布分包。
-      "root": "pages/publishDynamic",
-      "pages": [
-        {
-          // 发布动态：编辑并提交图文动态。
-          "path": "postFeed",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F5F5F5"
-          }
-        },
-        {
-          // 发布投喂订单：填写并确认动态关联的投喂订单。
-          "path": "postFeedOrder",
-          "style": { "navigationStyle": "custom", "backgroundColor": "#F5F5F5" }
-        },
-        {
-          // 发布成功：展示动态发布完成后的结果状态。
-          "path": "postSuccess",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#FFFFFF"
-          }
-        }
-      ]
-    },
-    {
-      // 登录与认证分包。
-      "root": "pages/auth",
-      "pages": [
-        {
-          // 实名认证：填写并提交实名资料。
-          "path": "realName",
+          "path": "pages/create/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F6F6F6"
           }
         },
         {
-          // 认证结果：展示实名认证审核或提交结果。
-          "path": "verifyResult",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F6F6F6"
-          }
-        },
-        {
-          // 登录：用户登录入口。
-          "path": "login",
+          "path": "pages/editor/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F5F5F5"
           }
         },
         {
-          // 绑定手机号：填写并绑定用户手机号。
-          "path": "bindPhone",
+          "path": "pages/animals/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F5F5F5"
           }
         },
         {
-          // 短信验证：输入验证码完成手机号验证。
-          "path": "smsVerify",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F5F5F5"
-          }
-        }
-      ]
-    },
-    {
-      // 领养业务分包。
-      "root": "pages/adoption",
-      "pages": [
-        {
-          // 选择猫咪：从小院中选择需要申请领养的猫咪。
-          "path": "pickCats",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#FFFFFF"
-          }
-        },
-        {
-          // 宠物详情：查看待领养动物资料与领养条件。
-          "path": "petDetail",
+          "path": "pages/manage/animals/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F5F5F5"
           }
         },
         {
-          // 领养申请：填写并提交领养申请表。
-          "path": "adoptApply",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F5F5F5"
-          }
-        },
-        {
-          // 申请成功：展示领养申请提交成功状态。
-          "path": "adoptApplySuccess",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#FFFFFF"
-          }
-        },
-        {
-          // 领养扩展场景：通过 mode 参数承载支持、名额等补充页面。
-          "path": "extras",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F5F5F5"
-          }
-        },
-        {
-          // 领养结果：展示领养流程的通用结果状态。
-          "path": "result",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#FFFFFF"
-          }
-        },
-        {
-          // 提交领养订单：确认地址与领养订单信息。
-          "path": "submitOrder",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#FFFFFF"
-          }
-        }
-      ]
-    },
-    {
-      // 小院管理分包。
-      "root": "pages/yard",
-      "pages": [
-        {
-          // 创建小院引导：介绍创建小院条件与流程。
-          "path": "catGuide",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F5F5F5"
-          }
-        },
-        {
-          // 创建小院：填写小院资料、位置和救助信息。
-          "path": "createCatYard",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F6F6F6"
-          }
-        },
-        {
-          // 小院猫咪：管理小院内的猫咪列表。
-          "path": "yardCats",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F5F5F5"
-          }
-        },
-        {
-          // 添加猫咪：录入新猫咪的基础资料。
-          "path": "addKitten",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F6F8FA"
-          }
-        },
-        {
-          // 品种选择：选择猫咪品种。
-          "path": "breedPicker",
-          "style": {
-            "navigationStyle": "custom",
-            "backgroundColor": "#F5F5F5"
-          }
-        },
-        {
-          // 小院认证：提交小院认证资料。
-          "path": "yardCertify",
+          "path": "pages/certification/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F0F0F0"
           }
-        },
+        }
+      ]
+    },
+    {
+      "root": "packages/address",
+      "pages": [
         {
-          // 领养审核：处理小院收到的领养申请。
-          "path": "adoptionAudit",
+          "path": "pages/list/index",
           "style": {
             "navigationStyle": "custom",
-            "backgroundColor": "#F5F5F5"
+            "backgroundColor": "#F8F8F8"
           }
         },
         {
-          // 陪审面板：查看并处理需要陪审的领养事项。
-          "path": "juryPanel",
+          "path": "pages/editor/index",
           "style": {
             "navigationStyle": "custom",
-            "backgroundColor": "#F5F5F5"
+            "backgroundColor": "#F7F7F7"
           }
         },
         {
-          // 救助评审：救助基金池同时作为救助评审列表，按救助状态筛选评审单。
-          "path": "rescueReview",
+          "path": "pages/region-picker/index",
           "style": {
             "navigationStyle": "custom",
-            "backgroundColor": "#F5F5F5"
+            "backgroundColor": "#F6F6F6"
           }
-        },
+        }
+      ]
+    },
+    {
+      "root": "packages/jury",
+      "pages": [
         {
-          // 陪审详情：查看单个陪审事项的证据和详情。
-          "path": "juryDetail",
+          "path": "pages/queue/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F5F5F5"
@@ -539,7 +431,111 @@
       ]
     },
     {
-      // PawIcon 开发验收分包：开发者工具仍可直接打开，生产首包不再加载验收数据。
+      "root": "packages/rescue",
+      "pages": [
+        {
+          "path": "pages/progress/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/fund/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/detail/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/review/list/index",
+          "style": {
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "pages/review/detail/index",
+          "style": {
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "pages/proof/list/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/proof/create/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/mine/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/apply/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/result/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        }
+      ]
+    },
+    {
+      "root": "packages/feeding",
+      "pages": [
+        {
+          "path": "pages/mine/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/yard-orders/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/order/detail/index",
+          "style": {
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "pages/result/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFFFFF"
+          }
+        }
+      ]
+    },
+    {
       "root": "pages/dev",
       "pages": [
         {
@@ -557,11 +553,55 @@
             "navigationBarTextStyle": "black",
             "backgroundColor": "#F5F6F7"
           }
+        },
+        {
+          "path": "governance-fixture",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        }
+      ]
+    },
+    {
+      "root": "packages/discovery",
+      "pages": [
+        {
+          "path": "pages/city-picker/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/search/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
+        },
+        {
+          "path": "pages/ranking/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#FFF8E8"
+          }
+        }
+      ]
+    },
+    {
+      "root": "packages/message",
+      "pages": [
+        {
+          "path": "pages/list/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F5F5"
+          }
         }
       ]
     }
   ],
-  // 自定义底部 TabBar：保留 Tab 页面注册以支持 switchTab；视觉与发布抽屉由页面内共享组件承载。
   "tabBar": {
     "custom": true,
     "color": "#8c8c8c",
@@ -570,28 +610,23 @@
     "borderStyle": "black",
     "list": [
       {
-        // 首页 Tab。
         "pagePath": "pages/index/index",
         "text": "首页"
       },
       {
-        // 自营 Tab。
         "pagePath": "pages/selfRun/index",
         "text": "自营"
       },
       {
-        // 消息 Tab。
         "pagePath": "pages/message/index",
         "text": "消息"
       },
       {
-        // 我的 Tab。
         "pagePath": "pages/me/index",
         "text": "我"
       }
     ]
   },
-  // 全局窗口样式：页面未单独声明时继承这里的导航栏和背景配置。
   "globalStyle": {
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "uni-app",

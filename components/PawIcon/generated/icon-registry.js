@@ -1149,8 +1149,8 @@ export const PAW_ICON_REGISTRY = Object.freeze({
     "recommendedSlot": 28,
     "slot": 24,
     "family": null,
-    "figmaNodeId": null,
-    "sourceLabel": "Figma adoption flow reward medal",
+    "figmaNodeId": "62:33274",
+    "sourceLabel": "Figma node 62:33274 / Group 1321318128",
     "src": "/static/paw-icons/color/badges/adoption-reward.svg"
   },
   "brand/share-poster": {

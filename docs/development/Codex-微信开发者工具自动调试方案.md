@@ -224,7 +224,7 @@ wechatide \
   -c Codex \
   -t simulator_open_page \
   --project /ABS/.../unpackage/dist/dev/mp-weixin \
-  --page pages/dynamicDetail/index
+  --page packages/dynamic/pages/detail/index
 ```
 
 需要 query 时，必须先：
@@ -246,10 +246,10 @@ wechatide -c Codex -t simulator_open_page --help
 /pages/index/index
 
 动态详情默认：
-/pages/dynamicDetail/index?yardId=1
+/packages/dynamic/pages/detail/index?yardId=1
 
 动态详情评论空态：
-/pages/dynamicDetail/index?yardId=1&state=comments-empty
+/packages/dynamic/pages/detail/index?yardId=1&state=comments-empty
 ```
 
 第一阶段不要扫描全部页面。
@@ -706,7 +706,7 @@ const miniProgram = await automator.launch({
 })
 
 const page = await miniProgram.reLaunch(
-  '/pages/dynamicDetail/index?yardId=1'
+  '/packages/dynamic/pages/detail/index?yardId=1'
 )
 
 await page.waitFor(500)

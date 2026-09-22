@@ -32,7 +32,7 @@ import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawAddressPickerCard from '@/components/address/PawAddressPickerCard.vue'
 import { advanceApplication, createRewardOrder, getApplication } from '@/utils/applicationMockApi.js'
-import { getLastAdoptionId } from '@/utils/adoptionStorage.js'
+import { buildRoute } from '@/navigation/routeContracts.js'
 
 export default {
   name: 'PawRewardOrderSheet',
@@ -50,12 +50,16 @@ export default {
       get() { return this.modelValue },
       set(value) { this.$emit('update:modelValue', value) }
     },
-    resolvedRecordId() { return String(this.recordId || getLastAdoptionId() || '') },
+    resolvedRecordId() { return String(this.recordId || '') },
     returnUrl() {
       const pages = getCurrentPages()
       const page = pages && pages[pages.length - 1]
       const route = page && page.route
-      return route ? `/${route}` : '/pages/meMore/adoptionFlow'
+      return route
+        ? `/${route}`
+        : (this.resolvedRecordId
+          ? buildRoute('adoption.progress', { applicationId: this.resolvedRecordId })
+          : '/packages/adoption/pages/mine/index')
     }
   },
   watch: {
@@ -66,9 +70,15 @@ export default {
   },
   created() { this.loadAddress() },
   methods: {
+    actorProvider() {
+      try { return typeof uni !== 'undefined' && uni && typeof uni.getStorageSync === 'function' ? uni.getStorageSync('PAWHOME_ACTOR_SESSION') : null } catch (error) { return null }
+    },
     loadAddress() {
-      const application = this.resolvedRecordId ? getApplication('adoption', this.resolvedRecordId) : null
-      const saved = application && application.success && application.data.rewardAddress
+      const applicationResult = this.resolvedRecordId
+        ? getApplication('adoption', this.resolvedRecordId, { actorProvider: () => this.actorProvider(), requireActor: true })
+        : null
+      const application = applicationResult && applicationResult.success ? applicationResult.data : null
+      const saved = application && application.rewardAddress
       this.selectedAddress = saved || null
       this.selectedAddressId = this.selectedAddress && this.selectedAddress.id ? String(this.selectedAddress.id) : ''
     },
@@ -90,20 +100,22 @@ export default {
       }
       this.submitting = true
 
-      const currentResult = getApplication('adoption', id)
-      const current = currentResult.success ? currentResult.data : null
+      const actorOptions = { actorProvider: () => this.actorProvider() }
+      const currentResult = getApplication('adoption', id, { ...actorOptions, requireActor: true })
+      if (!currentResult.success) return this.fail(currentResult.error && currentResult.error.message)
+      const current = currentResult.data
       if (current && current.status === 'adoption_confirmed') {
-        const started = advanceApplication('adoption', id, 'reward', { rewardStartedAt: Date.now() })
+        const started = advanceApplication('adoption', id, 'reward', { rewardStartedAt: Date.now() }, actorOptions)
         if (!started.success) return this.fail(started.error && started.error.message)
       }
 
-      const order = createRewardOrder(id, this.selectedAddress)
+      const order = createRewardOrder(id, this.selectedAddress, actorOptions)
       if (!order.success) return this.fail(order.error && order.error.message)
       const result = advanceApplication('adoption', id, 'reward_done', {
         rewardAddress: { ...this.selectedAddress },
         rewardOrderId: order.data.id,
         rewardOrderSubmittedAt: Date.now()
-      })
+      }, actorOptions)
       if (!result.success) return this.fail(result.error && result.error.message)
 
       this.submitting = false

@@ -77,15 +77,15 @@ export default {
 		},
 		onPublishPost() {
 			this.closePublishPanel()
-			uni.navigateTo({ url: '/pages/publishDynamic/postFeed' })
+			uni.navigateTo({ url: '/packages/dynamic/pages/editor/index' })
 		},
 		onPublishCatYard() {
 			this.closePublishPanel()
-			uni.navigateTo({ url: '/pages/yard/catGuide' })
+			uni.navigateTo({ url: '/packages/yard/pages/onboarding/index' })
 		},
 		onPublishHelp() {
 			this.closePublishPanel()
-			uni.navigateTo({ url: '/pages/adoption/adoptApply?state=long&source=rescue' })
+			uni.navigateTo({ url: '/packages/rescue/pages/apply/index' })
 		},
 		changeTabber(index) {
 			const routes = [

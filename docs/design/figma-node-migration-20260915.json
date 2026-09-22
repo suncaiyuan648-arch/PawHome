@@ -1,0 +1,1689 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-09-15",
+  "old_file_key": "03pt0RiVfBFCvn4PsIyezk",
+  "new_file_key": "ikwcujfbxtNcjk9tjGjKx8",
+  "canvas_node_id": "0:1",
+  "scope": "Existing formal page states, formerly unresolved yard states, component definitions and page component references. Exported PawIcon assets retain original source provenance.",
+  "verification": "Both live metadata trees read; exact/semantic subtree equality or explicit layer/text review. Not visual parity, production implementation approval, or a numeric ID-offset conversion.",
+  "entries": [
+    {
+      "old_node_id": "62:23815",
+      "new_node_id": "83:3464",
+      "status": "mapped",
+      "old_name": "投喂首页-动态",
+      "new_name": "投喂首页-动态",
+      "method": "reviewed-structure-and-copy",
+      "reason": "同为普通动态 Feed；保留独立搜索/动态小院筛选、通知与卡片区域。83:3739 新增上门服务/救助池等首页聚合入口，另列新增参考。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [
+        "我加入的"
+      ],
+      "added_text": [
+        "宠物领养",
+        "广州市",
+        "宠物服务",
+        "关注",
+        "6只剩余",
+        "12人想云养",
+        "剩余6只"
+      ]
+    },
+    {
+      "old_node_id": "62:24022",
+      "new_node_id": "83:4000",
+      "status": "mapped",
+      "old_name": "投喂首页-动态-空状态",
+      "new_name": "投喂首页-动态-空状态",
+      "method": "reviewed-structure-and-copy",
+      "reason": "空态文案还没有动态/这个城市好像还没有人发布、筛选与 Tab 顺序一致；导航实例展开。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": [
+        "宠物领养",
+        "广州市",
+        "宠物服务"
+      ]
+    },
+    {
+      "old_node_id": "62:24224",
+      "new_node_id": "83:4202",
+      "status": "mapped",
+      "old_name": "投喂首页-动态筛选弹窗",
+      "new_name": "投喂首页-动态筛选弹窗",
+      "method": "reviewed-structure-and-copy",
+      "reason": "同一筛选弹层最近更新/离我最近/只看猫咪/只看狗狗；背景 Feed 更新。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [
+        "我加入的"
+      ],
+      "added_text": [
+        "宠物领养",
+        "广州市",
+        "宠物服务",
+        "关注",
+        "12人想云养",
+        "剩余6只"
+      ]
+    },
+    {
+      "old_node_id": "62:25292",
+      "new_node_id": "83:5365",
+      "status": "mapped",
+      "old_name": "投喂首页-小院",
+      "new_name": "投喂首页-小院",
+      "method": "reviewed-structure-and-copy",
+      "reason": "小院卡片与离我最近筛选；我加入的改关注，余量/人数文案更新。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "831"
+      ],
+      "new_size": [
+        "375",
+        "831"
+      ],
+      "removed_text": [
+        "我加入的",
+        "剩余6/21只"
+      ],
+      "added_text": [
+        "关注",
+        "剩余6只",
+        "914人关注"
+      ]
+    },
+    {
+      "old_node_id": "62:25667",
+      "new_node_id": "83:5740",
+      "status": "mapped",
+      "old_name": "投喂首页-动态-上滑状态",
+      "new_name": "投喂首页-动态-上滑状态",
+      "method": "reviewed-structure-and-copy",
+      "reason": "上滑 neirong 内容与固定筛选结构，导航实例展开、卡片补云养数。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [
+        "我加入的"
+      ],
+      "added_text": [
+        "12人想云养",
+        "剩余6只",
+        "宠物领养",
+        "广州市",
+        "宠物服务",
+        "关注"
+      ]
+    },
+    {
+      "old_node_id": "62:27383",
+      "new_node_id": "83:7494",
+      "status": "mapped",
+      "old_name": "动态详情",
+      "new_name": "动态详情",
+      "method": "reviewed-structure-and-copy",
+      "reason": "动态正文/评论/关联小院/投喂底栏同职责；新增动物来源，导航实例展开。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "1629"
+      ],
+      "new_size": [
+        "375",
+        "1629"
+      ],
+      "removed_text": [
+        "6只猫咪"
+      ],
+      "added_text": [
+        "消息",
+        "我就是要喂猫",
+        "小院",
+        "芝",
+        "院主",
+        "小灰灰",
+        "来自花开富贵投喂的4斤猫粮",
+        "剩余6/21只"
+      ]
+    },
+    {
+      "old_node_id": "62:27724",
+      "new_node_id": "83:7844",
+      "status": "mapped",
+      "old_name": "动态详情-评论空状态",
+      "new_name": "动态详情-评论空状态",
+      "method": "reviewed-structure-and-copy",
+      "reason": "共2026条评论/还没有评论/抢首评空态结构，文本序列一致。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "1565"
+      ],
+      "new_size": [
+        "375",
+        "1565"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:28350",
+      "new_node_id": null,
+      "status": "retained-legacy",
+      "reason": "新画布无搜索动态有结果状态；83:4109是无结果空态，不等价。"
+    },
+    {
+      "old_node_id": "62:28526",
+      "new_node_id": "83:8470",
+      "status": "mapped",
+      "old_name": "搜索-小院",
+      "new_name": "搜索-小院",
+      "method": "reviewed-structure-and-copy",
+      "reason": "动态/小院/用户搜索结果分栏，目标内容是小院卡片；余量与关注人数变化。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [
+        "剩6只/共32只"
+      ],
+      "added_text": [
+        "剩余6只",
+        "914人关注"
+      ]
+    },
+    {
+      "old_node_id": "62:28865",
+      "new_node_id": "83:8809",
+      "status": "mapped",
+      "old_name": "搜索-用户",
+      "new_name": "搜索-用户",
+      "method": "reviewed-structure-and-copy",
+      "reason": "搜索用户结果列表+关注按钮；文本和列表层级对应。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:28996",
+      "new_node_id": "83:8940",
+      "status": "mapped",
+      "old_name": "搜索-待搜索",
+      "new_name": "搜索-待搜索",
+      "method": "reviewed-structure-and-copy",
+      "reason": "待搜索的历史搜索词、搜索框结构对应。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:29084",
+      "new_node_id": "83:9028",
+      "status": "mapped",
+      "old_name": "搜索-待搜索-删除",
+      "new_name": "搜索-待搜索-删除",
+      "method": "reviewed-structure-and-copy",
+      "reason": "待搜索删除状态、历史词清理控件对应。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:30949",
+      "new_node_id": "83:10789",
+      "status": "mapped",
+      "old_name": "发布动态",
+      "new_name": "发布动态",
+      "method": "reviewed-structure-and-copy",
+      "reason": "普通发布/反馈选择订单与媒体区；旧选择猫咪区移除。区别83:15056的已关联订单与动物反馈态。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [
+        "奥利奥",
+        "加菲猫",
+        "呗呗",
+        "金毛",
+        "去添加",
+        "本次投喂的小院猫咪（0）"
+      ],
+      "added_text": [
+        "发布动态"
+      ]
+    },
+    {
+      "old_node_id": "62:35896",
+      "new_node_id": "83:19056",
+      "status": "mapped",
+      "old_name": "发布动态-选择订单",
+      "new_name": "发布动态-选择订单",
+      "method": "reviewed-structure-and-copy",
+      "reason": "选择订单标题与已反馈计数保留，新增动物/云养期限/任务状态。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "682"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": [
+        "#1",
+        "今天已经反馈了，辛苦了！",
+        "云养中",
+        "全部完成",
+        "2026-2-5 剩余3天/3天",
+        "【小白】云养30天/投粮4斤"
+      ]
+    },
+    {
+      "old_node_id": "62:35942",
+      "new_node_id": "83:15773",
+      "status": "mapped",
+      "old_name": "动态发布结果页",
+      "new_name": "动态发布结果页",
+      "method": "reviewed-structure-and-copy",
+      "reason": "动态发布结果职责保留；新导航含 hidden=true 的下单成功文本，不把隐藏图层作为动态成功文案。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": [
+        "下单成功"
+      ]
+    },
+    {
+      "old_node_id": "62:29916",
+      "new_node_id": "83:9706",
+      "status": "mapped",
+      "old_name": "小院-查看宠物详情",
+      "new_name": "小院-查看宠物详情",
+      "method": "reviewed-structure-and-copy",
+      "reason": "公开宠物详情有分享/领养/云养业务底栏，无管理宠物/管理相册/删除宠物菜单。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "1232"
+      ],
+      "new_size": [
+        "375",
+        "1232"
+      ],
+      "removed_text": [
+        "入驻",
+        "云养一只"
+      ],
+      "added_text": [
+        "去看看",
+        "收藏",
+        "指定云养"
+      ]
+    },
+    {
+      "old_node_id": "62:30091",
+      "new_node_id": "83:10114",
+      "status": "mapped",
+      "old_name": "小院-查看宠物详情",
+      "new_name": "我的云养-查看宠物详情",
+      "method": "reviewed-structure-and-copy",
+      "reason": "旧管理宠物/管理相册/删除宠物菜单和寄语板保留；新外层名改我的云养，新增订单区。不能按外层名当普通云家长权限。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "1232"
+      ],
+      "new_size": [
+        "375",
+        "1580"
+      ],
+      "removed_text": [
+        "16/30天"
+      ],
+      "added_text": [
+        "4天/6天",
+        "云养",
+        "点击查看",
+        "已结束云养订单",
+        "查看",
+        "投粮规格：",
+        "投粮4斤",
+        "剩余云养天数：",
+        "1天/3天",
+        "反馈次数：",
+        "34次/5次",
+        "订单编号："
+      ]
+    },
+    {
+      "old_node_id": "62:30259",
+      "new_node_id": "83:9889",
+      "status": "mapped",
+      "old_name": "我的云养-查看宠物详情",
+      "new_name": "我的云养-查看宠物详情",
+      "method": "reviewed-structure-and-copy",
+      "reason": "旧云养剩余天数/投粮详情入口演进为当前与待生效订单区；无三项管理菜单。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "1232"
+      ],
+      "new_size": [
+        "375",
+        "1689"
+      ],
+      "removed_text": [
+        "云家长寄语留言板",
+        "给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞",
+        "32",
+        "昨天 20:45 江西",
+        "回复",
+        "Lv1",
+        "小黄的第3任云家长",
+        "16/30天",
+        "投粮详情"
+      ],
+      "added_text": [
+        "4天/6天",
+        "云养",
+        "分享",
+        "去看看",
+        "领养",
+        "收藏",
+        "指定云养",
+        "已结束云养订单",
+        "查看",
+        "投粮规格：",
+        "投粮4斤",
+        "剩余云养天数："
+      ]
+    },
+    {
+      "old_node_id": "62:31044",
+      "new_node_id": "83:10860",
+      "status": "mapped",
+      "old_name": "领养申请",
+      "new_name": "领养申请",
+      "method": "reviewed-structure-and-copy",
+      "reason": "申请领养猫咪/向院主说明/小院信息；新增人脸核验及领养协议。区别求助金额长表单83:10978。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [
+        "发送申请"
+      ],
+      "added_text": [
+        "人脸核验",
+        "已经阅读完《隐私政策》、《用户协议》和《领养协议》"
+      ]
+    },
+    {
+      "old_node_id": "62:31384",
+      "new_node_id": "83:11204",
+      "status": "mapped",
+      "old_name": "领养申请-等待审核",
+      "new_name": "领养申请-等待审核",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:31597",
+      "new_node_id": "83:11417",
+      "status": "mapped",
+      "old_name": "院主-等待院主审核",
+      "new_name": "院主-等待院主审核",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:32153",
+      "new_node_id": "83:11973",
+      "status": "mapped",
+      "old_name": "领养审核-待院主确认领养",
+      "new_name": "领养审核-待院主确认领养",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "853"
+      ],
+      "new_size": [
+        "375",
+        "853"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:33198",
+      "new_node_id": "83:13018",
+      "status": "mapped",
+      "old_name": "领养进度-获得奖励",
+      "new_name": "领养进度-获得奖励",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "872"
+      ],
+      "new_size": [
+        "375",
+        "872"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:36699",
+      "new_node_id": "83:16471",
+      "status": "mapped",
+      "old_name": "领养-选择宠物",
+      "new_name": "领养-选择宠物",
+      "method": "reviewed-structure-and-copy",
+      "reason": "选择宠物列表与操作区对应；文本集合一致，子节点数量变化。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "495"
+      ],
+      "new_size": [
+        "375",
+        "495"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:35297",
+      "new_node_id": "83:15168",
+      "status": "mapped",
+      "old_name": "确认领养",
+      "new_name": "确认领养",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:36210",
+      "new_node_id": "83:16041",
+      "status": "mapped",
+      "old_name": "领养进度-领取结果页",
+      "new_name": "领养进度-领取结果页",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:36497",
+      "new_node_id": "83:16328",
+      "status": "mapped",
+      "old_name": "领养申请结果页",
+      "new_name": "领养申请结果页",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:36752",
+      "new_node_id": "83:16527",
+      "status": "mapped",
+      "old_name": "领养进度-填写收货地址",
+      "new_name": "领养进度-填写收货地址",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "495"
+      ],
+      "new_size": [
+        "375",
+        "495"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:36782",
+      "new_node_id": null,
+      "status": "retained-legacy",
+      "old_name": "投粮订单详情（旧稿 90）",
+      "method": "retained-legacy",
+      "reason": "当前迁移清单未登记等价的新稿独立订单详情节点；canonical feeding 订单页保留本地/mock 90 视觉态。"
+    },
+    {
+      "old_node_id": "62:36940",
+      "new_node_id": null,
+      "status": "retained-legacy",
+      "old_name": "院主-投粮详情",
+      "method": "retained-legacy",
+      "reason": "当前迁移清单未登记等价的新稿独立订单详情节点；canonical feeding 订单页保留本地/mock 院主视觉态。"
+    },
+    {
+      "old_node_id": "62:37087",
+      "new_node_id": null,
+      "status": "retained-legacy",
+      "old_name": "云家长-投粮详情",
+      "method": "retained-legacy",
+      "reason": "当前迁移清单未登记等价的新稿独立订单详情节点；canonical feeding 订单页保留本地/mock 云养与物流视觉态。"
+    },
+    {
+      "old_node_id": "62:41525",
+      "new_node_id": "83:21696",
+      "status": "mapped",
+      "old_name": "我的领养",
+      "new_name": "我的领养",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "1758"
+      ],
+      "new_size": [
+        "375",
+        "1758"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:41969",
+      "new_node_id": "83:22140",
+      "status": "mapped",
+      "old_name": "我的领养-空状态",
+      "new_name": "我的领养-空状态",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:42711",
+      "new_node_id": "83:22882",
+      "status": "mapped",
+      "old_name": "助力领养",
+      "new_name": "助力领养",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:42864",
+      "new_node_id": "83:23035",
+      "status": "mapped",
+      "old_name": "领养额度",
+      "new_name": "领养额度",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "912"
+      ],
+      "new_size": [
+        "375",
+        "912"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:42949",
+      "new_node_id": "83:23120",
+      "status": "mapped",
+      "old_name": "领养额度明细",
+      "new_name": "领养额度明细",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:34304",
+      "new_node_id": "83:14169",
+      "status": "mapped",
+      "old_name": "评审团",
+      "new_name": "评审团",
+      "method": "reviewed-structure-and-copy",
+      "reason": "评审任务卡片+投票结果，标题由逢猫评审团改领养评审。不是救助综合任务中心。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "815"
+      ],
+      "new_size": [
+        "375",
+        "815"
+      ],
+      "removed_text": [
+        "逢猫评审团"
+      ],
+      "added_text": [
+        "领养评审",
+        "投票通过",
+        "投票否决"
+      ]
+    },
+    {
+      "old_node_id": "62:33410",
+      "new_node_id": "83:13230",
+      "status": "mapped",
+      "old_name": "待投票",
+      "new_name": "待投票",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "1140"
+      ],
+      "new_size": [
+        "375",
+        "1140"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:34054",
+      "new_node_id": "83:13874",
+      "status": "mapped",
+      "old_name": "已投票",
+      "new_name": "已投票",
+      "method": "reviewed-structure-and-copy",
+      "reason": "感谢认真审查/已选投票/下一个状态保留，新增留言。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "1248"
+      ],
+      "new_size": [
+        "375",
+        "1574"
+      ],
+      "removed_text": [],
+      "added_text": [
+        "留下你的想法吧~",
+        "留言 15",
+        "给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞",
+        "32",
+        "昨天 20:45 江西",
+        "回复",
+        "姜栋",
+        "Lv1"
+      ]
+    },
+    {
+      "old_node_id": "62:34421",
+      "new_node_id": "83:14289",
+      "status": "mapped",
+      "old_name": "救助基金池",
+      "new_name": "救助基金池",
+      "method": "reviewed-structure-and-copy",
+      "reason": "基金余额/入池/支出与救助卡片；标题救助池，待投票改投票中。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "1099"
+      ],
+      "new_size": [
+        "375",
+        "1099"
+      ],
+      "removed_text": [
+        "救助基金池",
+        "待投票"
+      ],
+      "added_text": [
+        "救助池",
+        "投票中"
+      ]
+    },
+    {
+      "old_node_id": "62:33657",
+      "new_node_id": "83:13477",
+      "status": "mapped",
+      "old_name": "救助详情",
+      "new_name": "救助详情",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "2239"
+      ],
+      "new_size": [
+        "375",
+        "2239"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:35393",
+      "new_node_id": "83:15264",
+      "status": "mapped",
+      "old_name": "证实列表详情",
+      "new_name": "证实列表详情",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:37451",
+      "new_node_id": "83:17049",
+      "status": "mapped",
+      "old_name": "我也来证实",
+      "new_name": "我也来证实",
+      "method": "reviewed-structure-and-copy",
+      "reason": "证实姓名/关系/身份证/证实说明/承诺；文本集合一致，布局节点调整。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:31158",
+      "new_node_id": "83:10978",
+      "status": "mapped",
+      "old_name": "领养申请",
+      "new_name": "领养申请",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "1167"
+      ],
+      "new_size": [
+        "375",
+        "1167"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:26000",
+      "new_node_id": "83:6085",
+      "status": "mapped",
+      "old_name": "院子详情-动态",
+      "new_name": "院子详情-动态",
+      "method": "reviewed-structure-and-copy",
+      "reason": "小院摘要/动态/评论结构，新增动物与投喂来源；底栏与统计文案调整。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "2316"
+      ],
+      "new_size": [
+        "375",
+        "2316"
+      ],
+      "removed_text": [
+        "平均反馈时长",
+        "剩余6/21只",
+        "投粮记录",
+        "入驻"
+      ],
+      "added_text": [
+        "平均反馈频率",
+        "剩余6只",
+        "12",
+        "只宠物",
+        "云养记录",
+        "来自花开富贵投喂的4斤猫粮",
+        "去看看"
+      ]
+    },
+    {
+      "old_node_id": "62:26418",
+      "new_node_id": "83:6528",
+      "status": "mapped",
+      "old_name": "院子详情-动态-动态空状态",
+      "new_name": "院子详情-动态-动态空状态",
+      "method": "reviewed-structure-and-copy",
+      "reason": "院主佛系，还没发过动态及催一下空态；文本序列一致，实例结构变化。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "874"
+      ],
+      "new_size": [
+        "375",
+        "874"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:26677",
+      "new_node_id": "83:6787",
+      "status": "mapped",
+      "old_name": "院子详情-投喂记录",
+      "new_name": "院子详情-投喂记录",
+      "method": "reviewed-structure-and-copy",
+      "reason": "小院订单反馈记录区域；投粮记录改云养记录，订单卡含云养期限与编号。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [
+        "平均反馈时长",
+        "剩余6/21只",
+        "投粮记录",
+        "投粮200克",
+        "已入驻"
+      ],
+      "added_text": [
+        "平均反馈频率",
+        "剩余6只",
+        "12",
+        "只宠物",
+        "云养记录",
+        "云养老大30天，投粮4斤",
+        "2026-2-21 17:37",
+        "#2",
+        "去看看"
+      ]
+    },
+    {
+      "old_node_id": "62:26947",
+      "new_node_id": "83:7045",
+      "status": "mapped",
+      "old_name": "院子详情-动态展开",
+      "new_name": "院子详情-动态展开",
+      "method": "reviewed-structure-and-copy",
+      "reason": "长简介收起+展开回复状态保持，新增来源与云养文案。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "2571"
+      ],
+      "new_size": [
+        "375",
+        "2571"
+      ],
+      "removed_text": [
+        "已入驻",
+        "平均反馈时长",
+        "剩余6/21只",
+        "投粮记录"
+      ],
+      "added_text": [
+        "去看看",
+        "平均反馈频率",
+        "剩余6只",
+        "12",
+        "只宠物",
+        "云养记录",
+        "来自花开富贵投喂的4斤猫粮"
+      ]
+    },
+    {
+      "old_node_id": "1548:3731",
+      "new_node_id": null,
+      "status": "retained-legacy",
+      "reason": "旧文件AppHeader组件集仍可读取；新文件只有Page 1且无该组件集，不将页面导航外观代替组件定义。"
+    },
+    {
+      "old_node_id": "62:42069",
+      "new_node_id": "83:22240",
+      "status": "mapped",
+      "old_name": "LevelCapsule",
+      "new_name": "Group 1321318288",
+      "method": "reviewed-component-slot",
+      "reason": "组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。",
+      "parent_old": "62:42027",
+      "parent_new": "83:22198",
+      "old_size": [
+        "28",
+        "13"
+      ],
+      "new_size": [
+        "28",
+        "13"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:42047",
+      "new_node_id": "83:22218",
+      "status": "mapped",
+      "old_name": "FeedingSourceRow",
+      "new_name": "Frame 1321318267",
+      "method": "reviewed-component-slot",
+      "reason": "组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。",
+      "parent_old": "62:42027",
+      "parent_new": "83:22198",
+      "old_size": [
+        "248",
+        "22"
+      ],
+      "new_size": [
+        "248",
+        "22"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:42056",
+      "new_node_id": "83:22227",
+      "status": "mapped",
+      "old_name": "ReplyTargetInline",
+      "new_name": "Group 1321318296",
+      "method": "reviewed-component-slot",
+      "reason": "组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。",
+      "parent_old": "62:42027",
+      "parent_new": "83:22198",
+      "old_size": [
+        "128",
+        "19"
+      ],
+      "new_size": [
+        "128",
+        "19"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:42062",
+      "new_node_id": "83:22233",
+      "status": "mapped",
+      "old_name": "UserNameLevel",
+      "new_name": "Frame 1321318274",
+      "method": "reviewed-component-slot",
+      "reason": "组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。",
+      "parent_old": "62:42027",
+      "parent_new": "83:22198",
+      "old_size": [
+        "83",
+        "15"
+      ],
+      "new_size": [
+        "83",
+        "15"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:42065",
+      "new_node_id": "83:22236",
+      "status": "mapped",
+      "old_name": "YardLocationLine",
+      "new_name": "Frame 1321317912",
+      "method": "reviewed-component-slot",
+      "reason": "组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。",
+      "parent_old": "62:42027",
+      "parent_new": "83:22198",
+      "old_size": [
+        "146",
+        "16"
+      ],
+      "new_size": [
+        "146",
+        "16"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:42071",
+      "new_node_id": "83:22242",
+      "status": "mapped",
+      "old_name": "RankUserNameLevel",
+      "new_name": "Group 1321318303",
+      "method": "reviewed-component-slot",
+      "reason": "组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。",
+      "parent_old": "62:42027",
+      "parent_new": "83:22198",
+      "old_size": [
+        "83",
+        "19"
+      ],
+      "new_size": [
+        "83",
+        "19"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:42074",
+      "new_node_id": "83:22245",
+      "status": "mapped",
+      "old_name": "AvatarNameLevelRow",
+      "new_name": "Group 1321318301",
+      "method": "reviewed-component-slot",
+      "reason": "组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。",
+      "parent_old": "62:42027",
+      "parent_new": "83:22198",
+      "old_size": [
+        "133",
+        "34"
+      ],
+      "new_size": [
+        "133",
+        "34"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:42089",
+      "new_node_id": "83:22260",
+      "status": "mapped",
+      "old_name": "ChevronRight",
+      "new_name": "详情",
+      "method": "reviewed-component-slot",
+      "reason": "组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。",
+      "parent_old": "62:42027",
+      "parent_new": "83:22198",
+      "old_size": [
+        "3.9164178371429443",
+        "8"
+      ],
+      "new_size": [
+        "3.9164178371429443",
+        "8"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:42091",
+      "new_node_id": "83:22262",
+      "status": "mapped",
+      "old_name": "YardTypeBadge",
+      "new_name": "Frame 1321318310",
+      "method": "reviewed-component-slot",
+      "reason": "组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。",
+      "parent_old": "62:42027",
+      "parent_new": "83:22198",
+      "old_size": [
+        "30",
+        "16"
+      ],
+      "new_size": [
+        "30",
+        "16"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:42094",
+      "new_node_id": "83:22265",
+      "status": "mapped",
+      "old_name": "YardNameVerified",
+      "new_name": "Group 1321318304",
+      "method": "reviewed-component-slot",
+      "reason": "组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。",
+      "parent_old": "62:42027",
+      "parent_new": "83:22198",
+      "old_size": [
+        "131",
+        "16"
+      ],
+      "new_size": [
+        "131",
+        "16"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:42097",
+      "new_node_id": "83:22268",
+      "status": "mapped",
+      "old_name": "VerifiedBadge",
+      "new_name": "Frame 1321318103",
+      "method": "reviewed-component-slot",
+      "reason": "组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。",
+      "parent_old": "62:42027",
+      "parent_new": "83:22198",
+      "old_size": [
+        "44",
+        "16"
+      ],
+      "new_size": [
+        "44",
+        "16"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:42099",
+      "new_node_id": "83:22270",
+      "status": "mapped",
+      "old_name": "UserNameOwner",
+      "new_name": "Frame 1321318340",
+      "method": "reviewed-component-slot",
+      "reason": "组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。",
+      "parent_old": "62:42027",
+      "parent_new": "83:22198",
+      "old_size": [
+        "63",
+        "16"
+      ],
+      "new_size": [
+        "63",
+        "16"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:41095",
+      "new_node_id": "83:21026",
+      "status": "mapped",
+      "old_name": "LevelCapsule/Compact",
+      "new_name": "Group 1321318288",
+      "method": "reviewed-component-slot",
+      "reason": "我的个人摘要等级组件：同一摘要组、x149/y24.5、28×13；83:21173为另一摘要态不含此symbol。",
+      "parent_old": "62:41065",
+      "parent_new": "83:20996",
+      "old_size": [
+        "28",
+        "13"
+      ],
+      "new_size": [
+        "28",
+        "13"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:42028",
+      "new_node_id": "83:22199",
+      "status": "mapped",
+      "old_name": "FeedAuthorSummary",
+      "new_name": "Group 1321318266",
+      "method": "reviewed-component-slot",
+      "reason": "组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。",
+      "parent_old": "62:42027",
+      "parent_new": "83:22198",
+      "old_size": [
+        "292",
+        "49"
+      ],
+      "new_size": [
+        "292",
+        "49"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:42080",
+      "new_node_id": "83:22251",
+      "status": "mapped",
+      "old_name": "UserNameVerified",
+      "new_name": "Group 1321318300",
+      "method": "reviewed-component-slot",
+      "reason": "组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。",
+      "parent_old": "62:42027",
+      "parent_new": "83:22198",
+      "old_size": [
+        "137",
+        "16"
+      ],
+      "new_size": [
+        "137",
+        "16"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:42084",
+      "new_node_id": "83:22255",
+      "status": "mapped",
+      "old_name": "UserNameLevel/Emphasis",
+      "new_name": "Group 1321318298",
+      "method": "reviewed-component-slot",
+      "reason": "组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。",
+      "parent_old": "62:42027",
+      "parent_new": "83:22198",
+      "old_size": [
+        "115",
+        "19"
+      ],
+      "new_size": [
+        "115",
+        "19"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:24485",
+      "new_node_id": "83:4475",
+      "status": "mapped",
+      "old_name": "CreateYardIntroCard",
+      "new_name": "Frame 1171276786",
+      "method": "reviewed-component-slot",
+      "reason": "建院介绍卡片：同父级表单首项、355×279组件，旧语义名恢复原Frame名。",
+      "parent_old": "62:24484",
+      "parent_new": "83:4474",
+      "old_size": [
+        "355",
+        "279"
+      ],
+      "new_size": [
+        "355",
+        "279"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:29176",
+      "new_node_id": "83:9120",
+      "status": "mapped",
+      "old_name": "发布",
+      "new_name": "发布",
+      "method": "reviewed-structure-and-copy",
+      "reason": "发布入口菜单层级和动作对应；导航实例展开。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [
+        "为小毛娃攒粮",
+        "为小毛娃救治救治绝育"
+      ],
+      "added_text": [
+        "为小毛孩攒粮",
+        "为小毛孩救治绝育"
+      ]
+    },
+    {
+      "old_node_id": "62:33274",
+      "new_node_id": "83:13094",
+      "status": "mapped",
+      "old_name": "Group 1321318128",
+      "new_name": "Group 1321318128",
+      "method": "scoped-exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "62:33261",
+      "parent_new": "83:13081",
+      "old_size": [
+        "21.11400032043457",
+        "22.12110710144043"
+      ],
+      "new_size": [
+        "21.11400032043457",
+        "22.12110710144043"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:38705",
+      "new_node_id": "83:18303",
+      "status": "mapped",
+      "old_name": "院主-确定同意领养弹窗",
+      "new_name": "院主-确定同意领养弹窗",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:38731",
+      "new_node_id": "83:18329",
+      "status": "mapped",
+      "old_name": "院主-驳回领养弹窗",
+      "new_name": "院主-驳回领养弹窗",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:38803",
+      "new_node_id": "83:18401",
+      "status": "mapped",
+      "old_name": "院主-联系方式",
+      "new_name": "院主-联系方式",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:38954",
+      "new_node_id": "83:18552",
+      "status": "mapped",
+      "old_name": "领养额度不足",
+      "new_name": "领养额度不足",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:38745",
+      "new_node_id": "83:18343",
+      "status": "mapped",
+      "old_name": "投票-挺真实弹窗",
+      "new_name": "投票-挺真实弹窗",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    },
+    {
+      "old_node_id": "62:38774",
+      "new_node_id": "83:18372",
+      "status": "mapped",
+      "old_name": "投票-有点假弹窗",
+      "new_name": "投票-有点假弹窗",
+      "method": "exact-subtree",
+      "reason": "在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。",
+      "parent_old": "0:1",
+      "parent_new": "0:1",
+      "old_size": [
+        "375",
+        "812"
+      ],
+      "new_size": [
+        "375",
+        "812"
+      ],
+      "removed_text": [],
+      "added_text": []
+    }
+  ],
+  "text_evidence_note": "added_text/removed_text are metadata text differences, including hidden layers. Do not treat hidden text as visible copy or a product rule."
+}

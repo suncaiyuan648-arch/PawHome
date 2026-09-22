@@ -9,22 +9,7 @@
     "pages/adoption/adoptApplySuccess.vue": {
       "page-local-native-nav-layout": 1
     },
-    "pages/auth/bindPhone.vue": {
-      "page-local-native-nav-layout": 1
-    },
-    "pages/auth/realName.vue": {
-      "page-local-native-nav-layout": 1
-    },
-    "pages/auth/smsVerify.vue": {
-      "page-local-native-nav-layout": 1
-    },
-    "pages/auth/verifyResult.vue": {
-      "page-local-native-nav-layout": 1
-    },
     "pages/index/index.vue": {
-      "fake-status-bar": 2
-    },
-    "pages/leaderboard/index.vue": {
       "fake-status-bar": 2
     },
     "pages/me/index.vue": {
@@ -38,9 +23,6 @@
     "pages/meMore/browsingHistory.vue": {
       "fake-status-bar": 2,
       "figma-native-chrome-asset": 1,
-      "page-local-native-nav-layout": 1
-    },
-    "pages/meMore/feedingDetail.vue": {
       "page-local-native-nav-layout": 1
     },
     "pages/meMore/helpedAnimals.vue": {
@@ -73,18 +55,6 @@
     },
     "pages/message/index.vue": {
       "page-local-native-nav-layout": 1
-    },
-    "pages/publishDynamic/postFeed.vue": {
-      "fake-status-bar": 2,
-      "figma-native-chrome-asset": 1,
-      "page-local-native-nav-layout": 1
-    },
-    "pages/publishDynamic/postSuccess.vue": {
-      "page-local-native-nav-layout": 1
-    },
-    "pages/search/index.vue": {
-      "fake-status-bar": 3,
-      "figma-native-chrome-asset": 1
     },
     "pages/user/profile.vue": {
       "page-local-native-nav-layout": 1

@@ -1,0 +1,3232 @@
+{
+  "date": "2026-09-21",
+  "registered": 77,
+  "production": 74,
+  "formalCount": 68,
+  "pages": [
+    {
+      "number": 1,
+      "id": "P01",
+      "route": "pages/index/index",
+      "title": "首页 Tab",
+      "query": "",
+      "states": "dynamic / dynamic-empty / yard / dynamic-scrolled；筛选弹层、发布弹层",
+      "steps": "自定义编译用 state=dynamic-empty、yard、dynamic-scrolled；筛选态点击“最近更新”；点击底部 + 查看发布弹层。",
+      "refs": [
+        {
+          "id": "83:3464",
+          "title": "投喂首页-动态",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-3464",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:4000",
+          "title": "投喂首页-动态-空状态",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-4000",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:5365",
+          "title": "投喂首页-小院",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-5365",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:5740",
+          "title": "投喂首页-动态-上滑状态",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-5740",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:4202",
+          "title": "投喂首页-动态筛选弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-4202",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:9120",
+          "title": "发布",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-9120",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "",
+      "formal": [
+        {
+          "key": "home.dynamic",
+          "name": "投喂首页-动态",
+          "route": "pages/index/index",
+          "node": "83:3464",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        },
+        {
+          "key": "home.dynamic_empty",
+          "name": "投喂首页-动态-空状态",
+          "route": "pages/index/index",
+          "node": "83:4000",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        },
+        {
+          "key": "home.dynamic_filter_sheet",
+          "name": "投喂首页-动态筛选弹窗",
+          "route": "pages/index/index",
+          "node": "83:4202",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        },
+        {
+          "key": "home.yard",
+          "name": "投喂首页-小院",
+          "route": "pages/index/index",
+          "node": "83:5365",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        },
+        {
+          "key": "home.dynamic_scrolled",
+          "name": "投喂首页-动态-上滑状态",
+          "route": "pages/index/index",
+          "node": "83:5740",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "pages/index/index.vue",
+      "dev": false,
+      "method": "Tab：无参数用 wx.switchTab；带状态用自定义编译启动参数",
+      "url": "/pages/index/index"
+    },
+    {
+      "number": 2,
+      "id": "P02",
+      "route": "pages/selfRun/index",
+      "title": "自营 Tab",
+      "query": "",
+      "states": "默认占位；切换 Tab",
+      "steps": "点击底部自营；仅验现有占位与导航，不规划商城。",
+      "refs": [],
+      "issue": "无精确 Figma 节点；本轮保留职责",
+      "formal": [],
+      "source": "pages/selfRun/index.vue",
+      "dev": false,
+      "method": "Tab：无参数用 wx.switchTab；带状态用自定义编译启动参数",
+      "url": "/pages/selfRun/index"
+    },
+    {
+      "number": 3,
+      "id": "P03",
+      "route": "pages/message/index",
+      "title": "消息 Tab",
+      "query": "",
+      "states": "默认聚合；分类入口",
+      "steps": "点击服务／互动／活动／订单类入口；确认统一进入持久通知列表并按 category 筛选。",
+      "refs": [
+        {
+          "id": "83:22501",
+          "title": "消息",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-22501",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "消息入口已统一到 message/list",
+      "formal": [],
+      "source": "pages/message/index.vue",
+      "dev": false,
+      "method": "Tab：无参数用 wx.switchTab；带状态用自定义编译启动参数",
+      "url": "/pages/message/index"
+    },
+    {
+      "number": 4,
+      "id": "P04",
+      "route": "pages/me/index",
+      "title": "我的 Tab",
+      "query": "",
+      "states": "default / drawer / profile-upload；登录前后",
+      "steps": "自定义编译 state=drawer 或 profile-upload；正常入口点击右上更多、头像。",
+      "refs": [
+        {
+          "id": "83:20949",
+          "title": "我的",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-20949",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:21396",
+          "title": "我的-更多",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-21396",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:22454",
+          "title": "登录后头像昵称",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-22454",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "",
+      "formal": [],
+      "source": "pages/me/index.vue",
+      "dev": false,
+      "method": "Tab：无参数用 wx.switchTab；带状态用自定义编译启动参数",
+      "url": "/pages/me/index"
+    },
+    {
+      "number": 5,
+      "id": "P05",
+      "route": "packages/dynamic/pages/detail/index",
+      "title": "动态详情",
+      "query": "dynamicId=vqa-dynamic",
+      "states": "有评论／comments-empty／不存在／私密／未登录；回复输入、图片预览",
+      "steps": "Q.dynamic(false) 后进入；空评论 Q.dynamic(true) 并带 state=comments-empty；missing ID 测失效。",
+      "refs": [
+        {
+          "id": "83:7494",
+          "title": "动态详情",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-7494",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:7844",
+          "title": "动态详情-评论空状态",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-7844",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:18416",
+          "title": "回复-待输入",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18416",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18429",
+          "title": "回复-输入",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18429",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "R07 私密坏数据匿名读取已 fail-closed；普通发布结果必须使用实际 dynamicId 回归",
+      "formal": [
+        {
+          "key": "dynamic_detail.default",
+          "name": "动态详情",
+          "route": "packages/dynamic/pages/detail/index",
+          "node": "83:7494",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        },
+        {
+          "key": "dynamic_detail.comments_empty",
+          "name": "动态详情-评论空状态",
+          "route": "packages/dynamic/pages/detail/index",
+          "node": "83:7844",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "state": "comments-empty"
+          },
+          "runtime": null
+        }
+      ],
+      "source": "packages/dynamic/pages/detail/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/dynamic/pages/detail/index?dynamicId=vqa-dynamic"
+    },
+    {
+      "number": 6,
+      "id": "P06",
+      "route": "packages/dynamic/pages/deep-link/index",
+      "title": "动态深链中转",
+      "query": "dynamicId=vqa-dynamic",
+      "states": "检查身份→读取→跳详情；错误留空态",
+      "steps": "Q.dynamic() 后进入；Q.logout() 后重进看未登录。中转页不是独立设计画板。",
+      "refs": [],
+      "issue": "复用最终详情设计；登录目标恢复未完整接入",
+      "formal": [],
+      "source": "packages/dynamic/pages/deep-link/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/dynamic/pages/deep-link/index?dynamicId=vqa-dynamic"
+    },
+    {
+      "number": 7,
+      "id": "P07",
+      "route": "packages/dynamic/pages/editor/index",
+      "title": "发布动态／反馈编辑器",
+      "query": "",
+      "states": "默认／state=alternate / select-order；选择动物、媒体、订单；输入／删除媒体",
+      "steps": "state=select-order 打开订单弹层；普通动态可直接输入正文/图片，反馈需选择合法订单和动物后提交。提交后核对持久正文、媒体、动态和证据。",
+      "refs": [
+        {
+          "id": "83:10789",
+          "title": "发布动态",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-10789",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:15056",
+          "title": "发布动态",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-15056",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:19056",
+          "title": "发布动态-选择订单",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-19056",
+          "kind": "正式 map"
+        }
+      ],
+      "issue": "本地正文/媒体/动态证据已持久化且 writer 幂等；继续做真实 fixture 的视觉与运行回归",
+      "formal": [
+        {
+          "key": "publish_dynamic.default",
+          "name": "发布动态",
+          "route": "packages/dynamic/pages/editor/index",
+          "node": "83:10789",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        },
+        {
+          "key": "publish_dynamic.select_order",
+          "name": "发布动态-选择订单",
+          "route": "packages/dynamic/pages/editor/index",
+          "node": "83:19056",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "state": "select-order"
+          },
+          "runtime": null
+        }
+      ],
+      "source": "packages/dynamic/pages/editor/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/dynamic/pages/editor/index"
+    },
+    {
+      "number": 8,
+      "id": "P08",
+      "route": "packages/dynamic/pages/result/index",
+      "title": "发布结果展示",
+      "query": "",
+      "states": "默认动态结果／state=feeding",
+      "steps": "默认直达仅验结果外观；feeding 显示投喂成功覆盖层。发布结果必须携带实际 dynamicId，再核对返回详情深链。",
+      "refs": [
+        {
+          "id": "83:15773",
+          "title": "动态发布结果页",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-15773",
+          "kind": "正式 map"
+        }
+      ],
+      "issue": "结果页已按 dynamic/feeding 语义拆分；必须用真实 dynamicId 验证返回深链",
+      "formal": [
+        {
+          "key": "publish_dynamic.result",
+          "name": "动态发布结果页",
+          "route": "packages/dynamic/pages/result/index",
+          "node": "83:15773",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "packages/dynamic/pages/result/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/dynamic/pages/result/index"
+    },
+    {
+      "number": 9,
+      "id": "P09",
+      "route": "packages/auth/pages/login/index",
+      "title": "登录",
+      "query": "",
+      "states": "协议未选／同意／协议弹窗／本地成功",
+      "steps": "先 Q.logout()；不勾选点击微信登录验协议弹窗；同意后建立 local-user mock 会话。",
+      "refs": [
+        {
+          "id": "83:22274",
+          "title": "登录",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-22274",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18290",
+          "title": "隐私政策弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18290",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "真实微信身份交换排除；不会生成 profile/业务数据",
+      "formal": [],
+      "source": "packages/auth/pages/login/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/auth/pages/login/index"
+    },
+    {
+      "number": 10,
+      "id": "P10",
+      "route": "packages/auth/pages/phone-bind/index",
+      "title": "绑定手机号",
+      "query": "",
+      "states": "空输入／输入／下一步",
+      "steps": "从登录→手机号登录；输入本地测试号码，不执行真实短信服务。",
+      "refs": [
+        {
+          "id": "83:22336",
+          "title": "绑定手机号",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-22336",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "",
+      "formal": [],
+      "source": "packages/auth/pages/phone-bind/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/auth/pages/phone-bind/index"
+    },
+    {
+      "number": 11,
+      "id": "P11",
+      "route": "packages/auth/pages/sms-verify/index",
+      "title": "短信验证",
+      "query": "phone=13800000000",
+      "states": "验证码空／已输入／倒计时／本地成功",
+      "steps": "优先从手机号页进入；URL 示例仅虚构号码。",
+      "refs": [
+        {
+          "id": "83:22396",
+          "title": "绑定手机号-验证",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-22396",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "",
+      "formal": [],
+      "source": "packages/auth/pages/sms-verify/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/auth/pages/sms-verify/index?phone=13800000000"
+    },
+    {
+      "number": 12,
+      "id": "P12",
+      "route": "packages/auth/pages/real-name/index",
+      "title": "实名认证",
+      "query": "",
+      "states": "默认／popup=real-name / privacy；选择/识别",
+      "steps": "直接编译不同 popup 验提示；不使用真实身份证，不做真实认证提交。",
+      "refs": [
+        {
+          "id": "83:15711",
+          "title": "入驻-实名认证",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-15711",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:15574",
+          "title": "人脸识别",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-15574",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18277",
+          "title": "实名认证弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18277",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "",
+      "formal": [],
+      "source": "packages/auth/pages/real-name/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/auth/pages/real-name/index"
+    },
+    {
+      "number": 13,
+      "id": "P13",
+      "route": "packages/auth/pages/verification-result/index",
+      "title": "认证结果",
+      "query": "outcome=success",
+      "states": "outcome=success / failure（兼容 status=fail）",
+      "steps": "参数只展示结果，不能据此改变可信身份。",
+      "refs": [
+        {
+          "id": "83:19175",
+          "title": "领养审核-确认驳回结果页",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-19175",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "节点标题与业务上下文存在歧义，作为复用结果页参考；非认证成功权威证明",
+      "formal": [],
+      "source": "packages/auth/pages/verification-result/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/auth/pages/verification-result/index?outcome=success"
+    },
+    {
+      "number": 14,
+      "id": "P14",
+      "route": "packages/adoption/pages/mine/index",
+      "title": "我的领养",
+      "query": "",
+      "states": "列表／state=empty；各申请阶段",
+      "steps": "Q.adoption(status) 后进入；state=empty 强制视觉空态。状态全集见状态机章节。",
+      "refs": [
+        {
+          "id": "83:21696",
+          "title": "我的领养",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-21696",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:22140",
+          "title": "我的领养-空状态",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-22140",
+          "kind": "正式 map"
+        }
+      ],
+      "issue": "列表与新 actor 过滤仍需核对；旧 mock 列表不能替代申请创建闭环",
+      "formal": [
+        {
+          "key": "adoption.my_adoption",
+          "name": "我的领养",
+          "route": "packages/adoption/pages/mine/index",
+          "node": "83:21696",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        },
+        {
+          "key": "adoption.my_adoption_empty",
+          "name": "我的领养-空状态",
+          "route": "packages/adoption/pages/mine/index",
+          "node": "83:22140",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "state": "empty"
+          },
+          "runtime": null
+        }
+      ],
+      "source": "packages/adoption/pages/mine/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/adoption/pages/mine/index"
+    },
+    {
+      "number": 15,
+      "id": "P15",
+      "route": "packages/adoption/pages/confirmation/index",
+      "title": "确认领养材料",
+      "query": "applicationId=vqa-application",
+      "states": "照片空／单张／两张／感受输入／提交错误",
+      "steps": "先 Q.adoption(\"pickup\")；可选择本地测试图片，验输入与删除。跨用户写缺陷修复前不将提交通过计为验收。",
+      "refs": [
+        {
+          "id": "83:15168",
+          "title": "确认领养",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-15168",
+          "kind": "正式 map"
+        }
+      ],
+      "issue": "本地确认材料 writer 已按 actor/applicationId 门禁；仍需使用有效 fixture 做视觉/运行验收",
+      "formal": [
+        {
+          "key": "adoption.evidence_confirm",
+          "name": "确认领养",
+          "route": "packages/adoption/pages/confirmation/index",
+          "node": "83:15168",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "packages/adoption/pages/confirmation/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/adoption/pages/confirmation/index?applicationId=vqa-application"
+    },
+    {
+      "number": 16,
+      "id": "P16",
+      "route": "packages/adoption/pages/progress/index",
+      "title": "领养申请人进度",
+      "query": "applicationId=vqa-application",
+      "states": "13 个持久状态；view=progress / application / adoption-info",
+      "steps": "每个状态先 Q.adoption(status) 再打开同一路径；view 只切展示视角，不改变业务状态。",
+      "refs": [
+        {
+          "id": "83:11204",
+          "title": "领养申请-等待审核",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-11204",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:11304",
+          "title": "领养申请-等待审核",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-11304",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:12471",
+          "title": "领养申请-已同意",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-12471",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:12609",
+          "title": "领养进度-待院主确认",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-12609",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:12803",
+          "title": "领养进度-待评审团确认",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-12803",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:13018",
+          "title": "领养进度-获得奖励",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-13018",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:11645",
+          "title": "领养-领养信息-查看",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-11645",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:11728",
+          "title": "领养-申请内容-查看",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-11728",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "进度服务旧跨用户漏洞已修；奖励订单已按 applicationId 绑定；视觉与运行仍需逐态验收",
+      "formal": [
+        {
+          "key": "adoption.flow_waiting",
+          "name": "领养申请-等待审核",
+          "route": "packages/adoption/pages/progress/index",
+          "node": "83:11204",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "需持久化当前申请人的 pending 记录并传 applicationId；不得使用 demo-pending 或 frame 强制状态。"
+          }
+        },
+        {
+          "key": "adoption.flow_progress_reward",
+          "name": "领养进度-获得奖励",
+          "route": "packages/adoption/pages/progress/index",
+          "node": "83:13018",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "applicationId": "demo-reward"
+          },
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "奖励进度由 applicationMockApi 的 demo-reward 记录状态派生；矩阵生成器不执行页面。"
+          }
+        }
+      ],
+      "source": "packages/adoption/pages/progress/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/adoption/pages/progress/index?applicationId=vqa-application"
+    },
+    {
+      "number": 17,
+      "id": "P17",
+      "route": "packages/adoption/pages/review/list/index",
+      "title": "领养审核列表",
+      "query": "",
+      "states": "院主／云家长／评审；待处理／已处理／无身份",
+      "steps": "Q.adoption(\"pending\",\"owner\") 或 Q.adoption(\"cloud_pending\",\"cloud\")；评审 Q.adoption(\"jury_confirm_pending\",\"reviewer\")；点击列表实际生成详情参数。",
+      "refs": [],
+      "issue": "列表无独立精确节点；不能以详情画板代替列表批准",
+      "formal": [],
+      "source": "packages/adoption/pages/review/list/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/adoption/pages/review/list/index"
+    },
+    {
+      "number": 18,
+      "id": "P18",
+      "route": "packages/adoption/pages/review/detail/index",
+      "title": "领养审核详情",
+      "query": "applicationId=vqa-application&reviewItemId=adoption-review-vqa-application&mode=ownerReview",
+      "states": "mode=ownerReview / cloudReview / ownerConfirm；popup=agree / reject；通过／拒绝／终态",
+      "steps": "优先从审核列表进入。院主 pending/owner；云家长 cloud_pending/cloud；院主确认 owner_confirm_pending/owner。弹窗可用 popup=agree/reject。",
+      "refs": [
+        {
+          "id": "83:11417",
+          "title": "院主-等待院主审核",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-11417",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:11531",
+          "title": "院主-等待云家长审核",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-11531",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:11973",
+          "title": "领养审核-待院主确认领养",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-11973",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:11843",
+          "title": "院主-待申请人领养",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-11843",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:12125",
+          "title": "领养审核-驳回成功",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-12125",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:12303",
+          "title": "领养审核-领养成功",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-12303",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18303",
+          "title": "院主-确定同意领养弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18303",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18316",
+          "title": "院主-确定同意领养弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18316",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18329",
+          "title": "院主-驳回领养弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18329",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "map 旧示例 id=review-v2-* 不是当前持久夹具",
+      "formal": [
+        {
+          "key": "adoption.flow_owner_review",
+          "name": "院主-等待院主审核",
+          "route": "packages/adoption/pages/review/detail/index",
+          "node": "83:11417",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "mode": "ownerReview",
+            "id": "review-v2-owner-pending-1"
+          },
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "审核详情需要 adoptionStorage 的 review-v2-owner-pending-1 记录，不能只用 mode 打开。"
+          }
+        },
+        {
+          "key": "adoption.flow_owner_confirm",
+          "name": "领养审核-待院主确认领养",
+          "route": "packages/adoption/pages/review/detail/index",
+          "node": "83:11973",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "mode": "ownerConfirm",
+            "id": "review-v2-owner-confirm-pending-1"
+          },
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "审核详情需要 adoptionStorage 的 review-v2-owner-confirm-pending-1 记录，不能只用 mode 打开。"
+          }
+        }
+      ],
+      "source": "packages/adoption/pages/review/detail/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/adoption/pages/review/detail/index?applicationId=vqa-application&reviewItemId=adoption-review-vqa-application&mode=ownerReview"
+    },
+    {
+      "number": 19,
+      "id": "P19",
+      "route": "packages/adoption/pages/jury/detail/index",
+      "title": "领养评审投票",
+      "query": "reviewItemId=adoption-review-vqa-application&businessType=adoption",
+      "states": "投票前／real / fake 结果弹窗／已投票／关闭／限额",
+      "steps": "先 Q.adoption(\"jury_confirm_pending\",\"reviewer\")；用此 reviewItemId；实际投一次后查看关闭态。仅视觉弹窗可带 popup=vote-real 或 vote-fake，不等同于投票写入。",
+      "refs": [
+        {
+          "id": "83:13230",
+          "title": "待投票",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-13230",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:13874",
+          "title": "已投票",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-13874",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:18343",
+          "title": "投票-挺真实弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18343",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18372",
+          "title": "投票-有点假弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18372",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "业务角色完整隔离仍需核查；本次不替代正向/反向全量运行验收",
+      "formal": [
+        {
+          "key": "jury.voted_detail",
+          "name": "已投票",
+          "route": "packages/adoption/pages/jury/detail/index",
+          "node": "83:13874",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "reviewItemId": "jury-item-003",
+            "businessType": "adoption"
+          },
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "已投票视图由 item.hasVoted、item.status 或 closed 状态派生；juryDetail 不读取 state=voted，使用已关闭的 jury-item-003 fixture。"
+          }
+        }
+      ],
+      "source": "packages/adoption/pages/jury/detail/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/adoption/pages/jury/detail/index?reviewItemId=adoption-review-vqa-application&businessType=adoption"
+    },
+    {
+      "number": 20,
+      "id": "P20",
+      "route": "packages/adoption/pages/apply/index",
+      "title": "领养申请",
+      "query": "yardId=1",
+      "states": "短表单／state=pick-cats；文本／媒体／最多6只／禁选",
+      "steps": "可直达短表单；选择宠物→填写说明。state=pick-cats 仅选择层。source=rescue 或 state=long 应提示错误域。",
+      "refs": [
+        {
+          "id": "83:10860",
+          "title": "领养申请",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-10860",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:16471",
+          "title": "领养-选择宠物",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-16471",
+          "kind": "正式 map"
+        }
+      ],
+      "issue": "正常创建已绑定可信 applicant；仍需逐态验收创建→本人进度",
+      "formal": [
+        {
+          "key": "adoption.apply",
+          "name": "领养申请",
+          "route": "packages/adoption/pages/apply/index",
+          "node": "83:10860",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "state": "compact"
+          },
+          "runtime": null
+        },
+        {
+          "key": "adoption.pick_cats",
+          "name": "领养-选择宠物",
+          "route": "packages/adoption/pages/apply/index",
+          "node": "83:16471",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "state": "pick-cats"
+          },
+          "runtime": null
+        }
+      ],
+      "source": "packages/adoption/pages/apply/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/adoption/pages/apply/index?yardId=1"
+    },
+    {
+      "number": 21,
+      "id": "P21",
+      "route": "packages/adoption/pages/result/index",
+      "title": "领养结果",
+      "query": "applicationId=vqa-application&outcome=application-submitted",
+      "states": "application-submitted / confirmation-submitted / review-approved / adoption-confirmed-by-owner / review-rejected / reward-claimed",
+      "steps": "先创建对应状态夹具再进入。outcome 仅结果文案；正常业务成功回调和 orderId 应另验。",
+      "refs": [
+        {
+          "id": "83:16328",
+          "title": "领养申请结果页",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-16328",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:16271",
+          "title": "确认领养结果页",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-16271",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:16098",
+          "title": "领养审核-同意结果页",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-16098",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:16155",
+          "title": "领养审核-院主确认结果页",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-16155",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:16212",
+          "title": "领养审核-确认驳回结果页",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-16212",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:16041",
+          "title": "领养进度-领取结果页",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-16041",
+          "kind": "正式 map"
+        }
+      ],
+      "issue": "结果页仍接受旧 variant/最近单兜底，不作为写入完成证明",
+      "formal": [
+        {
+          "key": "adoption.result_claim",
+          "name": "领养进度-领取结果",
+          "route": "packages/adoption/pages/result/index",
+          "node": "83:16041",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "applicationId": "demo-reward",
+            "outcome": "reward-claimed"
+          },
+          "runtime": null
+        },
+        {
+          "key": "adoption.result_apply",
+          "name": "领养申请结果",
+          "route": "packages/adoption/pages/result/index",
+          "node": "83:16328",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "applicationId": "demo-application",
+            "outcome": "application-submitted"
+          },
+          "runtime": null
+        }
+      ],
+      "source": "packages/adoption/pages/result/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/adoption/pages/result/index?applicationId=vqa-application&outcome=application-submitted"
+    },
+    {
+      "number": 22,
+      "id": "P22",
+      "route": "packages/adoption/pages/support/index",
+      "title": "助力领养",
+      "query": "",
+      "states": "默认／popup=insufficient",
+      "steps": "消息→助力领养；popup=insufficient 验额度提示。",
+      "refs": [
+        {
+          "id": "83:22882",
+          "title": "助力领养",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-22882",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:18552",
+          "title": "领养额度不足",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18552",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "",
+      "formal": [
+        {
+          "key": "adoption.adoption_support",
+          "name": "助力领养",
+          "route": "packages/adoption/pages/support/index",
+          "node": "83:22882",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "packages/adoption/pages/support/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/adoption/pages/support/index"
+    },
+    {
+      "number": 23,
+      "id": "P23",
+      "route": "packages/adoption/pages/quota/index",
+      "title": "领养额度",
+      "query": "",
+      "states": "默认／不足额度提示",
+      "steps": "消息或我的额度入口；popup=insufficient。",
+      "refs": [
+        {
+          "id": "83:23035",
+          "title": "领养额度",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-23035",
+          "kind": "正式 map"
+        }
+      ],
+      "issue": "",
+      "formal": [
+        {
+          "key": "adoption.adoption_quota",
+          "name": "领养额度",
+          "route": "packages/adoption/pages/quota/index",
+          "node": "83:23035",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "packages/adoption/pages/quota/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/adoption/pages/quota/index"
+    },
+    {
+      "number": 24,
+      "id": "P24",
+      "route": "packages/adoption/pages/quota/detail/index",
+      "title": "额度明细",
+      "query": "quotaId=quota-demo-1",
+      "states": "有 ID 的演示明细／缺 ID 空态",
+      "steps": "可直达演示 ID；省略 quotaId 验错误，不把静态演示当真实账本。",
+      "refs": [
+        {
+          "id": "83:23120",
+          "title": "领养额度明细",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-23120",
+          "kind": "正式 map"
+        }
+      ],
+      "issue": "",
+      "formal": [
+        {
+          "key": "adoption.adoption_quota_detail",
+          "name": "领养额度明细",
+          "route": "packages/adoption/pages/quota/detail/index",
+          "node": "83:23120",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "quotaId": "quota-demo-1"
+          },
+          "runtime": null
+        }
+      ],
+      "source": "packages/adoption/pages/quota/detail/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/adoption/pages/quota/detail/index?quotaId=quota-demo-1"
+    },
+    {
+      "number": 25,
+      "id": "P25",
+      "route": "packages/adoption/pages/reward/claim/index",
+      "title": "奖励收货地址",
+      "query": "applicationId=vqa-application",
+      "states": "地址未选／选择／已选／提交错误／成功",
+      "steps": "先 Q.adoption(\"reward\")；使用当前申请人的 applicationId 进入，选择本地测试地址并核对成功订单详情。不要执行真实领取。",
+      "refs": [
+        {
+          "id": "83:16527",
+          "title": "领养进度-填写收货地址",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-16527",
+          "kind": "正式 map"
+        }
+      ],
+      "issue": "本地 reward writer 已按 actor/applicationId 绑定并由订单详情 reader 消费；真实支付/后端不在本轮，仍需运行态回归",
+      "formal": [
+        {
+          "key": "adoption.reward_address",
+          "name": "领养进度-填写收货地址",
+          "route": "packages/adoption/pages/reward/claim/index",
+          "node": "83:16527",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "applicationId": "demo-reward"
+          },
+          "runtime": null
+        }
+      ],
+      "source": "packages/adoption/pages/reward/claim/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/adoption/pages/reward/claim/index?applicationId=vqa-application"
+    },
+    {
+      "number": 26,
+      "id": "P26",
+      "route": "packages/account/pages/settings/index",
+      "title": "设置",
+      "query": "",
+      "states": "默认／退出确认／退出后",
+      "steps": "我的更多→设置；退出登录应删除 actor 会话。",
+      "refs": [
+        {
+          "id": "83:20857",
+          "title": "设置",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-20857",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "",
+      "formal": [],
+      "source": "packages/account/pages/settings/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/account/pages/settings/index"
+    },
+    {
+      "number": 27,
+      "id": "P27",
+      "route": "packages/account/pages/tasks/index",
+      "title": "任务中心",
+      "query": "",
+      "states": "待处理／已处理／无身份／四域／冲突诊断",
+      "steps": "Q.adoption(\"pending\"); Q.rescue(); Q.dynamic(); Q.order(); 然后进入。切换页内 Tab；逐个点击 review 任务，核对 reviewItemId/businessType 进入对应详情；Q.logout() 后重入验无身份。",
+      "refs": [],
+      "issue": "review 任务现带详情目标与业务类型，并按 actor/归属聚合；无精确待办设计节点，仍需运行态回归",
+      "formal": [],
+      "source": "packages/account/pages/tasks/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/account/pages/tasks/index"
+    },
+    {
+      "number": 28,
+      "id": "P28",
+      "route": "packages/account/pages/profile/editor/index",
+      "title": "本人资料编辑",
+      "query": "userId=vqa-owner",
+      "states": "可编辑／无身份／非本人／保存／取消",
+      "steps": "Q.management() 后进入；修改昵称、简介和标签；保存后重进编辑页，并回个人主页核对公开摘要。Q.actor(\"stranger\") 后进入验拒绝。",
+      "refs": [],
+      "issue": "本地资料 reader/writer 已接通编辑页与公开摘要；无独立精确编辑稿，仍需运行态回归",
+      "formal": [],
+      "source": "packages/account/pages/profile/editor/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/account/pages/profile/editor/index?userId=vqa-owner"
+    },
+    {
+      "number": 29,
+      "id": "P29",
+      "route": "packages/account/pages/profile/index",
+      "title": "个人主页",
+      "query": "userId=vqa-owner",
+      "states": "评价／state=dynamic-long；更多／取消关注",
+      "steps": "默认主要是评价展示；state=dynamic-long 的真实模板分支与标注存在混淆，分别截图核对。昵称 query 只是展示提示。",
+      "refs": [
+        {
+          "id": "83:9382",
+          "title": "个人主页-动态",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-9382",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:9532",
+          "title": "个人主页-评价",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-9532",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:16865",
+          "title": "个人主页-更多弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-16865",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:16882",
+          "title": "个人主页-取消关注确认弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-16882",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "62:29619",
+          "title": "个人主页",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-29619",
+          "kind": "正式 map 保留旧稿"
+        },
+        {
+          "id": "62:29769",
+          "title": "个人主页-动态",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-29769",
+          "kind": "正式 map 保留旧稿"
+        }
+      ],
+      "issue": "当前 map 的 profile/profile_dynamic 命名与实际旧节点内容错位；不能按名称直接判定",
+      "formal": [
+        {
+          "key": "account.profile",
+          "name": "个人主页",
+          "route": "packages/account/pages/profile/index",
+          "node": "62:29619",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {},
+          "runtime": null
+        },
+        {
+          "key": "account.profile_dynamic",
+          "name": "个人主页-动态",
+          "route": "packages/account/pages/profile/index",
+          "node": "62:29769",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {
+            "state": "dynamic-long"
+          },
+          "runtime": null
+        }
+      ],
+      "source": "packages/account/pages/profile/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/account/pages/profile/index?userId=vqa-owner"
+    },
+    {
+      "number": 30,
+      "id": "P30",
+      "route": "packages/account/pages/relations/index",
+      "title": "关注与粉丝",
+      "query": "userId=vqa-owner&tab=following",
+      "states": "tab=following / followers；关注状态",
+      "steps": "分别编译两个 tab；从个人主页进入验证返回。",
+      "refs": [
+        {
+          "id": "83:14738",
+          "title": "关注列表",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-14738",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:14630",
+          "title": "粉丝列表",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-14630",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "62:34870",
+          "title": "关注列表",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-34870",
+          "kind": "正式 map 保留旧稿"
+        },
+        {
+          "id": "62:34762",
+          "title": "粉丝列表",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-34762",
+          "kind": "正式 map 保留旧稿"
+        }
+      ],
+      "issue": "",
+      "formal": [
+        {
+          "key": "account.relations_following",
+          "name": "关注列表",
+          "route": "packages/account/pages/relations/index",
+          "node": "62:34870",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {
+            "tab": "following"
+          },
+          "runtime": null
+        },
+        {
+          "key": "account.relations_followers",
+          "name": "粉丝列表",
+          "route": "packages/account/pages/relations/index",
+          "node": "62:34762",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {
+            "tab": "followers"
+          },
+          "runtime": null
+        }
+      ],
+      "source": "packages/account/pages/relations/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/account/pages/relations/index?userId=vqa-owner&tab=following"
+    },
+    {
+      "number": 31,
+      "id": "P31",
+      "route": "packages/account/pages/history/index",
+      "title": "浏览记录",
+      "query": "state=dynamic",
+      "states": "state=dynamic / yard / empty",
+      "steps": "直接编译 state；动态和小院卡片应去各自实体。",
+      "refs": [
+        {
+          "id": "83:10317",
+          "title": "浏览记录-动态",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-10317",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:10469",
+          "title": "浏览记录-小院",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-10469",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "62:30402",
+          "title": "浏览记录-动态",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-30402",
+          "kind": "正式 map 保留旧稿"
+        },
+        {
+          "id": "62:30554",
+          "title": "浏览记录-小院",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-30554",
+          "kind": "正式 map 保留旧稿"
+        },
+        {
+          "id": "62:30874",
+          "title": "浏览记录-缺省页",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-30874",
+          "kind": "正式 map 保留旧稿"
+        }
+      ],
+      "issue": "空态仅旧稿 62:30874，未确认新稿对应",
+      "formal": [
+        {
+          "key": "account.history_dynamic",
+          "name": "浏览记录-动态",
+          "route": "packages/account/pages/history/index",
+          "node": "62:30402",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {
+            "state": "dynamic"
+          },
+          "runtime": null
+        },
+        {
+          "key": "account.history_yard",
+          "name": "浏览记录-小院",
+          "route": "packages/account/pages/history/index",
+          "node": "62:30554",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {
+            "state": "yard"
+          },
+          "runtime": null
+        },
+        {
+          "key": "account.history_empty",
+          "name": "浏览记录-缺省页",
+          "route": "packages/account/pages/history/index",
+          "node": "62:30874",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {
+            "state": "empty"
+          },
+          "runtime": null
+        }
+      ],
+      "source": "packages/account/pages/history/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/account/pages/history/index?state=dynamic"
+    },
+    {
+      "number": 32,
+      "id": "P32",
+      "route": "packages/account/pages/level/index",
+      "title": "等级中心",
+      "query": "",
+      "states": "默认等级／variant=63 / 64／max=1",
+      "steps": "普通级与满级分别截图；max=1 为满级。",
+      "refs": [
+        {
+          "id": "83:14546",
+          "title": "等级",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-14546",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:14465",
+          "title": "等级",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-14465",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "62:34597",
+          "title": "等级中心",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-34597",
+          "kind": "正式 map 保留旧稿"
+        },
+        {
+          "id": "62:34678",
+          "title": "等级中心-满级",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-34678",
+          "kind": "正式 map 保留旧稿"
+        }
+      ],
+      "issue": "当前 map 的 level/level_max 对应颠倒：83:14465 文案 MAX，83:14546 文案 LV.7",
+      "formal": [
+        {
+          "key": "account.level",
+          "name": "等级中心",
+          "route": "packages/account/pages/level/index",
+          "node": "62:34597",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {},
+          "runtime": null
+        },
+        {
+          "key": "account.level_max",
+          "name": "等级中心-满级",
+          "route": "packages/account/pages/level/index",
+          "node": "62:34678",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {
+            "max": "1"
+          },
+          "runtime": null
+        }
+      ],
+      "source": "packages/account/pages/level/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/account/pages/level/index"
+    },
+    {
+      "number": 33,
+      "id": "P33",
+      "route": "packages/account/pages/level/rules/index",
+      "title": "等级规则",
+      "query": "",
+      "states": "规则长页／滚动",
+      "steps": "等级中心→规则；验证长表格滚动和返回。",
+      "refs": [
+        {
+          "id": "83:14846",
+          "title": "等级",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-14846",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "62:34978",
+          "title": "等级规则",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-34978",
+          "kind": "正式 map 保留旧稿"
+        }
+      ],
+      "issue": "",
+      "formal": [
+        {
+          "key": "account.level_rules",
+          "name": "等级规则",
+          "route": "packages/account/pages/level/rules/index",
+          "node": "62:34978",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "packages/account/pages/level/rules/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/account/pages/level/rules/index"
+    },
+    {
+      "number": 34,
+      "id": "P34",
+      "route": "packages/account/pages/annual-report/index",
+      "title": "年度报告",
+      "query": "",
+      "states": "默认长图／滚动",
+      "steps": "等级中心→年度报告。",
+      "refs": [
+        {
+          "id": "83:15983",
+          "title": "年度报告",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-15983",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "62:36152",
+          "title": "年度报告",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-36152",
+          "kind": "正式 map 保留旧稿"
+        }
+      ],
+      "issue": "",
+      "formal": [
+        {
+          "key": "account.annual_report",
+          "name": "年度报告",
+          "route": "packages/account/pages/annual-report/index",
+          "node": "62:36152",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "packages/account/pages/annual-report/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/account/pages/annual-report/index"
+    },
+    {
+      "number": 35,
+      "id": "P35",
+      "route": "packages/account/pages/helped-animals/index",
+      "title": "我帮助过的动物",
+      "query": "",
+      "states": "列表／滚动",
+      "steps": "等级中心→我帮助过的动物。",
+      "refs": [
+        {
+          "id": "83:5277",
+          "title": "我帮助过的动物",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-5277",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "62:25204",
+          "title": "我帮助过的动物",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-25204",
+          "kind": "正式 map 保留旧稿"
+        }
+      ],
+      "issue": "",
+      "formal": [
+        {
+          "key": "account.helped_animals",
+          "name": "我帮助过的动物",
+          "route": "packages/account/pages/helped-animals/index",
+          "node": "62:25204",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "packages/account/pages/helped-animals/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/account/pages/helped-animals/index"
+    },
+    {
+      "number": 36,
+      "id": "P36",
+      "route": "packages/account/pages/medals/index",
+      "title": "我的勋章",
+      "query": "",
+      "states": "勋章列表",
+      "steps": "从我的勋章入口；当前主要为本地展示。",
+      "refs": [
+        {
+          "id": "83:23607",
+          "title": "我的勋章",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-23607",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "62:43457",
+          "title": "我的勋章",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-43457",
+          "kind": "正式 map 保留旧稿"
+        }
+      ],
+      "issue": "",
+      "formal": [
+        {
+          "key": "account.medals",
+          "name": "我的勋章",
+          "route": "packages/account/pages/medals/index",
+          "node": "62:43457",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "packages/account/pages/medals/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/account/pages/medals/index"
+    },
+    {
+      "number": 37,
+      "id": "P37",
+      "route": "packages/account/pages/medals/map/index",
+      "title": "勋章地图",
+      "query": "",
+      "states": "地图展示",
+      "steps": "从勋章页进入，或直接编译。",
+      "refs": [
+        {
+          "id": "83:23668",
+          "title": "勋章地图",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-23668",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "62:43518",
+          "title": "勋章地图",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-43518",
+          "kind": "正式 map 保留旧稿"
+        }
+      ],
+      "issue": "",
+      "formal": [
+        {
+          "key": "account.medals_map",
+          "name": "勋章地图",
+          "route": "packages/account/pages/medals/map/index",
+          "node": "62:43518",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "packages/account/pages/medals/map/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/account/pages/medals/map/index"
+    },
+    {
+      "number": 38,
+      "id": "P38",
+      "route": "packages/account/pages/medals/achievement/index",
+      "title": "获得新勋章",
+      "query": "",
+      "states": "获得结果",
+      "steps": "仅视觉直达；不表示真的发放勋章。",
+      "refs": [
+        {
+          "id": "83:23706",
+          "title": "获得新勋章",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-23706",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "62:43556",
+          "title": "获得新勋章",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-43556",
+          "kind": "正式 map 保留旧稿"
+        }
+      ],
+      "issue": "",
+      "formal": [
+        {
+          "key": "account.medals_achievement",
+          "name": "获得新勋章",
+          "route": "packages/account/pages/medals/achievement/index",
+          "node": "62:43556",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "packages/account/pages/medals/achievement/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/account/pages/medals/achievement/index"
+    },
+    {
+      "number": 39,
+      "id": "P39",
+      "route": "packages/account/pages/invite/index",
+      "title": "邀请入驻",
+      "query": "",
+      "states": "邀请卡／分享",
+      "steps": "直接编译或首页邀请入口。",
+      "refs": [
+        {
+          "id": "83:15629",
+          "title": "邀请入驻",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-15629",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "",
+      "formal": [],
+      "source": "packages/account/pages/invite/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/account/pages/invite/index"
+    },
+    {
+      "number": 40,
+      "id": "P40",
+      "route": "packages/animal/pages/editor/index",
+      "title": "动物资料编辑",
+      "query": "animalId=vqa-animal&yardId=vqa-yard",
+      "states": "species=cat / dog；state=more；popup=status / value / gender / sterilization / vaccine / personality；保存／拒绝",
+      "steps": "先 Q.management()；依次带 species、state、popup；品种点击进入选择器。绝育弹层参数为 popup=sterilization。",
+      "refs": [
+        {
+          "id": "83:16893",
+          "title": "添加猫咪",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-16893",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:17257",
+          "title": "添加狗狗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-17257",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:17413",
+          "title": "添加猫咪-更多",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-17413",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:17963",
+          "title": "添加狗狗-更多",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-17963",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18622",
+          "title": "选择状态弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18622",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18645",
+          "title": "选择价值",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18645",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18700",
+          "title": "选择性别弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18700",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18715",
+          "title": "选择绝育弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18715",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18730",
+          "title": "选择疫苗弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18730",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18749",
+          "title": "宠物性格",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18749",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "62:37295",
+          "title": "添加/编辑动物资料",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-37295",
+          "kind": "正式 map 保留旧稿"
+        }
+      ],
+      "issue": "本地编辑支持已有动物更新与管理名册新增；保存后由公开详情/名册 reader 重读。仍需运行态核对表单视觉与非院主拒绝",
+      "formal": [
+        {
+          "key": "yard_forms.animal_editor",
+          "name": "添加/编辑动物资料",
+          "route": "packages/animal/pages/editor/index",
+          "node": "62:37295",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {
+            "species": "cat",
+            "yardId": "yard-demo"
+          },
+          "runtime": null
+        }
+      ],
+      "source": "packages/animal/pages/editor/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/animal/pages/editor/index?animalId=vqa-animal&yardId=vqa-yard"
+    },
+    {
+      "number": 41,
+      "id": "P41",
+      "route": "packages/animal/pages/breed-picker/index",
+      "title": "猫狗品种选择",
+      "query": "species=cat",
+      "states": "species=cat / dog；popup=supplement / supplement-input / supplement-success",
+      "steps": "从动物编辑品种栏进入才验回填；直达只验外观。",
+      "refs": [
+        {
+          "id": "83:8284",
+          "title": "猫咪品种",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-8284",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:8378",
+          "title": "狗狗品种",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-8378",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18806",
+          "title": "补充猫咪品种",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18806",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18819",
+          "title": "补充猫咪品种-待输入",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18819",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:19045",
+          "title": "品种补充提交成功",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-19045",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "",
+      "formal": [],
+      "source": "packages/animal/pages/breed-picker/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/animal/pages/breed-picker/index?species=cat"
+    },
+    {
+      "number": 42,
+      "id": "P42",
+      "route": "packages/animal/pages/mine/index",
+      "title": "我的宠物",
+      "query": "userId=vqa-applicant",
+      "states": "owned 名册／缺 ID",
+      "steps": "直接编译带 userId；省略参数验空态。当前名册使用本地演示体系。",
+      "refs": [
+        {
+          "id": "83:23543",
+          "title": "我的宠物",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-23543",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "62:43393",
+          "title": "我的宠物",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-43393",
+          "kind": "正式 map 保留旧稿"
+        }
+      ],
+      "issue": "",
+      "formal": [
+        {
+          "key": "account.animal_mine",
+          "name": "我的宠物",
+          "route": "packages/animal/pages/mine/index",
+          "node": "62:43393",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "packages/animal/pages/mine/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/animal/pages/mine/index?userId=vqa-applicant"
+    },
+    {
+      "number": 43,
+      "id": "P43",
+      "route": "packages/animal/pages/sponsored/index",
+      "title": "我的云养",
+      "query": "userId=vqa-applicant",
+      "states": "云养中／待生效／运输中；筛选",
+      "steps": "带 userId 进入；当前列表状态取名册组件内演示数据，切换分类/搜索看可见条目。",
+      "refs": [
+        {
+          "id": "83:23327",
+          "title": "我的云养",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-23327",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "62:43156",
+          "title": "我的云养宠物",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-43156",
+          "kind": "正式 map 保留旧稿"
+        }
+      ],
+      "issue": "",
+      "formal": [
+        {
+          "key": "account.animal_sponsored",
+          "name": "我的云养宠物",
+          "route": "packages/animal/pages/sponsored/index",
+          "node": "62:43156",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "packages/animal/pages/sponsored/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/animal/pages/sponsored/index?userId=vqa-applicant"
+    },
+    {
+      "number": 44,
+      "id": "P44",
+      "route": "packages/animal/pages/detail/index",
+      "title": "动物详情",
+      "query": "animalId=roster-cat-1&yardId=1&state=35",
+      "states": "state=35 / 36 / 37；popup=adopt-limit；图片／云养／领养入口",
+      "steps": "最可靠入口：首页→小院→动物卡片，沿用卡片真实演示 ID，再分别替换 state。手填未知 ID 的行为也需记录，不以 idx 回退证明正确动物。",
+      "refs": [
+        {
+          "id": "83:9706",
+          "title": "小院-查看宠物详情",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-9706",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:10114",
+          "title": "我的云养-查看宠物详情",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-10114",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:9889",
+          "title": "我的云养-查看宠物详情",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-9889",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:18786",
+          "title": "领养，无次数弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18786",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18796",
+          "title": "领养，无次数弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18796",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "公开详情优先读取本地动物投影并保留 mock 视觉兜底；state/managed query 只控制展示，不授予权限。仍需运行态核对编辑后回显",
+      "formal": [
+        {
+          "key": "adoption.pet_detail",
+          "name": "宠物详情-公开视角",
+          "route": "packages/animal/pages/detail/index",
+          "node": "83:9706",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "state": 35
+          },
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "state 仅定位既有展示变体；必须注入匹配角色/动物 fixture 验证权限，新设计新增内容未验收。"
+          }
+        },
+        {
+          "key": "adoption.pet_detail_yard",
+          "name": "宠物详情-管理菜单视角（旧索引误称领养入口）",
+          "route": "packages/animal/pages/detail/index",
+          "node": "83:10114",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "state": 36
+          },
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "state 仅定位既有展示变体；必须注入匹配角色/动物 fixture 验证权限，新设计新增内容未验收。"
+          }
+        },
+        {
+          "key": "adoption.pet_detail_managed",
+          "name": "宠物详情-我的云养订单视角（旧key不代表权限）",
+          "route": "packages/animal/pages/detail/index",
+          "node": "83:9889",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "state": 37
+          },
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "state 仅定位既有展示变体；必须注入匹配角色/动物 fixture 验证权限，新设计新增内容未验收。"
+          }
+        }
+      ],
+      "source": "packages/animal/pages/detail/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/animal/pages/detail/index?animalId=roster-cat-1&yardId=1&state=35"
+    },
+    {
+      "number": 45,
+      "id": "P45",
+      "route": "packages/animal/pages/album/index",
+      "title": "动物相册",
+      "query": "animalId=vqa-animal&yardId=vqa-yard",
+      "states": "公开相册／管理资格／图片预览",
+      "steps": "Q.management() 后进入；再切 stranger 对照管理按钮。",
+      "refs": [
+        {
+          "id": "83:15830",
+          "title": "宠物相册",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-15830",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "当前真实相册 reader 缺失时的演示内容与权限需单独记录",
+      "formal": [],
+      "source": "packages/animal/pages/album/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/animal/pages/album/index?animalId=vqa-animal&yardId=vqa-yard"
+    },
+    {
+      "number": 46,
+      "id": "P46",
+      "route": "packages/yard/pages/detail/index",
+      "title": "小院详情",
+      "query": "yardId=1&state=dynamic",
+      "states": "state=dynamic / dynamic-empty / feeding / dynamic-expanded / reply-idle / reply-input；popup=help-adopt / feedback-stat / food-stat",
+      "steps": "直接编译不同 state/popup；缺 yardId 应空态。样例 1 是视觉用 mock，不是本地编辑 vqa-yard 的内容。",
+      "refs": [
+        {
+          "id": "83:6085",
+          "title": "院子详情-动态",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-6085",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:6528",
+          "title": "院子详情-动态-动态空状态",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-6528",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:6787",
+          "title": "院子详情-投喂记录",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-6787",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:7045",
+          "title": "院子详情-动态展开",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-7045",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:18416",
+          "title": "回复-待输入",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18416",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18429",
+          "title": "回复-输入",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18429",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18528",
+          "title": "帮助领养弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18528",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18538",
+          "title": "平均反馈时长弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18538",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18566",
+          "title": "已获粮弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18566",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "公开详情优先合并本地小院投影并统一使用 yardId 深链；mock 仅作无记录视觉兜底。仍需运行态核对编辑后公开回显",
+      "formal": [
+        {
+          "key": "yard_detail.dynamic",
+          "name": "院子详情-动态",
+          "route": "packages/yard/pages/detail/index",
+          "node": "83:6085",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "yardId": "1",
+            "state": "dynamic"
+          },
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "packages/yard/pages/detail/index.vue:onLoad 的白名单及 PawYardDetailFigma.state 已核对；yardId/角色需 fixture，新稿内容尚未逐屏验收。"
+          }
+        },
+        {
+          "key": "yard_detail.dynamic_empty",
+          "name": "院子详情-动态-动态空状态",
+          "route": "packages/yard/pages/detail/index",
+          "node": "83:6528",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "yardId": "1",
+            "state": "dynamic-empty"
+          },
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "packages/yard/pages/detail/index.vue:onLoad 的白名单及 PawYardDetailFigma.state 已核对；yardId/角色需 fixture，新稿内容尚未逐屏验收。"
+          }
+        },
+        {
+          "key": "yard_detail.feeding",
+          "name": "院子详情-投喂记录",
+          "route": "packages/yard/pages/detail/index",
+          "node": "83:6787",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "yardId": "1",
+            "state": "feeding"
+          },
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "packages/yard/pages/detail/index.vue:onLoad 的白名单及 PawYardDetailFigma.state 已核对；yardId/角色需 fixture，新稿内容尚未逐屏验收。"
+          }
+        },
+        {
+          "key": "yard_detail.dynamic_expanded",
+          "name": "院子详情-动态展开",
+          "route": "packages/yard/pages/detail/index",
+          "node": "83:7045",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "yardId": "1",
+            "state": "dynamic-expanded"
+          },
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "packages/yard/pages/detail/index.vue:onLoad 的白名单及 PawYardDetailFigma.state 已核对；yardId/角色需 fixture，新稿内容尚未逐屏验收。"
+          }
+        }
+      ],
+      "source": "packages/yard/pages/detail/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/yard/pages/detail/index?yardId=1&state=dynamic"
+    },
+    {
+      "number": 47,
+      "id": "P47",
+      "route": "packages/yard/pages/onboarding/index",
+      "title": "小院介绍",
+      "query": "",
+      "states": "说明长页／创建入口",
+      "steps": "从首页 + →创建小院前置介绍。",
+      "refs": [
+        {
+          "id": "83:5951",
+          "title": "流浪猫小院介绍",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-5951",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "",
+      "formal": [],
+      "source": "packages/yard/pages/onboarding/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/yard/pages/onboarding/index"
+    },
+    {
+      "number": 48,
+      "id": "P48",
+      "route": "packages/yard/pages/create/index",
+      "title": "创建小院",
+      "query": "kind=cat",
+      "states": "kind=cat / dog；state=recorded；popup=voice-permission / voice-limit / location；auth=required",
+      "steps": "初始实名提示需关闭或走本地认证；录音状态用 state=recorded；实际录音在本地模拟器按权限提示。",
+      "refs": [
+        {
+          "id": "83:4429",
+          "title": "发布-创建小院",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-4429",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:4792",
+          "title": "发布-创建小院-已录音状态",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-4792",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:16451",
+          "title": "录音-待录音",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-16451",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:16459",
+          "title": "录音-录音中",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-16459",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18768",
+          "title": "语音，无权限弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18768",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18777",
+          "title": "语音，无次数弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18777",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:18277",
+          "title": "实名认证弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18277",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "新聚合稿 83:4577 属新增变化，不能和既有流程自动等同",
+      "formal": [],
+      "source": "packages/yard/pages/create/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/yard/pages/create/index?kind=cat"
+    },
+    {
+      "number": 49,
+      "id": "P49",
+      "route": "packages/yard/pages/editor/index",
+      "title": "小院资料编辑",
+      "query": "yardId=vqa-yard",
+      "states": "授权／禁止／保存／取消",
+      "steps": "Q.management()；编辑名称/简介，保存后重进编辑页；回公开详情核对持久投影。",
+      "refs": [],
+      "issue": "本地小院 reader/writer 与公开详情已接通；仍需运行态核对保存刷新、非院主拒绝及视觉稿",
+      "formal": [],
+      "source": "packages/yard/pages/editor/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/yard/pages/editor/index?yardId=vqa-yard"
+    },
+    {
+      "number": 50,
+      "id": "P50",
+      "route": "packages/yard/pages/animals/index",
+      "title": "小院公开动物名册",
+      "query": "yardId=1&view=roster",
+      "states": "view/state=roster / status / long-list；搜索／筛选",
+      "steps": "从小院“查看全部动物”进入；直达仅验名册外观。",
+      "refs": [
+        {
+          "id": "83:23194",
+          "title": "小院-查看猫咪列表",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-23194",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:4948",
+          "title": "小院-查看猫咪列表",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-4948",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "62:43023",
+          "title": "小院宠物列表",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-43023",
+          "kind": "正式 map 保留旧稿"
+        }
+      ],
+      "issue": "公开名册与管理态不能用同一份管理权限断言",
+      "formal": [
+        {
+          "key": "account.yard_animals",
+          "name": "小院宠物列表",
+          "route": "packages/yard/pages/animals/index",
+          "node": "62:43023",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "packages/yard/pages/animals/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/yard/pages/animals/index?yardId=1&view=roster"
+    },
+    {
+      "number": 51,
+      "id": "P51",
+      "route": "packages/yard/pages/manage/animals/index",
+      "title": "小院管理动物名册",
+      "query": "yardId=vqa-yard",
+      "states": "管理名册／增加／动物项／缺 ID",
+      "steps": "Q.management() 后进入；院主可通过“增加”进入独立创建合同，保存后回到管理名册验证新增项。",
+      "refs": [
+        {
+          "id": "83:5104",
+          "title": "小院-查看猫咪列表",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-5104",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "管理名册已按可信 actor/yard 关系读取并支持新增动物；仍需运行态核对院主与陌生人边界、回显及视觉",
+      "formal": [],
+      "source": "packages/yard/pages/manage/animals/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/yard/pages/manage/animals/index?yardId=vqa-yard"
+    },
+    {
+      "number": 52,
+      "id": "P52",
+      "route": "packages/yard/pages/certification/index",
+      "title": "小院认证",
+      "query": "yardId=vqa-yard&state=97",
+      "states": "state=97 表单 / 98 已通过 / 99 审核中",
+      "steps": "不同 state 仅本地视觉演示；上传/提交保持当前限制，不做真实资质提交。",
+      "refs": [
+        {
+          "id": "83:17568",
+          "title": "小院认证",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-17568",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:17712",
+          "title": "小院认证",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-17712",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:17846",
+          "title": "小院认证",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-17846",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:15926",
+          "title": "小院认证-结果页",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-15926",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "62:37970",
+          "title": "小院认证",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-37970",
+          "kind": "正式 map 保留旧稿"
+        }
+      ],
+      "issue": "",
+      "formal": [
+        {
+          "key": "yard_forms.certification",
+          "name": "小院认证",
+          "route": "packages/yard/pages/certification/index",
+          "node": "62:37970",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {
+            "yardId": "yard-demo",
+            "state": 97
+          },
+          "runtime": null
+        }
+      ],
+      "source": "packages/yard/pages/certification/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/yard/pages/certification/index?yardId=vqa-yard&state=97"
+    },
+    {
+      "number": 53,
+      "id": "P53",
+      "route": "packages/address/pages/list/index",
+      "title": "地址列表",
+      "query": "kind=shipping",
+      "states": "kind=shipping / service；intent=select；state=manage / delete / empty / pick",
+      "steps": "从设置进入管理；从奖励地址弹层进入选择才验 addressSelected 回填。先在本地新增虚构地址；空态用 state=empty（按页面实际分支）。",
+      "refs": [
+        {
+          "id": "83:19712",
+          "title": "收货地址",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-19712",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:19803",
+          "title": "服务地址",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-19803",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:19894",
+          "title": "选择地址",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-19894",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:19988",
+          "title": "选择地址-空状态",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-19988",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:20054",
+          "title": "收货地址-管理",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-20054",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:20164",
+          "title": "服务地址-管理",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-20164",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "",
+      "formal": [],
+      "source": "packages/address/pages/list/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/address/pages/list/index?kind=shipping"
+    },
+    {
+      "number": 54,
+      "id": "P54",
+      "route": "packages/address/pages/editor/index",
+      "title": "地址新建与编辑",
+      "query": "kind=shipping",
+      "states": "kind=shipping / service；state=typing；addressId 新建/编辑",
+      "steps": "新增不用 addressId，已有记录从列表编辑进入。typing 是输入展示态；地区选择回填须从表单进入。",
+      "refs": [
+        {
+          "id": "83:19234",
+          "title": "添加收货地址 ",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-19234",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:19329",
+          "title": "添加服务地址 ",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-19329",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:19418",
+          "title": "添加收货地址-输入时",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-19418",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:19522",
+          "title": "添加服务地址-输入时",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-19522",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:22623",
+          "title": "修改地址",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-22623",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "",
+      "formal": [],
+      "source": "packages/address/pages/editor/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/address/pages/editor/index?kind=shipping"
+    },
+    {
+      "number": 55,
+      "id": "P55",
+      "route": "packages/address/pages/region-picker/index",
+      "title": "地区选择",
+      "query": "",
+      "states": "默认省份／state=city / street / back；mode=city",
+      "steps": "直接编译可验各层；完整回填从地址编辑或建院地区栏进入。",
+      "refs": [
+        {
+          "id": "83:20274",
+          "title": "省份选择",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-20274",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:20705",
+          "title": "城市选择",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-20705",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:20562",
+          "title": "街道选择",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-20562",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:20417",
+          "title": "选错时返回上级",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-20417",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "",
+      "formal": [],
+      "source": "packages/address/pages/region-picker/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/address/pages/region-picker/index"
+    },
+    {
+      "number": 56,
+      "id": "P56",
+      "route": "packages/jury/pages/queue/index",
+      "title": "评审任务队列",
+      "query": "businessType=adoption",
+      "states": "businessType=adoption / rescue；tab=finished；待投票／已结束",
+      "steps": "Q.adoption(\"jury_confirm_pending\",\"reviewer\") 后看领养任务；救助采用 Q.rescue(\"platform_approved\",\"pending\",\"funding_pending\",\"reviewer\")。",
+      "refs": [
+        {
+          "id": "83:14169",
+          "title": "评审团",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-14169",
+          "kind": "正式 map"
+        }
+      ],
+      "issue": "与 account.tasks 是不同入口；公开演示 jury-item 与持久 reviewItemId 不混用",
+      "formal": [
+        {
+          "key": "jury.panel",
+          "name": "评审团",
+          "route": "packages/jury/pages/queue/index",
+          "node": "83:14169",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "packages/jury/pages/queue/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/jury/pages/queue/index?businessType=adoption"
+    },
+    {
+      "number": 57,
+      "id": "P57",
+      "route": "packages/rescue/pages/progress/index",
+      "title": "救助申请人进度",
+      "query": "rescueId=vqa-rescue",
+      "states": "平台 pending / approved / rejected × 独立评审轴 × 独立资金轴",
+      "steps": "Q.rescue() 后进入；合法已打款展示用 Q.rescue(\"platform_approved\",\"approved\",\"funding_paid\")；失败用 funding_failed，未审核通过不能显示打款成功。",
+      "refs": [],
+      "issue": "申请人进度 reader 已按当前 actor/申请人归属 fail-closed；无独立精确进度稿，仍需运行态回归",
+      "formal": [],
+      "source": "packages/rescue/pages/progress/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/rescue/pages/progress/index?rescueId=vqa-rescue"
+    },
+    {
+      "number": 58,
+      "id": "P58",
+      "route": "packages/rescue/pages/fund/index",
+      "title": "公开救助基金池",
+      "query": "",
+      "states": "公开列表／余额／投票中／已结束／资金结果",
+      "steps": "Q.rescue() 后查看；只读公开基金，不把它当我的救助。",
+      "refs": [
+        {
+          "id": "83:14289",
+          "title": "救助基金池",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-14289",
+          "kind": "正式 map"
+        }
+      ],
+      "issue": "",
+      "formal": [
+        {
+          "key": "rescue.rescue_fund",
+          "name": "救助评审列表",
+          "route": "packages/rescue/pages/fund/index",
+          "node": "83:14289",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "packages/rescue/pages/fund/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/rescue/pages/fund/index"
+    },
+    {
+      "number": 59,
+      "id": "P59",
+      "route": "packages/rescue/pages/detail/index",
+      "title": "公开救助详情",
+      "query": "rescueId=vqa-rescue",
+      "states": "详情／证据／证实入口／缺 ID／未知 ID",
+      "steps": "Q.rescue() 后进入；点击证实列表再新增证实。",
+      "refs": [
+        {
+          "id": "83:13477",
+          "title": "救助详情",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-13477",
+          "kind": "正式 map"
+        }
+      ],
+      "issue": "",
+      "formal": [
+        {
+          "key": "rescue.rescue_detail",
+          "name": "救助详情",
+          "route": "packages/rescue/pages/detail/index",
+          "node": "83:13477",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "救助详情需要调用方提供真实 rescueId；不能由 mode 选择第一条演示记录。"
+          }
+        }
+      ],
+      "source": "packages/rescue/pages/detail/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/rescue/pages/detail/index?rescueId=vqa-rescue"
+    },
+    {
+      "number": 60,
+      "id": "P60",
+      "route": "packages/rescue/pages/review/list/index",
+      "title": "我的救助审核",
+      "query": "",
+      "states": "待处理／已处理／无身份",
+      "steps": "Q.rescue(\"platform_approved\",\"pending\",\"funding_pending\",\"reviewer\") 后进入，点记录进入详情。",
+      "refs": [],
+      "issue": "无独立审核列表精确节点，不以基金池代替",
+      "formal": [],
+      "source": "packages/rescue/pages/review/list/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/rescue/pages/review/list/index"
+    },
+    {
+      "number": 61,
+      "id": "P61",
+      "route": "packages/rescue/pages/review/detail/index",
+      "title": "救助审核详情",
+      "query": "reviewItemId=vqa-rescue-review&rescueId=vqa-rescue&businessType=rescue",
+      "states": "pending 可操作→approved/rejected 不可重复；缺身份/无归属",
+      "steps": "先用救助 reviewer 夹具；只对 vqa 记录本地通过/拒绝，再返回列表检查。",
+      "refs": [
+        {
+          "id": "83:13230",
+          "title": "待投票",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-13230",
+          "kind": "正式 map"
+        }
+      ],
+      "issue": "待投票稿为职责参考；本地通过/否决与票选布局差异需逐页记录",
+      "formal": [
+        {
+          "key": "jury.pending_detail",
+          "name": "待投票",
+          "route": "packages/rescue/pages/review/detail/index",
+          "node": "83:13230",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {
+            "reviewItemId": "jury-item-001",
+            "businessType": "rescue"
+          },
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "待投票视图依赖 juryStorage 的 jury-item-001（救助）记录。"
+          }
+        }
+      ],
+      "source": "packages/rescue/pages/review/detail/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/rescue/pages/review/detail/index?reviewItemId=vqa-rescue-review&rescueId=vqa-rescue&businessType=rescue"
+    },
+    {
+      "number": 62,
+      "id": "P62",
+      "route": "packages/rescue/pages/proof/list/index",
+      "title": "救助证实列表",
+      "query": "rescueId=vqa-rescue",
+      "states": "无证实／有证实／已证实",
+      "steps": "Q.rescue()；空证实默认；有内容需从本地证实表单完成一条测试证实再返回。",
+      "refs": [
+        {
+          "id": "83:15264",
+          "title": "证实列表详情",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-15264",
+          "kind": "正式 map"
+        }
+      ],
+      "issue": "",
+      "formal": [
+        {
+          "key": "rescue.rescue_evidence_list",
+          "name": "证实列表详情",
+          "route": "packages/rescue/pages/proof/list/index",
+          "node": "83:15264",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "证实列表需要调用方提供真实 rescueId。"
+          }
+        }
+      ],
+      "source": "packages/rescue/pages/proof/list/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/rescue/pages/proof/list/index?rescueId=vqa-rescue"
+    },
+    {
+      "number": 63,
+      "id": "P63",
+      "route": "packages/rescue/pages/proof/create/index",
+      "title": "我也来证实",
+      "query": "rescueId=vqa-rescue",
+      "states": "空输入／已填写／协议／重复提交",
+      "steps": "Q.rescue() 后从详情证实进入；仅虚构姓名证件与本地数据，不做真实提交。",
+      "refs": [
+        {
+          "id": "83:17049",
+          "title": "我也来证实",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-17049",
+          "kind": "正式 map"
+        }
+      ],
+      "issue": "证实者身份仍需接入统一 actor；本次不宣称完整权限验收",
+      "formal": [
+        {
+          "key": "rescue.rescue_evidence_form",
+          "name": "我也来证实",
+          "route": "packages/rescue/pages/proof/create/index",
+          "node": "83:17049",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "证实表单需要调用方提供真实 rescueId。"
+          }
+        }
+      ],
+      "source": "packages/rescue/pages/proof/create/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/rescue/pages/proof/create/index?rescueId=vqa-rescue"
+    },
+    {
+      "number": 64,
+      "id": "P64",
+      "route": "packages/rescue/pages/mine/index",
+      "title": "我发起的救助",
+      "query": "",
+      "states": "本人有记录／空／无身份",
+      "steps": "Q.rescue() 默认 applicant；Q.actor(\"stranger\") 看空；Q.logout() 看拒绝。",
+      "refs": [],
+      "issue": "无独立精确节点",
+      "formal": [],
+      "source": "packages/rescue/pages/mine/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/rescue/pages/mine/index"
+    },
+    {
+      "number": 65,
+      "id": "P65",
+      "route": "packages/rescue/pages/apply/index",
+      "title": "救助申请长表单",
+      "query": "yardId=1",
+      "states": "长表单／金额／协议／媒体／错误域",
+      "steps": "固定 rescue；source=adoption 或 state=pick-cats 应拒绝。仅验表单和本地写边界。",
+      "refs": [
+        {
+          "id": "83:10978",
+          "title": "领养申请",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-10978",
+          "kind": "正式 map"
+        }
+      ],
+      "issue": "本地救助申请已绑定当前可信 actor，并对跨身份/非法来源 fail-closed；仍需运行态核对正常申请→本人进度",
+      "formal": [
+        {
+          "key": "rescue.rescue_apply",
+          "name": "救助申请长表单",
+          "route": "packages/rescue/pages/apply/index",
+          "node": "83:10978",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "packages/rescue/pages/apply/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/rescue/pages/apply/index?yardId=1"
+    },
+    {
+      "number": 66,
+      "id": "P66",
+      "route": "packages/rescue/pages/result/index",
+      "title": "救助申请结果",
+      "query": "rescueId=vqa-rescue&outcome=application-submitted",
+      "states": "有效 ID／缺 ID",
+      "steps": "Q.rescue() 后进入；结果 UI 复用不等于申请真的由当前用户创建。",
+      "refs": [],
+      "issue": "无独立精确救助结果节点，不能将领养结果冒充已批准对应",
+      "formal": [],
+      "source": "packages/rescue/pages/result/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/rescue/pages/result/index?rescueId=vqa-rescue&outcome=application-submitted"
+    },
+    {
+      "number": 67,
+      "id": "P67",
+      "route": "packages/feeding/pages/mine/index",
+      "title": "我的投喂",
+      "query": "",
+      "states": "默认／state=30 空态；筛选",
+      "steps": "从我的投喂进入；本页仍用演示订单列表，不等于 vqa 持久订单可见性闭环。",
+      "refs": [
+        {
+          "id": "83:23734",
+          "title": "用户-我的订单",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-23734",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:9197",
+          "title": "我的投粮",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-9197",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "隐藏偏好未证明被所有列表消费",
+      "formal": [],
+      "source": "packages/feeding/pages/mine/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/feeding/pages/mine/index"
+    },
+    {
+      "number": 68,
+      "id": "P68",
+      "route": "packages/feeding/pages/yard-orders/index",
+      "title": "小院投喂订单",
+      "query": "yardId=1",
+      "states": "院主列表／筛选／订单详情",
+      "steps": "从管理名册投喂入口进入；query 的 yardOwnerId 不是权限凭证。",
+      "refs": [
+        {
+          "id": "83:9255",
+          "title": "院主-投粮订单",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-9255",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "列表仍为 mock reader，需与持久详情和 actor 对齐",
+      "formal": [],
+      "source": "packages/feeding/pages/yard-orders/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/feeding/pages/yard-orders/index?yardId=1"
+    },
+    {
+      "number": 69,
+      "id": "P69",
+      "route": "packages/feeding/pages/order/detail/index",
+      "title": "投喂与赠礼订单详情",
+      "query": "orderId=vqa-order",
+      "states": "持久 shipping / delivered / completed；隐藏／恢复；旧 variant=90 / 91 / 92",
+      "steps": "Q.order(status) 后打开持久详情。旧视觉分支仅持久读取失败时触发；从 mock 列表点击取得有效 mock orderId 再加 variant，不能以 variant 强制覆盖持久记录。",
+      "refs": [
+        {
+          "id": "83:16557",
+          "title": "院主-投粮详情",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-16557",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:16705",
+          "title": "云家长-投粮详情",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-16705",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "62:36782",
+          "title": "投粮订单详情（旧稿 90）",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-36782",
+          "kind": "正式 map 保留旧稿"
+        },
+        {
+          "id": "62:36940",
+          "title": "院主-投粮详情",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-36940",
+          "kind": "正式 map 保留旧稿"
+        },
+        {
+          "id": "62:37087",
+          "title": "云家长-投粮详情",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-37087",
+          "kind": "正式 map 保留旧稿"
+        }
+      ],
+      "issue": "投喂与领养赠礼订单已使用带 actor/type 的持久 reader，隐藏状态可恢复；仍需运行态核对详情深链和视觉状态",
+      "formal": [
+        {
+          "key": "feeding_order_detail.variant_90",
+          "name": "投粮订单详情（旧稿 90）",
+          "route": "packages/feeding/pages/order/detail/index",
+          "node": "62:36782",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {
+            "variant": 90
+          },
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "订单详情必须由调用方提供 orderId；variant 只选择本地/mock 展示变体，不授予订单读取或反馈权限。"
+          }
+        },
+        {
+          "key": "feeding_order_detail.variant_91",
+          "name": "院主-投粮详情",
+          "route": "packages/feeding/pages/order/detail/index",
+          "node": "62:36940",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {
+            "variant": 91,
+            "perspective": "yard-manager"
+          },
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "反馈入口仍由可信订单关系决定；query 仅定位本地/mock 视觉态。"
+          }
+        },
+        {
+          "key": "feeding_order_detail.variant_92",
+          "name": "云家长-投粮详情",
+          "route": "packages/feeding/pages/order/detail/index",
+          "node": "62:37087",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {
+            "variant": 92
+          },
+          "runtime": {
+            "status": "fixture-required",
+            "reason": "variant=92 仅承载本地/mock 云养与物流展示；orderId/recordId 仍需显式传入。"
+          }
+        }
+      ],
+      "source": "packages/feeding/pages/order/detail/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/feeding/pages/order/detail/index?orderId=vqa-order"
+    },
+    {
+      "number": 70,
+      "id": "P70",
+      "route": "packages/feeding/pages/result/index",
+      "title": "反馈结果展示",
+      "query": "orderId=vqa-order&dynamicId=vqa-dynamic&outcome=feedback-published",
+      "states": "feedback-published／缺 dynamicId 空态／返回动态深链",
+      "steps": "从发布编辑器选择订单和猫咪后提交；必须核对正文、媒体、证据和 dynamicId 再进入结果页。",
+      "refs": [],
+      "issue": "动态/反馈结果职责已拆分；不把静态成功文案当作持久写入证明",
+      "formal": [],
+      "source": "packages/feeding/pages/result/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/feeding/pages/result/index?orderId=vqa-order&dynamicId=vqa-dynamic&outcome=feedback-published"
+    },
+    {
+      "number": 71,
+      "id": "P71",
+      "route": "pages/dev/paw-icon-lab",
+      "title": "图标实验室（开发）",
+      "query": "",
+      "states": "图标集合／大小与光学校准",
+      "steps": "仅开发自定义编译；不列入生产页面视觉完成数。",
+      "refs": [],
+      "issue": "开发验收工具，无业务 Figma 页面",
+      "formal": [],
+      "source": "pages/dev/paw-icon-lab.vue",
+      "dev": true,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/pages/dev/paw-icon-lab"
+    },
+    {
+      "number": 72,
+      "id": "P72",
+      "route": "pages/dev/yard-feed-icon-lab",
+      "title": "投喂图标实验室（开发）",
+      "query": "",
+      "states": "投喂图标样例",
+      "steps": "仅开发自定义编译。",
+      "refs": [],
+      "issue": "开发验收工具，无业务 Figma 页面",
+      "formal": [],
+      "source": "pages/dev/yard-feed-icon-lab.vue",
+      "dev": true,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/pages/dev/yard-feed-icon-lab"
+    },
+    {
+      "number": 73,
+      "id": "P73",
+      "route": "pages/dev/governance-fixture",
+      "title": "治理夹具（开发）",
+      "query": "",
+      "states": "院主／云家长／评审／救助审核／三类编辑",
+      "steps": "旧夹具按钮会 seedAll 覆盖六个 PAWHOME_* 集合，清空按钮删除整 key。优先使用本文安全备份助手；若使用旧页先导出相关数据。",
+      "refs": [],
+      "issue": "非业务画板；不能把夹具成功视为普通入口可用",
+      "formal": [],
+      "source": "pages/dev/governance-fixture.vue",
+      "dev": true,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/pages/dev/governance-fixture"
+    },
+    {
+      "number": 74,
+      "id": "P74",
+      "route": "packages/discovery/pages/city-picker/index",
+      "title": "发现城市选择",
+      "query": "current=长沙市",
+      "states": "当前城市／搜索／选择",
+      "steps": "从首页城市入口进入；直接编译只能验展示，选择回传须从首页打开。",
+      "refs": [
+        {
+          "id": "83:8133",
+          "title": "城市选择",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-8133",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "C0 已迁移到 discovery canonical 页面；仍需运行与视觉验收",
+      "formal": [],
+      "source": "packages/discovery/pages/city-picker/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/discovery/pages/city-picker/index?current=长沙市"
+    },
+    {
+      "number": 75,
+      "id": "P75",
+      "route": "packages/discovery/pages/search/index",
+      "title": "搜索",
+      "query": "state=dynamic",
+      "states": "state=dynamic / yard / user / empty / idle_delete；popup=delete；无 state 为待搜索",
+      "steps": "分别编译这些 state；历史删除确认用 popup=delete；keyword 输入与返回另验。",
+      "refs": [
+        {
+          "id": "83:8470",
+          "title": "搜索-小院",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-8470",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:8809",
+          "title": "搜索-用户",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-8809",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:4109",
+          "title": "搜索-空状态",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-4109",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:8940",
+          "title": "搜索-待搜索",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-8940",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:9028",
+          "title": "搜索-待搜索-删除",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-9028",
+          "kind": "正式 map"
+        },
+        {
+          "id": "83:18604",
+          "title": "搜索-待搜索-全部删除确认弹窗",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-18604",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "62:28350",
+          "title": "搜索-动态",
+          "url": "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/?node-id=62-28350",
+          "kind": "正式 map 保留旧稿"
+        }
+      ],
+      "issue": "新稿无已确认动态有结果对应；旧稿 62:28350 保留，不以空态替代。C0 canonical 迁移已完成",
+      "formal": [
+        {
+          "key": "search.dynamic",
+          "name": "搜索-动态",
+          "route": "packages/discovery/pages/search/index",
+          "node": "62:28350",
+          "file": "03pt0RiVfBFCvn4PsIyezk",
+          "query": {},
+          "runtime": null
+        },
+        {
+          "key": "search.yard",
+          "name": "搜索-小院",
+          "route": "packages/discovery/pages/search/index",
+          "node": "83:8470",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        },
+        {
+          "key": "search.user",
+          "name": "搜索-用户",
+          "route": "packages/discovery/pages/search/index",
+          "node": "83:8809",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        },
+        {
+          "key": "search.idle",
+          "name": "搜索-待搜索",
+          "route": "packages/discovery/pages/search/index",
+          "node": "83:8940",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        },
+        {
+          "key": "search.idle_delete",
+          "name": "搜索-待搜索-删除",
+          "route": "packages/discovery/pages/search/index",
+          "node": "83:9028",
+          "file": "ikwcujfbxtNcjk9tjGjKx8",
+          "query": {},
+          "runtime": null
+        }
+      ],
+      "source": "packages/discovery/pages/search/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/discovery/pages/search/index?state=dynamic"
+    },
+    {
+      "number": 76,
+      "id": "P76",
+      "route": "packages/discovery/pages/ranking/index",
+      "title": "投喂排行榜",
+      "query": "",
+      "states": "列表、榜首、滚动",
+      "steps": "首页→排行榜；默认可直达。",
+      "refs": [
+        {
+          "id": "83:15354",
+          "title": "投喂排行榜",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-15354",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "C0 已迁移到 discovery canonical 页面；仍需运行与视觉验收",
+      "formal": [],
+      "source": "packages/discovery/pages/ranking/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/discovery/pages/ranking/index"
+    },
+    {
+      "number": 77,
+      "id": "P77",
+      "route": "packages/message/pages/list/index",
+      "title": "持久通知列表",
+      "query": "category=order",
+      "states": "category=order / interaction / system / activity；有数据／空／无身份／记录失效；messageId 定位",
+      "steps": "先 Q.message()；再打开页面，点击消息。interaction 用 category=interaction。Q.logout() 后重进验无身份；旧 messageDetail 带 messageId 应直接打开同一列表解析链。",
+      "refs": [
+        {
+          "id": "83:22735",
+          "title": "服务订单消息",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-22735",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:22814",
+          "title": "互动消息",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-22814",
+          "kind": "本次精确节点元数据参考"
+        },
+        {
+          "id": "83:22970",
+          "title": "活动消息",
+          "url": "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/?node-id=83-22970",
+          "kind": "本次精确节点元数据参考"
+        }
+      ],
+      "issue": "统一承载原分类展示与持久消息读取；Figma 节点仅作类别内容参考",
+      "formal": [],
+      "source": "packages/message/pages/list/index.vue",
+      "dev": false,
+      "method": "普通页：wx.navigateTo；栈满用 wx.redirectTo，返回验收从正常入口进入",
+      "url": "/packages/message/pages/list/index?category=order"
+    }
+  ]
+}

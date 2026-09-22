@@ -119,17 +119,6 @@ export default {
 		} catch (e) { }
 		// #endif
 	},
-	onShow() {
-		// #ifdef MP-WEIXIN
-		this.$nextTick(() => {
-			const cur = getCurrentPages().slice(-1)[0]
-			if (cur && typeof cur.getTabBar === 'function') {
-				const tb = cur.getTabBar()
-				if (tb && typeof tb.setData === 'function') tb.setData({ selected: 2 })
-			}
-		})
-		// #endif
-	},
 	methods: {
 		getUnreadCount(type) {
 			return getMessageUnreadCount(type)
@@ -140,19 +129,8 @@ export default {
 		goBack() {
 			goBackSmart({ fallbackUrl: '/pages/index/index' })
 		},
-		openSubscribeHint() {
-			uni.showToast({ title: '请在设置中开启消息通知', icon: 'none' })
-		},
 		onRowTap(row) {
-			if (row.type === 'pet') {
-				uni.navigateTo({ url: '/pages/adoption/extras?mode=support' })
-				return
-			}
-			if (['service', 'interaction', 'activity'].includes(row.type)) {
-				uni.navigateTo({ url: '/pages/messageDetail/index?type=' + encodeURIComponent(row.type) })
-				return
-			}
-			uni.showToast({ title: row.title, icon: 'none' })
+			uni.navigateTo({ url: '/packages/message/pages/list/index?category=' + encodeURIComponent(row.type) })
 		}
 	}
 }

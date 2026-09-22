@@ -4,9 +4,12 @@
 const fs = require('fs')
 const path = require('path')
 
-const ROOT = process.cwd()
+const ROOT = path.resolve(process.env.PAWHOME_PROJECT_ROOT || process.cwd())
 const BASELINE_PATH = path.join(ROOT, 'config', 'native-ui-legacy-baseline.json')
-const SCAN_ROOTS = ['pages', 'components', 'utils']
+// Keep platform-sensitive code in scope when pages move into packages. Missing
+// roots are intentionally ignored so small fixtures and partial checkouts stay
+// checkable.
+const SCAN_ROOTS = ['pages', 'components', 'utils', 'packages', 'services', 'navigation']
 const NATIVE_LAYOUT_OWNER = 'utils/navLayout.js'
 const EXTENSIONS = new Set(['.vue', '.js', '.cjs', '.mjs', '.ts', '.tsx', '.css', '.scss', '.less'])
 const STRICT = process.argv.includes('--strict')

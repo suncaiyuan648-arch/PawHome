@@ -46,10 +46,10 @@ VISUAL
 对 PawHome 动态详情做运行时 Figma QA。
 
 default:
-pages/dynamicDetail/index?yardId=1
+packages/dynamic/pages/detail/index?yardId=1
 
 empty:
-pages/dynamicDetail/index?yardId=1&state=comments-empty
+packages/dynamic/pages/detail/index?yardId=1&state=comments-empty
 
 读取动态详情.md 和复用组件.md。
 

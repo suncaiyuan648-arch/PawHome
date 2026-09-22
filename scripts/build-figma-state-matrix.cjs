@@ -1,173 +1,388 @@
+#!/usr/bin/env node
+
+/*
+ * Build the repository Figma state index.
+ *
+ * The YAML map is the only source for exact Figma node IDs and state names.
+ * pages.json is used only to validate that a mapped runtime route is registered
+ * in this checkout. This script deliberately does not read screenshot metrics,
+ * exported CSVs, or an adjacent checkout.
+ */
+
 const fs = require('fs')
 const path = require('path')
+const JSON5 = require('json5')
+const YAML = require('yaml')
 
-const repoRoot = path.resolve(__dirname, '..', '..')
-const seedPath = path.join(repoRoot, 'docs', 'figma-export', 'parsed', 'route-mapping-seed.csv')
-const pagesPath = path.join(repoRoot, 'PawHome', 'pages.json')
-const outputPath = path.join(repoRoot, 'docs', 'design-audit', 'figma-state-matrix.md')
+const repoRoot = path.resolve(__dirname, '..')
+const mapPath = path.join(repoRoot, 'docs', 'design', 'figma-map.yaml')
+const pagesPath = path.join(repoRoot, 'pages.json')
+const reportDir = path.join(repoRoot, '.artifacts', 'architecture-governance')
+const markdownPath = path.join(reportDir, 'figma-state-matrix.md')
+const jsonPath = path.join(reportDir, 'figma-state-matrix.json')
 
-function parseCsvLine(line) {
-  const cells = []
-  const re = /("(?:[^"]|"")*"|[^,]*)(?:,|$)/g
-  let match
-  while ((match = re.exec(line)) && cells.length < 11) {
-    let value = match[1] || ''
-    if (value.startsWith('"')) value = value.slice(1, -1).replace(/""/g, '"')
-    cells.push(value)
-    if (match.index + match[0].length >= line.length) break
-  }
-  return cells
+function readText(filePath) {
+  return fs.readFileSync(filePath, 'utf8')
 }
 
-const rows = fs.readFileSync(seedPath, 'utf8').trim().split(/\r?\n/).slice(1).map((line, index) => {
-  const cells = parseCsvLine(line)
-  return { index: index + 1, nodeId: cells[0], name: cells[1], width: Number(cells[3]), height: Number(cells[4]) }
-})
-
-const pages = JSON.parse(fs.readFileSync(pagesPath, 'utf8'))
-const routeSet = new Set(pages.pages.map(item => '/' + item.path))
-for (const pack of pages.subPackages || []) {
-  for (const item of pack.pages || []) routeSet.add('/' + pack.root + '/' + item.path)
+function hasOwn(value, key) {
+  return Object.prototype.hasOwnProperty.call(value, key)
 }
 
-const metricsPath = path.join(repoRoot, 'docs', 'design-audit', 'visual-audit-metrics.json')
-const visualMetrics = fs.existsSync(metricsPath) ? JSON.parse(fs.readFileSync(metricsPath, 'utf8')) : []
-const metricByIndex = new Map(visualMetrics.map(item => [item.index, item]))
-const verified = new Set(visualMetrics.filter(item => item.passed).map(item => item.index))
-
-function target(index, name) {
-  const exact = {
-    1: ['/pages/index/index?state=dynamic', 'dynamic'], 2: ['/pages/index/index?state=dynamic-empty', 'dynamic-empty'],
-    3: ['/pages/search/index?state=empty', 'empty'], 4: ['/pages/index/index?state=filter-sheet', 'filter-sheet'],
-    5: ['/pages/yard/createCatYard?kind=cat', 'cat'], 6: ['/pages/yard/createCatYard?kind=dog', 'dog'],
-    7: ['/pages/yard/createCatYard?kind=cat&state=recorded', 'recorded'],
-    8: ['/pages/yard/yardCats?state=publish-entry', 'publish-entry'],
-    9: ['/pages/yard/yardCats?state=long-list', 'long-list'], 10: ['/pages/meMore/helpedAnimals', 'default'],
-    11: ['/pages/index/index?state=yard-tab', 'yard-tab'], 12: ['/pages/index/index?state=dynamic-scrolled', 'dynamic-scrolled'],
-    13: ['/pages/yard/catGuide', 'default'], 18: ['/pages/dynamicDetail/index?yardId=1', 'comments'],
-    19: ['/pages/dynamicDetail/index?yardId=1&state=comments-empty', 'comments-empty'], 20: ['/pages/citySelect/index', 'default'],
-    28: ['/pages/index/index', 'publish-entry-sheet'], 32: ['/pages/meMore/yardFeedOrders?state=owner', 'owner'],
-    33: ['/pages/user/profile?nickname=%E5%B0%A7%E5%B0%A7&state=dynamic-long', 'dynamic-long'], 34: ['/pages/user/profile?nickname=%E5%B0%A7%E5%B0%A7', 'review'],
-    41: ['/pages/publishDynamic/postFeed', 'default'], 58: ['/pages/yard/juryDetail?id=jury-1', 'pending'],
-    59: ['/pages/feature/index?mode=rescue-detail', 'default'], 60: ['/pages/yard/juryDetail?id=jury-1&state=voted', 'voted'],
-    61: ['/pages/yard/juryPanel', 'default'], 62: ['/pages/yard/rescueReview', 'default'],
-    71: ['/pages/leaderboard/index', 'default'], 72: ['/pages/auth/verifyResult?status=success', 'face'],
-    73: ['/pages/feature/index?mode=invite', 'default'], 74: ['/pages/auth/realName', 'default'],
-    75: ['/pages/publishDynamic/postFeedOrder', 'order-sheet'], 76: ['/pages/publishDynamic/postSuccess', 'default'],
-    77: ['/pages/feature/index?mode=album', 'context-menu'], 78: ['/pages/yard/yardCertify?state=99', 'state-99'],
-    79: ['/pages/meMore/annualReport', 'default'], 86: ['/pages/yard/yardCats?state=managed&returnHome=1', 'managed-after-create'],
-    87: ['/pages/publishDynamic/postSuccess?state=feeding', 'feeding-success'], 88: ['/pages/adoption/pickCats', 'sheet'],
-    93: ['/pages/yard/addKitten', 'cat'], 95: ['/pages/yard/addKitten?type=dog', 'dog'],
-    96: ['/pages/yard/addKitten?state=more', 'cat-more'], 100: ['/pages/yard/addKitten?type=dog&state=more', 'dog-more'],
-    101: ['/pages/auth/realName?popup=real-name', 'real-name-modal'], 102: ['/pages/auth/realName?popup=privacy', 'privacy-modal'],
-    103: ['/pages/yard/adoptionAudit?mode=ownerReview&popup=agree', 'agree-modal'], 104: ['/pages/yard/adoptionAudit?mode=ownerConfirm&popup=agree', 'agree-modal'],
-    105: ['/pages/yard/adoptionAudit?mode=ownerReview&popup=reject', 'reject-modal'], 106: ['/pages/yard/juryDetail?id=jury-1&popup=vote-real', 'vote-real-result'],
-    107: ['/pages/yard/juryDetail?id=jury-1&popup=vote-fake', 'vote-fake-result'], 108: ['/pages/meMore/adoptionFlow?id=demo-pending&frame=54&popup=contact', 'contact'],
-    109: ['/pages/commodityDetails/index?id=1&state=reply-idle', 'reply-idle'], 110: ['/pages/commodityDetails/index?id=1&state=reply-input', 'reply-input'],
-    111: ['/pages/commodityDetails/index?id=1&state=feed-popup', 'feed-popup'], 112: ['/pages/commodityDetails/index?id=1&popup=help-adopt', 'adoption-help'],
-    113: ['/pages/commodityDetails/index?id=1&popup=feedback-stat', 'feedback-help'], 114: ['/pages/adoption/extras?mode=quota&popup=insufficient', 'insufficient-modal'],
-    115: ['/pages/commodityDetails/index?id=1&popup=food-stat', 'food-received'], 116: ['/pages/meMore/feedingDetail?id=demo&popup=food-summary', 'food-summary'],
-    117: ['/pages/search/index?popup=delete', 'delete-confirm'], 118: ['/pages/search/index?popup=delete', 'delete-confirm-alt'],
-    119: ['/pages/yard/addKitten?popup=status', 'status-sheet'], 120: ['/pages/yard/addKitten?popup=value', 'value-sheet'],
-    121: ['/pages/yard/addKitten?popup=gender', 'gender-sheet'], 122: ['/pages/yard/addKitten?popup=sterilization', 'sterilization-sheet'],
-    123: ['/pages/yard/addKitten?popup=vaccine', 'vaccine-sheet'], 124: ['/pages/yard/addKitten?popup=personality', 'personality-sheet'],
-    125: ['/pages/yard/createCatYard?popup=voice-permission', 'voice-permission-modal'], 126: ['/pages/yard/createCatYard?popup=voice-limit', 'voice-limit-modal'],
-    127: ['/pages/adoption/petDetail?id=demo&popup=adopt-limit', 'adopt-limit-modal'], 128: ['/pages/yard/juryDetail?id=jury-1&popup=vote-limit', 'vote-limit-modal'],
-    129: ['/pages/yard/breedPicker?popup=supplement', 'supplement-modal'], 130: ['/pages/yard/breedPicker?popup=supplement-input', 'supplement-input'],
-    131: ['/pages/yard/breedPicker?popup=supplement-success', 'supplement-success'], 132: ['/pages/auth/verifyResult?status=fail', 'face-verify-fail'],
-    149: ['/pages/meMore/settings', 'default'], 150: ['/pages/me/index', 'default'],
-    151: ['/pages/me/index?state=drawer', 'more-sheet'], 152: ['/pages/meMore/myAdoption', 'list'],
-    153: ['/pages/meMore/myAdoption?state=empty', 'empty'], 154: ['/pages/auth/login', 'default'],
-    155: ['/pages/auth/bindPhone', 'default'], 156: ['/pages/auth/smsVerify', 'default'],
-    157: ['/pages/me/index?state=profile-upload', 'logged-profile'], 158: ['/pages/message/index', 'default'],
-    159: ['/pages/meMore/addShippingAddress?state=select', 'edit'], 160: ['/pages/messageDetail/index?type=service', 'default'],
-    161: ['/pages/messageDetail/index?type=interaction', 'default'], 162: ['/pages/adoption/extras?mode=support', 'default'],
-    163: ['/pages/messageDetail/index?type=activity', 'default'], 164: ['/pages/adoption/extras?mode=quota', 'default'],
-    165: ['/pages/adoption/extras?mode=quota-detail', 'default'], 166: ['/pages/yard/yardCats?state=roster', 'yard'],
-    167: ['/pages/meMore/myCloudPets', 'mine-list'], 168: ['/pages/yard/yardCats?state=status', 'alternate'],
-    169: ['/pages/meMore/myAssets?mode=pets', 'default'], 170: ['/pages/meMore/myAssets?mode=medals', 'default'],
-    171: ['/pages/meMore/myAssets?mode=map', 'default'], 172: ['/pages/meMore/myAssets?mode=new', 'default']
-  }
-  if (exact[index]) return exact[index]
-  if (index >= 14 && index <= 17) {
-    const state = ['dynamic', 'dynamic-empty', 'feeding', 'dynamic-expanded'][index - 14]
-    return [`/pages/commodityDetails/index?id=1&state=${state}`, state]
-  }
-  if (index >= 21 && index <= 22) return [`/pages/yard/breedPicker?kind=${index === 21 ? 'cat' : 'dog'}`, index === 21 ? 'cat' : 'dog']
-  if (index >= 23 && index <= 27) {
-    const state = ['dynamic', 'yard', 'user', 'idle', 'deleting'][index - 23]
-    return [`/pages/search/index?state=${state}`, state]
-  }
-  if (index >= 29 && index <= 31) return [index === 31 ? '/pages/meMore/yardFeedOrders?state=31' : `/pages/meMore/myFeedings?state=${index}`, `state-${index}`]
-  if (index >= 35 && index <= 37) return [`/pages/adoption/petDetail?id=demo&state=${index}`, `variant-${index}`]
-  if (index >= 38 && index <= 40) {
-    const state = ['dynamic', 'yard', 'empty'][index - 38]
-    return [`/pages/meMore/browsingHistory?state=${state}`, state]
-  }
-  if (index >= 42 && index <= 43) return [`/pages/adoption/adoptApply?state=${index === 42 ? 'compact' : 'long'}`, index === 42 ? 'compact' : 'long']
-  if (index >= 44 && index <= 57) return [`/pages/meMore/adoptionFlow?frame=${index}`, `flow-${index}`]
-  if (index >= 63 && index <= 64) return [`/pages/meMore/level?variant=${index}`, `variant-${index}`]
-  if (index === 65 || index === 66) return [`/pages/user/followFans?tab=${index === 65 ? 'fans' : 'follow'}`, 'default']
-  if (index === 67) return ['/pages/meMore/levelRules', 'default']
-  if (index === 68) return ['/pages/publishDynamic/postFeed?state=alternate', 'alternate']
-  if (index === 69) return ['/pages/meMore/adoptionConfirm', 'confirm']
-  if (index === 70) return ['/pages/meMore/adoptionProofList', 'proof-list']
-  if (index >= 80 && index <= 85) return [`/pages/adoption/result?variant=${index}`, `result-${index}`]
-  if (index === 89) return ['/pages/adoption/submitOrder?state=figma', 'order-address-sheet']
-  if (index >= 90 && index <= 92) return [`/pages/meMore/feedingDetail${index}`, `variant-${index}`]
-  if (index === 94) return ['/pages/yard/adoptionAudit?mode=proof', 'default']
-  if (index >= 97 && index <= 99) return [`/pages/yard/yardCertify?state=${index}`, `state-${index}`]
-  if (index >= 133 && index <= 136) return [index % 2 ? `/pages/meMore/addShippingAddress${index >= 135 ? '?state=typing' : ''}` : `/pages/meMore/addServiceAddress${index >= 135 ? '?state=typing' : ''}`, index >= 135 ? 'typing' : 'default']
-  if (index === 137) return ['/pages/yard/createCatYard?popup=location', 'location-picker']
-  if (index === 138) return ['/pages/meMore/shippingAddress', 'shipping']
-  if (index === 139) return ['/pages/meMore/shippingAddress?kind=service', 'service']
-  if (index === 140) return ['/pages/meMore/shippingAddress?state=pick', 'pick']
-  if (index === 141) return ['/pages/meMore/shippingAddress?state=empty', 'empty']
-  if (index === 142) return ['/pages/meMore/shippingAddress?state=manage', 'shipping-manage']
-  if (index === 143) return ['/pages/meMore/shippingAddress?kind=service&state=manage', 'service-manage']
-  if (index === 144) return ['/pages/meMore/regionSelector?state=province', 'province']
-  if (index === 145) return ['/pages/meMore/regionSelector?state=back', 'back-to-province']
-  if (index === 146) return ['/pages/meMore/regionSelector?state=street', 'street']
-  if (index === 147) return ['/pages/meMore/regionSelector?state=city', 'city']
-  if (index === 148) return ['/pages/meMore/shippingAddress?state=delete', 'delete-confirm']
-  return ['', name]
+function isPlainObject(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
-const matrix = rows.map(row => {
-  const [url, state] = target(row.index, row.name)
-  const base = url.split('?')[0]
-  const routeExists = base ? routeSet.has(base) : false
-  const metric = metricByIndex.get(row.index)
-  const qa = verified.has(row.index) ? `同尺寸复验通过（MAE ${metric.mae}）` : !routeExists ? '缺少路由映射' : metric && metric.sameSize ? `视觉待修正（MAE ${metric.mae}）` : '缺少同尺寸截图'
-  return { ...row, url, state, routeExists, qa }
-})
-
-const counts = {
-  passed: matrix.filter(item => item.qa.startsWith('同尺寸复验通过')).length,
-  visualPending: matrix.filter(item => item.qa.startsWith('视觉待修正')).length,
-  screenshotMissing: matrix.filter(item => item.qa === '缺少同尺寸截图').length,
-  routeMissing: matrix.filter(item => item.qa === '缺少路由映射').length
+function routeFromPageEntry(root, pagePath) {
+  const normalizedRoot = String(root || '').replace(/^\/+|\/+$/g, '')
+  const normalizedPage = String(pagePath || '').replace(/^\/+/, '')
+  return `/${[normalizedRoot, normalizedPage].filter(Boolean).join('/')}`
 }
 
-const lines = [
-  '# Figma 172 画板路由与状态矩阵',
-  '',
-  `生成时间：${new Date().toISOString()}`,
-  '',
-  `- 同尺寸复验通过（MAE ≤ 10）：${counts.passed}`,
-  `- 已有同尺寸截图、视觉待修正：${counts.visualPending}`,
-  `- 缺少同尺寸截图：${counts.screenshotMissing}`,
-  `- 缺少路由映射：${counts.routeMissing}`,
-  '',
-  '> 本矩阵由同尺寸截图自动计算，不再手工勾选。MAE 是整张 RGB 平均绝对像素差；MAE ≤ 10 仅作为当前批次通过门槛，仍需保留并排图人工复核。',
-  '',
-  '| # | Figma 画板 | 节点 | 尺寸 | 目标 URL | 状态 | 当前证据 |',
-  '|---:|---|---|---:|---|---|---|'
-]
-
-for (const item of matrix) {
-  lines.push(`| ${String(item.index).padStart(3, '0')} | ${item.name.replace(/\|/g, '\\|')} | \`${item.nodeId}\` | ${item.width}×${item.height} | ${item.url ? `\`${item.url}\`` : '—'} | ${item.state} | ${item.qa} |`)
+function readRegisteredRoutes(pagesConfig) {
+  const routes = new Set()
+  const add = (root, item) => {
+    if (!item || typeof item.path !== 'string') return
+    routes.add(routeFromPageEntry(root, item.path))
+  }
+  for (const item of Array.isArray(pagesConfig.pages) ? pagesConfig.pages : []) add('', item)
+  const subPackages = Array.isArray(pagesConfig.subPackages)
+    ? pagesConfig.subPackages
+    : Array.isArray(pagesConfig.subpackages)
+      ? pagesConfig.subpackages
+      : []
+  for (const pack of subPackages) {
+    if (!pack || typeof pack !== 'object') continue
+    for (const item of Array.isArray(pack.pages) ? pack.pages : []) add(pack.root, item)
+  }
+  return routes
 }
 
-fs.writeFileSync(outputPath, lines.join('\n') + '\n', 'utf8')
-console.log(`wrote ${outputPath}`)
+function validateQuery(query, context) {
+  const errors = []
+  if (query === undefined) return errors
+  if (!isPlainObject(query)) {
+    return [{ code: 'invalid-query', message: `${context}: query must be a plain object` }]
+  }
+  for (const [key, value] of Object.entries(query)) {
+    if (!key || /[&#=?]/.test(key)) {
+      errors.push({ code: 'invalid-query', message: `${context}: query key is invalid: ${key}` })
+    }
+    const validScalar = value === null || ['string', 'number', 'boolean'].includes(typeof value)
+    if (!validScalar || (typeof value === 'number' && !Number.isFinite(value))) {
+      errors.push({ code: 'invalid-query', message: `${context}: query value for ${key} must be a scalar` })
+    }
+  }
+  return errors
+}
+
+function buildTargetUrl(route, query) {
+  const params = Object.entries(query || {})
+  if (!params.length) return route
+  return `${route}?${params.map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value === null ? '' : String(value))}`).join('&')}`
+}
+
+function validateRoute(route, registeredRoutes, context) {
+  const errors = []
+  if (typeof route !== 'string' || !route) {
+    errors.push({ code: 'missing-route', message: `${context}: route is required` })
+    return errors
+  }
+  if (!route.startsWith('/')) errors.push({ code: 'invalid-route', message: `${context}: route must start with /` })
+  if (route.includes('?') || route.includes('#') || route.includes('//') || route.includes('..') || route.includes('\\')) {
+    errors.push({ code: 'invalid-route', message: `${context}: route must be a path without query/hash: ${route}` })
+  }
+  if (!/^\/(?:pages|packages)\/[A-Za-z0-9._~!$'()*+,;=:@%/-]+$/.test(route)) {
+    errors.push({ code: 'invalid-route', message: `${context}: route is outside pages/packages namespaces: ${route}` })
+  } else if (!registeredRoutes.has(route)) {
+    errors.push({ code: 'invalid-route', message: `${context}: route is not registered by pages.json: ${route}` })
+  }
+  return errors
+}
+
+function validateSource(source, context) {
+  const errors = []
+  if (typeof source !== 'string' || !source) {
+    errors.push({ code: 'missing-source', message: `${context}: source is required` })
+    return errors
+  }
+  if (source.startsWith('/') || source.includes('..') || source.includes('\\') || !source.endsWith('.vue')) {
+    errors.push({ code: 'invalid-source', message: `${context}: source must be a repository-relative .vue path: ${source}` })
+    return errors
+  }
+  const absoluteSource = path.resolve(repoRoot, source)
+  if (absoluteSource !== path.join(repoRoot, source) || !fs.existsSync(absoluteSource)) {
+    errors.push({ code: 'invalid-source', message: `${context}: source file does not exist: ${source}` })
+  }
+  return errors
+}
+
+function validateRouteSourcePair(route, source, context) {
+  if (typeof route !== 'string' || typeof source !== 'string') return []
+  if (!/^\/(?:pages|packages)\/[A-Za-z0-9._~!$'()*+,;=:@%/-]+$/.test(route) || route.includes('..') || route.includes('\\')) return []
+  const expectedSource = `${route.slice(1)}.vue`
+  if (source !== expectedSource) {
+    return [{ code: 'source-route-mismatch', message: `${context}: source must match the registered route path (${expectedSource}), got ${source}` }]
+  }
+  return []
+}
+
+function makeEntry(pageKey, page, stateKey, state, registeredRoutes, figma = {}, migration = null) {
+  const context = `pages.${pageKey}.states.${stateKey}`
+  const pageObject = isPlainObject(page) ? page : {}
+  const stateObject = isPlainObject(state) ? state : {}
+  const route = hasOwn(stateObject, 'route') ? stateObject.route : pageObject.route
+  const source = hasOwn(stateObject, 'source') ? stateObject.source : pageObject.source
+  const query = hasOwn(stateObject, 'query') ? stateObject.query : {}
+  const runtime = hasOwn(stateObject, 'runtime') ? stateObject.runtime : null
+  const nodeId = stateObject.node_id
+  const fileKey = stateObject.file_key || figma.file_key || null
+  const designStatus = stateObject.mapping_status || 'not-checked'
+  const errors = []
+
+  if (!isPlainObject(state)) {
+    errors.push({ code: 'invalid-state', message: `${context}: state must be a plain object` })
+  }
+  if (typeof nodeId !== 'string' || !/^\d+:\d+$/.test(nodeId)) {
+    errors.push({ code: 'missing-node', message: `${context}: node_id must be an exact Figma node ID in <page>:<node> form` })
+  }
+  errors.push(...validateRoute(route, registeredRoutes, context))
+  errors.push(...validateSource(source, context))
+  errors.push(...validateRouteSourcePair(route, source, context))
+  errors.push(...validateQuery(query, context))
+  if (runtime !== null && !isPlainObject(runtime)) {
+    errors.push({ code: 'invalid-runtime', message: `${context}: runtime must be a plain object` })
+  }
+  if (migration && stateObject.legacy_node_id) {
+    const reference = migration.entries.find((item) => item.old_node_id === stateObject.legacy_node_id)
+    const retained = reference && reference.status === 'retained-legacy'
+    if (!reference || nodeId !== (retained ? reference.old_node_id : reference.new_node_id) ||
+        fileKey !== (retained ? migration.old_file_key : migration.new_file_key) ||
+        designStatus !== (retained ? 'retained-legacy' : 'verified-metadata')) {
+      errors.push({ code: 'figma-provenance-mismatch', message: `${context}: file_key/node_id/mapping_status disagree with the reviewed migration manifest` })
+    }
+  }
+
+  const status = errors.length ? errors[0].code : 'mapped'
+  return {
+    pageKey,
+    pageName: typeof pageObject.name === 'string' ? pageObject.name : pageKey,
+    stateKey,
+    name: typeof stateObject.name === 'string' ? stateObject.name : stateKey,
+    nodeId: typeof nodeId === 'string' ? nodeId : null,
+    fileKey,
+    figmaUrl: fileKey && typeof nodeId === 'string' ? `https://www.figma.com/design/${encodeURIComponent(fileKey)}?node-id=${nodeId.replace(':', '-')}` : null,
+    designStatus,
+    designNote: stateObject.mapping_note || 'Live design correspondence has not been recorded.',
+    route: typeof route === 'string' ? route : null,
+    source: typeof source === 'string' ? source : null,
+    query: isPlainObject(query) ? query : null,
+    targetUrl: typeof route === 'string' && isPlainObject(query) ? buildTargetUrl(route, query) : null,
+    routeOrigin: hasOwn(stateObject, 'route') ? 'state' : 'page',
+    sourceOrigin: hasOwn(stateObject, 'source') ? 'state' : 'page',
+    runtimeStatus: isPlainObject(runtime) && typeof runtime.status === 'string' ? runtime.status : 'not-checked',
+    runtimeReason: isPlainObject(runtime) && typeof runtime.reason === 'string' ? runtime.reason : 'Route/source mapping only; runtime state was not executed.',
+    status,
+    errors
+  }
+}
+
+function buildReport() {
+  const map = YAML.parse(readText(mapPath))
+  const pagesConfig = JSON5.parse(readText(pagesPath))
+  if (!isPlainObject(map) || !isPlainObject(map.pages)) {
+    throw new Error('figma-map.yaml must contain a pages object')
+  }
+  if (!isPlainObject(pagesConfig)) throw new Error('pages.json must contain an object')
+
+  const registeredRoutes = readRegisteredRoutes(pagesConfig)
+  const figma = isPlainObject(map.figma) ? map.figma : {}
+  let migration = null
+  if (figma.migration_manifest) {
+    const manifestPath = figma.migration_manifest
+    if (typeof manifestPath !== 'string' || path.isAbsolute(manifestPath) || manifestPath.split(/[\\/]/).includes('..')) {
+      throw new Error('migration_manifest must be a repository-relative path')
+    }
+    migration = JSON.parse(readText(path.join(repoRoot, manifestPath)))
+    if (!Array.isArray(migration.entries) || migration.new_file_key !== figma.file_key) throw new Error('Invalid Figma migration manifest')
+  }
+  const entries = []
+  const componentNodes = []
+  for (const [pageKey, page] of Object.entries(map.pages)) {
+    if (!isPlainObject(page)) {
+      entries.push(makeEntry(pageKey, page, '<page>', page, registeredRoutes, figma, migration))
+      continue
+    }
+    if (isPlainObject(page.component_nodes)) {
+      for (const [key, reference] of Object.entries(page.component_nodes)) {
+        componentNodes.push({ pageKey, key,
+          nodeId: isPlainObject(reference) ? reference.node_id || null : reference,
+          fileKey: isPlainObject(reference) ? reference.file_key || figma.file_key || null : figma.file_key || null,
+          reference
+        })
+      }
+    }
+    if (!isPlainObject(page.states)) {
+      entries.push(makeEntry(pageKey, page, '<states>', page.states, registeredRoutes, figma, migration))
+      continue
+    }
+    for (const [stateKey, state] of Object.entries(page.states)) {
+      entries.push(makeEntry(pageKey, page, stateKey, state, registeredRoutes, figma, migration))
+    }
+  }
+
+  const unresolvedDesignStates = isPlainObject(map.unresolved_design_states)
+    ? Object.entries(map.unresolved_design_states).map(([key, state]) => ({
+      stateKey: key,
+      name: isPlainObject(state) && typeof state.name === 'string' ? state.name : key,
+      nodeId: isPlainObject(state) && typeof state.node_id === 'string' ? state.node_id : null,
+      status: 'unresolved',
+      reason: 'listed outside pages.states; route/source intentionally not assigned'
+    }))
+    : []
+
+  const errors = entries.flatMap((entry) => entry.errors.map((error) => ({
+    pageKey: entry.pageKey,
+    stateKey: entry.stateKey,
+    ...error
+  })))
+  const counts = {
+    formalPages: Object.keys(map.pages).length,
+    formalStates: entries.length,
+    mapped: entries.filter((entry) => entry.status === 'mapped').length,
+    invalid: entries.filter((entry) => entry.status !== 'mapped').length,
+    unresolvedDesignStates: unresolvedDesignStates.length,
+    componentNodes: componentNodes.length,
+    registeredRoutes: registeredRoutes.size
+  }
+
+  return {
+    schemaVersion: 1,
+    generatedAt: new Date().toISOString(),
+    sourceOfTruth: {
+      map: path.relative(repoRoot, mapPath),
+      pages: path.relative(repoRoot, pagesPath),
+      exactNodeSource: path.relative(repoRoot, mapPath)
+    },
+    scope: {
+      description: 'Only entries under pages.*.states are included. This is a route/node mapping report, not a visual verification report.',
+      excludedUnresolvedDesignStates: unresolvedDesignStates,
+      excludedComponentNodes: componentNodes
+    },
+    counts,
+    designCounts: {
+      verifiedMetadata: entries.filter((entry) => entry.designStatus === 'verified-metadata').length,
+      retainedLegacy: entries.filter((entry) => entry.designStatus === 'retained-legacy').length,
+      notChecked: entries.filter((entry) => !['verified-metadata', 'retained-legacy'].includes(entry.designStatus)).length
+    },
+    errors,
+    entries
+  }
+}
+
+function markdownEscape(value) {
+  return String(value === null || value === undefined ? '' : value).replace(/\|/g, '\\|').replace(/\n/g, ' ')
+}
+
+function renderMarkdown(report) {
+  const lines = [
+    '# Figma 状态与现存源码路由矩阵',
+    '',
+    `生成时间：${report.generatedAt}`,
+    '',
+    report.status ? `运行状态：${report.status}` : '运行状态：ok',
+    '',
+    `来源：\`${report.sourceOfTruth.map}\`（精确 node_id 唯一来源）；运行时注册校验：\`${report.sourceOfTruth.pages}\`。`,
+    '',
+    '> 本报告只覆盖 `pages.*.states` 中已正式登记的状态，记录节点、现存路由、源码和 query 合同。它不读取外部 CSV/metrics，也不把节点存在或路由可达当作视觉验收结论。',
+    '',
+    `范围：${report.counts.formalPages} 个正式页面、${report.counts.formalStates} 个正式状态；mapped ${report.counts.mapped}，invalid ${report.counts.invalid}；另有 ${report.counts.unresolvedDesignStates} 个 unresolved 设计状态未映射，${report.counts.componentNodes} 个 component node 未作为页面状态。`,
+    '',
+    `设计对应：元数据已核对 ${report.designCounts?.verifiedMetadata || 0}；保留旧稿 ${report.designCounts?.retainedLegacy || 0}；未核对 ${report.designCounts?.notChecked || 0}。mapped 仅表示本地路由/来源有效，不代表新稿全部覆盖。`,
+    '',
+    '| 页面 | 状态 | Figma node | route | source | query | 映射状态 | 运行前置 | 设计对应 |',
+    '|---|---|---|---|---|---|---|---|---|'
+  ]
+  for (const entry of report.entries) {
+    const query = entry.query === null ? '—' : JSON.stringify(entry.query)
+    const node = entry.figmaUrl ? `[${entry.nodeId}](${entry.figmaUrl})` : entry.nodeId ? `\`${entry.nodeId}\`` : '—'
+    lines.push(`| ${markdownEscape(entry.pageName)} | ${markdownEscape(entry.name)} (${markdownEscape(entry.stateKey)}) | ${node} | ${entry.targetUrl ? `\`${markdownEscape(entry.targetUrl)}\`` : '—'} | ${entry.source ? `\`${markdownEscape(entry.source)}\`` : '—'} | ${markdownEscape(query)} | ${entry.status} | ${markdownEscape(entry.runtimeStatus)}：${markdownEscape(entry.runtimeReason)} | ${markdownEscape(entry.designStatus)} |`)
+  }
+  if (report.errors.length) {
+    lines.push('', '## Invalid entries', '', '| 页面 | 状态 | code | 说明 |', '|---|---|---|---|')
+    for (const error of report.errors) lines.push(`| ${markdownEscape(error.pageKey)} | ${markdownEscape(error.stateKey)} | ${error.code} | ${markdownEscape(error.message)} |`)
+  }
+  if (report.scope.excludedUnresolvedDesignStates.length) {
+    lines.push('', '## Unresolved design states', '', '| 状态 | node | 处理 |', '|---|---|---|')
+    for (const state of report.scope.excludedUnresolvedDesignStates) lines.push(`| ${markdownEscape(state.name)} (${markdownEscape(state.stateKey)}) | ${state.nodeId ? `\`${state.nodeId}\`` : '—'} | ${markdownEscape(state.reason)} |`)
+  }
+  lines.push('')
+  return lines.join('\n')
+}
+
+function writeReport(report) {
+  fs.mkdirSync(reportDir, { recursive: true })
+  fs.writeFileSync(jsonPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8')
+  fs.writeFileSync(markdownPath, renderMarkdown(report), 'utf8')
+}
+
+function writeFailureReport(error) {
+  const message = error && error.message ? error.message : String(error)
+  const report = {
+    schemaVersion: 1,
+    generatedAt: new Date().toISOString(),
+    status: 'error',
+    sourceOfTruth: {
+      map: path.relative(repoRoot, mapPath),
+      pages: path.relative(repoRoot, pagesPath),
+      exactNodeSource: path.relative(repoRoot, mapPath)
+    },
+    scope: {
+      description: 'Input parsing failed; no formal state entries are available.',
+      excludedUnresolvedDesignStates: [],
+      excludedComponentNodes: []
+    },
+    counts: {
+      formalPages: 0,
+      formalStates: 0,
+      mapped: 0,
+      invalid: 0,
+      unresolvedDesignStates: 0,
+      componentNodes: 0,
+      registeredRoutes: 0
+    },
+    errors: [{ code: 'input-error', message }],
+    entries: []
+  }
+  writeReport(report)
+}
+
+function main() {
+  try {
+    const report = buildReport()
+    writeReport(report)
+    if (report.errors.length) {
+      console.error(`figma-state-matrix: wrote reports with ${report.errors.length} invalid mapping error(s)`)
+      process.exitCode = 1
+      return
+    }
+    console.log(`figma-state-matrix: wrote ${path.relative(repoRoot, markdownPath)} and ${path.relative(repoRoot, jsonPath)} (${report.entries.length} formal states)`)
+  } catch (error) {
+    try {
+      writeFailureReport(error)
+    } catch (writeError) {
+      console.error(`figma-state-matrix: unable to write failure report: ${writeError && writeError.message ? writeError.message : writeError}`)
+    }
+    console.error(`figma-state-matrix: ${error && error.message ? error.message : error}`)
+    process.exitCode = 1
+  }
+}
+
+if (require.main === module) main()
+
+module.exports = {
+  buildReport,
+  renderMarkdown,
+  readRegisteredRoutes,
+  validateQuery
+}

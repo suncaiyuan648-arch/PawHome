@@ -456,7 +456,8 @@ module.exports = {
   'badges/adoption-reward': {
     sourceFrame: { width: 21.114, height: 22.1211 },
     slot: 24,
-    sourceLabel: 'Figma adoption flow reward medal'
+    figmaNodeId: '62:33274',
+    sourceLabel: 'Figma node 62:33274 / Group 1321318128'
   },
   'brand/share-poster': {
     sourceFrame: { width: 27, height: 27 },

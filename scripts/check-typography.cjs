@@ -1,12 +1,13 @@
 const fs = require('fs')
 const path = require('path')
 
-const root = path.resolve(__dirname, '..')
-const sourceDirs = ['pages', 'components', 'styles']
+const root = path.resolve(process.env.PAWHOME_PROJECT_ROOT || path.resolve(__dirname, '..'))
+const sourceDirs = ['pages', 'components', 'styles', 'packages', 'services', 'navigation']
 const extensions = new Set(['.vue', '.scss', '.css', '.js'])
 const violations = []
 
 function visit(dir) {
+  if (!fs.existsSync(dir)) return
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const target = path.join(dir, entry.name)
     if (entry.isDirectory()) visit(target)
@@ -29,5 +30,5 @@ if (violations.length) {
   console.error(violations.join('\n'))
   process.exitCode = 1
 } else {
-  console.log('Typography check passed: no font-weight:600 in pages/components/styles.')
+  console.log('Typography check passed: no font-weight:600 in pages/components/styles/packages/services/navigation.')
 }

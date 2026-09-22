@@ -19,7 +19,7 @@ const {
 const REGISTRY_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-registry.js')
 const NAMES_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-names.js')
 const COLOR_ROOT = path.join(ROOT, 'static/paw-icons/color')
-const BUSINESS_ROOTS = ['pages', 'components', 'custom-tab-bar', 'app.vue']
+const BUSINESS_ROOTS = ['pages', 'components', 'packages', 'services', 'navigation', 'custom-tab-bar', 'App.vue']
 const CATEGORIES = new Set(['navigation', 'actions', 'status', 'common', 'badges', 'brand'])
 
 function fail(message) {
@@ -29,7 +29,10 @@ function fail(message) {
 function walk(entry, files = []) {
   if (!fs.existsSync(entry)) return files
   const stat = fs.statSync(entry)
-  if (stat.isFile()) return files.concat(entry)
+  if (stat.isFile()) {
+    files.push(entry)
+    return files
+  }
   for (const child of fs.readdirSync(entry)) walk(path.join(entry, child), files)
   return files
 }
@@ -136,7 +139,7 @@ async function checkGenerated() {
       fail(`source contains an empty clipPath/mask: ${sourcePath}`)
     }
     const optical = readOpticalMetadata(name, sourcePath)
-    const expectedNormalized = await normalizeAndFitSvg(source, sourceViewBox, optical, metadata.slot)
+    const expectedNormalized = await normalizeAndFitSvg(source, sourceViewBox, optical, metadata.slot, metadata)
     const definition = definitions[name]
     if (definition.width !== DESIGN_CANVAS || definition.height !== DESIGN_CANVAS) {
       fail(`generated registry dimensions are stale for ${name}; run npm run icons:build`)
@@ -189,14 +192,55 @@ function checkDirectRefs() {
   }
 }
 
+function scanUnknownIconNames(options = {}) {
+  const scanRoot = options.root || ROOT
+  const knownNames = new Set(options.knownNames || iconEntries().map(entry => entry.name))
+  const sourceFiles = BUSINESS_ROOTS.flatMap(entry => walk(path.join(scanRoot, entry)))
+    .filter(file => /\.(?:vue|[cm]?js|ts|tsx|jsx)$/.test(file))
+  const unknown = []
+  const componentPattern = /<(PawIcon|paw-icon|PawIconButton|paw-icon-button)\b([^>]*)>/g
+  const attributePattern = /(?:^|\s)(:|v-bind:)?(?:name|icon)\s*=\s*(["'])(.*?)\2/g
+  for (const file of sourceFiles) {
+    const source = fs.readFileSync(file, 'utf8')
+    for (const match of source.matchAll(componentPattern)) {
+      const attrs = match[2]
+      const names = []
+      for (const attribute of attrs.matchAll(attributePattern)) {
+        const value = attribute[3].replace(/&apos;/g, "'").replace(/&quot;/g, '"')
+        if (!attribute[1]) names.push(value)
+        else {
+          // Both :name="'literal'" and :name='"literal"' are static.
+          // Arbitrary bound expressions remain outside this literal-name check.
+          const literal = value.trim().match(/^(["'])(.*?)\1$/)
+          if (literal) names.push(literal[2])
+        }
+      }
+      for (const name of names) {
+        if (!knownNames.has(name)) unknown.push(`${path.relative(scanRoot, file)}:${source.slice(0, match.index).split('\n').length} unknown PawIcon name: ${name}`)
+      }
+    }
+  }
+  return unknown
+}
+
+function checkUnknownIconNames(options = {}) {
+  const unknown = scanUnknownIconNames(options)
+  if (unknown.length) fail(unknown.join('\n'))
+}
+
 async function check() {
   checkManifest()
   await checkGenerated()
   checkDirectRefs()
+  checkUnknownIconNames()
   console.log('[PawIcon] check passed: source audit, optical slots, canonical assets, metadata, and direct refs')
 }
 
-check().catch(error => {
-  console.error(error.stack || error.message)
-  process.exitCode = 1
-})
+if (require.main === module) {
+  check().catch(error => {
+    console.error(error.stack || error.message)
+    process.exitCode = 1
+  })
+}
+
+module.exports = { check, checkUnknownIconNames, scanUnknownIconNames }

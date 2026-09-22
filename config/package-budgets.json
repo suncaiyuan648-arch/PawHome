@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "phase": "migration",
+  "limits": {
+    "hardPackageBytes": 2097152,
+    "mainTargetBytes": 1572864,
+    "migrationMainMaxBytes": 1941174,
+    "totalTargetBytes": 8388608
+  },
+  "domainBudgetsKiB": {
+    "dynamic": 600,
+    "rescue": 650,
+    "adoption": 800,
+    "yard": 850,
+    "animal": 750,
+    "feeding": 700,
+    "account": 550,
+    "auth": 250,
+    "address": 300,
+    "discovery": 400,
+    "notification": 200,
+    "jury": 400
+  }
+}

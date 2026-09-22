@@ -1,7 +1,7 @@
 # Design QA — Figma 44–57 领养流程
 
 - source visual truth path: `C:/itemGr/PawHome/docs/figma-export/frames-png/044_*.png` through `057_*.png`
-- implementation route: `/pages/meMore/adoptionFlow?frame=44` through `/pages/meMore/adoptionFlow?frame=57`
+- implementation route: `/packages/adoption/pages/progress/index?applicationId=<applicationId>`; `view=adoption-info|application` selects the two read-only subviews.
 - implementation screenshots: `C:/itemGr/PawHome/docs/design-audit/screenshots/pawhome/figma-44-pass3.png` through `figma-57-pass4.png`
 - final comparison contact sheet: `C:/itemGr/PawHome/docs/design-audit/figma-044-057-final-contact.jpg`
 - viewport: 375 CSS px wide; heights 812, 853, 872, 907, 942, or 1024 CSS px according to each Figma frame

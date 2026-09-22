@@ -1,16 +1,51 @@
 <script>
-	export default {
-		onLaunch: function() {
-			console.warn('当前组件仅支持 uni_modules 目录结构 ，请升级 HBuilderX 到 3.1.0 版本以上！')
-			console.log('App Launch')
-		},
-		onShow: function() {
-			console.log('App Show')
-		},
-		onHide: function() {
-			console.log('App Hide')
-		}
-	}
+import { tryResolveLegacyRoute } from '@/navigation/legacyRoutes.js'
+
+function normalizeLaunchQuery(query) {
+  if (!query || typeof query !== 'object' || Array.isArray(query)) return undefined
+  const normalized = {}
+  for (const [key, value] of Object.entries(query)) {
+    if (value === undefined || value === null) continue
+    normalized[key] = String(value)
+  }
+  return normalized
+}
+
+function resolveLegacyRedirect(options = {}) {
+  const rawPath = typeof options.path === 'string' ? options.path : ''
+  if (!rawPath) return null
+  const legacyPath = rawPath.startsWith('/') ? rawPath : `/${rawPath}`
+  const result = tryResolveLegacyRoute({ path: legacyPath, query: normalizeLaunchQuery(options.query) })
+  if (!result.ok || !result.url || result.legacyPath !== legacyPath) return null
+  return { legacyPath, url: result.url }
+}
+
+function scheduleLegacyRedirect(app, target) {
+  if (!target || app.__legacyRedirectPath === target.legacyPath) return
+  app.__legacyRedirectPath = target.legacyPath
+  // A cold-start route is already inside App.onLaunch. Redirect only after
+  // the first native page stack exists; unsupported/ambiguous links stay
+  // fail-closed instead of guessing a demo page.
+  setTimeout(() => {
+    try { uni.redirectTo({ url: target.url }) } catch (error) { /* native stack may not be ready */ }
+  }, 0)
+}
+
+export default {
+  onLaunch(options = {}) {
+    console.warn('当前组件仅支持 uni_modules 目录结构 ，请升级 HBuilderX 到 3.1.0 版本以上！')
+    console.log('App Launch')
+    scheduleLegacyRedirect(this, resolveLegacyRedirect(options))
+  },
+  onShow(options = {}) {
+    console.log('App Show')
+    // onShow receives the same launch payload for a warm resume. Re-run the
+    // resolver so an external old link is handled even when the app process
+    // was already alive; the per-path guard keeps onLaunch/onShow idempotent.
+    scheduleLegacyRedirect(this, resolveLegacyRedirect(options))
+  },
+  onHide() { console.log('App Hide') }
+}
 </script>
 
 <style lang="scss">

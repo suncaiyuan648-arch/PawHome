@@ -15,16 +15,27 @@
           class="paw-announcement__bubble"
           :style="{
             height: height + 'px',
-            background: backgroundColor,
-            color: color
+            background: currentAppearance.background,
+            color: currentAppearance.color
           }"
-        >{{ currentItem.text }}</text>
+        ><text :class="{ 'paw-announcement__text--premium': currentAppearance.premium }">{{ currentItem.text }}</text></text>
       </view>
     </view>
   </view>
 </template>
 
 <script>
+// Figma 83:15347：规格单位为斤；旧公告正文仅用于兼容没有结构化规格的数据。
+function feedingSpec(item) {
+  if (item.feedingWeightJin !== undefined && item.feedingWeightJin !== null) {
+    return Number(item.feedingWeightJin)
+  }
+  const match = String(item.text || item.content || item.title || '').match(/(?:投粮|投喂)\s*(\d+(?:\.\d+)?)\s*(公斤|千克|kg|斤|克|g)/i)
+  if (!match) return null
+  const amount = Number(match[1])
+  return /^(公斤|千克|kg)$/i.test(match[2]) ? amount * 2 : /^(克|g)$/i.test(match[2]) ? amount / 500 : amount
+}
+
 function parsePayload(payload) {
   if (typeof payload !== 'string') return payload
   try {
@@ -49,7 +60,7 @@ function extractItems(payload) {
 export default {
   name: 'PawAnnouncementMarquee',
   props: {
-    // 支持字符串，也支持 { id, text } / { id, content } 形式。
+    // 支持字符串及 { id, text/content, feedingWeightJin }；结构化规格优先。
     items: { type: Array, default: () => [] },
     height: { type: Number, default: 20 },
     speed: { type: Number, default: 82 },
@@ -78,6 +89,15 @@ export default {
       destroyed: false,
       isMounted: false,
       knownIds: {}
+    }
+  },
+  computed: {
+    currentAppearance() {
+      const weight = this.currentItem ? feedingSpec(this.currentItem.raw) : null
+      if (weight === 40) return { background: '#282827', color: '#E0FF89', premium: true }
+      if (weight === 4) return { background: 'linear-gradient(90deg, #FFF599 0%, #FFFBDC 100%)', color: '#333333' }
+      if (weight === 0.4) return { background: '#FFFBDC', color: '#505050' }
+      return { background: this.backgroundColor, color: this.color }
     }
   },
   watch: {
@@ -322,5 +342,12 @@ export default {
   line-height: 11px;
   text-align: center;
   white-space: nowrap;
+}
+
+.paw-announcement__text--premium {
+  background: linear-gradient(90deg, #E0FF89 0%, #FFED48 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 </style>

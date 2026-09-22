@@ -458,8 +458,12 @@ function getLocalAdoptionJuryItems() {
 	try {
 		return getAdoptionRecords({ includeDemo: false })
 			.filter((record) => record.status === 'jury_confirm_pending' || record.status === 'jury_confirm')
-			.map((record) => ({
-				id: `adoption-review-${record.id}`,
+			.map((record) => {
+				const review = record && record.review && typeof record.review === 'object' ? record.review : {}
+				const reviewItemId = String(review.reviewItemId || record.reviewItemId || `adoption-review-${record.id}`).trim()
+				return ({
+				id: reviewItemId,
+				reviewItemId,
 				reviewType: 'adoption',
 				applicationId: record.id,
 				recordId: record.id,
@@ -472,7 +476,8 @@ function getLocalAdoptionJuryItems() {
 				applyText: record.applyText,
 				application: { id: record.id, text: record.applyText, media: (record.mediaPaths || []).map((src, index) => ({ id: `${record.id}-apply-${index}`, src })) },
 				evidence: (record.proofPhotos || []).map((src, index) => ({ id: `${record.id}-proof-${index}`, src }))
-			}))
+				})
+			})
 	} catch (error) {
 		return []
 	}
@@ -482,8 +487,12 @@ function getLocalRescueJuryItems() {
 	try {
 		return getRescueRecords({ includeDemo: false })
 			.filter((record) => record.applicationStatus === 'platform_pending')
-			.map((record) => ({
-				id: `rescue-review-${record.id}`,
+			.map((record) => {
+				const review = record && record.review && typeof record.review === 'object' ? record.review : {}
+				const reviewItemId = String(review.reviewItemId || record.reviewItemId || `rescue-review-${record.id}`).trim()
+				return ({
+				id: reviewItemId,
+				reviewItemId,
 				reviewType: 'rescue',
 				applicationId: record.id,
 				recordId: record.id,
@@ -497,7 +506,8 @@ function getLocalRescueJuryItems() {
 				application: { id: record.id, text: record.description || record.applyText, media: (record.mediaPaths || []).map((src, index) => ({ id: `${record.id}-apply-${index}`, src })) },
 				evidence: (record.mediaPaths || []).map((src, index) => ({ id: `${record.id}-evidence-${index}`, src })),
 				reward: { label: `求助金额 ¥${record.amount || 0}` }
-			}))
+				})
+			})
 	} catch (error) {
 		return []
 	}

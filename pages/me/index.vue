@@ -15,7 +15,7 @@
 						<PawImage class="profile-avatar" :src="profileAvatar" :size="65" :radius="32.5" :preview="false"
 							:clickable="true" data-qa="qa-me-avatar" @click="openProfileUpload" />
 						<view class="profile-info">
-							<view class="name-row" data-qa="qa-me-profile">
+							<view class="name-row" data-qa="qa-me-profile" @tap.stop="openSelfProfileEditor">
 								<text class="profile-name">浮生孤影</text>
 								<LevelBadge data-qa="qa-me-level" level="1" @click.stop="goLevelPage" />
 							</view>
@@ -183,6 +183,7 @@
 </template>
 
 <script>
+import { buildRoute } from '@/navigation/routeContracts.js'
 import CustomTabber from '@/components/CustomTabber/index.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawBadge from '@/components/base/PawBadge.vue'
@@ -194,6 +195,7 @@ import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawVoteRatioBar from '@/components/PawVoteRatioBar.vue'
 import { getMemberLevelTitle } from '@/utils/memberLevel.js'
+import { SELF_PAW_ID } from '@/utils/profileNav.js'
 
 export default {
 	components: { CustomTabber, PawIcon, PawBadge, LevelBadge, PawChevron, PawImage, PawMemberBanner, PawBottomSheet, PawPageNav, PawVoteRatioBar },
@@ -226,7 +228,7 @@ export default {
 			drawerEnterTimer: null,
 			drawerCloseTimer: null,
 			menuSections: [
-				['我的宠物', '我的云养宠物'],
+				['我的宠物', '我的云养宠物', '我的任务'],
 				['我的小院', '小院宠物', '投喂订单', '领养审核'],
 				['红包卡券', '我的收藏', '历史浏览'],
 				['我的投喂订单', '我入驻的小院', '我申请的领养'],
@@ -260,13 +262,13 @@ export default {
 	methods: {
 		ensureLogin() {
 			if (this.pageState === 'drawer' || this.pageState === 'profile-upload') return true
-			const loggedIn = !!uni.getStorageSync('PAWHOME_LOGGED_IN')
+			const loggedIn = !!uni.getStorageSync('PAWHOME_ACTOR_SESSION')
 			if (loggedIn) {
 				this.authChecked = true
 				return true
 			}
 			if (!this.authChecked) this.authChecked = true
-			uni.navigateTo({ url: '/pages/auth/login' })
+			uni.navigateTo({ url: '/packages/auth/pages/login/index' })
 			return false
 		},
 		openProfileUpload() {
@@ -335,14 +337,19 @@ export default {
 				}
 			})
 		},
-		onMenuRow(label) {
+			onMenuRow(label) {
 			this.closeDrawer()
+			if (label === '我的任务') {
+				// Canonical route contract: buildRoute('account.tasks', {})
+				uni.navigateTo({ url: '/packages/account/pages/tasks/index' })
+				return
+			}
 			if (label === '设置') {
-				uni.navigateTo({ url: '/pages/meMore/settings' })
+				uni.navigateTo({ url: buildRoute('account.settings', {}) })
 				return
 			}
 			if (label === '历史浏览') {
-				uni.navigateTo({ url: '/pages/meMore/browsingHistory' })
+				uni.navigateTo({ url: buildRoute('account.history', { entityType: 'dynamic' }) })
 				return
 			}
 			if (label === '我的云养宠物') {
@@ -354,7 +361,9 @@ export default {
 				return
 			}
 			if (label === '小院宠物') {
-				uni.navigateTo({ url: '/pages/meMore/myAssets?mode=pets' })
+				const yardId = String(uni.getStorageSync('PAWHOME_ACTIVE_YARD_ID') || '').trim()
+				if (!yardId) { this.toast('暂未绑定小院'); return }
+				uni.navigateTo({ url: buildRoute('yard.animals', { yardId }) })
 				return
 			}
 			if (label === '我的小院') {
@@ -362,27 +371,27 @@ export default {
 				return
 			}
 			if (label === '领养额度') {
-				uni.navigateTo({ url: '/pages/adoption/extras?mode=quota' })
+				uni.navigateTo({ url: '/packages/adoption/pages/quota/index' })
 				return
 			}
 			if (label === '我的勋章') {
-				uni.navigateTo({ url: '/pages/meMore/myAssets?mode=medals' })
+				uni.navigateTo({ url: buildRoute('account.medals', {}) })
 				return
 			}
 			if (label === '救助基金池') {
-				uni.navigateTo({ url: '/pages/yard/rescueReview' })
+				uni.navigateTo({ url: '/packages/rescue/pages/fund/index' })
 				return
 			}
 			if (label === '邀请入驻') {
-				uni.navigateTo({ url: '/pages/feature/index?mode=invite' })
+				uni.navigateTo({ url: '/packages/account/pages/invite/index' })
 				return
 			}
 			if (label === '投喂订单') {
-				uni.navigateTo({ url: '/pages/meMore/yardFeedOrders' })
+				uni.navigateTo({ url: buildRoute('feeding.yardOrders', { yardId: '1' }) })
 				return
 			}
 			if (label === '我的投喂订单') {
-				uni.navigateTo({ url: '/pages/meMore/myFeedings' })
+				uni.navigateTo({ url: buildRoute('feeding.mine', { userId: 'local-user' }) })
 				return
 			}
 			if (label === '我申请的领养') {
@@ -396,44 +405,56 @@ export default {
 			this.toast(label)
 		},
 		goMyAdoption() {
-			uni.navigateTo({ url: '/pages/meMore/myAdoption' })
+			uni.navigateTo({ url: buildRoute('adoption.mine', {}) })
 		},
 		goMyCloudPets() {
-			uni.navigateTo({ url: '/pages/meMore/myCloudPets' })
+			uni.navigateTo({ url: buildRoute('animal.sponsored', { userId: SELF_PAW_ID }) })
 		},
 		goManagedYard() {
-			uni.navigateTo({ url: '/pages/yard/yardCats?state=managed' })
+			const yardId = String(uni.getStorageSync('PAWHOME_ACTIVE_YARD_ID') || '').trim()
+			if (!yardId) {
+				this.toast('暂未绑定小院')
+				return
+			}
+			uni.navigateTo({ url: buildRoute('yard.manage.animals', { yardId }) })
+		},
+		openSelfProfileEditor() {
+			const session = uni.getStorageSync('PAWHOME_ACTOR_SESSION') || {}
+			const actor = session && session.actor ? session.actor : session
+			const userId = String(actor && (actor.id || actor.actorId) || SELF_PAW_ID).trim()
+			if (!userId) return
+			uni.navigateTo({ url: buildRoute('account.profile.edit', { userId }) })
 		},
 		goAdoptionSupport() {
-			uni.navigateTo({ url: '/pages/adoption/extras?mode=support' })
+			uni.navigateTo({ url: '/packages/adoption/pages/support/index' })
 		},
 		goMyFeedings() {
-			uni.navigateTo({ url: '/pages/meMore/myFeedings' })
+			uni.navigateTo({ url: buildRoute('feeding.mine', { userId: 'local-user' }) })
 		},
 		goMyPets() {
-			uni.navigateTo({ url: '/pages/meMore/myAssets?mode=pets&state=owned' })
+			uni.navigateTo({ url: buildRoute('animal.mine', { userId: SELF_PAW_ID }) })
 		},
 		goMyMedals() {
-			uni.navigateTo({ url: '/pages/meMore/myAssets?mode=medals' })
+			uni.navigateTo({ url: buildRoute('account.medals', {}) })
 		},
 		goYardFeedOrders() {
-			uni.navigateTo({ url: '/pages/meMore/yardFeedOrders' })
+			uni.navigateTo({ url: buildRoute('feeding.yardOrders', { yardId: '1' }) })
 		},
 		goAdoptionAudit() {
-			uni.navigateTo({ url: '/pages/yard/adoptionAudit' })
+			uni.navigateTo({ url: buildRoute('adoption.review.list', {}) })
 		},
 		goJuryPanel(reviewType = '') {
 			if (reviewType === 'rescue') {
-				uni.navigateTo({ url: '/pages/yard/rescueReview' })
+				uni.navigateTo({ url: buildRoute('rescue.review.list', {}) })
 				return
 			}
-			const query = reviewType ? `?reviewType=${encodeURIComponent(reviewType)}` : ''
-			uni.navigateTo({ url: `/pages/yard/juryPanel${query}` })
+			const query = reviewType ? `?businessType=${encodeURIComponent(reviewType)}` : ''
+			uni.navigateTo({ url: `/packages/jury/pages/queue/index${query}` })
 		},
 		goLevelPage() {
 			const name = '浮生孤影'
 			uni.navigateTo({
-				url: '/pages/meMore/level?nickname=' + encodeURIComponent(name)
+				url: buildRoute('account.level', {}) + '?nickname=' + encodeURIComponent(name)
 			})
 		},
 		toast(t) {

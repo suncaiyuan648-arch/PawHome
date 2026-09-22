@@ -264,7 +264,7 @@ export default {
       this.$emit('confirmed', payload)
       this.$emit('update:modelValue', false)
       if (this.returnToApply) return
-      uni.navigateTo({ url: '/pages/adoption/adoptApply' })
+      uni.navigateTo({ url: '/packages/adoption/pages/apply/index?state=pick-cats' })
     },
   },
 }

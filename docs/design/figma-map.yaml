@@ -2,17 +2,30 @@ schema_version: 1
 
 figma:
   file_name: "逢猫投喂流浪猫板块"
-  file_key: "03pt0RiVfBFCvn4PsIyezk"
-  file_url: "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/%E9%80%A2%E7%8C%AB%E6%8A%95%E5%96%82%E6%B5%81%E6%B5%AA%E7%8C%AB%E6%9D%BF%E5%9D%97?node-id=0-1"
-  node_url_pattern: "https://www.figma.com/design/03pt0RiVfBFCvn4PsIyezk/%E9%80%A2%E7%8C%AB%E6%8A%95%E5%96%82%E6%B5%81%E6%B5%AA%E7%8C%AB%E6%9D%BF%E5%9D%97?node-id={node_id_dash}"
+  file_key: "ikwcujfbxtNcjk9tjGjKx8"
+  file_url: "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/%E9%80%A2%E7%8C%\
+    AB%E6%8A%95%E5%96%82%E6%B5%81%E6%B5%AA%E7%8C%AB%E6%9D%BF%E5%9D%97?node-id=0\
+    -1"
+  node_url_pattern: "https://www.figma.com/design/ikwcujfbxtNcjk9tjGjKx8/%E9%80%A\
+    2%E7%8C%AB%E6%8A%95%E5%96%82%E6%B5%81%E6%B5%AA%E7%8C%AB%E6%9D%BF%E5%9D%97?n\
+    ode-id={node_id_dash}"
+  mapping_status: verified-with-explicit-exceptions
+  legacy_node_file_key: "03pt0RiVfBFCvn4PsIyezk"
+  migration_note: "2026-09-15: 69 unique node mappings reviewed against both live metadata
+    trees; 2 explicit legacy exceptions (search dynamic results and AppHeader
+    component set). Exported icon assets retain original file provenance.
+    Metadata mapping is not visual acceptance."
   design_baseline_width: 375
-  access_note: "URL is an index only. Live inspection still requires Figma MCP/connector permissions in the local agent environment."
+  access_note: "URL is an index only. Live inspection still requires Figma
+    MCP/connector permissions in the local agent environment."
+  migration_manifest: docs/design/figma-node-migration-20260915.json
 
 rules:
   - "Never guess a node by visual similarity."
   - "Use exact node_id from this map when live Figma tooling is available."
   - "Read shared_component_doc before implementing page-local equivalents."
-  - "If live Figma is unavailable, use design_doc plus local visual baseline and explicitly report the limitation."
+  - "If live Figma is unavailable, use design_doc plus local visual baseline and
+    explicitly report the limitation."
   - "Do not commit temporary Figma MCP asset URLs into production code."
 
 shared_component_doc: "docs/pages-design/复用组件.md"
@@ -26,684 +39,1355 @@ pages:
     states:
       dynamic:
         name: "投喂首页-动态"
-        node_id: "62:23815"
+        node_id: 83:3464
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:23815
+        mapping_status: verified-metadata
+        mapping_note: 同为普通动态 Feed；保留独立搜索/动态小院筛选、通知与卡片区域。83:3739 新增上门服务/救助池等首页聚合入口，另列新增参考。
       dynamic_empty:
         name: "投喂首页-动态-空状态"
-        node_id: "62:24022"
+        node_id: 83:4000
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:24022
+        mapping_status: verified-metadata
+        mapping_note: 空态文案还没有动态/这个城市好像还没有人发布、筛选与 Tab 顺序一致；导航实例展开。
       dynamic_filter_sheet:
         name: "投喂首页-动态筛选弹窗"
-        node_id: "62:24224"
+        node_id: 83:4202
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:24224
+        mapping_status: verified-metadata
+        mapping_note: 同一筛选弹层最近更新/离我最近/只看猫咪/只看狗狗；背景 Feed 更新。
       yard:
         name: "投喂首页-小院"
-        node_id: "62:25292"
+        node_id: 83:5365
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:25292
+        mapping_status: verified-metadata
+        mapping_note: 小院卡片与离我最近筛选；我加入的改关注，余量/人数文案更新。
       dynamic_scrolled:
         name: "投喂首页-动态-上滑状态"
-        node_id: "62:25667"
+        node_id: 83:5740
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:25667
+        mapping_status: verified-metadata
+        mapping_note: 上滑 neirong 内容与固定筛选结构，导航实例展开、卡片补云养数。
 
   dynamic_detail:
     name: "动态详情"
-    route: "/pages/dynamicDetail/index"
-    source: "pages/dynamicDetail/index.vue"
+    route: "/packages/dynamic/pages/detail/index"
+    source: "packages/dynamic/pages/detail/index.vue"
     design_doc: "docs/pages-design/动态详情.md"
     states:
       default:
         name: "动态详情"
-        node_id: "62:27383"
-        query:
-          yardId: "1"
+        node_id: 83:7494
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:27383
+        mapping_status: verified-metadata
+        mapping_note: 动态正文/评论/关联小院/投喂底栏同职责；新增动物来源，导航实例展开。
       comments_empty:
         name: "动态详情-评论空状态"
-        node_id: "62:27724"
+        node_id: 83:7844
+        file_key: ikwcujfbxtNcjk9tjGjKx8
         query:
-          yardId: "1"
           state: "comments-empty"
+        legacy_node_id: 62:27724
+        mapping_status: verified-metadata
+        mapping_note: 共2026条评论/还没有评论/抢首评空态结构，文本序列一致。
 
   search:
     name: "搜索"
-    route: "/pages/search/index"
-    source: "pages/search/index.vue"
+    route: "/packages/discovery/pages/search/index"
+    source: "packages/discovery/pages/search/index.vue"
     design_doc: null
     states:
       dynamic:
         name: "搜索-动态"
-        node_id: "62:28350"
+        node_id: 62:28350
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        legacy_node_id: 62:28350
+        mapping_status: retained-legacy
+        mapping_note: 新画布无搜索动态有结果状态；83:4109是无结果空态，不等价。
       yard:
         name: "搜索-小院"
-        node_id: "62:28526"
+        node_id: 83:8470
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:28526
+        mapping_status: verified-metadata
+        mapping_note: 动态/小院/用户搜索结果分栏，目标内容是小院卡片；余量与关注人数变化。
       user:
         name: "搜索-用户"
-        node_id: "62:28865"
+        node_id: 83:8809
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:28865
+        mapping_status: verified-metadata
+        mapping_note: 搜索用户结果列表+关注按钮；文本和列表层级对应。
       idle:
         name: "搜索-待搜索"
-        node_id: "62:28996"
+        node_id: 83:8940
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:28996
+        mapping_status: verified-metadata
+        mapping_note: 待搜索的历史搜索词、搜索框结构对应。
       idle_delete:
         name: "搜索-待搜索-删除"
-        node_id: "62:29084"
+        node_id: 83:9028
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:29084
+        mapping_status: verified-metadata
+        mapping_note: 待搜索删除状态、历史词清理控件对应。
 
   publish_dynamic:
     name: "发布动态"
-    route: "/pages/publishDynamic/postFeed"
-    source: "pages/publishDynamic/postFeed.vue"
+    route: "/packages/dynamic/pages/editor/index"
+    source: "packages/dynamic/pages/editor/index.vue"
     design_doc: null
     states:
       default:
         name: "发布动态"
-        node_id: "62:30949"
+        node_id: 83:10789
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:30949
+        mapping_status: verified-metadata
+        mapping_note: 普通发布/反馈选择订单与媒体区；旧选择猫咪区移除。区别83:15056的已关联订单与动物反馈态。
       select_order:
         name: "发布动态-选择订单"
-        node_id: "62:35896"
+        node_id: 83:19056
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/dynamic/pages/editor/index"
+        source: "packages/dynamic/pages/editor/index.vue"
+        query:
+          state: select-order
+        legacy_node_id: 62:35896
+        mapping_status: verified-metadata
+        mapping_note: 选择订单已归并到发布动态编辑器内的 PawOrderSelectSheet；state=select-order 仅打开同一选择器，不再保留独立生产页。
       result:
         name: "动态发布结果页"
-        node_id: "62:35942"
+        node_id: 83:15773
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/dynamic/pages/result/index"
+        source: "packages/dynamic/pages/result/index.vue"
+        legacy_node_id: 62:35942
+        mapping_status: verified-metadata
+        mapping_note: 动态发布结果职责保留；新导航含 hidden=true 的下单成功文本，不把隐藏图层作为动态成功文案。
 
   adoption:
     name: "领养流程"
-    route: "/pages/adoption/petDetail"
-    source: "pages/adoption/petDetail.vue"
+    route: "/packages/animal/pages/detail/index"
+    source: "packages/animal/pages/detail/index.vue"
     design_doc: "docs/pages-design/领养流程全链路任务清单.md"
     states:
       pet_detail:
-        name: "小院-查看宠物详情"
-        node_id: "62:29916"
+        name: 宠物详情-公开视角
+        node_id: 83:9706
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:29916
+        mapping_status: verified-metadata
+        mapping_note: 公开宠物详情有分享/领养/云养业务底栏，无管理宠物/管理相册/删除宠物菜单。
+        query:
+          state: 35
+        runtime:
+          status: fixture-required
+          reason: state 仅定位既有展示变体；必须注入匹配角色/动物 fixture 验证权限，新设计新增内容未验收。
       pet_detail_yard:
-        name: "小院-查看宠物详情-领养入口"
-        node_id: "62:30091"
+        name: 宠物详情-管理菜单视角（旧索引误称领养入口）
+        node_id: 83:10114
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:30091
+        mapping_status: verified-metadata
+        mapping_note: 旧管理宠物/管理相册/删除宠物菜单和寄语板保留；新外层名改我的云养，新增订单区。不能按外层名当普通云家长权限。
+        query:
+          state: 36
+        runtime:
+          status: fixture-required
+          reason: state 仅定位既有展示变体；必须注入匹配角色/动物 fixture 验证权限，新设计新增内容未验收。
       pet_detail_managed:
-        name: "我的云养-查看宠物详情"
-        node_id: "62:30259"
+        name: 宠物详情-我的云养订单视角（旧key不代表权限）
+        node_id: 83:9889
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:30259
+        mapping_status: verified-metadata
+        mapping_note: 旧云养剩余天数/投粮详情入口演进为当前与待生效订单区；无三项管理菜单。
+        query:
+          state: 37
+        runtime:
+          status: fixture-required
+          reason: state 仅定位既有展示变体；必须注入匹配角色/动物 fixture 验证权限，新设计新增内容未验收。
       apply:
         name: "领养申请"
-        node_id: "62:31044"
-      apply_long:
-        name: "领养申请-长表单"
-        node_id: "62:31158"
+        node_id: 83:10860
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/adoption/pages/apply/index"
+        source: "packages/adoption/pages/apply/index.vue"
+        query:
+          state: "compact"
+        legacy_node_id: 62:31044
+        mapping_status: verified-metadata
+        mapping_note: 申请领养猫咪/向院主说明/小院信息；新增人脸核验及领养协议。区别求助金额长表单83:10978。
       flow_waiting:
         name: "领养申请-等待审核"
-        node_id: "62:31384"
+        node_id: 83:11204
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: /packages/adoption/pages/progress/index
+        source: packages/adoption/pages/progress/index.vue
+        query: {}
+        runtime:
+          status: fixture-required
+          reason: 需持久化当前申请人的 pending 记录并传 applicationId；不得使用 demo-pending 或 frame 强制状态。
+        legacy_node_id: 62:31384
+        mapping_status: verified-metadata
+        mapping_note: 在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。
       flow_owner_review:
         name: "院主-等待院主审核"
-        node_id: "62:31597"
+        node_id: 83:11417
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/adoption/pages/review/detail/index"
+        source: "packages/adoption/pages/review/detail/index.vue"
+        query:
+          mode: "ownerReview"
+          id: "review-v2-owner-pending-1"
+        runtime:
+          status: "fixture-required"
+          reason: "审核详情需要 adoptionStorage 的 review-v2-owner-pending-1 记录，不能只用 mode 打开。"
+        legacy_node_id: 62:31597
+        mapping_status: verified-metadata
+        mapping_note: 在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。
       flow_owner_confirm:
         name: "领养审核-待院主确认领养"
-        node_id: "62:32153"
+        node_id: 83:11973
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/adoption/pages/review/detail/index"
+        source: "packages/adoption/pages/review/detail/index.vue"
+        query:
+          mode: "ownerConfirm"
+          id: "review-v2-owner-confirm-pending-1"
+        runtime:
+          status: "fixture-required"
+          reason: "审核详情需要 adoptionStorage 的 review-v2-owner-confirm-pending-1 记录，不能只用 mode
+            打开。"
+        legacy_node_id: 62:32153
+        mapping_status: verified-metadata
+        mapping_note: 在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。
       flow_progress_reward:
         name: "领养进度-获得奖励"
-        node_id: "62:33198"
+        node_id: 83:13018
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/adoption/pages/progress/index"
+        source: "packages/adoption/pages/progress/index.vue"
+        query:
+          applicationId: "demo-reward"
+        runtime:
+          status: "fixture-required"
+          reason: "奖励进度由 applicationMockApi 的 demo-reward 记录状态派生；矩阵生成器不执行页面。"
+        legacy_node_id: 62:33198
+        mapping_status: verified-metadata
+        mapping_note: 在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。
       pick_cats:
         name: "领养-选择宠物"
-        node_id: "62:36699"
+        node_id: 83:16471
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/adoption/pages/apply/index"
+        source: "packages/adoption/pages/apply/index.vue"
+        query:
+          state: pick-cats
+        legacy_node_id: 62:36699
+        mapping_status: verified-metadata
+        mapping_note: 选择宠物已归并到领养申请页内的 AdoptPickCatsSheet；state=pick-cats 以透明选择器壳打开同一组件，不再保留独立生产页。
       evidence_confirm:
         name: "确认领养"
-        node_id: "62:35297"
+        node_id: 83:15168
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/adoption/pages/confirmation/index"
+        source: "packages/adoption/pages/confirmation/index.vue"
+        legacy_node_id: 62:35297
+        mapping_status: verified-metadata
+        mapping_note: 在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。
       result_claim:
         name: "领养进度-领取结果"
-        node_id: "62:36210"
+        node_id: 83:16041
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/adoption/pages/result/index"
+        source: "packages/adoption/pages/result/index.vue"
+        query:
+          applicationId: "demo-reward"
+          outcome: "reward-claimed"
+        legacy_node_id: 62:36210
+        mapping_status: verified-metadata
+        mapping_note: 在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。
       result_apply:
         name: "领养申请结果"
-        node_id: "62:36497"
+        node_id: 83:16328
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/adoption/pages/result/index"
+        source: "packages/adoption/pages/result/index.vue"
+        query:
+          applicationId: "demo-application"
+          outcome: "application-submitted"
+        legacy_node_id: 62:36497
+        mapping_status: verified-metadata
+        mapping_note: 在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。
       reward_address:
         name: "领养进度-填写收货地址"
-        node_id: "62:36752"
+        node_id: 83:16527
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/adoption/pages/reward/claim/index"
+        source: "packages/adoption/pages/reward/claim/index.vue"
+        query:
+          applicationId: "demo-reward"
+        legacy_node_id: 62:36752
+        mapping_status: verified-metadata
+        mapping_note: 在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。
       my_adoption:
         name: "我的领养"
-        node_id: "62:41525"
+        node_id: 83:21696
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/adoption/pages/mine/index"
+        source: "packages/adoption/pages/mine/index.vue"
+        legacy_node_id: 62:41525
+        mapping_status: verified-metadata
+        mapping_note: 在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。
       my_adoption_empty:
         name: "我的领养-空状态"
-        node_id: "62:41969"
+        node_id: 83:22140
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/adoption/pages/mine/index"
+        source: "packages/adoption/pages/mine/index.vue"
+        query:
+          state: "empty"
+        legacy_node_id: 62:41969
+        mapping_status: verified-metadata
+        mapping_note: 在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。
       adoption_support:
         name: "助力领养"
-        node_id: "62:42711"
+        node_id: 83:22882
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/adoption/pages/support/index"
+        source: "packages/adoption/pages/support/index.vue"
+        query: {}
+        legacy_node_id: 62:42711
+        mapping_status: verified-metadata
+        mapping_note: 在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。
       adoption_quota:
         name: "领养额度"
-        node_id: "62:42864"
+        node_id: 83:23035
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/adoption/pages/quota/index"
+        source: "packages/adoption/pages/quota/index.vue"
+        query: {}
+        legacy_node_id: 62:42864
+        mapping_status: verified-metadata
+        mapping_note: 在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。
       adoption_quota_detail:
         name: "领养额度明细"
-        node_id: "62:42949"
-      component_nodes:
-      adoption_flow_frames: "62:31384–62:33198"
-      agree_dialog: "62:38705"
-      reject_dialog: "62:38731"
-      contact_dialog: "62:38803"
-      insufficient_quota_dialog: "62:38954"
+        node_id: 83:23120
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/adoption/pages/quota/detail/index"
+        source: "packages/adoption/pages/quota/detail/index.vue"
+        query:
+          quotaId: "quota-demo-1"
+        legacy_node_id: 62:42949
+        mapping_status: verified-metadata
+        mapping_note: 在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。
+    component_nodes:
+      adoption_flow_frames:
+        description: Historical frame range; use exact states below, not an inclusive
+          node range.
+        nodes:
+          - 83:11204
+          - 83:11417
+          - 83:11973
+          - 83:13018
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_reference: 62:31384–62:33198
+      reward_medal:
+        node_id: 83:13094
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:33274
+        mapping_status: verified-metadata
+      agree_dialog:
+        node_id: 83:18303
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:38705
+        mapping_status: verified-metadata
+      reject_dialog:
+        node_id: 83:18329
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:38731
+        mapping_status: verified-metadata
+      contact_dialog:
+        node_id: 83:18401
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:38803
+        mapping_status: verified-metadata
+      insufficient_quota_dialog:
+        node_id: 83:18552
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:38954
+        mapping_status: verified-metadata
+
+  yard_forms:
+    name: "小院与动物表单"
+    design_doc: "docs/pages-design/复用组件.md"
+    mapping_note: "C0 语义迁徙：动物新建/编辑与小院认证分属 animal/yard canonical 分包；97/98/99 只用于本地设计状态，不是后端状态合同。"
+    states:
+      animal_editor:
+        name: "添加/编辑动物资料"
+        node_id: 62:37295
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/animal/pages/editor/index"
+        source: "packages/animal/pages/editor/index.vue"
+        query:
+          species: cat
+          yardId: yard-demo
+        mapping_status: retained-legacy
+        mapping_note: "同一职责覆盖猫狗、更多字段与选择弹层；运行入口使用 species 与可信 yardId。"
+      certification:
+        name: "小院认证"
+        node_id: 62:37970
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/yard/pages/certification/index"
+        source: "packages/yard/pages/certification/index.vue"
+        query:
+          yardId: yard-demo
+          state: 97
+        mapping_status: retained-legacy
+        mapping_note: "认证表单与已通过/审核中状态统一 canonical；提交保持 fail-closed，未接入真实后端。"
+
+  account:
+    name: "个人中心与账户"
+    design_doc: "docs/pages-design/复用组件.md"
+    mapping_note: "C0 语义迁徙：旧 meMore/user 页面保留已核对的旧稿节点作为实现参考，运行路由统一收敛到 packages/account；mapping_status 不代表视觉终验。"
+    states:
+      profile:
+        name: "个人主页"
+        node_id: 62:29619
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/account/pages/profile/index"
+        source: "packages/account/pages/profile/index.vue"
+        mapping_status: retained-legacy
+      profile_dynamic:
+        name: "个人主页-动态"
+        node_id: 62:29769
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/account/pages/profile/index"
+        source: "packages/account/pages/profile/index.vue"
+        query:
+          state: dynamic-long
+        mapping_status: retained-legacy
+      relations_following:
+        name: "关注列表"
+        node_id: 62:34870
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/account/pages/relations/index"
+        source: "packages/account/pages/relations/index.vue"
+        query:
+          tab: following
+        mapping_status: retained-legacy
+      relations_followers:
+        name: "粉丝列表"
+        node_id: 62:34762
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/account/pages/relations/index"
+        source: "packages/account/pages/relations/index.vue"
+        query:
+          tab: followers
+        mapping_status: retained-legacy
+      history_dynamic:
+        name: "浏览记录-动态"
+        node_id: 62:30402
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/account/pages/history/index"
+        source: "packages/account/pages/history/index.vue"
+        query:
+          state: dynamic
+        mapping_status: retained-legacy
+      history_yard:
+        name: "浏览记录-小院"
+        node_id: 62:30554
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/account/pages/history/index"
+        source: "packages/account/pages/history/index.vue"
+        query:
+          state: yard
+        mapping_status: retained-legacy
+      history_empty:
+        name: "浏览记录-缺省页"
+        node_id: 62:30874
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/account/pages/history/index"
+        source: "packages/account/pages/history/index.vue"
+        query:
+          state: empty
+        mapping_status: retained-legacy
+      level:
+        name: "等级中心"
+        node_id: 62:34597
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/account/pages/level/index"
+        source: "packages/account/pages/level/index.vue"
+        mapping_status: retained-legacy
+      level_max:
+        name: "等级中心-满级"
+        node_id: 62:34678
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/account/pages/level/index"
+        source: "packages/account/pages/level/index.vue"
+        query:
+          max: "1"
+        mapping_status: retained-legacy
+      level_rules:
+        name: "等级规则"
+        node_id: 62:34978
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/account/pages/level/rules/index"
+        source: "packages/account/pages/level/rules/index.vue"
+        mapping_status: retained-legacy
+      annual_report:
+        name: "年度报告"
+        node_id: 62:36152
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/account/pages/annual-report/index"
+        source: "packages/account/pages/annual-report/index.vue"
+        mapping_status: retained-legacy
+      helped_animals:
+        name: "我帮助过的动物"
+        node_id: 62:25204
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/account/pages/helped-animals/index"
+        source: "packages/account/pages/helped-animals/index.vue"
+        mapping_status: retained-legacy
+      yard_animals:
+        name: "小院宠物列表"
+        node_id: 62:43023
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/yard/pages/animals/index"
+        source: "packages/yard/pages/animals/index.vue"
+        mapping_status: retained-legacy
+      animal_mine:
+        name: "我的宠物"
+        node_id: 62:43393
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/animal/pages/mine/index"
+        source: "packages/animal/pages/mine/index.vue"
+        mapping_status: retained-legacy
+      animal_sponsored:
+        name: "我的云养宠物"
+        node_id: 62:43156
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/animal/pages/sponsored/index"
+        source: "packages/animal/pages/sponsored/index.vue"
+        mapping_status: retained-legacy
+      medals:
+        name: "我的勋章"
+        node_id: 62:43457
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/account/pages/medals/index"
+        source: "packages/account/pages/medals/index.vue"
+        mapping_status: retained-legacy
+      medals_map:
+        name: "勋章地图"
+        node_id: 62:43518
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/account/pages/medals/map/index"
+        source: "packages/account/pages/medals/map/index.vue"
+        mapping_status: retained-legacy
+      medals_achievement:
+        name: "获得新勋章"
+        node_id: 62:43556
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        route: "/packages/account/pages/medals/achievement/index"
+        source: "packages/account/pages/medals/achievement/index.vue"
+        mapping_status: retained-legacy
 
   jury:
     name: "逢猫评审团"
-    route: "/pages/yard/juryPanel"
-    source: "pages/yard/juryPanel.vue"
+    route: "/packages/jury/pages/queue/index"
+    source: "packages/jury/pages/queue/index.vue"
     design_doc: "docs/pages-design/评审团全链路任务清单.md"
     states:
       panel:
         name: "评审团"
-        node_id: "62:34304"
+        node_id: 83:14169
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:34304
+        mapping_status: verified-metadata
+        mapping_note: 评审任务卡片+投票结果，标题由逢猫评审团改领养评审。不是救助综合任务中心。
       pending_detail:
         name: "待投票"
-        node_id: "62:33410"
+        node_id: 83:13230
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/rescue/pages/review/detail/index"
+        source: "packages/rescue/pages/review/detail/index.vue"
+        query:
+          reviewItemId: "jury-item-001"
+          businessType: "rescue"
+        runtime:
+          status: "fixture-required"
+          reason: "待投票视图依赖 juryStorage 的 jury-item-001（救助）记录。"
+        legacy_node_id: 62:33410
+        mapping_status: verified-metadata
+        mapping_note: 在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。
       voted_detail:
         name: "已投票"
-        node_id: "62:34054"
+        node_id: 83:13874
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/adoption/pages/jury/detail/index"
+        source: "packages/adoption/pages/jury/detail/index.vue"
+        query:
+          reviewItemId: "jury-item-003"
+          businessType: "adoption"
+        runtime:
+          status: "fixture-required"
+          reason: "已投票视图由 item.hasVoted、item.status 或 closed 状态派生；juryDetail 不读取
+            state=voted，使用已关闭的 jury-item-003 fixture。"
+        legacy_node_id: 62:34054
+        mapping_status: verified-metadata
+        mapping_note: 感谢认真审查/已选投票/下一个状态保留，新增留言。
     component_nodes:
-      vote_real_result: "62:38745"
-      vote_fake_result: "62:38774"
+      vote_real_result:
+        node_id: 83:18343
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:38745
+        mapping_status: verified-metadata
+      vote_fake_result:
+        node_id: 83:18372
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:38774
+        mapping_status: verified-metadata
 
   rescue:
     name: "发布救助到证实救助"
-    route: "/pages/yard/rescueReview"
-    source: "pages/yard/rescueReview.vue"
+    route: "/packages/rescue/pages/fund/index"
+    source: "packages/rescue/pages/fund/index.vue"
     design_doc: "docs/pages-design/领养流程全链路任务清单.md"
     states:
       rescue_fund:
         name: "救助评审列表"
-        node_id: "62:34421"
+        node_id: 83:14289
+        file_key: ikwcujfbxtNcjk9tjGjKx8
         query: {}
+        legacy_node_id: 62:34421
+        mapping_status: verified-metadata
+        mapping_note: 基金余额/入池/支出与救助卡片；标题救助池，待投票改投票中。
+        route: /packages/rescue/pages/fund/index
+        source: packages/rescue/pages/fund/index.vue
       rescue_detail:
         name: "救助详情"
-        node_id: "62:33657"
-        query:
-          mode: "rescue-detail"
+        node_id: 83:13477
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: /packages/rescue/pages/detail/index
+        source: packages/rescue/pages/detail/index.vue
+        query: {}
+        runtime:
+          status: "fixture-required"
+          reason: "救助详情需要调用方提供真实 rescueId；不能由 mode 选择第一条演示记录。"
+        legacy_node_id: 62:33657
+        mapping_status: verified-metadata
+        mapping_note: 在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。
       rescue_evidence_list:
         name: "证实列表详情"
-        node_id: "62:35393"
-        route: "/pages/meMore/rescueProofList"
-        query:
-          source: "rescue"
+        node_id: 83:15264
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: /packages/rescue/pages/proof/list/index
+        source: packages/rescue/pages/proof/list/index.vue
+        query: {}
+        runtime:
+          status: "fixture-required"
+          reason: "证实列表需要调用方提供真实 rescueId。"
+        legacy_node_id: 62:35393
+        mapping_status: verified-metadata
+        mapping_note: 在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。
       rescue_evidence_form:
         name: "我也来证实"
-        node_id: "62:37451"
-        route: "/pages/meMore/rescueProofForm"
-        query:
-          source: "rescue"
+        node_id: 83:17049
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: /packages/rescue/pages/proof/create/index
+        source: packages/rescue/pages/proof/create/index.vue
+        query: {}
+        runtime:
+          status: "fixture-required"
+          reason: "证实表单需要调用方提供真实 rescueId。"
+        legacy_node_id: 62:37451
+        mapping_status: verified-metadata
+        mapping_note: 证实姓名/关系/身份证/证实说明/承诺；文本集合一致，布局节点调整。
       rescue_apply:
         name: "救助申请长表单"
-        node_id: "62:31158"
-        query:
-          state: "long"
+        node_id: 83:10978
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/rescue/pages/apply/index"
+        source: "packages/rescue/pages/apply/index.vue"
+        query: {}
+        legacy_node_id: 62:31158
+        mapping_status: verified-metadata
+        mapping_note: 在匹配的结构范围内核对层级、文本和节点属性，唯一对应；不包含样式/图片像素验收。
     component_nodes:
-      evidence_list: "62:35393"
-      evidence_form: "62:37451"
+      evidence_list:
+        node_id: 83:15264
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:35393
+        mapping_status: verified-metadata
+      evidence_form:
+        node_id: 83:17049
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:37451
+        mapping_status: verified-metadata
+  yard_detail:
+    name: 小院详情
+    route: /packages/yard/pages/detail/index
+    source: packages/yard/pages/detail/index.vue
+    design_doc: docs/pages-design/小院详情.md
+    states:
+      dynamic:
+        name: 院子详情-动态
+        node_id: 83:6085
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:26000
+        mapping_status: verified-metadata
+        mapping_note: 小院摘要/动态/评论结构，新增动物与投喂来源；底栏与统计文案调整。
+        query:
+          yardId: "1"
+          state: dynamic
+        runtime:
+          status: fixture-required
+          reason: packages/yard/pages/detail/index.vue:onLoad 的白名单及 PawYardDetailFigma.state
+            已核对；yardId/角色需 fixture，新稿内容尚未逐屏验收。
+      dynamic_empty:
+        name: 院子详情-动态-动态空状态
+        node_id: 83:6528
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:26418
+        mapping_status: verified-metadata
+        mapping_note: 院主佛系，还没发过动态及催一下空态；文本序列一致，实例结构变化。
+        query:
+          yardId: "1"
+          state: dynamic-empty
+        runtime:
+          status: fixture-required
+          reason: packages/yard/pages/detail/index.vue:onLoad 的白名单及 PawYardDetailFigma.state
+            已核对；yardId/角色需 fixture，新稿内容尚未逐屏验收。
+      feeding:
+        name: 院子详情-投喂记录
+        node_id: 83:6787
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:26677
+        mapping_status: verified-metadata
+        mapping_note: 小院订单反馈记录区域；投粮记录改云养记录，订单卡含云养期限与编号。
+        query:
+          yardId: "1"
+          state: feeding
+        runtime:
+          status: fixture-required
+          reason: packages/yard/pages/detail/index.vue:onLoad 的白名单及 PawYardDetailFigma.state
+            已核对；yardId/角色需 fixture，新稿内容尚未逐屏验收。
+      dynamic_expanded:
+        name: 院子详情-动态展开
+        node_id: 83:7045
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        legacy_node_id: 62:26947
+        mapping_status: verified-metadata
+        mapping_note: 长简介收起+展开回复状态保持，新增来源与云养文案。
+        query:
+          yardId: "1"
+          state: dynamic-expanded
+        runtime:
+          status: fixture-required
+          reason: packages/yard/pages/detail/index.vue:onLoad 的白名单及 PawYardDetailFigma.state
+            已核对；yardId/角色需 fixture，新稿内容尚未逐屏验收。
+
+  feeding_order_detail:
+    name: 投喂订单详情
+    route: /packages/feeding/pages/order/detail/index
+    source: packages/feeding/pages/order/detail/index.vue
+    design_doc: docs/pages-design/投喂订单详情.md
+    states:
+      variant_90:
+        name: 投粮订单详情（旧稿 90）
+        node_id: 62:36782
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        legacy_node_id: 62:36782
+        mapping_status: retained-legacy
+        mapping_note: 当前迁移清单未登记等价的新稿独立订单详情节点；保留已知旧稿精确节点，canonical 页面以 variant=90 承载本地/mock 视觉态。
+        query:
+          variant: 90
+        runtime:
+          status: fixture-required
+          reason: 订单详情必须由调用方提供 orderId；variant 只选择本地/mock 展示变体，不授予订单读取或反馈权限。
+      variant_91:
+        name: 院主-投粮详情
+        node_id: 62:36940
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        legacy_node_id: 62:36940
+        mapping_status: retained-legacy
+        mapping_note: 当前迁移清单未登记等价的新稿独立订单详情节点；保留已知旧稿精确节点，canonical 页面以 variant=91/perspective=yard-manager 承载本地/mock 视觉态。
+        query:
+          variant: 91
+          perspective: yard-manager
+        runtime:
+          status: fixture-required
+          reason: 反馈入口仍由可信订单关系决定；query 仅定位本地/mock 视觉态。
+      variant_92:
+        name: 云家长-投粮详情
+        node_id: 62:37087
+        file_key: 03pt0RiVfBFCvn4PsIyezk
+        legacy_node_id: 62:37087
+        mapping_status: retained-legacy
+        mapping_note: 当前迁移清单未登记等价的新稿独立订单详情节点；保留已知旧稿精确节点，canonical 页面以 variant=92 承载本地/mock 云养与物流字段。
+        query:
+          variant: 92
+        runtime:
+          status: fixture-required
+          reason: variant=92 仅承载本地/mock 云养与物流展示；orderId/recordId 仍需显式传入。
 
 # Figma states whose current code route/source has not yet been formally mapped.
 # Keep them here for discovery, but do not let an agent guess the route.
-unresolved_design_states:
-  yard_detail_dynamic:
-    name: "院子详情-动态"
-    node_id: "62:26000"
-  yard_detail_dynamic_empty:
-    name: "院子详情-动态-动态空状态"
-    node_id: "62:26418"
-  yard_detail_feed_records:
-    name: "院子详情-投喂记录"
-    node_id: "62:26677"
-  yard_detail_dynamic_expanded:
-    name: "院子详情-动态展开"
-    node_id: "62:26947"
+unresolved_design_states: {}
 
 # PawIcon V3 source audit. Every entry below is a fresh SVG download from
 # the exact Figma node; local source files are the only build inputs.
 paw_icon_sources:
   navigation/back:
     node_id: "1548:5"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "AppHeader"
     export_format: "svg"
     source_frame: "24 × 24"
     local_source: "assets/paw-icons/source/navigation/back.svg"
   navigation/close:
     node_id: "62:36780"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "12 × 12"
     local_source: "assets/paw-icons/source/navigation/close.svg"
   navigation/chevron-right:
     node_id: "62:42089"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "6 × 10"
     local_source: "assets/paw-icons/source/navigation/chevron-right.svg"
   navigation/member-progress-arrow:
     node_id: "62:41100"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "10 × 10"
     local_source: "assets/paw-icons/source/navigation/member-progress-arrow.svg"
   navigation/order-chevron-right:
     node_id: "62:41146"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "7 × 11"
     local_source: "assets/paw-icons/source/navigation/order-chevron-right.svg"
   navigation/yard-link-chevron:
     node_id: "62:41165"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "5 × 7"
     local_source: "assets/paw-icons/source/navigation/yard-link-chevron.svg"
   navigation/search:
     node_id: "62:23876"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "14 × 16"
     local_source: "assets/paw-icons/source/navigation/search.svg"
   navigation/sort-arrow:
     node_id: "62:25159"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "8 × 5"
     local_source: "assets/paw-icons/source/navigation/sort-arrow.svg"
   navigation/list:
     node_id: "62:25180"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "19 × 19"
     local_source: "assets/paw-icons/source/navigation/list.svg"
   navigation/action-arrow:
     node_id: "62:25911"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "14 × 14"
     local_source: "assets/paw-icons/source/navigation/action-arrow.svg"
   navigation/clock-disabled:
     node_id: "62:43079"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "14 × 14"
     local_source: "assets/paw-icons/source/navigation/clock-disabled.svg"
   navigation/expand-arrow:
     node_id: "62:37446"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "12 × 6"
     local_source: "assets/paw-icons/source/navigation/expand-arrow.svg"
   navigation/value-close:
     node_id: "62:39053"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "26 × 26"
     local_source: "assets/paw-icons/source/navigation/value-close.svg"
   navigation/form-amount-chevron:
     node_id: "62:24505"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "16 × 16"
     local_source: "assets/paw-icons/source/navigation/form-amount-chevron.svg"
   navigation/form-chevron:
     node_id: "62:24507"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "7 × 10"
     local_source: "assets/paw-icons/source/navigation/form-chevron.svg"
   navigation/form-clear:
     node_id: "62:24537"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "16 × 16"
     local_source: "assets/paw-icons/source/navigation/form-clear.svg"
   navigation/clear:
     node_id: "62:24537"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "16 × 16"
     local_source: "assets/paw-icons/source/navigation/clear.svg"
   navigation/delete-history:
     node_id: "62:29053"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "19 × 19"
     local_source: "assets/paw-icons/source/navigation/delete-history.svg"
   navigation/share-close:
     node_id: "62:25949"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "11 × 11"
     local_source: "assets/paw-icons/source/navigation/share-close.svg"
   actions/camera:
     node_id: "62:24489"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "28 × 28"
     local_source: "assets/paw-icons/source/actions/camera.svg"
   actions/like:
     node_id: "62:27466"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "15 × 15"
     local_source: "assets/paw-icons/source/actions/like.svg"
   actions/like-filled:
     node_id: "62:24004"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "13 × 14"
     local_source: "assets/paw-icons/source/actions/like-filled.svg"
   actions/composer-voice:
     node_id: "62:27816"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "13 × 18"
     local_source: "assets/paw-icons/source/actions/composer-voice.svg"
   actions/composer-emoji:
     node_id: "62:27475"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "17 × 17"
     local_source: "assets/paw-icons/source/actions/composer-emoji.svg"
   actions/comment-voice:
     node_id: "62:27508"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "14 × 14"
     local_source: "assets/paw-icons/source/actions/comment-voice.svg"
   actions/dynamic-share:
     node_id: "62:27707"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "21 × 21"
     local_source: "assets/paw-icons/source/actions/dynamic-share.svg"
   actions/dynamic-join:
     node_id: "62:27717"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "21 × 22"
     local_source: "assets/paw-icons/source/actions/dynamic-join.svg"
   actions/dynamic-adopt:
     node_id: "62:27720"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "21 × 19"
     local_source: "assets/paw-icons/source/actions/dynamic-adopt.svg"
   actions/feed:
     node_id: "62:27691"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "32 × 32"
     local_source: "assets/paw-icons/source/actions/feed.svg"
   actions/album:
     node_id: "62:29907"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "17 × 17"
     local_source: "assets/paw-icons/source/actions/album.svg"
   actions/share:
     node_id: "62:30016"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "21 × 21"
     local_source: "assets/paw-icons/source/actions/share.svg"
   actions/edit:
     node_id: "62:30007"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "20 × 20"
     local_source: "assets/paw-icons/source/actions/edit.svg"
   actions/manage-pet:
     node_id: "62:29900"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "18 × 18"
     local_source: "assets/paw-icons/source/actions/manage-pet.svg"
   actions/manage-album:
     node_id: "62:29907"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "17 × 17"
     local_source: "assets/paw-icons/source/actions/manage-album.svg"
   actions/delete:
     node_id: "62:29914"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "11 × 13"
     local_source: "assets/paw-icons/source/actions/delete.svg"
   actions/selection-check:
     node_id: "62:28222"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "15 × 11"
     local_source: "assets/paw-icons/source/actions/selection-check.svg"
   actions/copy:
     node_id: "62:36924"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "10 × 10.6335"
     local_source: "assets/paw-icons/source/actions/copy.svg"
   actions/agreement-check:
     node_id: "62:31380"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "12 × 13"
     local_source: "assets/paw-icons/source/actions/agreement-check.svg"
   actions/yard-feed:
     node_id: "62:41155"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "21 × 21"
     local_source: "assets/paw-icons/source/actions/yard-feed.svg"
   actions/yard-audit:
     node_id: "62:41218"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "20 × 20"
     local_source: "assets/paw-icons/source/actions/yard-audit.svg"
   actions/order-all:
     node_id: "62:41106"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "25 × 25"
     local_source: "assets/paw-icons/source/actions/order-all.svg"
   actions/order-pay:
     node_id: "62:41112"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "18 × 18"
     local_source: "assets/paw-icons/source/actions/order-pay.svg"
   actions/order-ship:
     node_id: "62:41121"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "22 × 22"
     local_source: "assets/paw-icons/source/actions/order-ship.svg"
   actions/order-receive:
     node_id: "62:41129"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "20 × 20"
     local_source: "assets/paw-icons/source/actions/order-receive.svg"
   actions/order-review:
     node_id: "62:41137"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "19 × 19"
     local_source: "assets/paw-icons/source/actions/order-review.svg"
   actions/location-pin:
     node_id: "62:23905"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "7 × 13"
     local_source: "assets/paw-icons/source/actions/location-pin.svg"
   actions/yard-location:
     node_id: "62:42066"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "12 × 12"
     local_source: "assets/paw-icons/source/actions/yard-location.svg"
   actions/current-location:
     node_id: "62:28161"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "17 × 17"
     local_source: "assets/paw-icons/source/actions/current-location.svg"
   actions/album-pin:
     node_id: "62:36090"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "10 × 13"
     local_source: "assets/paw-icons/source/actions/album-pin.svg"
   actions/album-favorite:
     node_id: "62:36089"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "13 × 13"
     local_source: "assets/paw-icons/source/actions/album-favorite.svg"
   actions/album-hide:
     node_id: "62:36088"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "14 × 9"
     local_source: "assets/paw-icons/source/actions/album-hide.svg"
   actions/album-delete:
     node_id: "62:36087"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "11 × 13"
     local_source: "assets/paw-icons/source/actions/album-delete.svg"
   actions/result-close:
     node_id: "62:36780"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "12 × 12"
     local_source: "assets/paw-icons/source/actions/result-close.svg"
   actions/login-phone:
     node_id: "62:42149"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "20 × 20"
     local_source: "assets/paw-icons/source/actions/login-phone.svg"
   common/message-interaction:
     node_id: "62:42383"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "21 × 23"
     local_source: "assets/paw-icons/source/common/message-interaction.svg"
   common/message-shopping:
     node_id: "62:42391"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "24 × 24"
     local_source: "assets/paw-icons/source/common/message-shopping.svg"
   common/message-service:
     node_id: "62:42400"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "24 × 24"
     local_source: "assets/paw-icons/source/common/message-service.svg"
   common/message-system:
     node_id: "62:42410"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "27 × 27"
     local_source: "assets/paw-icons/source/common/message-system.svg"
   common/message-activity:
     node_id: "62:42419"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "22 × 22"
     local_source: "assets/paw-icons/source/common/message-activity.svg"
   common/message-pet:
     node_id: "62:42428"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "29 × 29"
     local_source: "assets/paw-icons/source/common/message-pet.svg"
   status/check-outline:
     node_id: "62:32653"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "17 × 17"
     local_source: "assets/paw-icons/source/status/check-outline.svg"
   status/check:
     node_id: "62:32653"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "17 × 17"
     local_source: "assets/paw-icons/source/status/check.svg"
   status/adoption-rejected:
     node_id: "62:39293"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "24 × 24"
     local_source: "assets/paw-icons/source/status/adoption-rejected.svg"
   status/success-check:
     node_id: "62:36668"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "18 × 18"
     local_source: "assets/paw-icons/source/status/success-check.svg"
   status/jury-real:
     node_id: "62:35988"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "60 × 60"
     local_source: "assets/paw-icons/source/status/jury-real.svg"
   status/jury-fake:
     node_id: "62:38785"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "60 × 60"
     local_source: "assets/paw-icons/source/status/jury-fake.svg"
   badges/crown-left:
     node_id: "62:35671"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "21 × 21"
     local_source: "assets/paw-icons/source/badges/crown-left.svg"
   badges/crown-center:
     node_id: "62:35643"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "22 × 22"
     local_source: "assets/paw-icons/source/badges/crown-center.svg"
   badges/crown-right:
     node_id: "62:35695"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "21 × 21"
     local_source: "assets/paw-icons/source/badges/crown-right.svg"
   brand/share-poster:
     node_id: "62:25956"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "27 × 27"
     local_source: "assets/paw-icons/source/brand/share-poster.svg"
   brand/share-link:
     node_id: "62:25963"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "29 × 29"
     local_source: "assets/paw-icons/source/brand/share-link.svg"
   brand/share-wechat:
     node_id: "62:25987"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "25 × 25"
     local_source: "assets/paw-icons/source/brand/share-wechat.svg"
   brand/login-wechat:
     node_id: "62:42153"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "20 × 20"
     local_source: "assets/paw-icons/source/brand/login-wechat.svg"
   brand/share-moments:
     node_id: "62:25972"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "38 × 38"
     local_source: "assets/paw-icons/source/brand/share-moments.svg"
   brand/share-report:
     node_id: "62:25993"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "27 × 27"
     local_source: "assets/paw-icons/source/brand/share-report.svg"
   brand/feed-kibble:
     node_id: "62:38883"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "20 × 15"
     local_source: "assets/paw-icons/source/brand/feed-kibble.svg"
   brand/feed-bowl:
     node_id: "62:38854"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "32 × 32"
     local_source: "assets/paw-icons/source/brand/feed-bowl.svg"
   brand/feed-bag:
     node_id: "62:38895"
+    file_key: "03pt0RiVfBFCvn4PsIyezk"
     figma_page: "Page 1"
     export_format: "svg"
     source_frame: "43 × 43"
@@ -711,11 +1395,14 @@ paw_icon_sources:
 components:
   app_header_page_nav:
     semantic_name: "AppHeader/PageNav"
-    node_id: "1548:3731"
+    node_id: 1548:3731
+    file_key: 03pt0RiVfBFCvn4PsIyezk
     figma_name: "AppHeader/PageNav"
     source: "components/PawPageNav.vue"
     adoption_status: "adopted"
-    layout_semantics: "375x54 horizontal auto layout; Content=Title/BackOnly/Identity/TopLevel; Title/Show Back/Back Icon component properties"
+    layout_semantics: "375x54 horizontal auto layout;
+      Content=Title/BackOnly/Identity/TopLevel; Title/Show Back/Back Icon
+      component properties"
     mapped_instance_states:
       - "home.dynamic"
       - "home.dynamic_empty"
@@ -730,132 +1417,235 @@ components:
       - "publish_dynamic.default"
       - "publish_dynamic.result"
     preserved_state_exceptions:
-      - "home.yard: additional visible Pet Services entry is not represented by Content=TopLevel"
-      - "dynamic_detail.comments_empty: different identity name/owner state cannot be overridden while Source Han Sans CN is unavailable to the Figma plugin runtime"
+      - "home.yard: additional visible Pet Services entry is not represented by
+        Content=TopLevel"
+      - "dynamic_detail.comments_empty: different identity name/owner state
+        cannot be overridden while Source Han Sans CN is unavailable to the
+        Figma plugin runtime"
     code_connect: "pending-plan-seat: requires an Organization/Enterprise Dev or Full seat"
+    legacy_node_id: 1548:3731
+    mapping_status: retained-legacy
+    mapping_note: 旧文件AppHeader组件集仍可读取；新文件只有Page 1且无该组件集，不将页面导航外观代替组件定义。
   level_capsule:
     semantic_name: "LevelBadge"
-    node_id: "62:42069"
+    node_id: 83:22240
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "Group 1321318288"
     source: "components/customBadge/LevelBadge.vue"
     adoption_status: "adopted"
     layout_semantics: "fixed 28x13, horizontal center, vertical center"
+    legacy_node_id: 62:42069
+    mapping_status: verified-metadata
+    mapping_note: 组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。
   feeding_source_row:
     semantic_name: "FeedingSourceRow"
-    node_id: "62:42047"
+    node_id: 83:22218
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "Frame 1321318267"
     source: "components/dynamic/FeedingSourceRow.vue"
     adoption_status: "adopted"
     layout_semantics: "horizontal center, gap 9px"
+    legacy_node_id: 62:42047
+    mapping_status: verified-metadata
+    mapping_note: 组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。
   reply_target_inline:
     semantic_name: "ReplyTargetInline"
-    node_id: "62:42056"
+    node_id: 83:22227
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "Group 1321318296"
     source: "components/dynamic/CommentItem.vue"
     adoption_status: "adopted"
     layout_semantics: "inline reply target with 3px name-level gap"
+    legacy_node_id: 62:42056
+    mapping_status: verified-metadata
+    mapping_note: 组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。
   user_name_level:
     semantic_name: "UserNameLevel"
-    node_id: "62:42062"
+    node_id: 83:22233
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "Frame 1321318274"
     source: "components/identity/PawUserIdentity.vue"
     adoption_status: "adopted"
     layout_semantics: "horizontal center, gap 3px"
+    legacy_node_id: 62:42062
+    mapping_status: verified-metadata
+    mapping_note: 组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。
   yard_location_line:
     semantic_name: "YardLocationLine"
-    node_id: "62:42065"
+    node_id: 83:22236
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "Frame 1321317912"
     source: "components/identity/YardLocationLine.vue"
     adoption_status: "adopted"
     layout_semantics: "12x12 icon, horizontal center, gap 2px"
+    legacy_node_id: 62:42065
+    mapping_status: verified-metadata
+    mapping_note: 组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。
   rank_user_name_level:
     semantic_name: "RankUserNameLevel"
-    node_id: "62:42071"
+    node_id: 83:22242
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "Group 1321318303"
     source: "components/SeamlessScroll.vue"
     adoption_status: "adopted"
     layout_semantics: "horizontal center, gap 3px"
+    legacy_node_id: 62:42071
+    mapping_status: verified-metadata
+    mapping_note: 组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。
   avatar_name_level_row:
     semantic_name: "AvatarNameLevelRow"
-    node_id: "62:42074"
+    node_id: 83:22245
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "Group 1321318301"
     source: "components/identity/PawUserIdentity.vue"
     adoption_status: "adopted"
     layout_semantics: "horizontal center, gap 8px; inner gap 3px"
+    legacy_node_id: 62:42074
+    mapping_status: verified-metadata
+    mapping_note: 组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。
   chevron_right:
     semantic_name: "ChevronRight"
-    node_id: "62:42089"
+    node_id: 83:22260
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "详情"
     source: "components/base/PawChevron.vue"
     adoption_status: "adopted"
     layout_semantics: "fixed approximately 4x8px vector"
+    legacy_node_id: 62:42089
+    mapping_status: verified-metadata
+    mapping_note: 组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。
   yard_type_badge:
     semantic_name: "YardBadge"
-    node_id: "62:42091"
+    node_id: 83:22262
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "Frame 1321318310"
     source: "components/customBadge/YardBadge.vue"
     adoption_status: "adopted"
     layout_semantics: "fixed 30x16, centered"
+    legacy_node_id: 62:42091
+    mapping_status: verified-metadata
+    mapping_note: 组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。
   yard_name_verified:
     semantic_name: "YardNameVerified"
-    node_id: "62:42094"
+    node_id: 83:22265
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "Group 1321318304"
     source: "components/yard/YardSummaryCard.vue"
     adoption_status: "adopted"
     layout_semantics: "horizontal center, gap 3px"
+    legacy_node_id: 62:42094
+    mapping_status: verified-metadata
+    mapping_note: 组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。
   verified_badge:
     semantic_name: "PawVerifiedBadge"
-    node_id: "62:42097"
+    node_id: 83:22268
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "Frame 1321318103"
     source: "components/identity/PawVerifiedBadge.vue"
     adoption_status: "adopted"
     layout_semantics: "fixed 44x16, centered"
+    legacy_node_id: 62:42097
+    mapping_status: verified-metadata
+    mapping_note: 组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。
   user_name_owner:
     semantic_name: "UserNameOwner"
-    node_id: "62:42099"
+    node_id: 83:22270
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "Frame 1321318340"
     source: "components/identity/PawUserIdentity.vue"
     adoption_status: "adopted"
     layout_semantics: "horizontal center, gap 3px"
+    legacy_node_id: 62:42099
+    mapping_status: verified-metadata
+    mapping_note: 组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。
   level_capsule_compact:
     semantic_name: "LevelBadge/Compact"
-    node_id: "62:41095"
+    node_id: 83:21026
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "Group 1321318288"
     source: "components/customBadge/LevelBadge.vue"
     adoption_status: "adopted"
     layout_semantics: "fixed 28x13, horizontal center, vertical center"
+    legacy_node_id: 62:41095
+    mapping_status: verified-metadata
+    mapping_note: 我的个人摘要等级组件：同一摘要组、x149/y24.5、28×13；83:21173为另一摘要态不含此symbol。
   feed_author_summary:
     semantic_name: "FeedAuthorSummary"
-    node_id: "62:42028"
+    node_id: 83:22199
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "Group 1321318266"
     source: "components/PawYardDetailFigma.vue"
     adoption_status: "page-composition"
     layout_semantics: "avatar plus identity and feeding row"
+    legacy_node_id: 62:42028
+    mapping_status: verified-metadata
+    mapping_note: 组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。
   user_name_verified:
     semantic_name: "UserNameVerified"
-    node_id: "62:42080"
+    node_id: 83:22251
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "Group 1321318300"
     source: "components/identity/PawUserIdentity.vue"
     adoption_status: "mapped-variant"
     layout_semantics: "horizontal center, gap 3px"
+    legacy_node_id: 62:42080
+    mapping_status: verified-metadata
+    mapping_note: 组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。
   user_name_level_emphasis:
     semantic_name: "UserNameLevel/Emphasis"
-    node_id: "62:42084"
+    node_id: 83:22255
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "Group 1321318298"
     source: "components/identity/PawUserIdentity.vue"
     adoption_status: "mapped-variant"
     layout_semantics: "horizontal center, gap 3px"
+    legacy_node_id: 62:42084
+    mapping_status: verified-metadata
+    mapping_note: 组件集合内唯一相同类型/相对坐标/尺寸，16项次序一致；旧语义名在新文件恢复为原始图层名。
   create_yard_intro_card:
     semantic_name: "CreateYardIntroCard"
-    node_id: "62:24485"
+    node_id: 83:4475
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "Frame 1171276786"
-    source: "pages/yard/createCatYard.vue"
+    source: "packages/yard/pages/create/index.vue"
     adoption_status: "page-composition"
     layout_semantics: "business card, not a primitive"
+    legacy_node_id: 62:24485
+    mapping_status: verified-metadata
+    mapping_note: 建院介绍卡片：同父级表单首项、355×279组件，旧语义名恢复原Frame名。
   publish_entry_sheet:
     semantic_name: "PublishEntrySheet"
-    node_id: "62:29176"
+    node_id: 83:9120
+    file_key: ikwcujfbxtNcjk9tjGjKx8
     figma_name: "发布"
     source: "components/PawPublishSheetContent.vue"
     adoption_status: "adopted"
     layout_semantics: "bottom-sheet content mounted by the custom tab bar; no standalone route"
+    legacy_node_id: 62:29176
+    mapping_status: verified-metadata
+    mapping_note: 发布入口菜单层级和动作对应；导航实例展开。
+new_design_references:
+  home_services_variant:
+    node_id: 83:3739
+    file_key: ikwcujfbxtNcjk9tjGjKx8
+    name: 首页-服务与救助入口版本
+    status: design-reference-only
+    note: 与83:3464并存；新增服务/救助池/领养有礼入口，C6先核对入口合同，不自动覆盖当前首页。
+  search_empty:
+    node_id: 83:4109
+    file_key: ikwcujfbxtNcjk9tjGjKx8
+    name: 搜索-空状态
+    status: design-reference-only
+    note: 没有相关内容/换个关键词试试呢；不是旧搜索-动态有结果状态。
+  cloud_review_waiting:
+    node_id: 83:11531
+    file_key: ikwcujfbxtNcjk9tjGjKx8
+    name: 院主-等待云家长审核
+    status: design-reference-only
+    note: C2用于cloudParentRequired条件路径核对，不作为云家长无条件必审的依据。
+  dynamic_feedback_editor:
+    node_id: 83:15056
+    file_key: ikwcujfbxtNcjk9tjGjKx8
+    name: 发布动态-关联订单反馈态
+    status: design-reference-only
+    note: C5/C8订单、动物与反馈任务合同参考。

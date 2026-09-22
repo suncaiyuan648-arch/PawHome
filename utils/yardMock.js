@@ -70,6 +70,8 @@ const YARD_PETS = [
 const YARD_FEEDING_ORDERS = [
   {
     id: 'yard-order-1',
+    orderType: 'normal_feed',
+    status: 'delivered',
     yardId: '1',
     petIds: ['roster-cat-2'],
     pawId: 'order-user-paf',
@@ -84,6 +86,8 @@ const YARD_FEEDING_ORDERS = [
   },
   {
     id: 'yard-order-2',
+    orderType: 'normal_feed',
+    status: 'delivered',
     yardId: '1',
     petIds: ['roster-cat-3'],
     pawId: 'order-user-axtf',
@@ -98,6 +102,8 @@ const YARD_FEEDING_ORDERS = [
   },
   {
     id: 'yard-order-3',
+    orderType: 'normal_feed',
+    status: 'delivered',
     yardId: '1',
     petIds: ['roster-dog-2'],
     pawId: 'order-user-hkfg',
@@ -157,7 +163,13 @@ const YARD_MOCK = {
     avatar: index % 2 ? '/static/figma/yard-detail/owner.png' : '/static/figma/yard-pet-exact.png',
     rankTitle: `小院投喂第${index + 1}名`
   })),
-  feeders: [1, 2, 3, 4, 5].map(id => ({ id, avatar: `/static/figma/dynamic-detail/source-${id}.png` })),
+  feeders: [
+    { id: 1, avatar: '/static/figma/dynamic-detail/source-1.png' },
+    { id: 2, avatar: '/static/figma/dynamic-detail/source-2.png' },
+    { id: 3, avatar: '/static/figma/dynamic-detail/source-3.png' },
+    { id: 4, avatar: '/static/figma/dynamic-detail/source-4.png' },
+    { id: 5, avatar: '/static/figma/dynamic-detail/source-5.png' }
+  ],
   postFeeders: [1, 2, 3, 4].map(id => ({ id, avatar: '/static/figma/yard-pet-exact.png' })),
   comments: [
     { id: 'yard-c-1', author: { name: '姜栋', avatar: '/static/avatarlog.png', level: 1, owner: true }, copy: '给我点赞给我点赞给我点赞给我点赞给我点赞', meta: '昨天 20:45　江西', likes: 32, children: [{ id: 'yard-c-1-r-1', author: { name: '花开春晓', avatar: '/static/avatarlog.png', level: 1 }, replyTo: { name: '姜栋', level: 1 }, copy: '一起为小院里的猫咪加油呀', meta: '昨天 20:46　江西', likes: 8 }] },

@@ -22,6 +22,7 @@
 
 <script>
 import { getAddressList } from '@/utils/addressMock.js'
+import { buildRoute } from '@/navigation/routeContracts.js'
 
 export default {
   name: 'PawAddressPickerCard',
@@ -32,7 +33,8 @@ export default {
     title: { type: String, default: '' },
     subtitle: { type: String, default: '不对外展示，可放心填写' },
     backgroundColor: { type: String, default: '#fff' },
-    useDefaultAddress: { type: Boolean, default: true }
+    useDefaultAddress: { type: Boolean, default: true },
+    requestId: { type: String, default: 'address-picker' }
   },
   emits: ['select'],
   data() {
@@ -66,8 +68,16 @@ export default {
         ? `&selectedId=${encodeURIComponent(this.selectedAddress.id)}`
         : ''
       const returnUrl = this.returnUrl || ''
+      const params = {
+        kind: this.normalizedKind,
+        intent: 'select',
+        requestId: this.requestId,
+      }
+      if (this.selectedAddress && this.selectedAddress.id) params.addressId = String(this.selectedAddress.id)
+      const route = buildRoute('address.list', params)
+      const query = `${returnUrl ? `&returnUrl=${encodeURIComponent(returnUrl)}` : ''}`
       uni.navigateTo({
-        url: `/pages/meMore/shippingAddress?kind=${this.normalizedKind}&pick=1${returnUrl ? `&returnUrl=${encodeURIComponent(returnUrl)}` : ''}${selectedId}`,
+        url: route + query,
         events: {
           addressPicked: (payload = {}) => {
             if (!payload || !payload.id) return

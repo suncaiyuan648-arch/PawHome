@@ -34,6 +34,53 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value))
 }
 
+function readLocalRows(key) {
+  if (typeof uni === 'undefined' || !uni || typeof uni.getStorageSync !== 'function') return []
+  try {
+    const raw = uni.getStorageSync(key)
+    if (!raw) return []
+    const rows = typeof raw === 'string' ? JSON.parse(raw) : raw
+    return Array.isArray(rows) ? rows : []
+  } catch (error) {
+    return []
+  }
+}
+
+function storedState(record) {
+  const label = String(record.statusLabel || record.state || record.status || '').trim()
+  return ({ '待领养': 'pending', '已云养': 'cloud', '已领养': 'adopted', '失踪': 'missing', '死亡': 'dead' }[label]
+    || (['pending', 'cloud', 'adopted', 'missing', 'dead'].includes(label) ? label : 'pending'))
+}
+
+function readStoredPets(yardId) {
+  return readLocalRows('PAWHOME_ANIMAL_RECORDS')
+    .filter(record => record && String(record.yardId || '') === String(yardId || ''))
+    .map(record => {
+      const state = storedState(record)
+      const statusLabel = record.statusLabel || ({ pending: '待领养', cloud: '已云养', adopted: '已领养', missing: '失踪', dead: '死亡' }[state])
+      const avatar = record.avatar || '/static/figma/yard-cats/cat-avatar.png'
+      const species = record.species === 'dog' || record.kind === 'dog' ? 'dog' : 'cat'
+      const tags = Array.isArray(record.tags) ? record.tags : [record.breed || (species === 'dog' ? '狗狗' : '猫咪'), record.gender || '']
+      return {
+        id: record.animalId,
+        name: record.name || '未命名动物',
+        avatar,
+        species,
+        speciesLabel: record.speciesLabel || (species === 'dog' ? '狗狗' : '猫咪'),
+        breed: record.breed || '',
+        state,
+        status: record.status || 'active',
+        statusLabel,
+        tags: tags.filter(Boolean),
+        cardTags: Array.isArray(record.cardTags) ? record.cardTags : tags.filter(Boolean),
+        desc: record.desc || record.description || '',
+        adoptionValue: Number(record.petValue ?? record.value ?? record.adoptionValue ?? 0),
+        gallery: Array.isArray(record.gallery) && record.gallery.length ? record.gallery : [avatar],
+        yardId: record.yardId
+      }
+    })
+}
+
 function matchesKeyword(pet, keyword) {
   const normalizedKeyword = String(keyword || '').trim().toLowerCase()
   if (!normalizedKeyword) return true
@@ -41,7 +88,7 @@ function matchesKeyword(pet, keyword) {
     .some(value => String(value || '').toLowerCase().includes(normalizedKeyword))
 }
 
-function getSourcePets({ variant, userPawId, yardId, yard }) {
+function getSourcePets({ variant, userPawId, yardId, yard, managed }) {
   if (variant === 'mine') {
     return getMineYardGroups({ userPawId, yard }).flatMap(group => group.pets)
   }
@@ -49,7 +96,9 @@ function getSourcePets({ variant, userPawId, yardId, yard }) {
   // owned 是旧的“我的宠物”入口，为保持现有页面可用，继续使用当前小院 mock 数据；
   // 云养列表和小院列表分别由 mine/yard/status 的 scope 参数隔离。
   if (variant === 'yard' || variant === 'status' || variant === 'owned') {
-    return String(yard.id) === String(yardId) ? yard.pets : []
+    const stored = readStoredPets(yardId)
+    if (stored.length) return stored
+    return managed ? [] : (String(yard.id) === String(yardId) ? yard.pets : [])
   }
 
   return []
@@ -149,8 +198,9 @@ export function getPetRoster(params = {}) {
   const yardId = normalizeId(params.yardId, DEFAULT_YARD_ID)
   const species = normalizeSpecies(params.species)
   const keyword = String(params.keyword || '').trim()
+  const managed = params.managed === true
   const yard = getPawHomeYardMock()
-  const sourcePets = getSourcePets({ variant, userPawId, yardId, yard })
+  const sourcePets = getSourcePets({ variant, userPawId, yardId, yard, managed })
   const items = filterPets(sourcePets, species, keyword)
   const yardGroups = variant === 'mine'
     ? getMineYardGroups({ userPawId, yard })

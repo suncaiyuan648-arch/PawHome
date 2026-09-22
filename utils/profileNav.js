@@ -4,20 +4,19 @@ export const SELF_PAW_ID = '2876598765'
 export function openUserProfile({ pawId, nickname = '', avatar = '' }) {
 	const id = String(pawId || '').trim()
 	if (!id || id === SELF_PAW_ID) return
-	const q =
-		'pawId=' +
-		encodeURIComponent(id) +
-		'&nickname=' +
-		encodeURIComponent(nickname || '') +
-		'&avatar=' +
-		encodeURIComponent(avatar || '')
-	uni.navigateTo({ url: '/pages/user/profile?' + q })
+	// Keep this tiny navigation helper dependency-free: governance tests copy it
+	// into an isolated fixture tree. The same restricted ID shape is enforced by
+	// the account.profile route contract.
+	if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(id)) return
+	const q = '/packages/account/pages/profile/index?userId=' + encodeURIComponent(id)
+	const extras = '&nickname=' + encodeURIComponent(nickname || '') + '&avatar=' + encodeURIComponent(avatar || '')
+	uni.navigateTo({ url: q + extras })
 }
 
 /** 小院详情（商品/小院详情页） */
 export function openYardDetail({ yardId = '1', yardName = '' } = {}) {
 	const id = String(yardId || '').trim() || '1'
-	let url = '/pages/commodityDetails/index?id=' + encodeURIComponent(id)
+	let url = '/packages/yard/pages/detail/index?yardId=' + encodeURIComponent(id)
 	const yn = String(yardName || '').trim()
 	if (yn) url += '&yardName=' + encodeURIComponent(yn)
 	uni.navigateTo({ url })
