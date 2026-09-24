@@ -113,10 +113,11 @@ export const RESCUE_REVIEW_STATUSES: readonly ReviewStatus[] = freezeList<Review
   'rejected',
 )
 
-export const RESCUE_LIST_FILTERS: Readonly<Record<RescueListType, readonly RescueListFilter[]>> = Object.freeze({
-  mine: freezeList<RescueListFilter>('all', ...RESCUE_MINE_STATUSES),
-  review: freezeList<RescueListFilter>('all', 'pending', 'processed', ...RESCUE_REVIEW_STATUSES),
-})
+export const RESCUE_LIST_FILTERS: Readonly<Record<RescueListType, readonly RescueListFilter[]>> =
+  Object.freeze({
+    mine: freezeList<RescueListFilter>('all', ...RESCUE_MINE_STATUSES),
+    review: freezeList<RescueListFilter>('all', 'pending', 'processed', ...RESCUE_REVIEW_STATUSES),
+  })
 
 export class RescueListContractError extends Error {
   readonly code: string
@@ -143,18 +144,21 @@ function isPlainRecord(value: unknown): value is JsonRecord {
   const prototype = Object.getPrototypeOf(value)
   if (prototype === Object.prototype || prototype === null) return true
   const descriptor = Object.getOwnPropertyDescriptor(prototype, 'constructor')
-  return Object.getPrototypeOf(prototype) === null
-    && Object.prototype.toString.call(value) === '[object Object]'
-    && descriptor !== undefined
-    && typeof descriptor.value === 'function'
-    && descriptor.value.name === 'Object'
+  return (
+    Object.getPrototypeOf(prototype) === null &&
+    Object.prototype.toString.call(value) === '[object Object]' &&
+    descriptor !== undefined &&
+    typeof descriptor.value === 'function' &&
+    descriptor.value.name === 'Object'
+  )
 }
 
 function rejectDangerousKeys(value: JsonRecord, label: string): void {
   for (const key of Object.getOwnPropertyNames(value)) {
     if (DANGEROUS_KEYS.has(key)) fail('PROTOTYPE_KEY', `${label} contains a prototype key`, { key })
   }
-  if (Object.getOwnPropertySymbols(value).length) fail('UNKNOWN_FIELD', `${label} cannot contain symbol fields`)
+  if (Object.getOwnPropertySymbols(value).length)
+    fail('UNKNOWN_FIELD', `${label} cannot contain symbol fields`)
 }
 
 function assertRecord(value: unknown, label: string): asserts value is JsonRecord {
@@ -162,7 +166,11 @@ function assertRecord(value: unknown, label: string): asserts value is JsonRecor
   rejectDangerousKeys(value, label)
 }
 
-function normalizeId(value: unknown, label: string, { required = false }: { required?: boolean } = {}): string {
+function normalizeId(
+  value: unknown,
+  label: string,
+  { required = false }: { required?: boolean } = {},
+): string {
   let id = ''
   if (typeof value === 'string') id = value.trim()
   else if (typeof value === 'number' && Number.isSafeInteger(value)) id = String(value)
@@ -170,14 +178,20 @@ function normalizeId(value: unknown, label: string, { required = false }: { requ
     if (required) fail('MISSING_ID', `${label} is required`, { label })
     return ''
   }
-  if (!SAFE_ID.test(id) || URL_MARKERS.test(id)) fail('INVALID_ID', `${label} must be an opaque ID`, { label })
+  if (!SAFE_ID.test(id) || URL_MARKERS.test(id))
+    fail('INVALID_ID', `${label} must be an opaque ID`, { label })
   return id
 }
 
 function rejectCrossDomainId(id: string, label: string): void {
   const lower = id.toLowerCase()
   for (const prefix of CROSS_DOMAIN_PREFIXES.concat('animal')) {
-    if (lower === prefix || lower.startsWith(`${prefix}-`) || lower.startsWith(`${prefix}_`) || lower.startsWith(`${prefix}:`)) {
+    if (
+      lower === prefix ||
+      lower.startsWith(`${prefix}-`) ||
+      lower.startsWith(`${prefix}_`) ||
+      lower.startsWith(`${prefix}:`)
+    ) {
       fail('CROSS_DOMAIN_ID', `${label} looks like a ${prefix} domain ID`, { label, id, prefix })
     }
   }
@@ -188,11 +202,12 @@ function assertRescueDomain(record: JsonRecord): void {
   for (const field of ['applicationType', 'businessType']) {
     if (!own(record, field)) continue
     const value = normalizeId(record[field], `record.${field}`)
-    if (!value) fail('MISSING_DOMAIN', 'A rescue record must declare its business domain', { field })
+    if (!value)
+      fail('MISSING_DOMAIN', 'A rescue record must declare its business domain', { field })
     values.push({ field, value })
   }
   if (!values.length) fail('MISSING_DOMAIN', 'A rescue record must declare its business domain')
-  if (values.some(item => item.value !== 'rescue')) {
+  if (values.some((item) => item.value !== 'rescue')) {
     fail('CROSS_DOMAIN_RECORD', 'A rescue list record must belong to the rescue domain', { values })
   }
   if (values.length > 1 && values[0].value !== values[1].value) {
@@ -204,7 +219,11 @@ function assertRescueDomain(record: JsonRecord): void {
     for (const field of ['applicationType', 'businessType']) {
       if (!own(nestedReview, field)) continue
       const value = normalizeId(nestedReview[field], `record.review.${field}`)
-      if (value !== 'rescue') fail('CROSS_DOMAIN_RECORD', 'Nested review metadata must belong to rescue', { field, value })
+      if (value !== 'rescue')
+        fail('CROSS_DOMAIN_RECORD', 'Nested review metadata must belong to rescue', {
+          field,
+          value,
+        })
     }
   }
 }
@@ -231,7 +250,11 @@ function resolveActor(actorProvider: unknown, requiredRole: string): ActorState 
   try {
     const resolved: unknown = resolveTrustedActor(actorProvider)
     if (resolved === null) return { actor: null, reason: 'NO_ACTOR' }
-    if (!isPlainRecord(resolved) || typeof resolved.id !== 'string' || !Array.isArray(resolved.roles)) {
+    if (
+      !isPlainRecord(resolved) ||
+      typeof resolved.id !== 'string' ||
+      !Array.isArray(resolved.roles)
+    ) {
       return { actor: null, reason: 'INVALID_ACTOR' }
     }
     const roles: string[] = []
@@ -254,12 +277,19 @@ interface DiagnosticsArgs {
   actorError?: unknown
 }
 
-function diagnostics({ scanned = 0, accepted = 0, skipped = [], actorError = null }: DiagnosticsArgs = {}): RescueListModel['diagnostics'] {
+function diagnostics({
+  scanned = 0,
+  accepted = 0,
+  skipped = [],
+  actorError = null,
+}: DiagnosticsArgs = {}): RescueListModel['diagnostics'] {
   return Object.freeze({
     scanned,
     accepted,
-    skipped: Object.freeze(skipped.map(item => Object.freeze({ ...item }))),
-    actorError: actorError ? Object.freeze({ code: errorCode(actorError, 'ACTOR_CONTRACT_FAILED') }) : null,
+    skipped: Object.freeze(skipped.map((item) => Object.freeze({ ...item }))),
+    actorError: actorError
+      ? Object.freeze({ code: errorCode(actorError, 'ACTOR_CONTRACT_FAILED') })
+      : null,
   })
 }
 
@@ -303,7 +333,8 @@ function applicantIdFor(record: JsonRecord): string {
   }
   const applicant = record.applicant
   if (own(record, 'applicant') && applicant !== null && applicant !== undefined) {
-    if (!isPlainRecord(applicant)) fail('INVALID_APPLICANT', 'record.applicant must be a plain object')
+    if (!isPlainRecord(applicant))
+      fail('INVALID_APPLICANT', 'record.applicant must be a plain object')
     rejectDangerousKeys(applicant, 'record.applicant')
     for (const field of ['id', 'pawId']) {
       if (!own(applicant, field)) continue
@@ -311,7 +342,8 @@ function applicantIdFor(record: JsonRecord): string {
       if (value && !candidates.includes(value)) candidates.push(value)
     }
   }
-  if (candidates.length > 1) fail('CONFLICTING_APPLICANT_ID', 'Applicant relation aliases disagree', { candidates })
+  if (candidates.length > 1)
+    fail('CONFLICTING_APPLICANT_ID', 'Applicant relation aliases disagree', { candidates })
   return candidates[0] || ''
 }
 
@@ -333,7 +365,12 @@ function scalarStates(record: JsonRecord, fields: readonly string[], label: stri
 
 function mineStatusFor(record: JsonRecord): MineStatus {
   const status = scalarStates(record, ['applicationStatus'], 'applicationStatus')
-  if (!includesValue(RESCUE_MINE_STATUSES, status)) fail(status ? 'INVALID_MINE_STATUS' : 'MISSING_MINE_STATUS', 'Mine rescue status is not in the whitelist', { status })
+  if (!includesValue(RESCUE_MINE_STATUSES, status))
+    fail(
+      status ? 'INVALID_MINE_STATUS' : 'MISSING_MINE_STATUS',
+      'Mine rescue status is not in the whitelist',
+      { status },
+    )
   return status
 }
 
@@ -346,9 +383,15 @@ function reviewObjectFor(record: JsonRecord): JsonRecord | null {
 }
 
 function reviewItemFor(record: JsonRecord, review: JsonRecord | null): string {
-  const top = own(record, 'reviewItemId') ? normalizeId(record.reviewItemId, 'record.reviewItemId') : ''
-  const nested = review && own(review, 'reviewItemId') ? normalizeId(review.reviewItemId, 'record.review.reviewItemId') : ''
-  if (top && nested && top !== nested) fail('CONFLICTING_REVIEW_ITEM_ID', 'reviewItemId aliases disagree')
+  const top = own(record, 'reviewItemId')
+    ? normalizeId(record.reviewItemId, 'record.reviewItemId')
+    : ''
+  const nested =
+    review && own(review, 'reviewItemId')
+      ? normalizeId(review.reviewItemId, 'record.review.reviewItemId')
+      : ''
+  if (top && nested && top !== nested)
+    fail('CONFLICTING_REVIEW_ITEM_ID', 'reviewItemId aliases disagree')
   const id = top || nested
   if (!id) fail('MISSING_REVIEW_ITEM_ID', 'A rescue review item must identify reviewItemId')
   rejectCrossDomainId(id, 'reviewItemId')
@@ -358,7 +401,8 @@ function reviewItemFor(record: JsonRecord, review: JsonRecord | null): string {
 function reviewRescueIdFor(review: JsonRecord | null, rescueId: string): void {
   if (!review || !own(review, 'rescueId')) return
   const nested = normalizeId(review.rescueId, 'record.review.rescueId', { required: true })
-  if (nested !== rescueId) fail('CONFLICTING_RESCUE_ID', 'Review item rescueId disagrees with the record rescueId')
+  if (nested !== rescueId)
+    fail('CONFLICTING_RESCUE_ID', 'Review item rescueId disagrees with the record rescueId')
 }
 
 function reviewerIdsFor(record: JsonRecord, review: JsonRecord | null): string[] {
@@ -371,13 +415,18 @@ function reviewerIdsFor(record: JsonRecord, review: JsonRecord | null): string[]
   ]
   for (const { source, field, label } of sources) {
     if (!source || !own(source, field)) continue
-    const list = field.endsWith('Ids') ? normalizeIdList(source[field], label) : [normalizeId(source[field], label, { required: true })]
+    const list = field.endsWith('Ids')
+      ? normalizeIdList(source[field], label)
+      : [normalizeId(source[field], label, { required: true })]
     sourcesFound.push({ label, ids: Array.from(new Set(list)).sort() })
   }
-  if (!sourcesFound.length) fail('MISSING_REVIEWER_RELATION', 'A review item must identify its reviewer')
+  if (!sourcesFound.length)
+    fail('MISSING_REVIEWER_RELATION', 'A review item must identify its reviewer')
   const first = JSON.stringify(sourcesFound[0].ids)
-  if (sourcesFound.some(source => JSON.stringify(source.ids) !== first)) {
-    fail('CONFLICTING_REVIEWER_RELATION', 'Reviewer relation aliases disagree', { sources: sourcesFound.map(source => source.label) })
+  if (sourcesFound.some((source) => JSON.stringify(source.ids) !== first)) {
+    fail('CONFLICTING_REVIEWER_RELATION', 'Reviewer relation aliases disagree', {
+      sources: sourcesFound.map((source) => source.label),
+    })
   }
   return sourcesFound[0].ids
 }
@@ -405,25 +454,41 @@ function reviewStatusFor(record: JsonRecord, review: JsonRecord | null): ReviewS
   // review values. `unpaid` and `paid` belong to the funding axis in A05 and
   // must never turn a review item into an approved/processed review.
   if (own(record, 'status')) {
-    const status = record.status === undefined
-      ? ''
-      : normalizeId(record.status, 'record.status', { required: true })
-    const fundingOnlyStatuses = ['unpaid', 'paid', 'funding_pending', 'funding_failed', 'funding_paid']
-    if (includesValue(RESCUE_REVIEW_STATUSES, status) && !values.includes(status)) values.push(status)
+    const status =
+      record.status === undefined
+        ? ''
+        : normalizeId(record.status, 'record.status', { required: true })
+    const fundingOnlyStatuses = [
+      'unpaid',
+      'paid',
+      'funding_pending',
+      'funding_failed',
+      'funding_paid',
+    ]
+    if (includesValue(RESCUE_REVIEW_STATUSES, status) && !values.includes(status))
+      values.push(status)
     else if (status && !fundingOnlyStatuses.includes(status)) {
       fail('INVALID_REVIEW_STATUS', 'Review status is not in the whitelist', { status })
     }
   }
   if (values.length > 1) fail('CONFLICTING_STATUS', 'Review status aliases disagree', { values })
   const status = values[0] || ''
-  if (!includesValue(RESCUE_REVIEW_STATUSES, status)) fail(status ? 'INVALID_REVIEW_STATUS' : 'MISSING_REVIEW_STATUS', 'Review status is not in the whitelist', { status })
+  if (!includesValue(RESCUE_REVIEW_STATUSES, status))
+    fail(
+      status ? 'INVALID_REVIEW_STATUS' : 'MISSING_REVIEW_STATUS',
+      'Review status is not in the whitelist',
+      { status },
+    )
   return status
 }
 
 function applicationStatusFor(record: JsonRecord): MineStatus | '' {
-  const status = own(record, 'applicationStatus') ? normalizeId(record.applicationStatus, 'record.applicationStatus') : ''
+  const status = own(record, 'applicationStatus')
+    ? normalizeId(record.applicationStatus, 'record.applicationStatus')
+    : ''
   if (!status) return ''
-  if (!includesValue(RESCUE_MINE_STATUSES, status)) fail('INVALID_MINE_STATUS', 'Application status is not in the whitelist', { status })
+  if (!includesValue(RESCUE_MINE_STATUSES, status))
+    fail('INVALID_MINE_STATUS', 'Application status is not in the whitelist', { status })
   return status
 }
 
@@ -447,7 +512,8 @@ function normalizeMineRecord(record: unknown, actorId: string): RescueListItem {
   assertRecord(record, 'rescue record')
   assertRescueDomain(record)
   const rescueId = rescueIdFor(record)
-  if (!isMine(record, actorId)) fail('ACTOR_MISMATCH', 'Rescue record does not belong to the trusted applicant')
+  if (!isMine(record, actorId))
+    fail('ACTOR_MISMATCH', 'Rescue record does not belong to the trusted applicant')
   const applicationStatus = mineStatusFor(record)
   return Object.freeze({
     rescueId,
@@ -466,7 +532,8 @@ function normalizeReviewRecord(record: unknown, actorId: string): RescueListItem
   const reviewItemId = reviewItemFor(record, review)
   reviewRescueIdFor(review, rescueId)
   const reviewerIds = reviewerIdsFor(record, review)
-  if (!reviewerIds.includes(actorId)) fail('ACTOR_MISMATCH', 'Review item does not belong to the trusted reviewer')
+  if (!reviewerIds.includes(actorId))
+    fail('ACTOR_MISMATCH', 'Review item does not belong to the trusted reviewer')
   const status = reviewStatusFor(record, review)
   return Object.freeze({
     rescueId,
@@ -481,17 +548,23 @@ function normalizeReviewRecord(record: unknown, actorId: string): RescueListItem
 function acceptFilter(filter: unknown, type: RescueListType): RescueListFilter {
   const value = filter === undefined || filter === null ? 'all' : filter
   if (typeof value !== 'string' || !includesValue(RESCUE_LIST_FILTERS[type], value)) {
-    fail('INVALID_STATUS_FILTER', `Unsupported ${type} rescue list status filter`, { filter: value })
+    fail('INVALID_STATUS_FILTER', `Unsupported ${type} rescue list status filter`, {
+      filter: value,
+    })
   }
   return value
 }
 
-function filterItems(items: readonly RescueListItem[], filter: RescueListFilter, type: RescueListType): RescueListItem[] {
+function filterItems(
+  items: readonly RescueListItem[],
+  filter: RescueListFilter,
+  type: RescueListType,
+): RescueListItem[] {
   if (filter === 'all') return items.slice()
-  if (type === 'mine') return items.filter(item => item.applicationStatus === filter)
-  if (filter === 'processed') return items.filter(item => item.status !== 'pending')
-  if (filter === 'pending') return items.filter(item => item.status === 'pending')
-  return items.filter(item => item.status === filter)
+  if (type === 'mine') return items.filter((item) => item.applicationStatus === filter)
+  if (filter === 'processed') return items.filter((item) => item.status !== 'pending')
+  if (filter === 'pending') return items.filter((item) => item.status === 'pending')
+  return items.filter((item) => item.status === filter)
 }
 
 function duplicateKey(item: RescueListItem, type: RescueListType): string {
@@ -506,7 +579,11 @@ function equalStable(a: unknown, b: unknown): boolean {
   }
 }
 
-function dedupe(items: readonly RescueListItem[], type: RescueListType, skipped: SkipEntry[]): RescueListItem[] {
+function dedupe(
+  items: readonly RescueListItem[],
+  type: RescueListType,
+  skipped: SkipEntry[],
+): RescueListItem[] {
   const byKey = new Map<string, RescueListItem>()
   const conflicted = new Set()
   for (const item of items) {
@@ -550,7 +627,8 @@ interface ResolveSourceArgs {
 
 function resolveSource({ records, resolver, actor, label }: ResolveSourceArgs): SourceResult {
   if (resolver !== undefined) {
-    if (!isSourceResolver(resolver)) fail('INVALID_RESOLVER', `${label} resolver must be a function`)
+    if (!isSourceResolver(resolver))
+      fail('INVALID_RESOLVER', `${label} resolver must be a function`)
     let result
     try {
       result = resolver(Object.freeze({ actor }))
@@ -568,19 +646,32 @@ function resolveSource({ records, resolver, actor, label }: ResolveSourceArgs): 
   return { records, error: null }
 }
 
-function buildList({ actorProvider, records, resolver, type, requiredRole, filter }: BuildListArgs): RescueListModel {
+function buildList({
+  actorProvider,
+  records,
+  resolver,
+  type,
+  requiredRole,
+  filter,
+}: BuildListArgs): RescueListModel {
   const actorState = resolveActor(actorProvider, requiredRole)
   if (!actorState.actor) return emptyModel(null, actorState)
   const selectedFilter = acceptFilter(filter, type)
-  const source = resolveSource({ records, resolver, actor: actorState.actor, label: `${type} rescue list` })
+  const source = resolveSource({
+    records,
+    resolver,
+    actor: actorState.actor,
+    label: `${type} rescue list`,
+  })
   if (source.error) return emptyModel(actorState.actor, source.error)
   const skipped: SkipEntry[] = []
   const normalized: RescueListItem[] = []
   for (let index = 0; index < source.records.length; index += 1) {
     try {
-      const item = type === 'mine'
-        ? normalizeMineRecord(source.records[index], actorState.actor.id)
-        : normalizeReviewRecord(source.records[index], actorState.actor.id)
+      const item =
+        type === 'mine'
+          ? normalizeMineRecord(source.records[index], actorState.actor.id)
+          : normalizeReviewRecord(source.records[index], actorState.actor.id)
       normalized.push(item)
     } catch (error) {
       skipped.push({ index, code: errorCode(error, 'INVALID_RECORD') })
@@ -588,12 +679,14 @@ function buildList({ actorProvider, records, resolver, type, requiredRole, filte
   }
   const unique = dedupe(normalized, type, skipped)
   const items = Object.freeze(filterItems(unique, selectedFilter, type).slice())
-  const pending = type === 'mine'
-    ? Object.freeze(items.filter(item => item.applicationStatus === 'platform_pending'))
-    : Object.freeze(items.filter(item => item.status === 'pending'))
-  const processed = type === 'mine'
-    ? Object.freeze(items.filter(item => item.applicationStatus !== 'platform_pending'))
-    : Object.freeze(items.filter(item => item.status !== 'pending'))
+  const pending =
+    type === 'mine'
+      ? Object.freeze(items.filter((item) => item.applicationStatus === 'platform_pending'))
+      : Object.freeze(items.filter((item) => item.status === 'pending'))
+  const processed =
+    type === 'mine'
+      ? Object.freeze(items.filter((item) => item.applicationStatus !== 'platform_pending'))
+      : Object.freeze(items.filter((item) => item.status !== 'pending'))
   return Object.freeze({
     actor: actorState.actor,
     items,
@@ -604,16 +697,42 @@ function buildList({ actorProvider, records, resolver, type, requiredRole, filte
   })
 }
 
-export function readRescueMine({ actorProvider, records, resolver, filter, query }: ListArgs = {}): RescueListModel {
+export function readRescueMine({
+  actorProvider,
+  records,
+  resolver,
+  filter,
+  query,
+}: ListArgs = {}): RescueListModel {
   // `query` is accepted solely for a migration caller's compatibility.  It
   // is never read for identity, ownership, status, or access decisions.
   void query
-  return buildList({ actorProvider, records, resolver, type: 'mine', requiredRole: 'applicant', filter })
+  return buildList({
+    actorProvider,
+    records,
+    resolver,
+    type: 'mine',
+    requiredRole: 'applicant',
+    filter,
+  })
 }
 
-export function readRescueReviewList({ actorProvider, records, resolver, filter, query }: ListArgs = {}): RescueListModel {
+export function readRescueReviewList({
+  actorProvider,
+  records,
+  resolver,
+  filter,
+  query,
+}: ListArgs = {}): RescueListModel {
   void query
-  return buildList({ actorProvider, records, resolver, type: 'review', requiredRole: 'reviewer', filter })
+  return buildList({
+    actorProvider,
+    records,
+    resolver,
+    type: 'review',
+    requiredRole: 'reviewer',
+    filter,
+  })
 }
 
 export const getRescueMine = readRescueMine

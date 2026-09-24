@@ -43,9 +43,7 @@ export interface ActiveRouteEntry {
 }
 
 export type ActiveRouteRegistry =
-  | readonly (string | ActiveRouteEntry)[]
-  | Map<string, unknown>
-  | Record<string, unknown>
+  readonly (string | ActiveRouteEntry)[] | Map<string, unknown> | Record<string, unknown>
 
 export interface RouteNavigatorApi {
   navigateTo?: (options: { url: string }) => unknown
@@ -101,14 +99,19 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
   // Its Object.prototype is not identical to ours, but still has a null
   // prototype and the ordinary Object tag. Class instances remain rejected.
   const constructorDescriptor = Object.getOwnPropertyDescriptor(proto, 'constructor')
-  return Boolean(Object.getPrototypeOf(proto) === null
-    && Object.prototype.toString.call(value) === '[object Object]'
-    && constructorDescriptor
-    && typeof constructorDescriptor.value === 'function'
-    && constructorDescriptor.value.name === 'Object')
+  return Boolean(
+    Object.getPrototypeOf(proto) === null &&
+    Object.prototype.toString.call(value) === '[object Object]' &&
+    constructorDescriptor &&
+    typeof constructorDescriptor.value === 'function' &&
+    constructorDescriptor.value.name === 'Object',
+  )
 }
 
-function assertPlainRecord(value: unknown, label: string): asserts value is Record<string, unknown> {
+function assertPlainRecord(
+  value: unknown,
+  label: string,
+): asserts value is Record<string, unknown> {
   if (!isPlainRecord(value)) {
     fail('INVALID_QUERY_VALUE', `${label} must be a plain object`, { label })
   }
@@ -171,35 +174,62 @@ function assertEnum(value: unknown, label: string, values: readonly string[]): s
   return text
 }
 
-function assertIdList(value: unknown, label: string, options?: Pick<RouteFieldSpec, 'maxItems'>): string {
+function assertIdList(
+  value: unknown,
+  label: string,
+  options?: Pick<RouteFieldSpec, 'maxItems'>,
+): string {
   const text = assertString(value, label, { maxLength: 6 * 129 })
   const items = text.split(',')
-  if (!items.length || items.length > ((options && options.maxItems) || 6) || items.some((item) => !SAFE_ID.test(item))) {
-    fail('INVALID_ID_LIST', `${label} must be a comma-separated list of at most ${(options && options.maxItems) || 6} IDs`, { label })
+  if (
+    !items.length ||
+    items.length > ((options && options.maxItems) || 6) ||
+    items.some((item) => !SAFE_ID.test(item))
+  ) {
+    fail(
+      'INVALID_ID_LIST',
+      `${label} must be a comma-separated list of at most ${(options && options.maxItems) || 6} IDs`,
+      { label },
+    )
   }
-  if (new Set(items).size !== items.length) fail('DUPLICATE_ID', `${label} must not repeat an ID`, { label })
+  if (new Set(items).size !== items.length)
+    fail('DUPLICATE_ID', `${label} must not repeat an ID`, { label })
   return text
 }
 
-function assertText(value: unknown, label: string, options?: Pick<RouteFieldSpec, 'maxLength'>): string {
+function assertText(
+  value: unknown,
+  label: string,
+  options?: Pick<RouteFieldSpec, 'maxLength'>,
+): string {
   return assertString(value, label, { maxLength: (options && options.maxLength) || 512 })
 }
 
-function field(kind: RouteFieldSpec['kind'], options: Record<string, unknown> = {}): RouteFieldSpec {
+function field(
+  kind: RouteFieldSpec['kind'],
+  options: Record<string, unknown> = {},
+): RouteFieldSpec {
   return Object.freeze({ kind, ...(options || {}) })
 }
 
 const F = Object.freeze({
   id: (): RouteFieldSpec => field('id'),
-  idList: (options?: Pick<RouteFieldSpec, 'maxItems'>): RouteFieldSpec => field('idList', { maxItems: 6, ...(options || {}) }),
+  idList: (options?: Pick<RouteFieldSpec, 'maxItems'>): RouteFieldSpec =>
+    field('idList', { maxItems: 6, ...(options || {}) }),
   text: (options?: Pick<RouteFieldSpec, 'maxLength'>): RouteFieldSpec => field('text', options),
-  enum: (values: readonly string[]): RouteFieldSpec => field('enum', { values: Object.freeze(values.slice()) }),
+  enum: (values: readonly string[]): RouteFieldSpec =>
+    field('enum', { values: Object.freeze(values.slice()) }),
 })
 
 function route(
   path: string,
   params: Record<string, RouteFieldSpec> = {},
-  options?: { required?: readonly string[]; navigation?: RouteNavigation; tab?: boolean; fallbackOnly?: boolean },
+  options?: {
+    required?: readonly string[]
+    navigation?: RouteNavigation
+    tab?: boolean
+    fallbackOnly?: boolean
+  },
 ): RouteDefinition {
   if (!SAFE_ROUTE_PATH.test(path)) {
     throw new Error(`Invalid target path: ${path}`)
@@ -234,8 +264,16 @@ const ROUTE_REGISTRY: Readonly<Record<string, RouteDefinition>> = Object.freeze(
   'account.level.rules': route('/packages/account/pages/level/rules/index'),
   'account.annualReport': route('/packages/account/pages/annual-report/index'),
   'account.helpedAnimals': route('/packages/account/pages/helped-animals/index'),
-  'account.profile': route('/packages/account/pages/profile/index', { userId: F.id() }, { required: ['userId'] }),
-  'account.profile.edit': route('/packages/account/pages/profile/editor/index', { userId: F.id() }, { required: ['userId'] }),
+  'account.profile': route(
+    '/packages/account/pages/profile/index',
+    { userId: F.id() },
+    { required: ['userId'] },
+  ),
+  'account.profile.edit': route(
+    '/packages/account/pages/profile/editor/index',
+    { userId: F.id() },
+    { required: ['userId'] },
+  ),
   'account.relations': route('/packages/account/pages/relations/index', {
     userId: F.id(),
     tab: F.enum(['following', 'followers']),
@@ -261,126 +299,243 @@ const ROUTE_REGISTRY: Readonly<Record<string, RouteDefinition>> = Object.freeze(
   }),
 
   'adoption.mine': route('/packages/adoption/pages/mine/index'),
-  'adoption.apply': route('/packages/adoption/pages/apply/index', {
-    yardId: F.id(),
-    animalIds: F.idList(),
-  }, { required: ['yardId'] }),
-  'adoption.result': route('/packages/adoption/pages/result/index', {
-    applicationId: F.id(),
-    outcome: F.enum([
-      'reward-claimed',
-      'review-approved',
-      'adoption-confirmed-by-owner',
-      'review-rejected',
-      'confirmation-submitted',
-      'application-submitted',
-    ]),
-    orderId: F.id(),
-    nextMode: F.enum([
-      'cloudAgreeWaiting', 'cloudAgreeDone', 'ownerPending', 'ownerConfirmed',
-      'ownerConfirmRejected', 'confirmAgree', 'confirmReject', 'rejectDone', 'success',
-    ]),
-    reviewerRole: F.enum(['owner', 'cloud_parent']),
-    reviewerId: F.id(),
-  }, { required: ['applicationId', 'outcome'] }),
-  'adoption.progress': route('/packages/adoption/pages/progress/index', {
-    applicationId: F.id(),
-    view: F.enum(['adoption-info', 'application']),
-  }, { required: ['applicationId'] }),
-  'adoption.confirmation': route('/packages/adoption/pages/confirmation/index', {
-    applicationId: F.id(),
-  }, { required: ['applicationId'] }),
+  'adoption.apply': route(
+    '/packages/adoption/pages/apply/index',
+    {
+      yardId: F.id(),
+      animalIds: F.idList(),
+    },
+    { required: ['yardId'] },
+  ),
+  'adoption.result': route(
+    '/packages/adoption/pages/result/index',
+    {
+      applicationId: F.id(),
+      outcome: F.enum([
+        'reward-claimed',
+        'review-approved',
+        'adoption-confirmed-by-owner',
+        'review-rejected',
+        'confirmation-submitted',
+        'application-submitted',
+      ]),
+      orderId: F.id(),
+      nextMode: F.enum([
+        'cloudAgreeWaiting',
+        'cloudAgreeDone',
+        'ownerPending',
+        'ownerConfirmed',
+        'ownerConfirmRejected',
+        'confirmAgree',
+        'confirmReject',
+        'rejectDone',
+        'success',
+      ]),
+      reviewerRole: F.enum(['owner', 'cloud_parent']),
+      reviewerId: F.id(),
+    },
+    { required: ['applicationId', 'outcome'] },
+  ),
+  'adoption.progress': route(
+    '/packages/adoption/pages/progress/index',
+    {
+      applicationId: F.id(),
+      view: F.enum(['adoption-info', 'application']),
+    },
+    { required: ['applicationId'] },
+  ),
+  'adoption.confirmation': route(
+    '/packages/adoption/pages/confirmation/index',
+    {
+      applicationId: F.id(),
+    },
+    { required: ['applicationId'] },
+  ),
   'adoption.support': route('/packages/adoption/pages/support/index'),
   'adoption.quota': route('/packages/adoption/pages/quota/index'),
-  'adoption.quota.detail': route('/packages/adoption/pages/quota/detail/index', {
-    quotaId: F.id(),
-  }, { required: ['quotaId'] }),
+  'adoption.quota.detail': route(
+    '/packages/adoption/pages/quota/detail/index',
+    {
+      quotaId: F.id(),
+    },
+    { required: ['quotaId'] },
+  ),
   'adoption.review.list': route('/packages/adoption/pages/review/list/index'),
-  'adoption.review.detail': route('/packages/adoption/pages/review/detail/index', {
-    applicationId: F.id(),
-    reviewItemId: F.id(),
-    view: F.enum(['info', 'application']),
-    mode: F.enum([
-      'cloudReview', 'cloudAgreeWaiting', 'cloudAgreeDone', 'cloudRejectDone',
-      'ownerReview', 'ownerPending', 'ownerConfirm', 'ownerConfirmed',
-      'ownerConfirmRejected', 'confirmAgree', 'confirmReject', 'rejectDone', 'success',
-    ]),
-    reviewerRole: F.enum(['owner', 'cloud_parent']),
-    reviewerId: F.id(),
-  }, { required: ['applicationId'] }),
-  'adoption.jury.detail': route('/packages/adoption/pages/jury/detail/index', {
-    reviewItemId: F.id(),
-    businessType: F.enum(['adoption']),
-  }, { required: ['reviewItemId', 'businessType'] }),
-  'adoption.reward.claim': route('/packages/adoption/pages/reward/claim/index', {
-    applicationId: F.id(),
-    addressId: F.id(),
-  }, { required: ['applicationId'] }),
+  'adoption.review.detail': route(
+    '/packages/adoption/pages/review/detail/index',
+    {
+      applicationId: F.id(),
+      reviewItemId: F.id(),
+      view: F.enum(['info', 'application']),
+      mode: F.enum([
+        'cloudReview',
+        'cloudAgreeWaiting',
+        'cloudAgreeDone',
+        'cloudRejectDone',
+        'ownerReview',
+        'ownerPending',
+        'ownerConfirm',
+        'ownerConfirmed',
+        'ownerConfirmRejected',
+        'confirmAgree',
+        'confirmReject',
+        'rejectDone',
+        'success',
+      ]),
+      reviewerRole: F.enum(['owner', 'cloud_parent']),
+      reviewerId: F.id(),
+    },
+    { required: ['applicationId'] },
+  ),
+  'adoption.jury.detail': route(
+    '/packages/adoption/pages/jury/detail/index',
+    {
+      reviewItemId: F.id(),
+      businessType: F.enum(['adoption']),
+    },
+    { required: ['reviewItemId', 'businessType'] },
+  ),
+  'adoption.reward.claim': route(
+    '/packages/adoption/pages/reward/claim/index',
+    {
+      applicationId: F.id(),
+      addressId: F.id(),
+    },
+    { required: ['applicationId'] },
+  ),
   // This route is a contract for an independently invoked selector only; it
   // is not active in the target registry used by default.
-  'adoption.animal-picker': route('/packages/adoption/pages/animal-picker/index', {
-    requestId: F.id(),
-    yardId: F.id(),
-  }, { required: ['requestId', 'yardId'], fallbackOnly: true }),
+  'adoption.animal-picker': route(
+    '/packages/adoption/pages/animal-picker/index',
+    {
+      requestId: F.id(),
+      yardId: F.id(),
+    },
+    { required: ['requestId', 'yardId'], fallbackOnly: true },
+  ),
 
   'rescue.apply': route('/packages/rescue/pages/apply/index'),
-  'rescue.result': route('/packages/rescue/pages/result/index', {
-    rescueId: F.id(),
-    outcome: F.enum(['application-submitted']),
-  }, { required: ['rescueId', 'outcome'] }),
-  'rescue.progress': route('/packages/rescue/pages/progress/index', {
-    rescueId: F.id(),
-  }, { required: ['rescueId'] }),
+  'rescue.result': route(
+    '/packages/rescue/pages/result/index',
+    {
+      rescueId: F.id(),
+      outcome: F.enum(['application-submitted']),
+    },
+    { required: ['rescueId', 'outcome'] },
+  ),
+  'rescue.progress': route(
+    '/packages/rescue/pages/progress/index',
+    {
+      rescueId: F.id(),
+    },
+    { required: ['rescueId'] },
+  ),
   'rescue.fund': route('/packages/rescue/pages/fund/index'),
-  'rescue.detail': route('/packages/rescue/pages/detail/index', {
-    rescueId: F.id(),
-  }, { required: ['rescueId'] }),
+  'rescue.detail': route(
+    '/packages/rescue/pages/detail/index',
+    {
+      rescueId: F.id(),
+    },
+    { required: ['rescueId'] },
+  ),
   'rescue.mine': route('/packages/rescue/pages/mine/index'),
-  'rescue.proof.list': route('/packages/rescue/pages/proof/list/index', {
-    rescueId: F.id(),
-  }, { required: ['rescueId'] }),
-  'rescue.proof.create': route('/packages/rescue/pages/proof/create/index', {
-    rescueId: F.id(),
-  }, { required: ['rescueId'] }),
-  'rescue.review.detail': route('/packages/rescue/pages/review/detail/index', {
-    reviewItemId: F.id(),
-    businessType: F.enum(['rescue']),
-  }, { required: ['reviewItemId', 'businessType'] }),
+  'rescue.proof.list': route(
+    '/packages/rescue/pages/proof/list/index',
+    {
+      rescueId: F.id(),
+    },
+    { required: ['rescueId'] },
+  ),
+  'rescue.proof.create': route(
+    '/packages/rescue/pages/proof/create/index',
+    {
+      rescueId: F.id(),
+    },
+    { required: ['rescueId'] },
+  ),
+  'rescue.review.detail': route(
+    '/packages/rescue/pages/review/detail/index',
+    {
+      reviewItemId: F.id(),
+      businessType: F.enum(['rescue']),
+    },
+    { required: ['reviewItemId', 'businessType'] },
+  ),
   'rescue.review.list': route('/packages/rescue/pages/review/list/index'),
 
-  'animal.detail': route('/packages/animal/pages/detail/index', {
-    animalId: F.id(),
-    yardId: F.id(),
-  }, { required: ['animalId'] }),
-  'animal.editor': route('/packages/animal/pages/editor/index', {
-    animalId: F.id(),
-    yardId: F.id(),
-    species: F.enum(['cat', 'dog']),
-  }, { required: ['yardId'] }),
+  'animal.detail': route(
+    '/packages/animal/pages/detail/index',
+    {
+      animalId: F.id(),
+      yardId: F.id(),
+    },
+    { required: ['animalId'] },
+  ),
+  'animal.editor': route(
+    '/packages/animal/pages/editor/index',
+    {
+      animalId: F.id(),
+      yardId: F.id(),
+      species: F.enum(['cat', 'dog']),
+    },
+    { required: ['yardId'] },
+  ),
   'animal.breedPicker': route('/packages/animal/pages/breed-picker/index', {
     species: F.enum(['cat', 'dog']),
     requestId: F.id(),
   }),
-  'animal.mine': route('/packages/animal/pages/mine/index', { userId: F.id() }, { required: ['userId'] }),
-  'animal.sponsored': route('/packages/animal/pages/sponsored/index', {
-    userId: F.id(),
-    animalId: F.id(),
-  }, { required: ['userId'] }),
-  'animal.album': route('/packages/animal/pages/album/index', {
-    animalId: F.id(),
-    yardId: F.id(),
-  }, { required: ['animalId'] }),
+  'animal.mine': route(
+    '/packages/animal/pages/mine/index',
+    { userId: F.id() },
+    { required: ['userId'] },
+  ),
+  'animal.sponsored': route(
+    '/packages/animal/pages/sponsored/index',
+    {
+      userId: F.id(),
+      animalId: F.id(),
+    },
+    { required: ['userId'] },
+  ),
+  'animal.album': route(
+    '/packages/animal/pages/album/index',
+    {
+      animalId: F.id(),
+      yardId: F.id(),
+    },
+    { required: ['animalId'] },
+  ),
 
-  'yard.detail': route('/packages/yard/pages/detail/index', { yardId: F.id() }, { required: ['yardId'] }),
-  'yard.editor': route('/packages/yard/pages/editor/index', { yardId: F.id() }, { required: ['yardId'] }),
-  'yard.animals': route('/packages/yard/pages/animals/index', {
-    yardId: F.id(),
-    view: F.enum(['roster', 'status', 'long-list']),
-  }, { required: ['yardId'] }),
-  'yard.manage.animals': route('/packages/yard/pages/manage/animals/index', { yardId: F.id() }, { required: ['yardId'] }),
+  'yard.detail': route(
+    '/packages/yard/pages/detail/index',
+    { yardId: F.id() },
+    { required: ['yardId'] },
+  ),
+  'yard.editor': route(
+    '/packages/yard/pages/editor/index',
+    { yardId: F.id() },
+    { required: ['yardId'] },
+  ),
+  'yard.animals': route(
+    '/packages/yard/pages/animals/index',
+    {
+      yardId: F.id(),
+      view: F.enum(['roster', 'status', 'long-list']),
+    },
+    { required: ['yardId'] },
+  ),
+  'yard.manage.animals': route(
+    '/packages/yard/pages/manage/animals/index',
+    { yardId: F.id() },
+    { required: ['yardId'] },
+  ),
   'yard.onboarding': route('/packages/yard/pages/onboarding/index'),
   'yard.create': route('/packages/yard/pages/create/index', { requestId: F.id() }),
-  'yard.certification': route('/packages/yard/pages/certification/index', { yardId: F.id() }, { required: ['yardId'] }),
+  'yard.certification': route(
+    '/packages/yard/pages/certification/index',
+    { yardId: F.id() },
+    { required: ['yardId'] },
+  ),
 
   'jury.queue': route('/packages/jury/pages/queue/index', {
     businessType: F.enum(['adoption', 'rescue']),
@@ -388,17 +543,29 @@ const ROUTE_REGISTRY: Readonly<Record<string, RouteDefinition>> = Object.freeze(
 
   'feeding.mine': route('/packages/feeding/pages/mine/index', { userId: F.id() }),
   'feeding.yardOrders': route('/packages/feeding/pages/yard-orders/index', { yardId: F.id() }),
-  'feeding.order.detail': route('/packages/feeding/pages/order/detail/index', {
-    orderId: F.id(),
-    perspective: F.enum(['donor', 'yard-manager']),
-  }, { required: ['orderId'] }),
-  'feeding.result': route('/packages/feeding/pages/result/index', {
-    orderId: F.id(),
-    dynamicId: F.id(),
-    outcome: F.enum(['feedback-published', 'feeding-completed']),
-  }, { required: ['orderId', 'outcome'] }),
+  'feeding.order.detail': route(
+    '/packages/feeding/pages/order/detail/index',
+    {
+      orderId: F.id(),
+      perspective: F.enum(['donor', 'yard-manager']),
+    },
+    { required: ['orderId'] },
+  ),
+  'feeding.result': route(
+    '/packages/feeding/pages/result/index',
+    {
+      orderId: F.id(),
+      dynamicId: F.id(),
+      outcome: F.enum(['feedback-published', 'feeding-completed']),
+    },
+    { required: ['orderId', 'outcome'] },
+  ),
 
-  'dynamic.detail': route('/packages/dynamic/pages/deep-link/index', { dynamicId: F.id() }, { required: ['dynamicId'] }),
+  'dynamic.detail': route(
+    '/packages/dynamic/pages/deep-link/index',
+    { dynamicId: F.id() },
+    { required: ['dynamicId'] },
+  ),
   'dynamic.editor': route('/packages/dynamic/pages/editor/index', {
     yardId: F.id(),
     animalId: F.id(),
@@ -406,12 +573,19 @@ const ROUTE_REGISTRY: Readonly<Record<string, RouteDefinition>> = Object.freeze(
     scene: F.enum(['post', 'feeding-feedback']),
     state: F.enum(['alternate', 'select-order', 'feeding']),
   }),
-  'dynamic.result': route('/packages/dynamic/pages/result/index', {
-    dynamicId: F.id(),
-    outcome: F.enum(['published']),
-  }, { required: ['dynamicId', 'outcome'] }),
+  'dynamic.result': route(
+    '/packages/dynamic/pages/result/index',
+    {
+      dynamicId: F.id(),
+      outcome: F.enum(['published']),
+    },
+    { required: ['dynamicId', 'outcome'] },
+  ),
 
-  'discovery.cityPicker': route('/packages/discovery/pages/city-picker/index', { requestId: F.id(), current: F.text({ maxLength: 64 }) }),
+  'discovery.cityPicker': route('/packages/discovery/pages/city-picker/index', {
+    requestId: F.id(),
+    current: F.text({ maxLength: 64 }),
+  }),
   'discovery.search': route('/packages/discovery/pages/search/index', {
     q: F.text({ maxLength: 200 }),
     scope: F.enum(['dynamic', 'yard', 'user']),
@@ -425,26 +599,37 @@ const ROUTE_REGISTRY: Readonly<Record<string, RouteDefinition>> = Object.freeze(
   }),
 
   'auth.realName': route('/packages/auth/pages/real-name/index'),
-  'auth.verificationResult': route('/packages/auth/pages/verification-result/index', {
-    outcome: F.enum(['success', 'failure']),
-  }, { required: ['outcome'] }),
+  'auth.verificationResult': route(
+    '/packages/auth/pages/verification-result/index',
+    {
+      outcome: F.enum(['success', 'failure']),
+    },
+    { required: ['outcome'] },
+  ),
   'auth.login': route('/packages/auth/pages/login/index', { requestId: F.id() }),
   'auth.phoneBind': route('/packages/auth/pages/phone-bind/index', { requestId: F.id() }),
   'auth.smsVerify': route('/packages/auth/pages/sms-verify/index', { requestId: F.id() }),
 })
 
-const PATH_TO_ROUTE: Readonly<Record<string, string>> = Object.freeze(Object.keys(ROUTE_REGISTRY).reduce<Record<string, string>>((result, name) => {
-  const path = ROUTE_REGISTRY[name].path
-  if (result[path]) throw new Error(`Duplicate target route path: ${path}`)
-  result[path] = name
-  return result
-}, Object.create(null) as Record<string, string>))
+const PATH_TO_ROUTE: Readonly<Record<string, string>> = Object.freeze(
+  Object.keys(ROUTE_REGISTRY).reduce<Record<string, string>>(
+    (result, name) => {
+      const path = ROUTE_REGISTRY[name].path
+      if (result[path]) throw new Error(`Duplicate target route path: ${path}`)
+      result[path] = name
+      return result
+    },
+    Object.create(null) as Record<string, string>,
+  ),
+)
 
-const ROUTE_NAMES: Readonly<Record<string, string>> = Object.freeze(Object.keys(ROUTE_REGISTRY).reduce<Record<string, string>>((result, name) => {
-  const key = name.replace(/[^A-Za-z0-9]+(.)/g, (_, char) => char.toUpperCase())
-  result[key] = name
-  return result
-}, {}))
+const ROUTE_NAMES: Readonly<Record<string, string>> = Object.freeze(
+  Object.keys(ROUTE_REGISTRY).reduce<Record<string, string>>((result, name) => {
+    const key = name.replace(/[^A-Za-z0-9]+(.)/g, (_, char) => char.toUpperCase())
+    result[key] = name
+    return result
+  }, {}),
+)
 
 function validateField(value: unknown, fieldSpec: RouteFieldSpec, label: string): string {
   if (fieldSpec.kind === 'id') return assertId(value, label)
@@ -474,21 +659,41 @@ function validateParams(routeName: string, params: unknown): QueryParams {
     }
     validateField(params[key], definition.params[key], key)
   }
-  if (routeName === 'address.list' && params.intent === 'select' && !Object.prototype.hasOwnProperty.call(params, 'requestId')) {
-    fail('MISSING_PARAMETER', 'requestId is required when address.list intent is select', { routeName, key: 'requestId' })
+  if (
+    routeName === 'address.list' &&
+    params.intent === 'select' &&
+    !Object.prototype.hasOwnProperty.call(params, 'requestId')
+  ) {
+    fail('MISSING_PARAMETER', 'requestId is required when address.list intent is select', {
+      routeName,
+      key: 'requestId',
+    })
   }
-  if (routeName === 'dynamic.editor' && params.scene === 'feeding-feedback' && !Object.prototype.hasOwnProperty.call(params, 'orderId')) {
-    fail('MISSING_PARAMETER', 'orderId is required for feeding-feedback dynamic.editor', { routeName, key: 'orderId' })
+  if (
+    routeName === 'dynamic.editor' &&
+    params.scene === 'feeding-feedback' &&
+    !Object.prototype.hasOwnProperty.call(params, 'orderId')
+  ) {
+    fail('MISSING_PARAMETER', 'orderId is required for feeding-feedback dynamic.editor', {
+      routeName,
+      key: 'orderId',
+    })
   }
-  return Object.keys(params).reduce<Record<string, string>>((result, key) => {
-    result[key] = String(params[key])
-    return result
-  }, Object.create(null) as Record<string, string>)
+  return Object.keys(params).reduce<Record<string, string>>(
+    (result, key) => {
+      result[key] = String(params[key])
+      return result
+    },
+    Object.create(null) as Record<string, string>,
+  )
 }
 
 function encodeQueryValue(value: string): string {
   try {
-    return encodeURIComponent(value).replace(/[!'()*]/g, (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`)
+    return encodeURIComponent(value).replace(
+      /[!'()*]/g,
+      (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`,
+    )
   } catch {
     fail('INVALID_UNICODE', 'Query value cannot be encoded')
   }
@@ -499,10 +704,14 @@ function buildRoute(routeName: string, params?: unknown): string {
   if (!definition) fail('UNKNOWN_ROUTE', `Unknown target route: ${routeName}`, { routeName })
   const normalized = validateParams(routeName, params === undefined ? {} : params)
   const keys = Object.keys(normalized).sort()
-  const query = keys.map((key) => `${encodeQueryValue(key)}=${encodeQueryValue(normalized[key])}`).join('&')
+  const query = keys
+    .map((key) => `${encodeQueryValue(key)}=${encodeQueryValue(normalized[key])}`)
+    .join('&')
   const url = query ? `${definition.path}?${query}` : definition.path
   if (definition.tab && query) {
-    fail('TAB_QUERY_FORBIDDEN', `${routeName} is a tab route and cannot carry query parameters`, { routeName })
+    fail('TAB_QUERY_FORBIDDEN', `${routeName} is a tab route and cannot carry query parameters`, {
+      routeName,
+    })
   }
   return url
 }
@@ -522,7 +731,8 @@ function parseRawQuery(rawQuery: string): QueryParams {
   for (const segment of rawQuery.split('&')) {
     if (!segment) fail('MALFORMED_QUERY', 'Query contains an empty segment')
     const separator = segment.indexOf('=')
-    if (separator < 1) fail('MALFORMED_QUERY', 'Each query parameter must have a non-empty name and "="')
+    if (separator < 1)
+      fail('MALFORMED_QUERY', 'Each query parameter must have a non-empty name and "="')
     const key = decodeQueryPart(segment.slice(0, separator), 'query key')
     assertSafeKey(key, 'query')
     if (Object.prototype.hasOwnProperty.call(result, key)) {
@@ -541,7 +751,14 @@ function splitUrl(url: string, label = 'url'): { path: string; query: string } {
   const question = url.indexOf('?')
   const path = question === -1 ? url : url.slice(0, question)
   const query = question === -1 ? '' : url.slice(question + 1)
-  if (!path.startsWith('/') || path.includes('/../') || path.endsWith('/..') || path.includes('/./') || path.endsWith('/.') || /%(?:2e|2f|5c|25)/i.test(path)) {
+  if (
+    !path.startsWith('/') ||
+    path.includes('/../') ||
+    path.endsWith('/..') ||
+    path.includes('/./') ||
+    path.endsWith('/.') ||
+    /%(?:2e|2f|5c|25)/i.test(path)
+  ) {
     fail('UNSAFE_URL', 'Route path must be an absolute app-relative path without traversal')
   }
   return { path, query }
@@ -554,7 +771,9 @@ function parseRoute(url: string): ParsedRoute {
   const params = parseRawQuery(query)
   const normalized = validateParams(routeName, params)
   if (ROUTE_REGISTRY[routeName].tab && query) {
-    fail('TAB_QUERY_FORBIDDEN', `${routeName} is a tab route and cannot carry query parameters`, { routeName })
+    fail('TAB_QUERY_FORBIDDEN', `${routeName} is a tab route and cannot carry query parameters`, {
+      routeName,
+    })
   }
   return Object.freeze({
     routeName,
@@ -581,14 +800,18 @@ function registeredRouteMatches(routeName: string, registeredRoutes: unknown): b
     })
   }
   if (registeredRoutes instanceof Map) {
-    return registeredRoutes.has(routeName) && normalizeRegisteredPath(registeredRoutes.get(routeName)) === path
+    return (
+      registeredRoutes.has(routeName) &&
+      normalizeRegisteredPath(registeredRoutes.get(routeName)) === path
+    )
   }
   if (isPlainRecord(registeredRoutes)) {
     if (Object.prototype.hasOwnProperty.call(registeredRoutes, routeName)) {
       const value = registeredRoutes[routeName]
       return normalizeRegisteredPath(value) === path
     }
-    if (Object.prototype.hasOwnProperty.call(registeredRoutes, path)) return registeredRoutes[path] !== false
+    if (Object.prototype.hasOwnProperty.call(registeredRoutes, path))
+      return registeredRoutes[path] !== false
   }
   return false
 }
@@ -598,7 +821,11 @@ function registeredRouteMatches(routeName: string, registeredRoutes: unknown): b
  * fail-closed, which prevents callers from silently invoking not-yet-registered
  * packages.  The uni-like API is injected to keep this function testable.
  */
-function navigateRoute(routeName: string, params?: unknown, options?: NavigateRouteOptions): unknown {
+function navigateRoute(
+  routeName: string,
+  params?: unknown,
+  options?: NavigateRouteOptions,
+): unknown {
   const settings = options || {}
   if (!Object.prototype.hasOwnProperty.call(settings, 'registeredRoutes')) {
     fail('NO_ACTIVE_REGISTRY', 'Navigation requires an injected active route registry')
@@ -606,23 +833,44 @@ function navigateRoute(routeName: string, params?: unknown, options?: NavigateRo
   const definition = ROUTE_REGISTRY[routeName]
   if (!definition) fail('UNKNOWN_ROUTE', `Unknown target route: ${routeName}`, { routeName })
   if (!registeredRouteMatches(routeName, settings.registeredRoutes)) {
-    fail('ROUTE_NOT_ACTIVE', `${routeName} is not registered in the active route registry`, { routeName, path: definition.path })
+    fail('ROUTE_NOT_ACTIVE', `${routeName} is not registered in the active route registry`, {
+      routeName,
+      path: definition.path,
+    })
   }
   const url = buildRoute(routeName, params === undefined ? {} : params)
   const api = settings.uniApi
-  if (!api || typeof api !== 'object') fail('NAVIGATOR_MISSING_API', 'A uni-like API must be injected')
+  if (!api || typeof api !== 'object')
+    fail('NAVIGATOR_MISSING_API', 'A uni-like API must be injected')
   if (definition.tab) {
-    if (typeof api.switchTab !== 'function') fail('NAVIGATOR_MISSING_API', 'switchTab is required for tab routes')
+    if (typeof api.switchTab !== 'function')
+      fail('NAVIGATOR_MISSING_API', 'switchTab is required for tab routes')
     return api.switchTab({ url: definition.path })
   }
-  if (typeof api.navigateTo !== 'function') fail('NAVIGATOR_MISSING_API', 'navigateTo is required for target routes')
+  if (typeof api.navigateTo !== 'function')
+    fail('NAVIGATOR_MISSING_API', 'navigateTo is required for target routes')
   return api.navigateTo({ url })
 }
 
 const SELECTOR_CONTRACTS: Readonly<Record<SelectorKind, SelectorContract>> = Object.freeze({
-  address: Object.freeze({ input: 'requestId', output: 'requestId', bridge: 'eventChannel', autoRedirect: false }),
-  region: Object.freeze({ input: 'requestId', output: 'requestId', bridge: 'eventChannel', autoRedirect: false }),
-  animal: Object.freeze({ input: 'requestId', output: 'requestId', bridge: 'eventChannel', autoRedirect: false }),
+  address: Object.freeze({
+    input: 'requestId',
+    output: 'requestId',
+    bridge: 'eventChannel',
+    autoRedirect: false,
+  }),
+  region: Object.freeze({
+    input: 'requestId',
+    output: 'requestId',
+    bridge: 'eventChannel',
+    autoRedirect: false,
+  }),
+  animal: Object.freeze({
+    input: 'requestId',
+    output: 'requestId',
+    bridge: 'eventChannel',
+    autoRedirect: false,
+  }),
 })
 
 // Login/auth callers may continue only to these explicitly reviewed actions.
@@ -635,19 +883,34 @@ const AUTH_CONTINUATION_ROUTES: readonly string[] = Object.freeze([
   'adoption.reward.claim',
 ])
 
-function buildAuthContinuation(routeName: string, params?: unknown): { intent: string; routeName: string; url: string; params: Readonly<QueryParams> } {
+function buildAuthContinuation(
+  routeName: string,
+  params?: unknown,
+): { intent: string; routeName: string; url: string; params: Readonly<QueryParams> } {
   if (!AUTH_CONTINUATION_ROUTES.includes(routeName)) {
-    fail('INVALID_CONTINUATION_TARGET', `Route is not an allowed auth continuation: ${routeName}`, { routeName })
+    fail('INVALID_CONTINUATION_TARGET', `Route is not an allowed auth continuation: ${routeName}`, {
+      routeName,
+    })
   }
   const url = buildRoute(routeName, params === undefined ? {} : params)
   const parsed = parseRoute(url)
   return Object.freeze({ intent: routeName, routeName, url, params: parsed.params })
 }
 
-function parseAuthContinuation(url: string): { intent: string; routeName: string; path: string; navigation: RouteNavigation; params: Readonly<QueryParams> } {
+function parseAuthContinuation(url: string): {
+  intent: string
+  routeName: string
+  path: string
+  navigation: RouteNavigation
+  params: Readonly<QueryParams>
+} {
   const parsed = parseRoute(url)
   if (!AUTH_CONTINUATION_ROUTES.includes(parsed.routeName)) {
-    fail('INVALID_CONTINUATION_TARGET', `Route is not an allowed auth continuation: ${parsed.routeName}`, { routeName: parsed.routeName })
+    fail(
+      'INVALID_CONTINUATION_TARGET',
+      `Route is not an allowed auth continuation: ${parsed.routeName}`,
+      { routeName: parsed.routeName },
+    )
   }
   return Object.freeze({ intent: parsed.routeName, ...parsed })
 }
@@ -655,10 +918,19 @@ function parseAuthContinuation(url: string): { intent: string; routeName: string
 function createSelectorRequest(kind: SelectorKind, requestId: unknown): SelectorRequest {
   const contract = SELECTOR_CONTRACTS[kind]
   if (!contract) fail('UNKNOWN_SELECTOR', `Unknown selector contract: ${kind}`, { kind })
-  return Object.freeze({ kind, requestId: assertId(requestId, 'requestId'), bridge: contract.bridge, autoRedirect: false })
+  return Object.freeze({
+    kind,
+    requestId: assertId(requestId, 'requestId'),
+    bridge: contract.bridge,
+    autoRedirect: false,
+  })
 }
 
-function validateSelectorResponse(kind: SelectorKind, response: unknown, expectedRequestId?: unknown): SelectorResponse {
+function validateSelectorResponse(
+  kind: SelectorKind,
+  response: unknown,
+  expectedRequestId?: unknown,
+): SelectorResponse {
   const contract = SELECTOR_CONTRACTS[kind]
   if (!contract) fail('UNKNOWN_SELECTOR', `Unknown selector contract: ${kind}`, { kind })
   assertPlainRecord(response, 'selector response')
@@ -668,7 +940,10 @@ function validateSelectorResponse(kind: SelectorKind, response: unknown, expecte
     fail('UNKNOWN_PARAMETER', 'Selector responses only carry requestId at this boundary')
   }
   const actual = assertId(response.requestId, 'requestId')
-  if (expectedRequestId !== undefined && actual !== assertId(expectedRequestId, 'expectedRequestId')) {
+  if (
+    expectedRequestId !== undefined &&
+    actual !== assertId(expectedRequestId, 'expectedRequestId')
+  ) {
     fail('REQUEST_ID_MISMATCH', 'Selector response requestId does not match its caller')
   }
   return Object.freeze({ requestId: actual, bridge: contract.bridge, autoRedirect: false })

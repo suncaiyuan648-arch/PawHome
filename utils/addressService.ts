@@ -52,8 +52,13 @@ function textValue(value: unknown): string {
 function getApiBase(): string {
   try {
     const app = typeof getApp === 'function' ? getApp() : null
-    return (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_ADDRESS_PARSE_API_BASE) ||
-      (app && app.globalData && app.globalData.addressParseApiBase) || ''
+    return (
+      (typeof import.meta !== 'undefined' &&
+        import.meta.env &&
+        import.meta.env.VITE_ADDRESS_PARSE_API_BASE) ||
+      (app && app.globalData && app.globalData.addressParseApiBase) ||
+      ''
+    )
   } catch {
     return ''
   }
@@ -63,7 +68,7 @@ function parseRegion(text: string): string[] {
   const names = []
   let options = REGION_TREE
   for (let level = 0; level < 3; level += 1) {
-    const item = options.find(option => option.name && text.includes(option.name))
+    const item = options.find((option) => option.name && text.includes(option.name))
     if (!item) break
     names.push(item.name)
     options = Array.isArray(item.children) ? item.children : []
@@ -78,9 +83,15 @@ function parseLocal(text: string): AddressRecognitionResult {
   const regionParts = parseRegion(normalized)
   const nameMatch = normalized.match(/(?:联系人|姓名|收件人)\s*[:：]?\s*([\u4e00-\u9fa5]{2,8})/)
   const name = nameMatch ? nameMatch[1] : ''
-  const regionEnd = regionParts.length ? normalized.indexOf(regionParts[regionParts.length - 1]) + regionParts[regionParts.length - 1].length : 0
+  const regionEnd = regionParts.length
+    ? normalized.indexOf(regionParts[regionParts.length - 1]) +
+      regionParts[regionParts.length - 1].length
+    : 0
   let detail = normalized.slice(Math.max(0, regionEnd)).trim()
-  detail = detail.replace(/^(省|市|区|县)\s*/, '').replace(phone, '').trim()
+  detail = detail
+    .replace(/^(省|市|区|县)\s*/, '')
+    .replace(phone, '')
+    .trim()
   if (nameMatch) detail = detail.replace(nameMatch[0], '').trim()
   let inferredName = ''
   const tailName = detail.match(/(?:^|\s)([\u4e00-\u9fa5]{2,8})$/)
@@ -97,33 +108,36 @@ async function requestBackend(text: string, base: string): Promise<AddressCandid
   const requestApi = uni as unknown as AddressRequestApi
   if (typeof requestApi.request !== 'function') return null
   const request = requestApi.request
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     request({
       url: `${String(base).replace(/\/$/, '')}/address/parse`,
       method: 'POST',
       data: { text },
-      success: response => {
+      success: (response) => {
         const responseData = response && response.data
         const responseRecord = asCandidate(responseData)
         const data = isRecord(responseRecord.data) ? responseRecord.data : responseRecord
         resolve(isRecord(data) ? data : null)
       },
-      fail: () => resolve(null)
+      fail: () => resolve(null),
     })
   })
 }
 
-function normalizeResult(result: AddressCandidate | null, fallback: AddressRecognitionResult): AddressRecognitionResult {
+function normalizeResult(
+  result: AddressCandidate | null,
+  fallback: AddressRecognitionResult,
+): AddressRecognitionResult {
   const value = asCandidate(result)
   const backendParts = Array.isArray(value.regionParts)
     ? value.regionParts.map(textValue).filter(Boolean)
     : [value.province, value.city, value.district].map(textValue).filter(Boolean)
-  const regionParts = backendParts.length ? backendParts : (fallback.regionParts || [])
+  const regionParts = backendParts.length ? backendParts : fallback.regionParts || []
   return {
     name: textValue(value.name || value.contact || fallback.name || ''),
     phone: textValue(value.phone || value.mobile || fallback.phone || ''),
     regionParts: regionParts.slice(0, 4),
-    detail: textValue(value.detail || value.address || fallback.detail || '')
+    detail: textValue(value.detail || value.address || fallback.detail || ''),
   }
 }
 

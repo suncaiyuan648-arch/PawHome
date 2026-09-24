@@ -1,14 +1,38 @@
 <template>
-  <view class="paw-jury-action-bar" data-qa="qa-jury-action-bar">
+  <view
+    class="paw-jury-action-bar"
+    data-qa="qa-jury-action-bar"
+  >
     <view class="paw-jury-action-bar__content">
-      <view class="paw-jury-action-bar__share" data-qa="qa-jury-share" @tap.stop="$emit('share')">
-        <PawIcon name="actions/share" :size="18" color="#2c2c2c" label="分享" />
+      <view
+        class="paw-jury-action-bar__share"
+        data-qa="qa-jury-share"
+        @tap.stop="$emit('share')"
+      >
+        <PawIcon
+          name="actions/share"
+          :size="18"
+          color="#2c2c2c"
+          label="分享"
+        />
         <text>分享</text>
       </view>
 
-      <view v-if="!voted" class="paw-jury-action-bar__votes" data-qa="qa-jury-vote-actions">
-        <PawVoteRatioBar class="paw-jury-action-bar__vote-bar" :real-percent="50" :fake-percent="50" :height="45"
-          :divider-width="8" :interactive="true" :center-labels="true" @segment-click="onVoteSegment">
+      <view
+        v-if="!voted"
+        class="paw-jury-action-bar__votes"
+        data-qa="qa-jury-vote-actions"
+      >
+        <PawVoteRatioBar
+          class="paw-jury-action-bar__vote-bar"
+          :real-percent="50"
+          :fake-percent="50"
+          :height="45"
+          :divider-width="8"
+          :interactive="true"
+          :center-labels="true"
+          @segment-click="onVoteSegment"
+        >
           <template #real-label>
             <text class="paw-jury-action-bar__vote-label">挺真实</text>
           </template>
@@ -18,8 +42,17 @@
         </PawVoteRatioBar>
       </view>
 
-      <PawButton v-else class="paw-jury-action-bar__next" qa="qa-jury-next" text="" size="md" block flush nowrap
-        @click="$emit('next')">
+      <PawButton
+        v-else
+        class="paw-jury-action-bar__next"
+        qa="qa-jury-next"
+        text=""
+        size="md"
+        block
+        flush
+        nowrap
+        @click="$emit('next')"
+      >
         <text>{{ nextLabel }}</text>
       </PawButton>
     </view>
@@ -40,18 +73,18 @@ export default defineComponent({
   components: { PawButton, PawIcon, PawVoteRatioBar },
   props: {
     voted: { type: Boolean, default: false },
-    nextLabel: { type: String, default: '下一条（1/1）' }
+    nextLabel: { type: String, default: '下一条（1/1）' },
   },
   emits: {
-    'share': eventContract<[]>(),
-    'vote': eventContract<[vote: 'real' | 'fake']>(),
-    'next': eventContract<[]>(),
+    share: eventContract<[]>(),
+    vote: eventContract<[vote: 'real' | 'fake']>(),
+    next: eventContract<[]>(),
   },
   methods: {
     onVoteSegment(segment: 'real' | 'fake') {
       this.$emit('vote', segment)
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -66,7 +99,7 @@ export default defineComponent({
   min-height: 88px;
   padding: 7px 18px 34px 20px;
   box-sizing: border-box;
-  border-top: .5px solid rgba(0, 0, 0, .05);
+  border-top: 0.5px solid rgba(0, 0, 0, 0.05);
   background: #fff;
 }
 

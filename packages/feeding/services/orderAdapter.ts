@@ -138,18 +138,22 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function firstValue(source: Record<string, unknown>, keys: readonly string[]): unknown {
   for (const key of keys) {
-    if (source && source[key] !== undefined && source[key] !== null && source[key] !== '') return source[key]
+    if (source && source[key] !== undefined && source[key] !== null && source[key] !== '')
+      return source[key]
   }
   return undefined
 }
 
 function actorBinding(source: Record<string, unknown>): string | undefined {
   const values = ['userId', 'userPawId', 'applicantId', 'applicantUserId']
-    .map(key => source && source[key])
-    .filter(value => value !== undefined && value !== null && value !== '')
-    .map(value => String(value).trim())
+    .map((key) => source && source[key])
+    .filter((value) => value !== undefined && value !== null && value !== '')
+    .map((value) => String(value).trim())
   const unique = [...new Set(values)]
-  if (unique.length > 1) throw Object.assign(new Error('reward order actor aliases disagree'), { code: 'ACTOR_ASSOCIATION_CONFLICT' })
+  if (unique.length > 1)
+    throw Object.assign(new Error('reward order actor aliases disagree'), {
+      code: 'ACTOR_ASSOCIATION_CONFLICT',
+    })
   return unique[0]
 }
 
@@ -157,7 +161,12 @@ function text(value: unknown): string {
   return value === undefined || value === null ? '' : String(value).trim()
 }
 
-function failure<T = null>(code: string, message: string, data: T | null = null, actor: TrustedActor | null = null): OrderFailure<T> {
+function failure<T = null>(
+  code: string,
+  message: string,
+  data: T | null = null,
+  actor: TrustedActor | null = null,
+): OrderFailure<T> {
   return Object.freeze({
     success: false,
     source: 'mock',
@@ -217,17 +226,25 @@ function normalizeOptions(options: unknown): RuntimeOrderReadOptions {
 
 function normalizeHiddenEntries(value: unknown): VisibilityEntry[] {
   if (value === undefined) return []
-  if (!Array.isArray(value)) throw Object.assign(new Error('visibility entries must be an array'), { code: 'INVALID_VISIBILITY' })
+  if (!Array.isArray(value))
+    throw Object.assign(new Error('visibility entries must be an array'), {
+      code: 'INVALID_VISIBILITY',
+    })
   const entries: unknown[] = value
   return entries.map(normalizeVisibilityEntry)
 }
 
 /** Convert one persisted legacy reward record without copying address/private extras. */
 function adaptRewardRecord(raw: unknown): NormalizedOrder {
-  if (!isRecord(raw)) throw Object.assign(new Error('reward order must be an object'), { code: 'INVALID_ORDER_RECORD' })
+  if (!isRecord(raw))
+    throw Object.assign(new Error('reward order must be an object'), {
+      code: 'INVALID_ORDER_RECORD',
+    })
   const explicitType = firstValue(raw, ['orderType', 'type'])
   if (explicitType !== undefined && explicitType !== ADOPTION_GIFT) {
-    throw Object.assign(new Error('reward storage contains a non-gift order'), { code: 'ORDER_TYPE_MISMATCH' })
+    throw Object.assign(new Error('reward storage contains a non-gift order'), {
+      code: 'ORDER_TYPE_MISMATCH',
+    })
   }
   const applicationId = firstValue(raw, ['applicationId', 'recordId'])
   const userId = actorBinding(raw)
@@ -244,16 +261,29 @@ function adaptRewardRecord(raw: unknown): NormalizedOrder {
     ...(animalId === undefined ? {} : { animalId }),
     status: raw.status,
   }
-  for (const key of ['deliveryStatus', 'deliveryProgress', 'amount', 'currency', 'createdAt', 'updatedAt']) {
+  for (const key of [
+    'deliveryStatus',
+    'deliveryProgress',
+    'amount',
+    'currency',
+    'createdAt',
+    'updatedAt',
+  ]) {
     if (raw[key] !== undefined) input[key] = raw[key]
   }
   return normalizeOrderRecord(input)
 }
 
 function adaptFeedingRecord(raw: unknown): NormalizedOrder {
-  if (!isRecord(raw)) throw Object.assign(new Error('feeding order must be an object'), { code: 'INVALID_ORDER_RECORD' })
+  if (!isRecord(raw))
+    throw Object.assign(new Error('feeding order must be an object'), {
+      code: 'INVALID_ORDER_RECORD',
+    })
   const status = text(raw.status) || FEEDING_STATUS_BY_STATE[text(raw.stateKey)]
-  if (!status) throw Object.assign(new Error('feeding order has no supported status'), { code: 'MISSING_ORDER_STATUS' })
+  if (!status)
+    throw Object.assign(new Error('feeding order has no supported status'), {
+      code: 'MISSING_ORDER_STATUS',
+    })
   return normalizeOrderRecord({
     orderId: firstValue(raw, ['orderId', 'id']),
     orderType: NORMAL_FEED,
@@ -271,11 +301,19 @@ function adaptFeedingRecord(raw: unknown): NormalizedOrder {
   })
 }
 
-function accessFor(order: NormalizedOrder, actor: TrustedActor, hiddenEntries: readonly VisibilityEntry[]): OrderAccess {
+function accessFor(
+  order: NormalizedOrder,
+  actor: TrustedActor,
+  hiddenEntries: readonly VisibilityEntry[],
+): OrderAccess {
   return getOrderAccess(order, actor, { hiddenEntries })
 }
 
-function visibleItem(order: NormalizedOrder, actor: TrustedActor, hiddenEntries: readonly VisibilityEntry[]): VisibleOrder | null {
+function visibleItem(
+  order: NormalizedOrder,
+  actor: TrustedActor,
+  hiddenEntries: readonly VisibilityEntry[],
+): VisibleOrder | null {
   const access = accessFor(order, actor, hiddenEntries)
   if (!access.canRead) return null
   return Object.freeze({ order, access })
@@ -286,23 +324,46 @@ function readRewardCandidates(): OrderCandidate[] {
     try {
       return { order: adaptRewardRecord(raw), diagnostic: null }
     } catch (error) {
-      return { order: null, diagnostic: Object.freeze({ source: 'reward', index, code: readErrorCode(error, 'INVALID_ORDER_RECORD') }) }
+      return {
+        order: null,
+        diagnostic: Object.freeze({
+          source: 'reward',
+          index,
+          code: readErrorCode(error, 'INVALID_ORDER_RECORD'),
+        }),
+      }
     }
   })
 }
 
-async function readFeedingCandidates(actor: TrustedActor, perspective: OrderPerspective, yardId: string): Promise<{ candidates: OrderCandidate[]; diagnostics: Diagnostic[] }> {
-  const request: GetFeedingOrdersOptions = perspective === 'yard'
-    ? { variant: 'yard', yardOwnerId: actor.id, yardId }
-    : { variant: 'mine', userPawId: actor.id }
+async function readFeedingCandidates(
+  actor: TrustedActor,
+  perspective: OrderPerspective,
+  yardId: string,
+): Promise<{ candidates: OrderCandidate[]; diagnostics: Diagnostic[] }> {
+  const request: GetFeedingOrdersOptions =
+    perspective === 'yard'
+      ? { variant: 'yard', yardOwnerId: actor.id, yardId }
+      : { variant: 'mine', userPawId: actor.id }
   let result: unknown
   try {
     result = await getFeedingOrders(request)
   } catch {
-    return { candidates: [], diagnostics: [Object.freeze({ source: 'feeding', index: -1, code: 'FEEDING_READ_FAILED' })] }
+    return {
+      candidates: [],
+      diagnostics: [Object.freeze({ source: 'feeding', index: -1, code: 'FEEDING_READ_FAILED' })],
+    }
   }
-  if (!isRecord(result) || result.success !== true || !isRecord(result.data) || !Array.isArray(result.data.items)) {
-    return { candidates: [], diagnostics: [Object.freeze({ source: 'feeding', index: -1, code: 'FEEDING_READ_FAILED' })] }
+  if (
+    !isRecord(result) ||
+    result.success !== true ||
+    !isRecord(result.data) ||
+    !Array.isArray(result.data.items)
+  ) {
+    return {
+      candidates: [],
+      diagnostics: [Object.freeze({ source: 'feeding', index: -1, code: 'FEEDING_READ_FAILED' })],
+    }
   }
   const rawItems: unknown[] = result.data.items
   const candidates: OrderCandidate[] = []
@@ -311,7 +372,13 @@ async function readFeedingCandidates(actor: TrustedActor, perspective: OrderPers
     try {
       candidates.push({ order: adaptFeedingRecord(raw), diagnostic: null })
     } catch (error) {
-      diagnostics.push(Object.freeze({ source: 'feeding', index, code: readErrorCode(error, 'INVALID_ORDER_RECORD') }))
+      diagnostics.push(
+        Object.freeze({
+          source: 'feeding',
+          index,
+          code: readErrorCode(error, 'INVALID_ORDER_RECORD'),
+        }),
+      )
     }
   })
   return { candidates, diagnostics }
@@ -320,11 +387,15 @@ async function readFeedingCandidates(actor: TrustedActor, perspective: OrderPers
 function filterBySource(candidates: OrderCandidate[], source: OrderSource): OrderCandidate[] {
   if (source === 'all') return candidates
   const orderType = source === 'reward' ? ADOPTION_GIFT : NORMAL_FEED
-  return candidates.filter((candidate) => candidate.order && candidate.order.orderType === orderType)
+  return candidates.filter(
+    (candidate) => candidate.order && candidate.order.orderType === orderType,
+  )
 }
 
 function findByOrderId(candidates: OrderCandidate[], orderId: string): OrderCandidate | null {
-  return candidates.find((candidate) => candidate.order && candidate.order.orderId === orderId) || null
+  return (
+    candidates.find((candidate) => candidate.order && candidate.order.orderId === orderId) || null
+  )
 }
 
 function isOrderSource(value: unknown): value is OrderSource {
@@ -335,29 +406,48 @@ function isOrderPerspective(value: unknown): value is OrderPerspective {
   return PERSPECTIVE_VALUES.some((candidate) => candidate === value)
 }
 
-function validateReadOptions(options: RuntimeOrderReadOptions): ValidationResult<{ source: OrderSource; perspective: OrderPerspective; yardId: string }> {
+function validateReadOptions(
+  options: RuntimeOrderReadOptions,
+): ValidationResult<{ source: OrderSource; perspective: OrderPerspective; yardId: string }> {
   const source = normalizeSource(options.source)
-  if (!isOrderSource(source)) return { success: false, error: ['INVALID_SOURCE', 'order source is not supported'] }
+  if (!isOrderSource(source))
+    return { success: false, error: ['INVALID_SOURCE', 'order source is not supported'] }
   const perspective = normalizePerspective(options.perspective)
-  if (!isOrderPerspective(perspective)) return { success: false, error: ['INVALID_PERSPECTIVE', 'order perspective is not supported'] }
-  if (options.yardId !== undefined && (typeof options.yardId !== 'string' && typeof options.yardId !== 'number')) {
+  if (!isOrderPerspective(perspective))
+    return { success: false, error: ['INVALID_PERSPECTIVE', 'order perspective is not supported'] }
+  if (
+    options.yardId !== undefined &&
+    typeof options.yardId !== 'string' &&
+    typeof options.yardId !== 'number'
+  ) {
     return { success: false, error: ['INVALID_YARD_ID', 'yardId must be an opaque ID'] }
   }
   return { success: true, value: { source, perspective, yardId: text(options.yardId) } }
 }
 
-function validateOpaqueId(value: unknown, label: string, crossDomainPrefixes: readonly string[] = []): ValidationResult<{ id: string }> {
+function validateOpaqueId(
+  value: unknown,
+  label: string,
+  crossDomainPrefixes: readonly string[] = [],
+): ValidationResult<{ id: string }> {
   const id = text(value)
   if (!id) return { success: false, error: ['MISSING_ID', `${label} is required`] }
   if (id !== value || /[/?#%]|:\/\//.test(id) || !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(id)) {
     return { success: false, error: ['INVALID_ID', `${label} must be an opaque ID`] }
   }
   const lower = id.toLowerCase()
-  const prefix = crossDomainPrefixes.find((candidate) => lower === candidate
-    || lower.startsWith(`${candidate}-`)
-    || lower.startsWith(`${candidate}_`)
-    || lower.startsWith(`${candidate}:`))
-  if (prefix) return { success: false, error: ['CROSS_DOMAIN_ID', `${label} belongs to another business domain`] }
+  const prefix = crossDomainPrefixes.find(
+    (candidate) =>
+      lower === candidate ||
+      lower.startsWith(`${candidate}-`) ||
+      lower.startsWith(`${candidate}_`) ||
+      lower.startsWith(`${candidate}:`),
+  )
+  if (prefix)
+    return {
+      success: false,
+      error: ['CROSS_DOMAIN_ID', `${label} belongs to another business domain`],
+    }
   return { success: true, value: { id } }
 }
 
@@ -368,7 +458,9 @@ function validateOpaqueId(value: unknown, label: string, crossDomainPrefixes: re
  * intentionally ignored.  The reader scopes feeding data from the trusted
  * actor and `getOrderAccess` checks each persisted order again.
  */
-export async function readOrderList(options: OrderReadOptions = {}): Promise<OrderResult<OrderListData>> {
+export async function readOrderList(
+  options: OrderReadOptions = {},
+): Promise<OrderResult<OrderListData>> {
   const sourceOptions = normalizeOptions(options)
   const validated = validateReadOptions(sourceOptions)
   if (!validated.success) return failure(validated.error[0], validated.error[1], emptyListData())
@@ -376,7 +468,12 @@ export async function readOrderList(options: OrderReadOptions = {}): Promise<Ord
 
   const resolved = resolveActor(sourceOptions.actorProvider)
   if (resolved.error || !resolved.actor) {
-    return failure(readErrorCode(resolved.error, 'NO_ACTOR'), 'trusted actor is unavailable', emptyListData(), null)
+    return failure(
+      readErrorCode(resolved.error, 'NO_ACTOR'),
+      'trusted actor is unavailable',
+      emptyListData(),
+      null,
+    )
   }
   const actor = resolved.actor
 
@@ -384,7 +481,12 @@ export async function readOrderList(options: OrderReadOptions = {}): Promise<Ord
   try {
     hiddenEntries = normalizeHiddenEntries(sourceOptions.hiddenEntries)
   } catch (error) {
-    return failure(readErrorCode(error, 'INVALID_VISIBILITY'), 'visibility data is invalid', emptyListData(), actor)
+    return failure(
+      readErrorCode(error, 'INVALID_VISIBILITY'),
+      'visibility data is invalid',
+      emptyListData(),
+      actor,
+    )
   }
 
   const diagnostics: Diagnostic[] = []
@@ -392,9 +494,17 @@ export async function readOrderList(options: OrderReadOptions = {}): Promise<Ord
   if (settings.source === 'all' || settings.source === 'reward') {
     try {
       rewardCandidates = readRewardCandidates()
-      diagnostics.push(...rewardCandidates.flatMap((item) => item.diagnostic ? [item.diagnostic] : []))
+      diagnostics.push(
+        ...rewardCandidates.flatMap((item) => (item.diagnostic ? [item.diagnostic] : [])),
+      )
     } catch (error) {
-      diagnostics.push(Object.freeze({ source: 'reward', index: -1, code: readErrorCode(error, 'REWARD_READ_FAILED') }))
+      diagnostics.push(
+        Object.freeze({
+          source: 'reward',
+          index: -1,
+          code: readErrorCode(error, 'REWARD_READ_FAILED'),
+        }),
+      )
     }
   }
 
@@ -407,7 +517,10 @@ export async function readOrderList(options: OrderReadOptions = {}): Promise<Ord
 
   const items: VisibleOrder[] = []
   const seen = new Set<string>()
-  for (const candidate of filterBySource([...rewardCandidates, ...feedingCandidates], settings.source)) {
+  for (const candidate of filterBySource(
+    [...rewardCandidates, ...feedingCandidates],
+    settings.source,
+  )) {
     if (!candidate.order || seen.has(candidate.order.orderId)) continue
     seen.add(candidate.order.orderId)
     const item = visibleItem(candidate.order, actor, hiddenEntries)
@@ -425,13 +538,19 @@ export async function readOrderList(options: OrderReadOptions = {}): Promise<Ord
 }
 
 /** Read one explicit orderId; it never falls back to a first/last/demo item. */
-export async function readOrderById(orderId: string, options: OrderReadOptions = {}): Promise<OrderResult<OrderDetailData>> {
+export async function readOrderById(
+  orderId: string,
+  options: OrderReadOptions = {},
+): Promise<OrderResult<OrderDetailData>> {
   const sourceOptions = normalizeOptions(options)
   const normalized = validateOpaqueId(orderId, 'orderId', CROSS_DOMAIN_ORDER_PREFIXES)
   if (!normalized.success) {
-    const code = normalized.error[0] === 'MISSING_ID'
-      ? 'MISSING_ORDER_ID'
-      : normalized.error[0] === 'CROSS_DOMAIN_ID' ? 'CROSS_DOMAIN_ID' : 'INVALID_ORDER_ID'
+    const code =
+      normalized.error[0] === 'MISSING_ID'
+        ? 'MISSING_ORDER_ID'
+        : normalized.error[0] === 'CROSS_DOMAIN_ID'
+          ? 'CROSS_DOMAIN_ID'
+          : 'INVALID_ORDER_ID'
     return failure(code, normalized.error[1])
   }
   const id = normalized.value.id
@@ -449,7 +568,12 @@ export async function readOrderById(orderId: string, options: OrderReadOptions =
   try {
     hiddenEntries = normalizeHiddenEntries(sourceOptions.hiddenEntries)
   } catch (error) {
-    return failure(readErrorCode(error, 'INVALID_VISIBILITY'), 'visibility data is invalid', null, actor)
+    return failure(
+      readErrorCode(error, 'INVALID_VISIBILITY'),
+      'visibility data is invalid',
+      null,
+      actor,
+    )
   }
 
   const diagnostics: Diagnostic[] = []
@@ -457,9 +581,17 @@ export async function readOrderById(orderId: string, options: OrderReadOptions =
   if (settings.source === 'all' || settings.source === 'reward') {
     try {
       rewardCandidates = readRewardCandidates()
-      diagnostics.push(...rewardCandidates.flatMap((item) => item.diagnostic ? [item.diagnostic] : []))
+      diagnostics.push(
+        ...rewardCandidates.flatMap((item) => (item.diagnostic ? [item.diagnostic] : [])),
+      )
     } catch (error) {
-      diagnostics.push(Object.freeze({ source: 'reward', index: -1, code: readErrorCode(error, 'REWARD_READ_FAILED') }))
+      diagnostics.push(
+        Object.freeze({
+          source: 'reward',
+          index: -1,
+          code: readErrorCode(error, 'REWARD_READ_FAILED'),
+        }),
+      )
     }
   }
   let feedingCandidates: OrderCandidate[] = []
@@ -469,7 +601,10 @@ export async function readOrderById(orderId: string, options: OrderReadOptions =
     diagnostics.push(...feeding.diagnostics)
   }
 
-  const found = findByOrderId(filterBySource([...rewardCandidates, ...feedingCandidates], settings.source), id)
+  const found = findByOrderId(
+    filterBySource([...rewardCandidates, ...feedingCandidates], settings.source),
+    id,
+  )
   if (!found || !found.order) return failure('NOT_FOUND', 'order was not found', null, actor)
   const item = visibleItem(found.order, actor, hiddenEntries)
   if (!item) return failure('FORBIDDEN', 'order is not visible to this actor', null, actor)
@@ -477,12 +612,21 @@ export async function readOrderById(orderId: string, options: OrderReadOptions =
 }
 
 /** Read one adoption gift by its stable application association. */
-export async function readGiftOrderByApplicationId(applicationId: string, options: OrderReadOptions = {}): Promise<OrderResult<OrderDetailData>> {
-  const normalized = validateOpaqueId(applicationId, 'applicationId', CROSS_DOMAIN_APPLICATION_PREFIXES)
+export async function readGiftOrderByApplicationId(
+  applicationId: string,
+  options: OrderReadOptions = {},
+): Promise<OrderResult<OrderDetailData>> {
+  const normalized = validateOpaqueId(
+    applicationId,
+    'applicationId',
+    CROSS_DOMAIN_APPLICATION_PREFIXES,
+  )
   if (!normalized.success) return failure(normalized.error[0], normalized.error[1])
   const result = await readOrderList({ ...options, source: 'reward' })
   if (!result.success) return failure(result.error.code, result.error.message, null, result.actor)
-  const item = result.data.items.find((candidate) => candidate.order.applicationId === normalized.value.id)
+  const item = result.data.items.find(
+    (candidate) => candidate.order.applicationId === normalized.value.id,
+  )
   if (!item) return failure('NOT_FOUND', 'gift order was not found', null, result.actor)
   return success(Object.freeze({ ...item, diagnostics: result.data.diagnostics }), result.actor)
 }

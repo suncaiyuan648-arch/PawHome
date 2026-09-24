@@ -9,7 +9,8 @@
     :form-type="formType"
     :text="text"
     @click="$emit('click', $event)"
-  ><slot>{{ text }}</slot></PawButton>
+    ><slot>{{ text }}</slot></PawButton
+  >
 </template>
 
 <script lang="ts">
@@ -28,13 +29,15 @@ export default defineComponent({
     shape: { type: String, default: 'pill' },
     disabled: { type: Boolean, default: false },
     loading: { type: Boolean, default: false },
-    formType: { type: String, default: '' }
+    formType: { type: String, default: '' },
   },
   emits: {
-    'click': eventContract<[event: PawEvent]>(),
+    click: eventContract<[event: PawEvent]>(),
   },
   computed: {
-    buttonTone() { return this.variant === 'default' ? 'brand' : this.variant }
-  }
+    buttonTone() {
+      return this.variant === 'default' ? 'brand' : this.variant
+    },
+  },
 })
 </script>

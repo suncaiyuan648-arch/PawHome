@@ -44,7 +44,7 @@ function actor(id, roles) {
 }
 
 function throwsCode(fn, code) {
-  assert.throws(fn, error => error && error.code === code)
+  assert.throws(fn, (error) => error && error.code === code)
 }
 
 before(async () => {
@@ -53,9 +53,11 @@ before(async () => {
   await fsp.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
   await fsp.copyFile(
     path.join(ROOT, 'navigation/adoptionConditionContract.ts'),
-    path.join(tempRoot, 'navigation/adoptionConditionContract.ts')
+    path.join(tempRoot, 'navigation/adoptionConditionContract.ts'),
   )
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/adoptionConditionContract.ts')).href}?test=${Date.now()}`)
+  api = await import(
+    `${pathToFileURL(path.join(tempRoot, 'navigation/adoptionConditionContract.ts')).href}?test=${Date.now()}`
+  )
 })
 
 after(async () => {
@@ -64,26 +66,42 @@ after(async () => {
 
 test('contract remains pure, exports the adoption condition seam, and exposes no writer', () => {
   const source = fs.readFileSync(path.join(ROOT, 'navigation/adoptionConditionContract.ts'), 'utf8')
-  assert.doesNotMatch(source, /(?:import|require\s*\()[^\n]*(?:vue|uni|pages|packages|storage|mock)/i)
+  assert.doesNotMatch(
+    source,
+    /(?:import|require\s*\()[^\n]*(?:vue|uni|pages|packages|storage|mock)/i,
+  )
   assert.deepEqual(api.ADOPTION_CLOUD_PARENT_SELECTIONS, ['any', 'all', 'specific'])
   assert.deepEqual(api.ADOPTION_PERSPECTIVES, ['applicant', 'cloud_parent', 'owner'])
   assert.equal(typeof api.createAdoptionTransitionContract, 'function')
   assert.equal(typeof api.readAdoptionCondition, 'function')
   assert.equal(typeof api.canEnterAdoption, 'function')
-  assert.equal(Object.keys(api).some(key => /write|save|transitionAdoption/i.test(key)), false)
+  assert.equal(
+    Object.keys(api).some((key) => /write|save|transitionAdoption/i.test(key)),
+    false,
+  )
 })
 
 test('uses the injected transition boundary and rejects a direct owner-confirmation jump', () => {
   const transition = api.createAdoptionTransitionContract(TRANSITIONS)
   assert.equal(transition.canTransition('owner_confirm_pending', 'jury_confirm_pending'), true)
   assert.equal(transition.canTransition('owner_confirm_pending', 'adoption_confirmed'), false)
-  assert.deepEqual(transition.allowedNext('owner_confirm_pending'), ['jury_confirm_pending', 'rejected', 'abandoned'])
-  throwsCode(() => api.createAdoptionTransitionContract({ pending: ['pickup', 1] }), 'INVALID_TRANSITIONS')
-  assert.equal(api.canEnterAdoption({
-    record: { ...BASE, status: 'owner_confirm_pending', cloudParentIds: [] },
-    targetStatus: 'adoption_confirmed',
-    transitions: TRANSITIONS,
-  }).allowed, false)
+  assert.deepEqual(transition.allowedNext('owner_confirm_pending'), [
+    'jury_confirm_pending',
+    'rejected',
+    'abandoned',
+  ])
+  throwsCode(
+    () => api.createAdoptionTransitionContract({ pending: ['pickup', 1] }),
+    'INVALID_TRANSITIONS',
+  )
+  assert.equal(
+    api.canEnterAdoption({
+      record: { ...BASE, status: 'owner_confirm_pending', cloudParentIds: [] },
+      targetStatus: 'adoption_confirmed',
+      transitions: TRANSITIONS,
+    }).allowed,
+    false,
+  )
 })
 
 test('trusted applicant, cloud-parent, and owner perspectives cannot be forged by query or record state', () => {
@@ -132,8 +150,13 @@ test('trusted applicant, cloud-parent, and owner perspectives cannot be forged b
 })
 
 test('zero cloud parents explicitly skip the cloud-parent condition', () => {
-  const result = api.evaluateCloudParentCondition({ record: { ...BASE, cloudParentIds: [], cloudParentRequired: false } })
-  assert.deepEqual({ count: result.count, decision: result.decision, canProceed: result.canProceed }, { count: 0, decision: 'skip', canProceed: true })
+  const result = api.evaluateCloudParentCondition({
+    record: { ...BASE, cloudParentIds: [], cloudParentRequired: false },
+  })
+  assert.deepEqual(
+    { count: result.count, decision: result.decision, canProceed: result.canProceed },
+    { count: 0, decision: 'skip', canProceed: true },
+  )
   const advance = api.canEnterAdoption({
     record: { ...BASE, cloudParentIds: [], cloudParentRequired: false, status: 'cloud_pending' },
     targetStatus: 'pending',
@@ -159,12 +182,16 @@ test('cloudParentRequired must agree with the authoritative parent ID set', () =
 })
 
 test('one cloud parent waits for review and only an existing approval proves it may proceed', () => {
-  const waiting = api.evaluateCloudParentCondition({ record: { ...BASE, cloudParentIds: ['cloud-a'] } })
+  const waiting = api.evaluateCloudParentCondition({
+    record: { ...BASE, cloudParentIds: ['cloud-a'] },
+  })
   assert.equal(waiting.count, 1)
   assert.equal(waiting.decision, 'pending')
   assert.equal(waiting.canProceed, false)
 
-  const approved = api.evaluateCloudParentCondition({ record: { ...BASE, cloudParentIds: ['cloud-a'], cloudParentApprovals: ['cloud-a'] } })
+  const approved = api.evaluateCloudParentCondition({
+    record: { ...BASE, cloudParentIds: ['cloud-a'], cloudParentApprovals: ['cloud-a'] },
+  })
   assert.equal(approved.decision, 'approved')
   assert.equal(approved.canProceed, true)
   const blocked = api.canEnterAdoption({
@@ -177,7 +204,9 @@ test('one cloud parent waits for review and only an existing approval proves it 
 })
 
 test('multiple cloud parents fail closed without an explicit product policy', () => {
-  const result = api.evaluateCloudParentCondition({ record: { ...BASE, cloudParentIds: ['cloud-a', 'cloud-b'] } })
+  const result = api.evaluateCloudParentCondition({
+    record: { ...BASE, cloudParentIds: ['cloud-a', 'cloud-b'] },
+  })
   assert.equal(result.decision, 'decision_required')
   assert.equal(result.decisionRequired, true)
   assert.equal(result.canProceed, false)
@@ -209,22 +238,49 @@ test('terminal rejection or abandonment follows the injected legal edge while re
 })
 
 test('policy must explicitly declare selection and a complete legal state mapping', () => {
-  throwsCode(() => api.evaluateCloudParentCondition({
-    record: { ...BASE, cloudParentIds: ['cloud-a', 'cloud-b'] },
-    policy: { legalStates: ['pending'], pendingStates: ['pending'], approvedStates: [], rejectedStates: [] },
-  }), 'POLICY_SELECTION_REQUIRED')
-  throwsCode(() => api.evaluateCloudParentCondition({
-    record: { ...BASE, cloudParentIds: ['cloud-a', 'cloud-b'] },
-    policy: { selection: 'all', legalStates: ['pending', 'approved'], pendingStates: ['pending'], approvedStates: [], rejectedStates: [] },
-  }), 'POLICY_STATE_MAPPING_REQUIRED')
-  throwsCode(() => api.evaluateCloudParentCondition({
-    record: { ...BASE, cloudParentIds: ['cloud-a', 'cloud-b'] },
-    policy: { ...POLICY_ALL, approvedStates: ['future'] },
-  }), 'POLICY_STATE_NOT_LEGAL')
+  throwsCode(
+    () =>
+      api.evaluateCloudParentCondition({
+        record: { ...BASE, cloudParentIds: ['cloud-a', 'cloud-b'] },
+        policy: {
+          legalStates: ['pending'],
+          pendingStates: ['pending'],
+          approvedStates: [],
+          rejectedStates: [],
+        },
+      }),
+    'POLICY_SELECTION_REQUIRED',
+  )
+  throwsCode(
+    () =>
+      api.evaluateCloudParentCondition({
+        record: { ...BASE, cloudParentIds: ['cloud-a', 'cloud-b'] },
+        policy: {
+          selection: 'all',
+          legalStates: ['pending', 'approved'],
+          pendingStates: ['pending'],
+          approvedStates: [],
+          rejectedStates: [],
+        },
+      }),
+    'POLICY_STATE_MAPPING_REQUIRED',
+  )
+  throwsCode(
+    () =>
+      api.evaluateCloudParentCondition({
+        record: { ...BASE, cloudParentIds: ['cloud-a', 'cloud-b'] },
+        policy: { ...POLICY_ALL, approvedStates: ['future'] },
+      }),
+    'POLICY_STATE_NOT_LEGAL',
+  )
 })
 
 test('explicit all/any/specific policies produce different decisions without a default product choice', () => {
-  const record = { ...BASE, cloudParentIds: ['cloud-a', 'cloud-b'], cloudParentApprovals: ['cloud-a'] }
+  const record = {
+    ...BASE,
+    cloudParentIds: ['cloud-a', 'cloud-b'],
+    cloudParentApprovals: ['cloud-a'],
+  }
   const all = api.evaluateCloudParentCondition({ record, policy: POLICY_ALL })
   assert.equal(all.selection, 'all')
   assert.equal(all.decision, 'pending')
@@ -235,12 +291,22 @@ test('explicit all/any/specific policies produce different decisions without a d
   assert.equal(any.decision, 'approved')
   const specific = api.evaluateCloudParentCondition({
     record,
-    policy: { ...POLICY_ALL, selection: 'specific', specificIds: ['cloud-a'], specificSelection: 'all' },
+    policy: {
+      ...POLICY_ALL,
+      selection: 'specific',
+      specificIds: ['cloud-a'],
+      specificSelection: 'all',
+    },
   })
   assert.equal(specific.decision, 'approved')
   const outside = api.evaluateCloudParentCondition({
     record,
-    policy: { ...POLICY_ALL, selection: 'specific', specificIds: ['cloud-c'], specificSelection: 'all' },
+    policy: {
+      ...POLICY_ALL,
+      selection: 'specific',
+      specificIds: ['cloud-c'],
+      specificSelection: 'all',
+    },
   })
   assert.equal(outside.decision, 'decision_required')
   assert.equal(outside.canProceed, false)
@@ -299,21 +365,45 @@ test('old links re-read current record stage and never replay a stale query stag
 })
 
 test('malformed IDs, conflicting parent IDs, and missing transitions fail closed', () => {
-  throwsCode(() => api.evaluateCloudParentCondition({ record: { ...BASE, cloudParentIds: ['cloud/a'] } }), 'INVALID_ID')
-  throwsCode(() => api.evaluateCloudParentCondition({ record: { ...BASE, cloudParentIds: ['cloud-a'], cloudParentPawId: 'cloud-b' } }), 'CONFLICTING_CLOUD_PARENT_IDS')
+  throwsCode(
+    () => api.evaluateCloudParentCondition({ record: { ...BASE, cloudParentIds: ['cloud/a'] } }),
+    'INVALID_ID',
+  )
+  throwsCode(
+    () =>
+      api.evaluateCloudParentCondition({
+        record: { ...BASE, cloudParentIds: ['cloud-a'], cloudParentPawId: 'cloud-b' },
+      }),
+    'CONFLICTING_CLOUD_PARENT_IDS',
+  )
   const conflictingReview = api.evaluateCloudParentCondition({
-    record: { ...BASE, cloudParentIds: ['cloud-a'], cloudParentApprovals: ['cloud-a'], cloudParentRejections: ['cloud-a'] },
+    record: {
+      ...BASE,
+      cloudParentIds: ['cloud-a'],
+      cloudParentApprovals: ['cloud-a'],
+      cloudParentRejections: ['cloud-a'],
+    },
   })
   assert.equal(conflictingReview.decision, 'decision_required')
   assert.equal(conflictingReview.reason, 'CONFLICTING_REVIEW_DECISIONS')
-  throwsCode(() => api.canEnterAdoption({ record: { ...BASE, cloudParentIds: [] }, targetStatus: 'pending' }), 'INVALID_TRANSITIONS')
-  assert.equal(api.getAdoptionConditionAccess({
-    record: { ...BASE, cloudParentIds: [] },
-    actorProvider: actor('actor-a', ['applicant']),
-  }).canWrite, false)
-  assert.equal(api.readAdoptionCondition({
-    record: { ...BASE, cloudParentIds: [] },
-    actorProvider: () => ({ actor: { id: 'bad/id', roles: ['applicant'] } }),
-    perspective: 'applicant',
-  }).canRead, false)
+  throwsCode(
+    () =>
+      api.canEnterAdoption({ record: { ...BASE, cloudParentIds: [] }, targetStatus: 'pending' }),
+    'INVALID_TRANSITIONS',
+  )
+  assert.equal(
+    api.getAdoptionConditionAccess({
+      record: { ...BASE, cloudParentIds: [] },
+      actorProvider: actor('actor-a', ['applicant']),
+    }).canWrite,
+    false,
+  )
+  assert.equal(
+    api.readAdoptionCondition({
+      record: { ...BASE, cloudParentIds: [] },
+      actorProvider: () => ({ actor: { id: 'bad/id', roles: ['applicant'] } }),
+      perspective: 'applicant',
+    }).canRead,
+    false,
+  )
 })

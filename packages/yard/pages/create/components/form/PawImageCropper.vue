@@ -1,44 +1,111 @@
 <template>
-  <PawOverlay v-model:visible="visibleProxy" :close-on-mask="false" placement="center" :z-index="10060">
-    <view class="paw-image-cropper" data-qa="paw-image-cropper" @tap.stop>
+  <PawOverlay
+    v-model:visible="visibleProxy"
+    :close-on-mask="false"
+    placement="center"
+    :z-index="10060"
+  >
+    <view
+      class="paw-image-cropper"
+      data-qa="paw-image-cropper"
+      @tap.stop
+    >
       <view class="paw-image-cropper__header">
         <text class="paw-image-cropper__title">设置头像</text>
-        <view class="paw-image-cropper__close" data-qa="paw-image-cropper-cancel" @tap.stop="onCancel">
-          <PawIcon name="navigation/close" :size="18" label="关闭" />
+        <view
+          class="paw-image-cropper__close"
+          data-qa="paw-image-cropper-cancel"
+          @tap.stop="onCancel"
+        >
+          <PawIcon
+            name="navigation/close"
+            :size="18"
+            label="关闭"
+          />
         </view>
       </view>
 
-      <view class="paw-image-cropper__stage" :style="stageStyle">
-        <view class="paw-image-cropper__image" v-if="imageReady" :style="imageStyle">
-          <image :src="imagePath" mode="scaleToFill" />
+      <view
+        class="paw-image-cropper__stage"
+        :style="stageStyle"
+      >
+        <view
+          class="paw-image-cropper__image"
+          v-if="imageReady"
+          :style="imageStyle"
+        >
+          <image
+            :src="imagePath"
+            mode="scaleToFill"
+          />
         </view>
-        <view v-else class="paw-image-cropper__loading">
+        <view
+          v-else
+          class="paw-image-cropper__loading"
+        >
           <text>正在加载图片…</text>
         </view>
-        <view class="paw-image-cropper__frame" aria-hidden="true"></view>
-        <view class="paw-image-cropper__touch-layer" @touchstart.stop="onTouchStart"
-          @touchmove.stop.prevent="onTouchMove" @touchend.stop="onTouchEnd" @touchcancel.stop="onTouchEnd"></view>
+        <view
+          class="paw-image-cropper__frame"
+          aria-hidden="true"
+        ></view>
+        <view
+          class="paw-image-cropper__touch-layer"
+          @touchstart.stop="onTouchStart"
+          @touchmove.stop.prevent="onTouchMove"
+          @touchend.stop="onTouchEnd"
+          @touchcancel.stop="onTouchEnd"
+        ></view>
       </view>
 
       <view class="paw-image-cropper__zoom-row">
-        <view class="paw-image-cropper__zoom-action" data-qa="paw-image-cropper-zoom-out" @tap.stop="adjustScale(-0.1)">
+        <view
+          class="paw-image-cropper__zoom-action"
+          data-qa="paw-image-cropper-zoom-out"
+          @tap.stop="adjustScale(-0.1)"
+        >
           <text>−</text>
         </view>
         <text class="paw-image-cropper__hint">拖动图片调整位置，双指缩放</text>
-        <view class="paw-image-cropper__zoom-action" data-qa="paw-image-cropper-zoom-in" @tap.stop="adjustScale(0.1)">
+        <view
+          class="paw-image-cropper__zoom-action"
+          data-qa="paw-image-cropper-zoom-in"
+          @tap.stop="adjustScale(0.1)"
+        >
           <text>＋</text>
         </view>
       </view>
 
       <view class="paw-image-cropper__actions">
-        <PawButton class="paw-image-cropper__button paw-image-cropper__button--cancel" tone="secondary" size="md" block
-          :disabled="loading" @click="onCancel">取消</PawButton>
-        <PawButton class="paw-image-cropper__button" tone="brand" size="md" block :loading="loading"
-          :disabled="!imageReady" data-qa="paw-image-cropper-confirm" @click="onConfirm">设为头像</PawButton>
+        <PawButton
+          class="paw-image-cropper__button paw-image-cropper__button--cancel"
+          tone="secondary"
+          size="md"
+          block
+          :disabled="loading"
+          @click="onCancel"
+          >取消</PawButton
+        >
+        <PawButton
+          class="paw-image-cropper__button"
+          tone="brand"
+          size="md"
+          block
+          :loading="loading"
+          :disabled="!imageReady"
+          data-qa="paw-image-cropper-confirm"
+          @click="onConfirm"
+          >设为头像</PawButton
+        >
       </view>
 
-      <canvas canvas-id="paw-image-cropper-canvas" class="paw-image-cropper__canvas" :width="cropSizePx"
-        :height="cropSizePx" :style="canvasStyle"></canvas>
+      <canvas
+        canvas-id="paw-image-cropper-canvas"
+        class="paw-image-cropper__canvas"
+        :width="cropSizePx"
+        :height="cropSizePx"
+        :style="canvasStyle"
+      ></canvas>
     </view>
   </PawOverlay>
 </template>
@@ -86,7 +153,7 @@ export default defineComponent({
     visible: { type: Boolean, default: false },
     src: { type: String, default: '' },
     cropSize: { type: [Number, String], default: 260 },
-    maxScale: { type: Number, default: 3 }
+    maxScale: { type: Number, default: 3 },
   },
   emits: {
     'update:visible': (value: boolean) => typeof value === 'boolean',
@@ -98,8 +165,12 @@ export default defineComponent({
   },
   computed: {
     visibleProxy: {
-      get() { return this.visible },
-      set(value: boolean) { this.$emit('update:visible', value) }
+      get() {
+        return this.visible
+      },
+      set(value: boolean) {
+        this.$emit('update:visible', value)
+      },
     },
     cropSizePx() {
       const value = Number(this.cropSize)
@@ -120,15 +191,15 @@ export default defineComponent({
         height: `${this.baseHeight}px`,
         left: `${(this.cropSizePx - this.baseWidth) / 2}px`,
         top: `${(this.cropSizePx - this.baseHeight) / 2}px`,
-        transform: `translate3d(${this.offsetX}px, ${this.offsetY}px, 0) scale(${this.scaleValue})`
+        transform: `translate3d(${this.offsetX}px, ${this.offsetY}px, 0) scale(${this.scaleValue})`,
       }
     },
     canvasStyle() {
       return {
         width: `${this.cropSizePx}px`,
-        height: `${this.cropSizePx}px`
+        height: `${this.cropSizePx}px`,
       }
-    }
+    },
   },
   watch: {
     visible(value: boolean) {
@@ -137,7 +208,7 @@ export default defineComponent({
     },
     src(value: string) {
       if (this.visible && value) this.prepareImage()
-    }
+    },
   },
   methods: {
     prepareImage() {
@@ -158,12 +229,15 @@ export default defineComponent({
           if (!this.visible || this.imagePath !== source) return
           const imageInfo = normalizePawImageCropperInfo(result)
           if (!imageInfo) return this.onImageError()
-          const coverScale = Math.max(this.cropSizePx / imageInfo.width, this.cropSizePx / imageInfo.height)
+          const coverScale = Math.max(
+            this.cropSizePx / imageInfo.width,
+            this.cropSizePx / imageInfo.height,
+          )
           this.imageInfo = imageInfo
           this.baseWidth = imageInfo.width * coverScale
           this.baseHeight = imageInfo.height * coverScale
         },
-        fail: () => this.onImageError()
+        fail: () => this.onImageError(),
       })
     },
     onImageError() {
@@ -193,7 +267,7 @@ export default defineComponent({
         this.touchState = {
           type: 'pinch',
           distance: touchDistance(touches),
-          scale: this.scaleValue
+          scale: this.scaleValue,
         }
         return
       }
@@ -204,7 +278,7 @@ export default defineComponent({
         x: point.x,
         y: point.y,
         offsetX: this.offsetX,
-        offsetY: this.offsetY
+        offsetY: this.offsetY,
       }
     },
     onTouchMove(event: PawEvent) {
@@ -214,7 +288,11 @@ export default defineComponent({
         if (this.touchState.type !== 'pinch') return
         const distance = touchDistance(touches)
         if (!distance || !this.touchState.distance) return
-        this.scaleValue = clamp(this.touchState.scale * distance / this.touchState.distance, 1, this.maxScaleValue)
+        this.scaleValue = clamp(
+          (this.touchState.scale * distance) / this.touchState.distance,
+          1,
+          this.maxScaleValue,
+        )
         this.clampOffset()
         return
       }
@@ -234,19 +312,26 @@ export default defineComponent({
       const scaledHeight = this.baseHeight * this.scaleValue
       const visualLeft = (this.cropSizePx - scaledWidth) / 2 + this.offsetX
       const visualTop = (this.cropSizePx - scaledHeight) / 2 + this.offsetY
-      const sourceWidth = imageInfo.width * this.cropSizePx / scaledWidth
-      const sourceHeight = imageInfo.height * this.cropSizePx / scaledHeight
+      const sourceWidth = (imageInfo.width * this.cropSizePx) / scaledWidth
+      const sourceHeight = (imageInfo.height * this.cropSizePx) / scaledHeight
       return {
-        x: clamp(-visualLeft / scaledWidth * imageInfo.width, 0, imageInfo.width - sourceWidth),
-        y: clamp(-visualTop / scaledHeight * imageInfo.height, 0, imageInfo.height - sourceHeight),
+        x: clamp((-visualLeft / scaledWidth) * imageInfo.width, 0, imageInfo.width - sourceWidth),
+        y: clamp(
+          (-visualTop / scaledHeight) * imageInfo.height,
+          0,
+          imageInfo.height - sourceHeight,
+        ),
         width: sourceWidth,
-        height: sourceHeight
+        height: sourceHeight,
       }
     },
     onConfirm() {
       if (!this.imageReady || this.loading) return
-      if (typeof uni === 'undefined' || typeof uni.createCanvasContext !== 'function' ||
-        typeof uni.canvasToTempFilePath !== 'function') {
+      if (
+        typeof uni === 'undefined' ||
+        typeof uni.createCanvasContext !== 'function' ||
+        typeof uni.canvasToTempFilePath !== 'function'
+      ) {
         this.$emit('confirm', this.imagePath)
         this.visibleProxy = false
         return
@@ -256,27 +341,40 @@ export default defineComponent({
       if (!rect) return this.onCropError()
       const context = uni.createCanvasContext('paw-image-cropper-canvas', this)
       context.clearRect(0, 0, this.cropSizePx, this.cropSizePx)
-      context.drawImage(this.imagePath, rect.x, rect.y, rect.width, rect.height, 0, 0, this.cropSizePx, this.cropSizePx)
+      context.drawImage(
+        this.imagePath,
+        rect.x,
+        rect.y,
+        rect.width,
+        rect.height,
+        0,
+        0,
+        this.cropSizePx,
+        this.cropSizePx,
+      )
       context.draw(false, () => {
-        uni.canvasToTempFilePath({
-          canvasId: 'paw-image-cropper-canvas',
-          x: 0,
-          y: 0,
-          width: this.cropSizePx,
-          height: this.cropSizePx,
-          destWidth: this.cropSizePx,
-          destHeight: this.cropSizePx,
-          fileType: 'png',
-          quality: 1,
-          success: (result) => {
-            this.loading = false
-            const path = normalizePawImageCropperPath(result && result.tempFilePath)
-            if (!path) return this.onCropError()
-            this.$emit('confirm', path)
-            this.visibleProxy = false
+        uni.canvasToTempFilePath(
+          {
+            canvasId: 'paw-image-cropper-canvas',
+            x: 0,
+            y: 0,
+            width: this.cropSizePx,
+            height: this.cropSizePx,
+            destWidth: this.cropSizePx,
+            destHeight: this.cropSizePx,
+            fileType: 'png',
+            quality: 1,
+            success: (result) => {
+              this.loading = false
+              const path = normalizePawImageCropperPath(result && result.tempFilePath)
+              if (!path) return this.onCropError()
+              this.$emit('confirm', path)
+              this.visibleProxy = false
+            },
+            fail: () => this.onCropError(),
           },
-          fail: () => this.onCropError()
-        }, this)
+          this,
+        )
       })
     },
     onCropError() {
@@ -287,8 +385,8 @@ export default defineComponent({
       if (this.loading) return
       this.$emit('cancel')
       this.visibleProxy = false
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -355,8 +453,8 @@ export default defineComponent({
 
 .paw-image-cropper__frame {
   z-index: 2;
-  border: 1px solid rgba(51, 51, 51, .5);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .55);
+  border: 1px solid rgba(51, 51, 51, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
   border-radius: 8px;
   box-sizing: border-box;
   pointer-events: none;

@@ -1,6 +1,17 @@
 <template>
-  <view class="paw-icon" :style="rootStyle" :aria-label="label || undefined" :aria-hidden="label ? undefined : true">
-    <image v-if="iconSrc" class="paw-icon__image" :style="imageStyle" :src="iconSrc" mode="aspectFit" />
+  <view
+    class="paw-icon"
+    :style="rootStyle"
+    :aria-label="label || undefined"
+    :aria-hidden="label ? undefined : true"
+  >
+    <image
+      v-if="iconSrc"
+      class="paw-icon__image"
+      :style="imageStyle"
+      :src="iconSrc"
+      mode="aspectFit"
+    />
   </view>
 </template>
 
@@ -15,7 +26,7 @@ import {
   resolvePawIconSize,
   resolvePawIconTransform,
   warnColorOverride,
-  warnUnknownIcon
+  warnUnknownIcon,
 } from './PawIcon.utils.ts'
 
 export default defineComponent({
@@ -37,8 +48,9 @@ export default defineComponent({
     flip: {
       type: String as PropType<PawIconFlip>,
       default: 'none',
-      validator: (value: unknown) => typeof value === 'string' && ['none', 'horizontal', 'vertical', 'both'].includes(value)
-    }
+      validator: (value: unknown) =>
+        typeof value === 'string' && ['none', 'horizontal', 'vertical', 'both'].includes(value),
+    },
   },
   computed: {
     definition() {
@@ -53,14 +65,14 @@ export default defineComponent({
     rootStyle() {
       return {
         width: `${this.resolvedSize}px`,
-        height: `${this.resolvedSize}px`
+        height: `${this.resolvedSize}px`,
       }
     },
     imageStyle() {
       return {
         width: `${this.resolvedSize}px`,
         height: `${this.resolvedSize}px`,
-        ...resolvePawIconTransform(this.rotation, this.flip)
+        ...resolvePawIconTransform(this.rotation, this.flip),
       }
     },
     iconSrc() {
@@ -73,8 +85,8 @@ export default defineComponent({
       }
       if (this.color !== PAW_ICON_DEFAULT_COLOR) warnColorOverride(this.name)
       return 'src' in this.definition ? this.definition.src : ''
-    }
-  }
+    },
+  },
 })
 </script>
 

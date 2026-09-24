@@ -34,12 +34,12 @@ interface ActorResolution {
 type TaskRecord = AccountTaskSummary
 
 interface TaskInput {
-	businessType: Domain
-	businessId: string
-	actorId: string
-	actorRole: AccountTaskSummary['actorRole']
-	actionType: AccountTaskSummary['actionType']
-	status: AccountTaskSummary['status']
+  businessType: Domain
+  businessId: string
+  actorId: string
+  actorRole: AccountTaskSummary['actorRole']
+  actionType: AccountTaskSummary['actionType']
+  status: AccountTaskSummary['status']
   reviewItemId?: string
 }
 
@@ -97,7 +97,13 @@ interface AliasGroupObject {
 type AliasGroup = readonly string[] | AliasGroupObject
 
 function isAliasGroupObject(value: AliasGroup): value is AliasGroupObject {
-  return typeof value === 'object' && !Array.isArray(value) && value !== null && 'sources' in value && 'fields' in value
+  return (
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    value !== null &&
+    'sources' in value &&
+    'fields' in value
+  )
 }
 
 const ADOPTION_KEY = 'PAWHOME_ADOPTIONS'
@@ -155,15 +161,21 @@ function diagnostic(domain: Domain, index: unknown, code: unknown): Diagnostic {
 function actorFromSession(): ActorResolution {
   let raw: unknown
   try {
-    raw = typeof uni !== 'undefined' && uni && typeof uni.getStorageSync === 'function'
-      ? uni.getStorageSync<unknown>('PAWHOME_ACTOR_SESSION')
-      : null
+    raw =
+      typeof uni !== 'undefined' && uni && typeof uni.getStorageSync === 'function'
+        ? uni.getStorageSync<unknown>('PAWHOME_ACTOR_SESSION')
+        : null
   } catch {
     raw = null
   }
   const source: unknown = isRecord(raw) && raw.actor ? raw.actor : raw
   if (!isRecord(source)) return { actor: null, error: { code: 'NO_ACTOR' } }
-  const id = typeof source.id === 'string' ? source.id : typeof source.actorId === 'string' ? source.actorId : ''
+  const id =
+    typeof source.id === 'string'
+      ? source.id
+      : typeof source.actorId === 'string'
+        ? source.actorId
+        : ''
   const roles = Array.isArray(source.roles)
     ? source.roles.filter((role): role is string => typeof role === 'string')
     : null
@@ -190,20 +202,33 @@ function readArray(key: string): ReadArrayResult {
 }
 
 function opaque(value: unknown): value is string {
-  return typeof value === 'string'
-    && Boolean(value)
-    && value === value.trim()
-    && SAFE_ID.test(value)
-    && !URL_MARKERS.test(value)
+  return (
+    typeof value === 'string' &&
+    Boolean(value) &&
+    value === value.trim() &&
+    SAFE_ID.test(value) &&
+    !URL_MARKERS.test(value)
+  )
 }
 
 function taskId(item: TaskInput): string {
   const review = item.reviewItemId ? '|review:' + item.reviewItemId : ''
-  return 'task:' + item.businessType + ':' + item.businessId + ':' + item.actionType + ':' + item.actorId + review
+  return (
+    'task:' +
+    item.businessType +
+    ':' +
+    item.businessId +
+    ':' +
+    item.actionType +
+    ':' +
+    item.actorId +
+    review
+  )
 }
 
 function makeTask(input: TaskInput): TaskRecord | null {
-  if (!DOMAINS.includes(input.businessType) || !opaque(input.businessId) || !opaque(input.actorId)) return null
+  if (!DOMAINS.includes(input.businessType) || !opaque(input.businessId) || !opaque(input.actorId))
+    return null
   if (!opaque(input.actionType) || !opaque(input.status) || !opaque(input.actorRole)) return null
   if (input.reviewItemId !== undefined && !opaque(input.reviewItemId)) return null
   return frozen({
@@ -260,7 +285,11 @@ function relationValues(sources: readonly unknown[], fields: readonly string[]):
   return { values: unique, value: unique.length === 1 ? unique[0] : '', conflict, malformed }
 }
 
-function scalarRelation(record: JsonRecord, fields: readonly string[], nestedFields: readonly string[] = []): Relation {
+function scalarRelation(
+  record: JsonRecord,
+  fields: readonly string[],
+  nestedFields: readonly string[] = [],
+): Relation {
   const top = relationValues([record], fields)
   const nested = isRecord(record.applicant)
     ? relationValues([record.applicant], nestedFields)
@@ -275,7 +304,11 @@ function scalarRelation(record: JsonRecord, fields: readonly string[], nestedFie
 }
 
 function actorOwns(record: JsonRecord, actorId: string): { owned: boolean; invalid: boolean } {
-  const relation = scalarRelation(record, ['applicantId', 'applicantUserId', 'userId'], ['id', 'pawId'])
+  const relation = scalarRelation(
+    record,
+    ['applicantId', 'applicantUserId', 'userId'],
+    ['id', 'pawId'],
+  )
   if (relation.conflict || relation.malformed) return { owned: false, invalid: true }
   return { owned: relation.value === actorId, invalid: false }
 }
@@ -286,7 +319,8 @@ function actorCanReviewRole(actor: Actor, role: string): boolean {
 }
 
 function validNestedReview(record: JsonRecord): { review: JsonRecord | null; invalid: boolean } {
-  if (!Object.prototype.hasOwnProperty.call(record, 'review')) return { review: null, invalid: false }
+  if (!Object.prototype.hasOwnProperty.call(record, 'review'))
+    return { review: null, invalid: false }
   const value = record.review
   if (value === undefined || value === null) return { review: null, invalid: false }
   if (!isRecord(value)) return { review: null, invalid: true }
@@ -298,19 +332,37 @@ function reviewerRelation(record: JsonRecord): ReviewRelation {
   const sources = review ? [record, review] : [record]
   const reviewer = relationValues(sources, ['reviewerId', 'reviewerIds'])
   const owner = relationValues(sources, ['ownerId', 'ownerPawId', 'ownerUserId'])
-  const cloud = relationValues(sources, ['cloudParentId', 'cloudParentPawId', 'cloudOwnerId', 'cloudParentIds'])
+  const cloud = relationValues(sources, [
+    'cloudParentId',
+    'cloudParentPawId',
+    'cloudOwnerId',
+    'cloudParentIds',
+  ])
   const roleValue = review?.reviewerRole || record.reviewerRole
   const role = typeof roleValue === 'string' ? roleValue.trim() : ''
-  if (reviewer.malformed || owner.malformed || cloud.malformed || reviewer.conflict || owner.conflict || cloud.conflict) {
+  if (
+    reviewer.malformed ||
+    owner.malformed ||
+    cloud.malformed ||
+    reviewer.conflict ||
+    owner.conflict ||
+    cloud.conflict
+  ) {
     return { role: '', ids: [], invalid: true }
   }
-  const normalizedRole: ReviewRole = role === 'owner' || role === 'cloud_parent' || role === 'reviewer' ? role : 'reviewer'
-  const roleRelation = normalizedRole === 'owner' ? owner : normalizedRole === 'cloud_parent' ? cloud : reviewer
+  const normalizedRole: ReviewRole =
+    role === 'owner' || role === 'cloud_parent' || role === 'reviewer' ? role : 'reviewer'
+  const roleRelation =
+    normalizedRole === 'owner' ? owner : normalizedRole === 'cloud_parent' ? cloud : reviewer
   // When both the generic reviewer relation and a role-specific relation are
   // present, they must describe the same review actor set. Do not let a
   // matching alias in one field win over a conflicting alias in another.
-  if (reviewer.values.length && roleRelation.values.length
-    && JSON.stringify(reviewer.values.slice().sort()) !== JSON.stringify(roleRelation.values.slice().sort())) {
+  if (
+    reviewer.values.length &&
+    roleRelation.values.length &&
+    JSON.stringify(reviewer.values.slice().sort()) !==
+      JSON.stringify(roleRelation.values.slice().sort())
+  ) {
     return { role: '', ids: [], invalid: true }
   }
   const ids = roleRelation.values.length ? roleRelation.values : reviewer.values
@@ -338,8 +390,16 @@ function rejectConflictingRecord(
   return true
 }
 
-function adoptionTasks(records: readonly unknown[], actor: Actor, diagnostics: Diagnostic[]): TaskRecord[] {
-  if (!actor.roles.includes('applicant') && !REVIEW_ROLES.some((role) => actorCanReviewRole(actor, role))) return []
+function adoptionTasks(
+  records: readonly unknown[],
+  actor: Actor,
+  diagnostics: Diagnostic[],
+): TaskRecord[] {
+  if (
+    !actor.roles.includes('applicant') &&
+    !REVIEW_ROLES.some((role) => actorCanReviewRole(actor, role))
+  )
+    return []
   const items: TaskRecord[] = []
   records.forEach((value, index) => {
     if (!isRecord(value)) {
@@ -353,15 +413,21 @@ function adoptionTasks(records: readonly unknown[], actor: Actor, diagnostics: D
       return
     }
     const review = nested.review
-    if (rejectConflictingRecord(record, 'adoption', index, diagnostics, [
-      ['id', 'recordId', 'applicationId'],
-      ['status', 'applicationStatus'],
-      { sources: [record], fields: ['applicantId', 'applicantUserId', 'userId'] },
-      { sources: [record, review], fields: ['reviewItemId'] },
-      { sources: [record, review], fields: ['reviewerId', 'reviewerIds'] },
-      { sources: [record, review], fields: ['ownerId', 'ownerPawId', 'ownerUserId'] },
-      { sources: [record, review], fields: ['cloudParentId', 'cloudParentPawId', 'cloudOwnerId', 'cloudParentIds'] },
-    ])) return
+    if (
+      rejectConflictingRecord(record, 'adoption', index, diagnostics, [
+        ['id', 'recordId', 'applicationId'],
+        ['status', 'applicationStatus'],
+        { sources: [record], fields: ['applicantId', 'applicantUserId', 'userId'] },
+        { sources: [record, review], fields: ['reviewItemId'] },
+        { sources: [record, review], fields: ['reviewerId', 'reviewerIds'] },
+        { sources: [record, review], fields: ['ownerId', 'ownerPawId', 'ownerUserId'] },
+        {
+          sources: [record, review],
+          fields: ['cloudParentId', 'cloudParentPawId', 'cloudOwnerId', 'cloudParentIds'],
+        },
+      ])
+    )
+      return
     const idValue = record.applicationId || record.id
     const id = typeof idValue === 'string' ? idValue : ''
     if (!opaque(id) || /^demo(?:[-_:]|$)/i.test(id)) {
@@ -391,9 +457,8 @@ function adoptionTasks(records: readonly unknown[], actor: Actor, diagnostics: D
       }
     }
     const reviewer = reviewerRelation(record)
-    const reviewerRole = reviewer.invalid || !review
-      ? ''
-      : reviewer.ids.includes(actor.id) ? reviewer.role : ''
+    const reviewerRole =
+      reviewer.invalid || !review ? '' : reviewer.ids.includes(actor.id) ? reviewer.role : ''
     if (review && reviewer.invalid) {
       diagnostics.push(diagnostic('adoption', index, 'CONFLICTING_REVIEWER_RELATION'))
       return
@@ -402,22 +467,25 @@ function adoptionTasks(records: readonly unknown[], actor: Actor, diagnostics: D
       const reviewIdValue = review.reviewItemId || record.reviewItemId
       const reviewId = typeof reviewIdValue === 'string' ? reviewIdValue : ''
       const reviewStatus = review.status
-      const status = reviewStatus === 'pending'
-        ? 'pending'
-        : typeof reviewStatus === 'string' && ['approved', 'rejected', 'processed'].includes(reviewStatus)
-          ? 'processed'
-          : ''
-      const item = status && opaque(reviewId)
-        ? makeTask({
-          businessType: 'adoption',
-          businessId: id,
-          actorId: actor.id,
-          actorRole: reviewerRole,
-          actionType: 'review',
-          status,
-          reviewItemId: reviewId,
-        })
-        : null
+      const status =
+        reviewStatus === 'pending'
+          ? 'pending'
+          : typeof reviewStatus === 'string' &&
+              ['approved', 'rejected', 'processed'].includes(reviewStatus)
+            ? 'processed'
+            : ''
+      const item =
+        status && opaque(reviewId)
+          ? makeTask({
+              businessType: 'adoption',
+              businessId: id,
+              actorId: actor.id,
+              actorRole: reviewerRole,
+              actionType: 'review',
+              status,
+              reviewItemId: reviewId,
+            })
+          : null
       if (item) items.push(item)
       else diagnostics.push(diagnostic('adoption', index, 'INVALID_REVIEW'))
     }
@@ -425,7 +493,11 @@ function adoptionTasks(records: readonly unknown[], actor: Actor, diagnostics: D
   return items
 }
 
-function rescueTasks(records: readonly unknown[], actor: Actor, diagnostics: Diagnostic[]): TaskRecord[] {
+function rescueTasks(
+  records: readonly unknown[],
+  actor: Actor,
+  diagnostics: Diagnostic[],
+): TaskRecord[] {
   const items: TaskRecord[] = []
   records.forEach((value, index) => {
     if (!isRecord(value)) {
@@ -439,12 +511,15 @@ function rescueTasks(records: readonly unknown[], actor: Actor, diagnostics: Dia
       return
     }
     const review = nested.review
-    if (rejectConflictingRecord(record, 'rescue', index, diagnostics, [
-      ['id', 'rescueId'],
-      { sources: [record], fields: ['applicantId', 'applicantUserId', 'userId'] },
-      { sources: [record, review], fields: ['reviewItemId'] },
-      { sources: [record, review], fields: ['reviewerId', 'reviewerIds'] },
-    ])) return
+    if (
+      rejectConflictingRecord(record, 'rescue', index, diagnostics, [
+        ['id', 'rescueId'],
+        { sources: [record], fields: ['applicantId', 'applicantUserId', 'userId'] },
+        { sources: [record, review], fields: ['reviewItemId'] },
+        { sources: [record, review], fields: ['reviewerId', 'reviewerIds'] },
+      ])
+    )
+      return
     const idValue = record.rescueId || record.id
     const id = typeof idValue === 'string' ? idValue : ''
     if (!opaque(id) || /^demo(?:[-_:]|$)/i.test(id)) {
@@ -457,7 +532,8 @@ function rescueTasks(records: readonly unknown[], actor: Actor, diagnostics: Dia
       return
     }
     const isApplicant = actor.roles.includes('applicant') && ownership.owned
-    const applicationStatus = typeof record.applicationStatus === 'string' ? record.applicationStatus : ''
+    const applicationStatus =
+      typeof record.applicationStatus === 'string' ? record.applicationStatus : ''
     const stage = RESCUE_STAGES[applicationStatus]
     if (isApplicant && stage) {
       const item = makeTask({
@@ -481,20 +557,24 @@ function rescueTasks(records: readonly unknown[], actor: Actor, diagnostics: Dia
       const reviewIdValue = record.reviewItemId || (review && review.reviewItemId)
       const reviewId = typeof reviewIdValue === 'string' ? reviewIdValue : ''
       const reviewStatus = rescueReviewStatus(record, review)
-      const status = reviewStatus === 'pending'
-        ? 'pending'
-        : ['approved', 'rejected', 'processed'].includes(reviewStatus) ? 'processed' : ''
-      const item = status && opaque(reviewId)
-        ? makeTask({
-          businessType: 'rescue',
-          businessId: id,
-          actorId: actor.id,
-          actorRole: 'reviewer',
-          actionType: 'review',
-          status,
-          reviewItemId: reviewId,
-        })
-        : null
+      const status =
+        reviewStatus === 'pending'
+          ? 'pending'
+          : ['approved', 'rejected', 'processed'].includes(reviewStatus)
+            ? 'processed'
+            : ''
+      const item =
+        status && opaque(reviewId)
+          ? makeTask({
+              businessType: 'rescue',
+              businessId: id,
+              actorId: actor.id,
+              actorRole: 'reviewer',
+              actionType: 'review',
+              status,
+              reviewItemId: reviewId,
+            })
+          : null
       if (item) items.push(item)
     }
   })
@@ -525,7 +605,10 @@ function rescueReviewStatus(record: JsonRecord, review: JsonRecord | null): stri
   if (Object.prototype.hasOwnProperty.call(record, 'status') && record.status !== undefined) {
     const value = typeof record.status === 'string' ? record.status.trim() : ''
     if (['pending', 'approved', 'rejected'].includes(value)) values.push(value)
-    else if (!['unpaid', 'paid', 'funding_pending', 'funding_failed', 'funding_paid'].includes(value)) malformed = true
+    else if (
+      !['unpaid', 'paid', 'funding_pending', 'funding_failed', 'funding_paid'].includes(value)
+    )
+      malformed = true
   }
   const unique = Array.from(new Set(values))
   if (malformed || unique.length > 1) return ''
@@ -536,7 +619,11 @@ function includesString(values: readonly string[], value: unknown): boolean {
   return typeof value === 'string' && values.includes(value)
 }
 
-function feedingTasks(records: readonly unknown[], actor: Actor, diagnostics: Diagnostic[]): TaskRecord[] {
+function feedingTasks(
+  records: readonly unknown[],
+  actor: Actor,
+  diagnostics: Diagnostic[],
+): TaskRecord[] {
   const items: TaskRecord[] = []
   records.forEach((value, index) => {
     if (!isRecord(value)) {
@@ -544,12 +631,15 @@ function feedingTasks(records: readonly unknown[], actor: Actor, diagnostics: Di
       return
     }
     const record = value
-    if (rejectConflictingRecord(record, 'feeding', index, diagnostics, [
-      ['id', 'orderId'],
-      ['userId', 'userPawId', 'donorId'],
-      ['yardOwnerId', 'ownerPawId'],
-      ['animalId', 'petId'],
-    ])) return
+    if (
+      rejectConflictingRecord(record, 'feeding', index, diagnostics, [
+        ['id', 'orderId'],
+        ['userId', 'userPawId', 'donorId'],
+        ['yardOwnerId', 'ownerPawId'],
+        ['animalId', 'petId'],
+      ])
+    )
+      return
     const idValue = record.orderId || record.id
     const id = typeof idValue === 'string' ? idValue : ''
     if (!opaque(id) || /^demo(?:[-_:]|$)/i.test(id)) {
@@ -562,12 +652,16 @@ function feedingTasks(records: readonly unknown[], actor: Actor, diagnostics: Di
       diagnostics.push(diagnostic('feeding', index, 'CONFLICTING_RECORD'))
       return
     }
-    const isDonor = actor.roles.includes('applicant')
-      && donorRelation.values.length === 1
-      && donorRelation.values[0] === actor.id
-    const isManager = (actor.roles.includes('yard_owner') || actor.roles.includes('owner') || actor.roles.includes('fulfillment_manager'))
-      && managerRelation.values.length === 1
-      && managerRelation.values[0] === actor.id
+    const isDonor =
+      actor.roles.includes('applicant') &&
+      donorRelation.values.length === 1 &&
+      donorRelation.values[0] === actor.id
+    const isManager =
+      (actor.roles.includes('yard_owner') ||
+        actor.roles.includes('owner') ||
+        actor.roles.includes('fulfillment_manager')) &&
+      managerRelation.values.length === 1 &&
+      managerRelation.values[0] === actor.id
     if (!isDonor && !isManager) return
     const actorRole = isManager ? 'owner' : 'applicant'
     const status = record.feedbackStatus || record.status || record.stateKey
@@ -589,7 +683,11 @@ function feedingTasks(records: readonly unknown[], actor: Actor, diagnostics: Di
   return items
 }
 
-function dynamicTasks(records: readonly unknown[], actor: Actor, diagnostics: Diagnostic[]): TaskRecord[] {
+function dynamicTasks(
+  records: readonly unknown[],
+  actor: Actor,
+  diagnostics: Diagnostic[],
+): TaskRecord[] {
   const items: TaskRecord[] = []
   records.forEach((value, index) => {
     if (!isRecord(value)) {
@@ -597,11 +695,14 @@ function dynamicTasks(records: readonly unknown[], actor: Actor, diagnostics: Di
       return
     }
     const record = value
-    if (rejectConflictingRecord(record, 'dynamic', index, diagnostics, [
-      ['id', 'dynamicId'],
-      ['authorId', 'userId', 'userPawId', 'ownerId'],
-      ['status', 'state'],
-    ])) return
+    if (
+      rejectConflictingRecord(record, 'dynamic', index, diagnostics, [
+        ['id', 'dynamicId'],
+        ['authorId', 'userId', 'userPawId', 'ownerId'],
+        ['status', 'state'],
+      ])
+    )
+      return
     const idValue = record.dynamicId || record.id
     const id = typeof idValue === 'string' ? idValue : ''
     if (!opaque(id) || /^demo(?:[-_:]|$)/i.test(id)) {

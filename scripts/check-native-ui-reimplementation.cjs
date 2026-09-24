@@ -19,38 +19,38 @@ const rules = [
   {
     id: 'fake-status-bar',
     re: /(?:h5[-_ ]?status[-_ ]?bar|iphone[-_ ]?status[-_ ]?bar|status[-_ ]?bar[-_ ]?white|fake[-_ ]?status[-_ ]?bar)/i,
-    message: 'Do not render iOS/Android status bar. It is native system chrome.'
+    message: 'Do not render iOS/Android status bar. It is native system chrome.',
   },
   {
     id: 'fake-home-indicator',
     re: /(?:home[-_ ]?indicator|iphone[-_ ]?home[-_ ]?bar|ios[-_ ]?home[-_ ]?bar)/i,
-    message: 'Do not render the iOS Home Indicator. The OS owns it.'
+    message: 'Do not render the iOS Home Indicator. The OS owns it.',
   },
   {
     id: 'fake-system-drag-bar',
     re: /(?:system[-_ ]?(?:drag|gesture)[-_ ]?bar|bottom[-_ ]?(?:drag|gesture)[-_ ]?bar|gesture[-_ ]?handle|底部(?:系统)?拖动条|底部手势条)/i,
-    message: 'Do not render the native bottom gesture/drag bar. The OS owns it.'
+    message: 'Do not render the native bottom gesture/drag bar. The OS owns it.',
   },
   {
     id: 'fake-wechat-capsule',
     re: /(?:wechat|weixin|mini[-_ ]?program|wx)[-_ ]?(?:native[-_ ]?)?(?:capsule|menu[-_ ]?button)|(?:capsule[-_ ]?(?:dots?|circle|button))/i,
-    message: 'Do not draw the WeChat top-right capsule. Reserve native geometry only.'
+    message: 'Do not draw the WeChat top-right capsule. Reserve native geometry only.',
   },
   {
     id: 'fake-dynamic-island-notch',
     re: /(?:dynamic[-_ ]?island|iphone[-_ ]?notch|fake[-_ ]?notch)/i,
-    message: 'Do not render notch/Dynamic Island system chrome.'
+    message: 'Do not render notch/Dynamic Island system chrome.',
   },
   {
     id: 'fake-capsule-glyph',
     re: /(?:•••|●●●|···).{0,24}(?:◎|◉|⊙)/,
-    message: 'Looks like a manually drawn WeChat capsule glyph (dots + circle).'
+    message: 'Looks like a manually drawn WeChat capsule glyph (dots + circle).',
   },
   {
     id: 'figma-native-chrome-asset',
     re: /(?:\/static\/[^"'\s]*(?:status[-_ ]?bar|home[-_ ]?indicator|wechat[-_ ]?capsule|mini[-_ ]?program[-_ ]?button|notch)[^"'\s]*)/i,
-    message: 'Figma/device chrome assets must not be referenced by application source.'
-  }
+    message: 'Figma/device chrome assets must not be referenced by application source.',
+  },
 ]
 
 function walk(dir, out = []) {
@@ -73,7 +73,7 @@ function addFinding(findings, file, text, index, rule, sample) {
     line: lineNumber(text, index),
     rule,
     message: rule.message,
-    sample: String(sample).slice(0, 120)
+    sample: String(sample).slice(0, 120),
   })
 }
 
@@ -107,14 +107,16 @@ function collectFindings() {
         index,
         {
           id: 'page-local-native-nav-layout',
-          message: 'Native capsule geometry must be centralized in utils/navLayout.ts and consumed by PawPageNav.'
+          message:
+            'Native capsule geometry must be centralized in utils/navLayout.ts and consumed by PawPageNav.',
         },
-        'getMenuButtonBoundingClientRect(...)'
+        'getMenuButtonBoundingClientRect(...)',
       )
     }
 
     if (/<PawPageNav\b/.test(text)) {
-      const badInline = /:style\s*=\s*["'][^"']*top[^"']*statusBarHeight|top\s*:\s*\([^\n;]*statusBarHeight/gi
+      const badInline =
+        /:style\s*=\s*["'][^"']*top[^"']*statusBarHeight|top\s*:\s*\([^\n;]*statusBarHeight/gi
       for (const match of text.matchAll(badInline)) {
         addFinding(
           findings,
@@ -123,14 +125,17 @@ function collectFindings() {
           match.index || 0,
           {
             id: 'split-nav-centerline',
-            message: 'Business nav content must be placed inside PawPageNav #content; do not position it from statusBarHeight.'
+            message:
+              'Business nav content must be placed inside PawPageNav #content; do not position it from statusBarHeight.',
           },
-          match[0]
+          match[0],
         )
       }
 
       if (/#(?:right|default)\b|v-slot:(?:right|default)|slot=["']right["']/.test(text)) {
-        const index = text.search(/#(?:right|default)\b|v-slot:(?:right|default)|slot=["']right["']/)
+        const index = text.search(
+          /#(?:right|default)\b|v-slot:(?:right|default)|slot=["']right["']/,
+        )
         addFinding(
           findings,
           rel,
@@ -138,9 +143,10 @@ function collectFindings() {
           index,
           {
             id: 'native-capsule-slot',
-            message: 'PawPageNav right/default slots must not be used to recreate the native WeChat operation bar.'
+            message:
+              'PawPageNav right/default slots must not be used to recreate the native WeChat operation bar.',
           },
-          text.slice(index, index + 80)
+          text.slice(index, index + 80),
         )
       }
     }
@@ -170,15 +176,24 @@ const counts = aggregate(findings)
 if (WRITE_BASELINE) {
   if (process.env.PAWHOME_ALLOW_NATIVE_UI_BASELINE_UPDATE !== '1') {
     console.error('[NATIVE_UI_GUARD] Refusing baseline rewrite.')
-    console.error('Set PAWHOME_ALLOW_NATIVE_UI_BASELINE_UPDATE=1 only during an explicit native-UI debt migration task.')
+    console.error(
+      'Set PAWHOME_ALLOW_NATIVE_UI_BASELINE_UPDATE=1 only during an explicit native-UI debt migration task.',
+    )
     process.exit(2)
   }
   fs.mkdirSync(path.dirname(BASELINE_PATH), { recursive: true })
-  fs.writeFileSync(BASELINE_PATH, JSON.stringify({
-    version: 1,
-    generatedFrom: 'legacy repository state; freeze only, do not expand during feature work',
-    allowances: counts
-  }, null, 2) + '\n')
+  fs.writeFileSync(
+    BASELINE_PATH,
+    JSON.stringify(
+      {
+        version: 1,
+        generatedFrom: 'legacy repository state; freeze only, do not expand during feature work',
+        allowances: counts,
+      },
+      null,
+      2,
+    ) + '\n',
+  )
   console.log(`[NATIVE_UI_GUARD] Baseline written: ${path.relative(ROOT, BASELINE_PATH)}`)
   process.exit(0)
 }
@@ -209,9 +224,13 @@ if (newFindings.length) {
   }
   if (!STRICT) {
     console.error(`\nLegacy frozen violations ignored by baseline: ${legacyCount}`)
-    console.error('Do not add allowlist entries or increase baseline counts during normal feature work.')
+    console.error(
+      'Do not add allowlist entries or increase baseline counts during normal feature work.',
+    )
   }
-  console.error('\nRule: StatusBar / WeChat capsule / Home Indicator / system drag bar are platform-owned, reference-only in Figma.')
+  console.error(
+    '\nRule: StatusBar / WeChat capsule / Home Indicator / system drag bar are platform-owned, reference-only in Figma.',
+  )
   console.error('Rule: Back + avatar/name/badge must share one PawPageNav centerline.\n')
   process.exit(1)
 }
@@ -219,5 +238,7 @@ if (newFindings.length) {
 if (STRICT) {
   console.log(`[NATIVE_UI_GUARD] STRICT PASS (${files.length} source files scanned)`)
 } else {
-  console.log(`[NATIVE_UI_GUARD] PASS (${files.length} source files scanned, ${legacyCount} legacy violation(s) frozen)`)
+  console.log(
+    `[NATIVE_UI_GUARD] PASS (${files.length} source files scanned, ${legacyCount} legacy violation(s) frozen)`,
+  )
 }

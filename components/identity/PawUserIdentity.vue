@@ -1,21 +1,49 @@
 <template>
-  <view class="paw-user-identity" :class="[`paw-user-identity--${size}`, { 'paw-user-identity--block': block }]"
-    @tap.stop="onClick">
-    <PawAvatar v-if="avatar" :src="avatar" :size="resolvedAvatarSize" :clickable="true" @click="onAvatarClick" />
+  <view
+    class="paw-user-identity"
+    :class="[`paw-user-identity--${size}`, { 'paw-user-identity--block': block }]"
+    @tap.stop="onClick"
+  >
+    <PawAvatar
+      v-if="avatar"
+      :src="avatar"
+      :size="resolvedAvatarSize"
+      :clickable="true"
+      @click="onAvatarClick"
+    />
     <view class="paw-user-identity__content">
       <view class="paw-user-identity__name-row">
-        <text class="paw-user-identity__name" @tap.stop="onNameClick">{{ name }}</text>
-        <view v-if="level !== null && level !== undefined" class="paw-user-identity__badge-hit"
-          @tap.stop="onMembershipClick">
+        <text
+          class="paw-user-identity__name"
+          @tap.stop="onNameClick"
+          >{{ name }}</text
+        >
+        <view
+          v-if="level !== null && level !== undefined"
+          class="paw-user-identity__badge-hit"
+          @tap.stop="onMembershipClick"
+        >
           <LevelBadge :level="level" />
         </view>
-        <view v-if="owner" class="paw-user-identity__badge-hit" @tap.stop="onBadgeClick">
+        <view
+          v-if="owner"
+          class="paw-user-identity__badge-hit"
+          @tap.stop="onBadgeClick"
+        >
           <PawOwnerBadge />
         </view>
-        <view v-if="verified" class="paw-user-identity__badge-hit" @tap.stop="onBadgeClick">
+        <view
+          v-if="verified"
+          class="paw-user-identity__badge-hit"
+          @tap.stop="onBadgeClick"
+        >
           <PawVerifiedBadge />
         </view>
-        <text v-if="tag" class="paw-user-identity__tag">{{ tag }}</text>
+        <text
+          v-if="tag"
+          class="paw-user-identity__tag"
+          >{{ tag }}</text
+        >
       </view>
       <slot />
     </view>
@@ -44,10 +72,10 @@ export default defineComponent({
     tag: { type: String, default: '' },
     size: { type: String, default: 'comment' },
     avatarSize: { type: [Number, String], default: null },
-    block: { type: Boolean, default: false }
+    block: { type: Boolean, default: false },
   },
   emits: {
-    'click': eventContract<[event: PawEvent]>(),
+    click: eventContract<[event: PawEvent]>(),
     'avatar-click': eventContract<[event: PawEvent]>(),
     'name-click': eventContract<[event: PawEvent]>(),
     'membership-click': eventContract<[event: PawEvent]>(),
@@ -57,16 +85,32 @@ export default defineComponent({
     resolvedAvatarSize() {
       return this.avatarSize !== null && this.avatarSize !== undefined
         ? this.avatarSize
-        : (this.size === 'compact' ? 22 : this.size === 'large' ? 50 : 34)
-    }
+        : this.size === 'compact'
+          ? 22
+          : this.size === 'large'
+            ? 50
+            : 34
+    },
   },
   methods: {
-    onClick(event: PawEvent) { this.$emit('click', event) },
-    onAvatarClick(event: PawEvent) { this.$emit('avatar-click', event); this.$emit('click', event) },
-    onNameClick(event: PawEvent) { this.$emit('name-click', event); this.$emit('click', event) },
-    onMembershipClick(event: PawEvent) { this.$emit('membership-click', event) },
-    onBadgeClick(event: PawEvent) { this.$emit('badge-click', event) }
-  }
+    onClick(event: PawEvent) {
+      this.$emit('click', event)
+    },
+    onAvatarClick(event: PawEvent) {
+      this.$emit('avatar-click', event)
+      this.$emit('click', event)
+    },
+    onNameClick(event: PawEvent) {
+      this.$emit('name-click', event)
+      this.$emit('click', event)
+    },
+    onMembershipClick(event: PawEvent) {
+      this.$emit('membership-click', event)
+    },
+    onBadgeClick(event: PawEvent) {
+      this.$emit('badge-click', event)
+    },
+  },
 })
 </script>
 

@@ -30,21 +30,39 @@ test('C0 legacy wrapper routes are removed after canonical state migration', () 
     '/pages/yard/rescueReview',
   ]) {
     assert.equal(routes.has(route), false, `${route} must not remain registered`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)), false, `${route} source must be removed`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)),
+      false,
+      `${route} source must be removed`,
+    )
   }
   assert.equal(routes.has('/packages/feeding/pages/order/detail/index'), true)
-  assert.equal(fs.existsSync(path.join(repoRoot, 'packages/feeding/pages/order/detail/index.vue')), true)
+  assert.equal(
+    fs.existsSync(path.join(repoRoot, 'packages/feeding/pages/order/detail/index.vue')),
+    true,
+  )
 })
 
 test('C0 dynamic detail moves into the dynamic package', () => {
   const routes = registeredRoutes()
   for (const route of ['/pages/dynamicDetail/index', '/pages/dynamicDetail/deepLink']) {
     assert.equal(routes.has(route), false, `${route} must not remain registered`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)), false, `${route} source must be removed`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)),
+      false,
+      `${route} source must be removed`,
+    )
   }
-  for (const route of ['/packages/dynamic/pages/detail/index', '/packages/dynamic/pages/deep-link/index']) {
+  for (const route of [
+    '/packages/dynamic/pages/detail/index',
+    '/packages/dynamic/pages/deep-link/index',
+  ]) {
     assert.equal(routes.has(route), true, `${route} must be registered`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)), true, `${route} source must exist`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)),
+      true,
+      `${route} source must exist`,
+    )
   }
 })
 
@@ -57,7 +75,11 @@ test('C0 address routes move from meMore into the address package', () => {
     '/pages/meMore/regionSelector',
   ]) {
     assert.equal(routes.has(route), false, `${route} must not remain registered`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)), false, `${route} source must be removed`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)),
+      false,
+      `${route} source must be removed`,
+    )
   }
   for (const route of [
     '/packages/address/pages/list/index',
@@ -65,7 +87,11 @@ test('C0 address routes move from meMore into the address package', () => {
     '/packages/address/pages/region-picker/index',
   ]) {
     assert.equal(routes.has(route), true, `${route} must be registered`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)), true, `${route} source must exist`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)),
+      true,
+      `${route} source must exist`,
+    )
   }
 })
 
@@ -90,11 +116,17 @@ test('Figma states point to canonical pages with explicit state queries', () => 
 })
 
 test('canonical editors implement migrated sheet states', () => {
-  const postFeed = fs.readFileSync(path.join(repoRoot, 'packages/dynamic/pages/editor/index.vue'), 'utf8')
+  const postFeed = fs.readFileSync(
+    path.join(repoRoot, 'packages/dynamic/pages/editor/index.vue'),
+    'utf8',
+  )
   assert.match(postFeed, /options\.state === ['"]select-order['"]/)
   assert.match(postFeed, /showOrderSheet = true/)
 
-  const adoptApply = fs.readFileSync(path.join(repoRoot, 'packages/adoption/pages/apply/index.vue'), 'utf8')
+  const adoptApply = fs.readFileSync(
+    path.join(repoRoot, 'packages/adoption/pages/apply/index.vue'),
+    'utf8',
+  )
   assert.match(adoptApply, /query\.state === ['"]pick-cats['"]/)
   assert.match(adoptApply, /pickerOnly/)
 })
@@ -103,7 +135,11 @@ test('C0 account asset routes split the old meMore aggregate and remove its sour
   const routes = registeredRoutes()
   for (const route of ['/pages/meMore/myAssets', '/pages/meMore/myCloudPets']) {
     assert.equal(routes.has(route), false, `${route} must not remain registered`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)), false, `${route} source must be removed`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)),
+      false,
+      `${route} source must be removed`,
+    )
   }
   for (const route of [
     '/packages/yard/pages/animals/index',
@@ -111,15 +147,25 @@ test('C0 account asset routes split the old meMore aggregate and remove its sour
     '/packages/animal/pages/sponsored/index',
     '/packages/account/pages/medals/index',
     '/packages/account/pages/medals/map/index',
-    '/packages/account/pages/medals/achievement/index'
+    '/packages/account/pages/medals/achievement/index',
   ]) {
     assert.equal(routes.has(route), true, `${route} must be registered`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)), true, `${route} source must exist`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)),
+      true,
+      `${route} source must exist`,
+    )
   }
   const map = YAML.parse(fs.readFileSync(path.join(repoRoot, 'docs/design/figma-map.yaml'), 'utf8'))
   assert.equal(map.pages.account.states.animal_mine.route, '/packages/animal/pages/mine/index')
-  assert.equal(map.pages.account.states.animal_sponsored.route, '/packages/animal/pages/sponsored/index')
-  assert.equal(map.pages.account.states.medals_map.route, '/packages/account/pages/medals/map/index')
+  assert.equal(
+    map.pages.account.states.animal_sponsored.route,
+    '/packages/animal/pages/sponsored/index',
+  )
+  assert.equal(
+    map.pages.account.states.medals_map.route,
+    '/packages/account/pages/medals/map/index',
+  )
 })
 
 test('C0 account and business pages remove meMore/user production sources', () => {
@@ -141,9 +187,17 @@ test('C0 account and business pages remove meMore/user production sources', () =
   ]
   for (const [legacy, canonical] of migrated) {
     assert.equal(routes.has(legacy), false, `${legacy} must not remain registered`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${legacy.slice(1)}.vue`)), false, `${legacy} source must be removed`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${legacy.slice(1)}.vue`)),
+      false,
+      `${legacy} source must be removed`,
+    )
     assert.equal(routes.has(canonical), true, `${canonical} must be registered`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${canonical.slice(1)}.vue`)), true, `${canonical} source must exist`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${canonical.slice(1)}.vue`)),
+      true,
+      `${canonical} source must exist`,
+    )
   }
   assert.equal(routes.has('/packages/rescue/pages/mine/index'), true)
   assert.equal(fs.existsSync(path.join(repoRoot, 'packages/rescue/pages/mine/index.vue')), true)
@@ -156,7 +210,8 @@ test('C0 leaves meMore, user, and retired detail roots without production page s
   const productionVueFiles = (relativeDir) => {
     const dir = path.join(repoRoot, relativeDir)
     if (!fs.existsSync(dir)) return []
-    return fs.readdirSync(dir, { withFileTypes: true })
+    return fs
+      .readdirSync(dir, { withFileTypes: true })
       .filter((entry) => entry.isFile() && entry.name.endsWith('.vue'))
       .map((entry) => `${relativeDir}/${entry.name}`)
   }
@@ -164,10 +219,16 @@ test('C0 leaves meMore, user, and retired detail roots without production page s
   assert.deepEqual(productionVueFiles('pages/user'), [])
   assert.deepEqual(productionVueFiles('pages/dynamicDetail'), [])
   assert.deepEqual(productionVueFiles('pages/commodityDetails'), [])
-  for (const relativeDir of ['pages/meMore', 'pages/user', 'pages/dynamicDetail', 'pages/commodityDetails']) {
+  for (const relativeDir of [
+    'pages/meMore',
+    'pages/user',
+    'pages/dynamicDetail',
+    'pages/commodityDetails',
+  ]) {
     const dir = path.join(repoRoot, relativeDir)
     if (!fs.existsSync(dir)) continue
-    const nested = fs.readdirSync(dir, { withFileTypes: true })
+    const nested = fs
+      .readdirSync(dir, { withFileTypes: true })
       .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
     assert.equal(nested.length, 0, `${relativeDir} must not retain a production page manifest`)
   }
@@ -176,7 +237,11 @@ test('C0 leaves meMore, user, and retired detail roots without production page s
     'pages/meMore/components/PawAdoptionProofForm.vue',
     'pages/yard/components/overlay/PawSelectionSheet.vue',
   ]) {
-    assert.equal(fs.existsSync(path.join(repoRoot, relative)), false, `${relative} must not remain after migration`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, relative)),
+      false,
+      `${relative} must not remain after migration`,
+    )
   }
 })
 
@@ -193,9 +258,17 @@ test('C0 adoption and feature roots split into semantic package pages', () => {
   ]
   for (const [legacy, canonical] of migrated) {
     assert.equal(routes.has(legacy), false, `${legacy} must not remain registered`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${legacy.slice(1)}.vue`)), false, `${legacy} source must be removed`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${legacy.slice(1)}.vue`)),
+      false,
+      `${legacy} source must be removed`,
+    )
     assert.equal(routes.has(canonical), true, `${canonical} must be registered`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${canonical.slice(1)}.vue`)), true, `${canonical} source must exist`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${canonical.slice(1)}.vue`)),
+      true,
+      `${canonical} source must exist`,
+    )
   }
   for (const route of [
     '/packages/rescue/pages/apply/index',
@@ -205,15 +278,25 @@ test('C0 adoption and feature roots split into semantic package pages', () => {
     '/packages/adoption/pages/quota/detail/index',
   ]) {
     assert.equal(routes.has(route), true, `${route} must be registered`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)), true, `${route} source must exist`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)),
+      true,
+      `${route} source must exist`,
+    )
   }
-  const rescueApply = fs.readFileSync(path.join(repoRoot, 'packages/rescue/pages/apply/index.vue'), 'utf8')
-  const adoptionApply = fs.readFileSync(path.join(repoRoot, 'packages/adoption/pages/apply/index.vue'), 'utf8')
+  const rescueApply = fs.readFileSync(
+    path.join(repoRoot, 'packages/rescue/pages/apply/index.vue'),
+    'utf8',
+  )
+  const adoptionApply = fs.readFileSync(
+    path.join(repoRoot, 'packages/adoption/pages/apply/index.vue'),
+    'utf8',
+  )
   assert.match(rescueApply, /this\.longMode = true/)
-  assert.match(rescueApply, /createApplication\('rescue'/)
+  assert.match(rescueApply, /createApplication\(\s*'rescue'/)
   assert.doesNotMatch(rescueApply, /createApplication\('adoption'/)
   assert.match(adoptionApply, /this\.rescueMode = false/)
-  assert.match(adoptionApply, /createApplication\('adoption'/)
+  assert.match(adoptionApply, /createApplication\(\s*'adoption'/)
   assert.doesNotMatch(adoptionApply, /createApplication\('rescue'/)
 })
 
@@ -229,9 +312,17 @@ test('C0 discovery, message, and publish roots move to semantic packages', () =>
   ]
   for (const [legacy, canonical] of migrated) {
     assert.equal(routes.has(legacy), false, `${legacy} must not remain registered`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${legacy.slice(1)}.vue`)), false, `${legacy} source must be removed`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${legacy.slice(1)}.vue`)),
+      false,
+      `${legacy} source must be removed`,
+    )
     assert.equal(routes.has(canonical), true, `${canonical} must be registered`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${canonical.slice(1)}.vue`)), true, `${canonical} source must exist`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${canonical.slice(1)}.vue`)),
+      true,
+      `${canonical} source must exist`,
+    )
   }
   assert.equal(routes.has('/packages/feeding/pages/result/index'), true)
   assert.equal(fs.existsSync(path.join(repoRoot, 'packages/feeding/pages/result/index.vue')), true)
@@ -241,7 +332,11 @@ test('C0 keeps development-only pages available for local QA', () => {
   const routes = registeredRoutes()
   for (const route of ['/pages/dev/paw-icon-lab', '/pages/dev/yard-feed-icon-lab']) {
     assert.equal(routes.has(route), true, `${route} must remain registered for dev-only QA`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)), true, `${route} source must remain available`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)),
+      true,
+      `${route} source must remain available`,
+    )
   }
 })
 
@@ -273,9 +368,17 @@ test('C0 yard onboarding, create, editors, breed picker and jury queue move to s
   ]
   for (const [legacy, canonical] of migrated) {
     assert.equal(routes.has(legacy), false, `${legacy} must not remain registered`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${legacy.slice(1)}.vue`)), false, `${legacy} source must be removed`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${legacy.slice(1)}.vue`)),
+      false,
+      `${legacy} source must be removed`,
+    )
     assert.equal(routes.has(canonical), true, `${canonical} must be registered`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${canonical.slice(1)}.vue`)), true, `${canonical} source must exist`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${canonical.slice(1)}.vue`)),
+      true,
+      `${canonical} source must exist`,
+    )
   }
 })
 
@@ -288,7 +391,11 @@ test('C0 jury detail is split by explicit business type and removes the old sour
     '/packages/rescue/pages/review/detail/index',
   ]) {
     assert.equal(routes.has(route), true, `${route} must be registered`)
-    assert.equal(fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)), true, `${route} source must exist`)
+    assert.equal(
+      fs.existsSync(path.join(repoRoot, `${route.slice(1)}.vue`)),
+      true,
+      `${route} source must exist`,
+    )
   }
   const map = YAML.parse(fs.readFileSync(path.join(repoRoot, 'docs/design/figma-map.yaml'), 'utf8'))
   const jury = map.pages.jury.states
@@ -301,8 +408,14 @@ test('C0 jury detail is split by explicit business type and removes the old sour
 })
 
 test('C0 migrated animal and yard forms keep local write seams fail-closed', () => {
-  const animalEditor = fs.readFileSync(path.join(repoRoot, 'packages/animal/pages/editor/index.vue'), 'utf8')
-  const yardCertification = fs.readFileSync(path.join(repoRoot, 'packages/yard/pages/certification/index.vue'), 'utf8')
+  const animalEditor = fs.readFileSync(
+    path.join(repoRoot, 'packages/animal/pages/editor/index.vue'),
+    'utf8',
+  )
+  const yardCertification = fs.readFileSync(
+    path.join(repoRoot, 'packages/yard/pages/certification/index.vue'),
+    'utf8',
+  )
   for (const source of [animalEditor, yardCertification]) {
     assert.match(source, /<PawPageNav\b/)
     assert.doesNotMatch(source, /getMenuButtonBoundingClientRect\s*\(/)
@@ -318,9 +431,15 @@ test('C0 yard detail moves out of commodity naming and requires the canonical ya
   assert.equal(routes.has('/pages/commodityDetails/index'), false)
   assert.equal(fs.existsSync(path.join(repoRoot, 'pages/commodityDetails/index.vue')), false)
   assert.equal(routes.has('/packages/yard/pages/detail/index'), true)
-  const source = fs.readFileSync(path.join(repoRoot, 'packages/yard/pages/detail/index.vue'), 'utf8')
+  const source = fs.readFileSync(
+    path.join(repoRoot, 'packages/yard/pages/detail/index.vue'),
+    'utf8',
+  )
   assert.match(source, /resolveYardDetailRoute\(options\)/)
-  const routeMetadata = fs.readFileSync(path.join(repoRoot, 'packages/yard/services/yardDetailMetadata.ts'), 'utf8')
+  const routeMetadata = fs.readFileSync(
+    path.join(repoRoot, 'packages/yard/services/yardDetailMetadata.ts'),
+    'utf8',
+  )
   assert.match(routeMetadata, /value\.yardId/)
   assert.match(source, /小院详情暂不可用/)
   assert.doesNotMatch(source, /options\.id\b/)

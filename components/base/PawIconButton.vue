@@ -1,7 +1,18 @@
 <template>
-  <button class="paw-icon-button" hover-class="paw-icon-button--pressed" :style="buttonStyle" :disabled="disabled"
-    :aria-label="label || undefined" @tap.stop="handleTap">
-    <PawIcon :name="icon" :size="iconSize" :color="color" :label="label" />
+  <button
+    class="paw-icon-button"
+    hover-class="paw-icon-button--pressed"
+    :style="buttonStyle"
+    :disabled="disabled"
+    :aria-label="label || undefined"
+    @tap.stop="handleTap"
+  >
+    <PawIcon
+      :name="icon"
+      :size="iconSize"
+      :color="color"
+      :label="label"
+    />
   </button>
 </template>
 
@@ -22,21 +33,21 @@ export default defineComponent({
     hitSize: { type: Number, default: 44 },
     color: { type: String, default: '#1F2329' },
     label: { type: String, default: '' },
-    disabled: { type: Boolean, default: false }
+    disabled: { type: Boolean, default: false },
   },
   emits: {
-    'click': eventContract<[event: PawEvent]>(),
+    click: eventContract<[event: PawEvent]>(),
   },
   computed: {
     buttonStyle() {
       return { width: `${this.hitSize}px`, height: `${this.hitSize}px` }
-    }
+    },
   },
   methods: {
     handleTap(event: PawEvent) {
       if (!this.disabled) this.$emit('click', event)
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -58,7 +69,7 @@ export default defineComponent({
 }
 
 .paw-icon-button--pressed {
-  opacity: .72;
-  transform: scale(.98);
+  opacity: 0.72;
+  transform: scale(0.98);
 }
 </style>

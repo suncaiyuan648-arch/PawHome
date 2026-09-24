@@ -1,17 +1,40 @@
 <template>
-  <PawBottomSheet v-model="valueProxy" variant="result" height="374px" :close-on-mask="true" :safe-area="true">
+  <PawBottomSheet
+    v-model="valueProxy"
+    variant="result"
+    height="374px"
+    :close-on-mask="true"
+    :safe-area="true"
+  >
     <view class="paw-result-sheet__content">
-      <view class="paw-result-sheet__close-hit" @tap="close">
-        <PawIcon class="paw-result-sheet__close" name="actions/result-close" :size="12" label="关闭" />
+      <view
+        class="paw-result-sheet__close-hit"
+        @tap="close"
+      >
+        <PawIcon
+          class="paw-result-sheet__close"
+          name="actions/result-close"
+          :size="12"
+          label="关闭"
+        />
       </view>
 
       <view class="paw-result-sheet__title-row">
-        <PawIcon class="paw-result-sheet__icon" name="status/success-check" :size="17.208" />
+        <PawIcon
+          class="paw-result-sheet__icon"
+          name="status/success-check"
+          :size="17.208"
+        />
         <text class="paw-result-sheet__title">{{ title }}</text>
       </view>
       <text class="paw-result-sheet__body">{{ normalizedDescription }}</text>
-      <PawButton v-if="actionText" class="paw-result-sheet__action" :text="actionText" size="md"
-        @click="$emit('action')" />
+      <PawButton
+        v-if="actionText"
+        class="paw-result-sheet__action"
+        :text="actionText"
+        size="md"
+        @click="$emit('action')"
+      />
     </view>
   </PawBottomSheet>
 </template>
@@ -32,28 +55,32 @@ export default defineComponent({
     modelValue: { type: Boolean, default: false },
     title: { type: String, default: '' },
     description: { type: String, default: '' },
-    actionText: { type: String, default: '' }
+    actionText: { type: String, default: '' },
   },
   emits: {
     'update:modelValue': eventContract<[value: boolean]>(),
-    'action': eventContract<[]>(),
-    'close': eventContract<[]>(),
+    action: eventContract<[]>(),
+    close: eventContract<[]>(),
   },
   computed: {
     normalizedDescription() {
       return String(this.description || '').replace(/\\n/g, '\n')
     },
     valueProxy: {
-      get() { return this.modelValue },
-      set(value: boolean) { this.$emit('update:modelValue', value) }
-    }
+      get() {
+        return this.modelValue
+      },
+      set(value: boolean) {
+        this.$emit('update:modelValue', value)
+      },
+    },
   },
   methods: {
     close() {
       this.$emit('update:modelValue', false)
       this.$emit('close')
-    }
-  }
+    },
+  },
 })
 </script>
 

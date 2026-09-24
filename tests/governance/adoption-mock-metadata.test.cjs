@@ -17,12 +17,22 @@ before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-adoption-mock-metadata-'))
   const utilsRoot = path.join(tempRoot, 'utils')
   await fs.mkdir(utilsRoot, { recursive: true })
-  for (const file of ['adoptionMockData.ts', 'adoptionReviewMetadata.ts', 'rescueApplicationMockData.ts']) {
+  for (const file of [
+    'adoptionMockData.ts',
+    'adoptionReviewMetadata.ts',
+    'rescueApplicationMockData.ts',
+  ]) {
     await fs.copyFile(path.join(ROOT, 'utils', file), path.join(utilsRoot, file))
   }
-  mockData = await import(`${pathToFileURL(path.join(utilsRoot, 'adoptionMockData.ts')).href}?test=${Date.now()}`)
-  reviewMetadata = await import(`${pathToFileURL(path.join(utilsRoot, 'adoptionReviewMetadata.ts')).href}?test=${Date.now()}`)
-  rescueMockData = await import(`${pathToFileURL(path.join(utilsRoot, 'rescueApplicationMockData.ts')).href}?test=${Date.now()}`)
+  mockData = await import(
+    `${pathToFileURL(path.join(utilsRoot, 'adoptionMockData.ts')).href}?test=${Date.now()}`
+  )
+  reviewMetadata = await import(
+    `${pathToFileURL(path.join(utilsRoot, 'adoptionReviewMetadata.ts')).href}?test=${Date.now()}`
+  )
+  rescueMockData = await import(
+    `${pathToFileURL(path.join(utilsRoot, 'rescueApplicationMockData.ts')).href}?test=${Date.now()}`
+  )
 })
 
 after(async () => {
@@ -47,7 +57,7 @@ test('adoption fixture metadata supplies stable pet identity and picker price/st
     assert.equal(typeof pet.price, 'number')
     assert.equal(typeof pet.disabled, 'boolean')
   }
-  assert.equal(new Set(pickerPets.map(pet => pet.id)).size, pickerPets.length)
+  assert.equal(new Set(pickerPets.map((pet) => pet.id)).size, pickerPets.length)
 })
 
 test('application pages receive independent mutable copies of the shared pet fixtures', () => {
@@ -87,7 +97,10 @@ test('adoption review metadata narrows persisted records and shares cloned fallb
   assert.deepEqual(record.mediaPaths, ['/one.png', '/two.png'])
   assert.deepEqual(record.proofPhotos, ['/proof.png'])
   assert.deepEqual(record.cloudParentIds, ['cloud-1'])
-  assert.deepEqual(record.pets.map(pet => pet.id), ['pet-1'])
+  assert.deepEqual(
+    record.pets.map((pet) => pet.id),
+    ['pet-1'],
+  )
   assert.equal(reviewMetadata.normalizeAdoptionReviewRecord({ status: 'pending' }), null)
 
   const first = reviewMetadata.createAdoptionReviewFallbackPets()
@@ -113,7 +126,15 @@ test('adoption review queue card metadata retains review identity and derives di
     applicantId: 'applicant-1',
     ownerId: 'owner-1',
     cloudParentIds: ['cloud-1'],
-    cloudParent: { count: 1, required: true, decision: 'pending', canProceed: false, decisionRequired: true, reason: '', reviews: [] },
+    cloudParent: {
+      count: 1,
+      required: true,
+      decision: 'pending',
+      canProceed: false,
+      decisionRequired: true,
+      reason: '',
+      reviews: [],
+    },
     readOnly: true,
     canWrite: false,
   }
@@ -126,8 +147,14 @@ test('adoption review queue card metadata retains review identity and derives di
   assert.equal(card.applicant.name, 'applicant-1')
   assert.deepEqual(card.pets, [])
 
-  const detailPage = await fs.readFile(path.join(ROOT, 'packages/adoption/pages/review/detail/index.vue'), 'utf8')
-  const cardComponent = await fs.readFile(path.join(ROOT, 'components/adoption/PawAdoptionReviewCard.vue'), 'utf8')
+  const detailPage = await fs.readFile(
+    path.join(ROOT, 'packages/adoption/pages/review/detail/index.vue'),
+    'utf8',
+  )
+  const cardComponent = await fs.readFile(
+    path.join(ROOT, 'components/adoption/PawAdoptionReviewCard.vue'),
+    'utf8',
+  )
   assert.doesNotMatch(detailPage, /\bany\b/)
   assert.doesNotMatch(cardComponent, /\bany\b/)
   assert.match(detailPage, /data\(\):\s*AdoptionReviewPageState/)
@@ -136,7 +163,12 @@ test('adoption review queue card metadata retains review identity and derives di
 
 test('adoption review metadata indexes persisted aliases and labels jury review explicitly', () => {
   const records = reviewMetadata.createAdoptionReviewRecordIndex([
-    { id: 'record-1', recordId: 'legacy-1', applicationId: 'application-1', applicantName: '申请人' },
+    {
+      id: 'record-1',
+      recordId: 'legacy-1',
+      applicationId: 'application-1',
+      applicantName: '申请人',
+    },
   ])
   assert.equal(records.get('application-1').id, 'record-1')
   assert.equal(records.get('legacy-1').applicationId, 'application-1')
@@ -148,11 +180,17 @@ test('adoption review metadata indexes persisted aliases and labels jury review 
     reviewStatus: 'pending',
     reviewerRole: 'reviewer',
   }
-  assert.equal(reviewMetadata.createAdoptionReviewQueueCard(juryItem, null).statusText, '待评审团确认')
+  assert.equal(
+    reviewMetadata.createAdoptionReviewQueueCard(juryItem, null).statusText,
+    '待评审团确认',
+  )
 })
 
 test('adoption review list shares typed page/card metadata without local mock models or any', async () => {
-  const page = await fs.readFile(path.join(ROOT, 'packages/adoption/pages/review/list/index.vue'), 'utf8')
+  const page = await fs.readFile(
+    path.join(ROOT, 'packages/adoption/pages/review/list/index.vue'),
+    'utf8',
+  )
   const metadataPath = path.join(ROOT, 'packages/adoption/services/reviewListMetadata.ts')
   const metadata = await fs.readFile(metadataPath, 'utf8')
   const pageMetadata = await import(`${pathToFileURL(metadataPath).href}?test=${Date.now()}`)
@@ -175,25 +213,43 @@ test('adoption review list shares typed page/card metadata without local mock mo
     assert.doesNotMatch(source, /Record<string,\s*any>/)
   }
   assert.match(page, /data\(\):\s*AdoptionReviewListPageState/)
-  assert.match(page, /createAdoptionReviewQueueCard\(item, records\.get\(item\.applicationId\) \?\? null\)/)
-  assert.match(page, /createAdoptionReviewRecordIndex\(getAdoptionRecords\(\{ includeDemo: false \}\)\)/)
+  assert.match(
+    page,
+    /createAdoptionReviewQueueCard\(item, records\.get\(item\.applicationId\) \?\? null\)/,
+  )
+  assert.match(
+    page,
+    /createAdoptionReviewRecordIndex\(getAdoptionRecords\(\{ includeDemo: false \}\)\)/,
+  )
   assert.doesNotMatch(page, /function\s+(?:modeForItem|statusMeta|cardForItem)\s*\(/)
   assert.match(metadata, /Record<AdoptionReviewTab, AdoptionReviewQueueCardMetadata\[]>/)
 })
 
 test('adoption jury detail consumes shared jury metadata without explicit any types', async () => {
-  const juryPage = await fs.readFile(path.join(ROOT, 'packages/adoption/pages/jury/detail/index.vue'), 'utf8')
+  const juryPage = await fs.readFile(
+    path.join(ROOT, 'packages/adoption/pages/jury/detail/index.vue'),
+    'utf8',
+  )
   const juryMock = await fs.readFile(path.join(ROOT, 'utils/juryMock.ts'), 'utf8')
   const juryStorage = await fs.readFile(path.join(ROOT, 'utils/juryStorage.ts'), 'utf8')
 
   assert.doesNotMatch(juryPage, /\bany\b/)
   assert.doesNotMatch(juryPage, /\bas any\b/)
   assert.match(juryPage, /data\(\):\s*JuryDetailPageState/)
-  assert.match(juryPage, /type JuryReviewActionResult\s*=\s*JuryReviewActionSuccess\s*\|\s*JuryReviewActionFailure/)
-  assert.match(juryPage, /import type \{ JuryEvidence, JuryItem, JuryPet, JuryVote \} from ['"]@\/utils\/juryMock\.ts['"]/)
+  assert.match(
+    juryPage,
+    /type JuryReviewActionResult\s*=\s*JuryReviewActionSuccess\s*\|\s*JuryReviewActionFailure/,
+  )
+  assert.match(
+    juryPage,
+    /import type \{ JuryEvidence, JuryItem, JuryPet, JuryVote \} from ['"]@\/utils\/juryMock\.ts['"]/,
+  )
   assert.match(juryMock, /export interface JuryItem extends JsonRecord/)
   assert.match(juryMock, /export interface JuryYard extends JsonRecord/)
-  assert.match(juryStorage, /import type \{ JuryItem, JuryItemStatus, JuryReviewType, JuryVote \} from ['"]\.\/juryMock\.ts['"]/)
+  assert.match(
+    juryStorage,
+    /import type \{ JuryItem, JuryItemStatus, JuryReviewType, JuryVote \} from ['"]\.\/juryMock\.ts['"]/,
+  )
   assert.doesNotMatch(juryStorage, /export interface JuryItem(?:\s|\{)/)
 })
 
@@ -201,8 +257,13 @@ test('rescue application form mocks expose a typed field schema and independent 
   const fields = rescueMockData.RESCUE_APPLICATION_HELP_FIELD_MOCKS
   const first = rescueMockData.createRescueApplicationHelpFieldMocks()
   const second = rescueMockData.createRescueApplicationHelpFieldMocks()
-  assert.deepEqual(fields.map(field => field.key), ['amount', 'receiver', 'name', 'age', 'identity', 'location'])
-  assert.ok(fields.every(field => typeof field.label === 'string' && typeof field.value === 'string'))
+  assert.deepEqual(
+    fields.map((field) => field.key),
+    ['amount', 'receiver', 'name', 'age', 'identity', 'location'],
+  )
+  assert.ok(
+    fields.every((field) => typeof field.label === 'string' && typeof field.value === 'string'),
+  )
   first[0].value = '100'
   assert.equal(second[0].value, '')
   assert.equal(fields[0].value, '')

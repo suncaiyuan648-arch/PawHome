@@ -86,7 +86,9 @@ const REVIEW_TASK_STATUS: Readonly<Record<string, 'pending' | 'processed'>> = Ob
   rejected: 'processed',
 })
 
-const REVIEW_ROLES: ReadonlySet<string> = Object.freeze(new Set(['owner', 'cloud_parent', 'reviewer']))
+const REVIEW_ROLES: ReadonlySet<string> = Object.freeze(
+  new Set(['owner', 'cloud_parent', 'reviewer']),
+)
 
 const FEEDING_KEY = 'PAWHOME_FEEDING_ORDERS'
 const DYNAMIC_KEY = 'PAWHOME_DYNAMIC_RECORDS'
@@ -112,10 +114,12 @@ function isPlainRecord(value: unknown): value is JsonRecord {
 }
 
 function isTaskReaderActor(value: unknown): value is TaskReaderActor {
-  return isPlainRecord(value)
-    && typeof value.id === 'string'
-    && Array.isArray(value.roles)
-    && value.roles.every((role): role is string => typeof role === 'string')
+  return (
+    isPlainRecord(value) &&
+    typeof value.id === 'string' &&
+    Array.isArray(value.roles) &&
+    value.roles.every((role): role is string => typeof role === 'string')
+  )
 }
 
 function codeError(code: string, message: string): DomainTaskReaderError {
@@ -151,7 +155,11 @@ function assertReaderContext(context: unknown): TaskReaderActor {
   return context.actor
 }
 
-function diagnostic(domain: TaskDiagnostic['domain'], index: unknown, code: unknown): TaskDiagnostic {
+function diagnostic(
+  domain: TaskDiagnostic['domain'],
+  index: unknown,
+  code: unknown,
+): TaskDiagnostic {
   return {
     domain,
     index: typeof index === 'number' && Number.isSafeInteger(index) ? index : -1,
@@ -231,14 +239,16 @@ function adoptionApplicantReader(context: TaskReaderContext): ReaderEnvelope {
       return
     }
     try {
-      items.push(task({
-        businessType: 'adoption',
-        businessId: readData.applicationId,
-        actorId: actor.id,
-        actorRole: 'applicant',
-        actionType: stage.actionType,
-        status: stage.status,
-      }))
+      items.push(
+        task({
+          businessType: 'adoption',
+          businessId: readData.applicationId,
+          actorId: actor.id,
+          actorRole: 'applicant',
+          actionType: stage.actionType,
+          status: stage.status,
+        }),
+      )
     } catch (error) {
       skipped.push(diagnostic('adoption', index, errorCode(error, 'INVALID_TASK')))
     }
@@ -256,27 +266,31 @@ function adoptionReviewReader(context: TaskReaderContext): ReaderEnvelope {
   } catch (error) {
     return failedEnvelope(errorCode(error, 'ADOPTION_REVIEW_READER_FAILED'))
   }
-  if (!isPlainRecord(result) || !Array.isArray(result.items)) return failedEnvelope('INVALID_READER_RESULT')
+  if (!isPlainRecord(result) || !Array.isArray(result.items))
+    return failedEnvelope('INVALID_READER_RESULT')
 
   const items: TaskSummary[] = []
   const skipped: TaskDiagnostic[] = []
   result.items.forEach((item: unknown, index: number) => {
-    const statusKey = isPlainRecord(item) && typeof item.reviewStatus === 'string' ? item.reviewStatus : ''
+    const statusKey =
+      isPlainRecord(item) && typeof item.reviewStatus === 'string' ? item.reviewStatus : ''
     const status = REVIEW_TASK_STATUS[statusKey]
     if (!status) {
       skipped.push(diagnostic('adoption', index, 'UNKNOWN_REVIEW_STATUS'))
       return
     }
     try {
-      items.push(task({
-        businessType: 'adoption',
-        businessId: isPlainRecord(item) ? item.applicationId : undefined,
-        actorId: actor.id,
-        actorRole: isPlainRecord(item) ? item.reviewerRole : undefined,
-        actionType: 'review',
-        status,
-        reviewItemId: isPlainRecord(item) ? item.reviewItemId : undefined,
-      }))
+      items.push(
+        task({
+          businessType: 'adoption',
+          businessId: isPlainRecord(item) ? item.applicationId : undefined,
+          actorId: actor.id,
+          actorRole: isPlainRecord(item) ? item.reviewerRole : undefined,
+          actionType: 'review',
+          status,
+          reviewItemId: isPlainRecord(item) ? item.reviewItemId : undefined,
+        }),
+      )
     } catch (error) {
       skipped.push(diagnostic('adoption', index, errorCode(error, 'INVALID_TASK')))
     }
@@ -313,7 +327,8 @@ function rescueMineReader(context: TaskReaderContext): ReaderEnvelope {
   } catch (error) {
     return failedEnvelope(errorCode(error, 'RESCUE_READER_FAILED'))
   }
-  if (!isPlainRecord(source) || !Array.isArray(source.items)) return failedEnvelope('INVALID_READER_RESULT')
+  if (!isPlainRecord(source) || !Array.isArray(source.items))
+    return failedEnvelope('INVALID_READER_RESULT')
 
   const items: TaskSummary[] = []
   const skipped: TaskDiagnostic[] = []
@@ -326,28 +341,39 @@ function rescueMineReader(context: TaskReaderContext): ReaderEnvelope {
     const stateData = isPlainRecord(state) && isPlainRecord(state.data) ? state.data : null
     const projection = stateData && isPlainRecord(stateData.state) ? stateData.state : null
     if (!isPlainRecord(state) || state.success !== true || !projection) {
-      skipped.push(diagnostic('rescue', index, isPlainRecord(state) ? errorCode(state.error, 'RESCUE_STATE_READ_FAILED') : 'RESCUE_STATE_READ_FAILED'))
+      skipped.push(
+        diagnostic(
+          'rescue',
+          index,
+          isPlainRecord(state)
+            ? errorCode(state.error, 'RESCUE_STATE_READ_FAILED')
+            : 'RESCUE_STATE_READ_FAILED',
+        ),
+      )
       return
     }
     if (projection.validity === 'invalid') {
       skipped.push(diagnostic('rescue', index, 'INVALID_RESCUE_STATE'))
       return
     }
-    const status = typeof projection.applicationStatus === 'string' ? projection.applicationStatus : ''
+    const status =
+      typeof projection.applicationStatus === 'string' ? projection.applicationStatus : ''
     const stage = RESCUE_APPLICANT_STAGE[status]
     if (!stage) {
       skipped.push(diagnostic('rescue', index, 'UNKNOWN_APPLICATION_STATUS'))
       return
     }
     try {
-      items.push(task({
-        businessType: 'rescue',
-        businessId: item.rescueId,
-        actorId: actor.id,
-        actorRole: 'applicant',
-        actionType: stage.actionType,
-        status: stage.status,
-      }))
+      items.push(
+        task({
+          businessType: 'rescue',
+          businessId: item.rescueId,
+          actorId: actor.id,
+          actorRole: 'applicant',
+          actionType: stage.actionType,
+          status: stage.status,
+        }),
+      )
     } catch (error) {
       skipped.push(diagnostic('rescue', index, errorCode(error, 'INVALID_TASK')))
     }
@@ -365,7 +391,8 @@ function rescueReviewReader(context: TaskReaderContext): ReaderEnvelope {
   } catch (error) {
     return failedEnvelope(errorCode(error, 'RESCUE_REVIEW_READER_FAILED'))
   }
-  if (!isPlainRecord(source) || !Array.isArray(source.items)) return failedEnvelope('INVALID_READER_RESULT')
+  if (!isPlainRecord(source) || !Array.isArray(source.items))
+    return failedEnvelope('INVALID_READER_RESULT')
 
   const items: TaskSummary[] = []
   const skipped: TaskDiagnostic[] = []
@@ -377,15 +404,17 @@ function rescueReviewReader(context: TaskReaderContext): ReaderEnvelope {
       return
     }
     try {
-      items.push(task({
-        businessType: 'rescue',
-        businessId: isPlainRecord(item) ? item.rescueId : undefined,
-        actorId: actor.id,
-        actorRole: 'reviewer',
-        actionType: 'review',
-        status,
-        reviewItemId: isPlainRecord(item) ? item.reviewItemId : undefined,
-      }))
+      items.push(
+        task({
+          businessType: 'rescue',
+          businessId: isPlainRecord(item) ? item.rescueId : undefined,
+          actorId: actor.id,
+          actorRole: 'reviewer',
+          actionType: 'review',
+          status,
+          reviewItemId: isPlainRecord(item) ? item.reviewItemId : undefined,
+        }),
+      )
     } catch (error) {
       skipped.push(diagnostic('rescue', index, errorCode(error, 'INVALID_TASK')))
     }
@@ -432,10 +461,12 @@ function readPersistedRows(key: string): StorageRead {
 }
 
 function opaqueId(value: unknown): value is string {
-  return typeof value === 'string'
-    && value === value.trim()
-    && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(value)
-    && !/[/?#%]|:\/\//.test(value)
+  return (
+    typeof value === 'string' &&
+    value === value.trim() &&
+    /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(value) &&
+    !/[/?#%]|:\/\//.test(value)
+  )
 }
 
 function hasAliasConflict(record: JsonRecord, fields: readonly string[]): boolean {
@@ -459,9 +490,11 @@ function feedingPersistentReader(context: TaskReaderContext): ReaderEnvelope {
       skipped.push(diagnostic('feeding', index, 'INVALID_RECORD'))
       return
     }
-    if (hasAliasConflict(record, ['id', 'orderId'])
-      || hasAliasConflict(record, ['userId', 'userPawId', 'donorId'])
-      || hasAliasConflict(record, ['yardOwnerId', 'ownerPawId'])) {
+    if (
+      hasAliasConflict(record, ['id', 'orderId']) ||
+      hasAliasConflict(record, ['userId', 'userPawId', 'donorId']) ||
+      hasAliasConflict(record, ['yardOwnerId', 'ownerPawId'])
+    ) {
       skipped.push(diagnostic('feeding', index, 'CONFLICTING_RECORD'))
       return
     }
@@ -472,24 +505,31 @@ function feedingPersistentReader(context: TaskReaderContext): ReaderEnvelope {
       return
     }
     const donor = [record.userId, record.userPawId, record.donorId].includes(actor.id)
-    const owner = (actor.roles.includes('yard_owner') || actor.roles.includes('owner') || actor.roles.includes('fulfillment_manager'))
-      && [record.yardOwnerId, record.ownerPawId].includes(actor.id)
+    const owner =
+      (actor.roles.includes('yard_owner') ||
+        actor.roles.includes('owner') ||
+        actor.roles.includes('fulfillment_manager')) &&
+      [record.yardOwnerId, record.ownerPawId].includes(actor.id)
     if (!donor && !owner) return
     const status = record.feedbackStatus || record.status || record.stateKey
-    const normalized: TaskStatus = typeof status === 'string' && ['completed', 'fulfilled', 'processed', 'done'].includes(status)
-      ? 'completed'
-      : typeof status === 'string' && ['active', 'in_progress', 'shipping', 'delivered'].includes(status)
-        ? 'in_progress'
-        : 'pending'
+    const normalized: TaskStatus =
+      typeof status === 'string' && ['completed', 'fulfilled', 'processed', 'done'].includes(status)
+        ? 'completed'
+        : typeof status === 'string' &&
+            ['active', 'in_progress', 'shipping', 'delivered'].includes(status)
+          ? 'in_progress'
+          : 'pending'
     try {
-      items.push(task({
-        businessType: 'feeding',
-        businessId: id,
-        actorId: actor.id,
-        actorRole: owner ? 'owner' : 'donor',
-        actionType: owner ? 'fulfill' : 'feedback',
-        status: normalized,
-      }))
+      items.push(
+        task({
+          businessType: 'feeding',
+          businessId: id,
+          actorId: actor.id,
+          actorRole: owner ? 'owner' : 'donor',
+          actionType: owner ? 'fulfill' : 'feedback',
+          status: normalized,
+        }),
+      )
     } catch (error) {
       skipped.push(diagnostic('feeding', index, errorCode(error, 'INVALID_TASK')))
     }
@@ -509,9 +549,11 @@ function dynamicPersistentReader(context: TaskReaderContext): ReaderEnvelope {
       skipped.push(diagnostic('dynamic', index, 'INVALID_RECORD'))
       return
     }
-    if (hasAliasConflict(record, ['id', 'dynamicId'])
-      || hasAliasConflict(record, ['authorId', 'userId', 'userPawId', 'ownerId'])
-      || hasAliasConflict(record, ['status', 'state'])) {
+    if (
+      hasAliasConflict(record, ['id', 'dynamicId']) ||
+      hasAliasConflict(record, ['authorId', 'userId', 'userPawId', 'ownerId']) ||
+      hasAliasConflict(record, ['status', 'state'])
+    ) {
       skipped.push(diagnostic('dynamic', index, 'CONFLICTING_RECORD'))
       return
     }
@@ -521,23 +563,29 @@ function dynamicPersistentReader(context: TaskReaderContext): ReaderEnvelope {
       skipped.push(diagnostic('dynamic', index, 'INVALID_ID'))
       return
     }
-    const owner = [record.authorId, record.userId, record.userPawId, record.ownerId].includes(actor.id)
+    const owner = [record.authorId, record.userId, record.userPawId, record.ownerId].includes(
+      actor.id,
+    )
     if (!owner) return
     const status = record.status || record.state
-    const normalized: TaskStatus = typeof status === 'string' && ['published', 'completed', 'processed', 'deleted'].includes(status)
-      ? 'completed'
-      : typeof status === 'string' && ['draft', 'pending', 'review'].includes(status)
-        ? 'pending'
-        : 'in_progress'
+    const normalized: TaskStatus =
+      typeof status === 'string' &&
+      ['published', 'completed', 'processed', 'deleted'].includes(status)
+        ? 'completed'
+        : typeof status === 'string' && ['draft', 'pending', 'review'].includes(status)
+          ? 'pending'
+          : 'in_progress'
     try {
-      items.push(task({
-        businessType: 'dynamic',
-        businessId: id,
-        actorId: actor.id,
-        actorRole: 'author',
-        actionType: 'publish',
-        status: normalized,
-      }))
+      items.push(
+        task({
+          businessType: 'dynamic',
+          businessId: id,
+          actorId: actor.id,
+          actorRole: 'author',
+          actionType: 'publish',
+          status: normalized,
+        }),
+      )
     } catch (error) {
       skipped.push(diagnostic('dynamic', index, errorCode(error, 'INVALID_TASK')))
     }
@@ -546,7 +594,9 @@ function dynamicPersistentReader(context: TaskReaderContext): ReaderEnvelope {
 }
 
 /** Return the four account task readers. */
-export function createDomainTaskReaders(): Readonly<Record<'adoption' | 'rescue' | 'feeding' | 'dynamic', DomainTaskReader>> {
+export function createDomainTaskReaders(): Readonly<
+  Record<'adoption' | 'rescue' | 'feeding' | 'dynamic', DomainTaskReader>
+> {
   return Object.freeze({
     adoption: adoptionReader,
     rescue: rescueReader,
@@ -558,7 +608,4 @@ export function createDomainTaskReaders(): Readonly<Record<'adoption' | 'rescue'
 export const getDomainTaskReaders = createDomainTaskReaders
 export const buildDomainTaskReaders = createDomainTaskReaders
 
-export {
-  ADOPTION_APPLICANT_STAGE,
-  RESCUE_APPLICANT_STAGE,
-}
+export { ADOPTION_APPLICANT_STAGE, RESCUE_APPLICANT_STAGE }

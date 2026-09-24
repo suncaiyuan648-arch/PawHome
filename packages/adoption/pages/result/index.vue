@@ -1,5 +1,9 @@
 <template>
-  <PawFlowResult v-bind="config" @back="goBack" @action="onAction" />
+  <PawFlowResult
+    v-bind="config"
+    @back="goBack"
+    @action="onAction"
+  />
 </template>
 
 <script lang="ts">
@@ -23,7 +27,7 @@ export default defineComponent({
   computed: {
     config() {
       return getAdoptionResultConfig(this.variant)
-    }
+    },
   },
   onLoad(options: unknown = {}) {
     const state = normalizeAdoptionResultRouteOptions(options)
@@ -49,32 +53,48 @@ export default defineComponent({
       return params.length ? `?${params.join('&')}` : ''
     },
     onAction() {
-      if (['review-approved', 'adoption-confirmed-by-owner', 'review-rejected'].includes(this.outcome) && this.nextMode) {
+      if (
+        ['review-approved', 'adoption-confirmed-by-owner', 'review-rejected'].includes(
+          this.outcome,
+        ) &&
+        this.nextMode
+      ) {
         try {
           const url = buildRoute('adoption.review.detail', {
             applicationId: this.recordId,
             mode: this.nextMode,
             ...(this.reviewerRole ? { reviewerRole: this.reviewerRole } : {}),
-            ...(this.reviewerId ? { reviewerId: this.reviewerId } : {})
+            ...(this.reviewerId ? { reviewerId: this.reviewerId } : {}),
           })
           uni.redirectTo({ url, fail: () => this.goBack() })
-        } catch { this.goBack() }
+        } catch {
+          this.goBack()
+        }
         return
       }
       if (this.outcome === 'reward-claimed' && this.orderId) {
         try {
-          uni.navigateTo({ url: buildRoute('feeding.order.detail', { orderId: this.orderId, perspective: 'donor' }) })
-        } catch { this.goBack() }
+          uni.navigateTo({
+            url: buildRoute('feeding.order.detail', {
+              orderId: this.orderId,
+              perspective: 'donor',
+            }),
+          })
+        } catch {
+          this.goBack()
+        }
         return
       }
       if (this.recordId) {
         try {
           uni.redirectTo({ url: buildRoute('adoption.progress', { applicationId: this.recordId }) })
-        } catch { this.goBack() }
+        } catch {
+          this.goBack()
+        }
         return
       }
       this.goBack()
-    }
-  }
+    },
+  },
 })
 </script>

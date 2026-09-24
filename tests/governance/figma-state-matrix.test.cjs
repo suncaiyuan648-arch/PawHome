@@ -36,14 +36,19 @@ pages:
       sample:
         node_id: '83:3'
         file_key: newFile
-`
+`,
   })
-  fs.writeFileSync(path.join(fixture.root, 'docs/design/migration.json'), JSON.stringify({
-    old_file_key: 'oldFile', new_file_key: 'newFile', entries: [
-      { old_node_id: '62:1', new_node_id: '83:1', status: 'mapped' },
-      { old_node_id: '62:2', new_node_id: null, status: 'retained-legacy' }
-    ]
-  }))
+  fs.writeFileSync(
+    path.join(fixture.root, 'docs/design/migration.json'),
+    JSON.stringify({
+      old_file_key: 'oldFile',
+      new_file_key: 'newFile',
+      entries: [
+        { old_node_id: '62:1', new_node_id: '83:1', status: 'mapped' },
+        { old_node_id: '62:2', new_node_id: null, status: 'retained-legacy' },
+      ],
+    }),
+  )
   const result = runFixture(fixture)
   assert.equal(result.status, 0, result.stderr)
   const report = readReport(fixture)
@@ -52,7 +57,10 @@ pages:
   assert.equal(report.entries[1].figmaUrl, 'https://www.figma.com/design/oldFile?node-id=62-2')
   assert.equal(report.scope.excludedComponentNodes[0].nodeId, '83:3')
   const mapFile = path.join(fixture.root, 'docs/design/figma-map.yaml')
-  fs.writeFileSync(mapFile, fs.readFileSync(mapFile, 'utf8').replace('file_key: oldFile', 'file_key: newFile'))
+  fs.writeFileSync(
+    mapFile,
+    fs.readFileSync(mapFile, 'utf8').replace('file_key: oldFile', 'file_key: newFile'),
+  )
   assert.equal(runFixture(fixture).status, 1)
   assert.ok(readReport(fixture).errors.some((error) => error.code === 'figma-provenance-mismatch'))
 })
@@ -78,12 +86,17 @@ function runFixture(fixture) {
   return spawnSync(process.execPath, [fixture.script], {
     cwd: fixture.caller,
     encoding: 'utf8',
-    env: { ...process.env, NODE_PATH: dependencyRoot }
+    env: { ...process.env, NODE_PATH: dependencyRoot },
   })
 }
 
 function readReport(fixture) {
-  return JSON.parse(fs.readFileSync(path.join(fixture.root, '.artifacts', 'architecture-governance', 'figma-state-matrix.json'), 'utf8'))
+  return JSON.parse(
+    fs.readFileSync(
+      path.join(fixture.root, '.artifacts', 'architecture-governance', 'figma-state-matrix.json'),
+      'utf8',
+    ),
+  )
 }
 
 test('uses the in-repository map and JSON5 pages from an unrelated cwd', () => {
@@ -120,7 +133,7 @@ unresolved_design_states:
     name: "Future state"
     node_id: "8:8"
 `,
-    sources: ['pages/home/index.vue', 'packages/rescue/pages/apply/index.vue']
+    sources: ['pages/home/index.vue', 'packages/rescue/pages/apply/index.vue'],
   })
   const result = runFixture(fixture)
   assert.equal(result.status, 0, result.stderr)
@@ -132,7 +145,7 @@ unresolved_design_states:
     invalid: 0,
     unresolvedDesignStates: 1,
     componentNodes: 1,
-    registeredRoutes: 2
+    registeredRoutes: 2,
   })
   const inherited = report.entries.find((entry) => entry.stateKey === 'inherited')
   const overridden = report.entries.find((entry) => entry.stateKey === 'overridden')
@@ -141,12 +154,18 @@ unresolved_design_states:
   assert.equal(inherited.targetUrl, '/pages/home/index')
   assert.equal(overridden.routeOrigin, 'state')
   assert.equal(overridden.sourceOrigin, 'state')
-  assert.equal(overridden.targetUrl, '/packages/rescue/pages/apply/index?label=%E4%B8%AD%E6%96%87%E5%80%BC')
+  assert.equal(
+    overridden.targetUrl,
+    '/packages/rescue/pages/apply/index?label=%E4%B8%AD%E6%96%87%E5%80%BC',
+  )
   assert.equal(inherited.runtimeStatus, 'not-checked')
   assert.equal(overridden.runtimeStatus, 'fixture-required')
   assert.equal(overridden.runtimeReason, 'temporary fixture for runtime reachability')
   assert.equal(report.scope.excludedUnresolvedDesignStates[0].status, 'unresolved')
-  const markdown = fs.readFileSync(path.join(fixture.root, '.artifacts', 'architecture-governance', 'figma-state-matrix.md'), 'utf8')
+  const markdown = fs.readFileSync(
+    path.join(fixture.root, '.artifacts', 'architecture-governance', 'figma-state-matrix.md'),
+    'utf8',
+  )
   assert.match(markdown, /unresolved/i)
   assert.doesNotMatch(markdown, /PASS/i)
   assert.doesNotMatch(JSON.stringify(report), /route-mapping-seed|visual-audit|PawHome/)
@@ -188,7 +207,7 @@ test('reports missing nodes and invalid route/source/query with a failing exit c
         query:
           "bad&key": "value"
 `,
-    sources: ['pages/home/index.vue', 'pages/other.vue']
+    sources: ['pages/home/index.vue', 'pages/other.vue'],
   })
   const result = runFixture(fixture)
   assert.notEqual(result.status, 0)
@@ -201,7 +220,9 @@ test('reports missing nodes and invalid route/source/query with a failing exit c
   assert.equal(statuses.mismatch_source, 'source-route-mismatch')
   assert.equal(statuses.bad_query, 'invalid-query')
   assert.equal(statuses.bad_query_key, 'invalid-query')
-  assert.ok(report.errors.some((error) => error.code === 'invalid-route' && /packages/.test(error.message)))
+  assert.ok(
+    report.errors.some((error) => error.code === 'invalid-route' && /packages/.test(error.message)),
+  )
   assert.doesNotMatch(JSON.stringify(report), /PASS/i)
 })
 
@@ -216,7 +237,7 @@ test('overwrites an old success report when a later YAML parse fails', () => {
       default:
         node_id: "1:2"
 `,
-    sources: ['pages/home/index.vue']
+    sources: ['pages/home/index.vue'],
   })
   const first = runFixture(fixture)
   assert.equal(first.status, 0, first.stderr)
@@ -231,6 +252,9 @@ test('overwrites an old success report when a later YAML parse fails', () => {
   assert.deepEqual(failure.entries, [])
   assert.equal(failure.errors[0].code, 'input-error')
   assert.equal(failure.counts.mapped, 0)
-  const markdown = fs.readFileSync(path.join(fixture.root, '.artifacts', 'architecture-governance', 'figma-state-matrix.md'), 'utf8')
+  const markdown = fs.readFileSync(
+    path.join(fixture.root, '.artifacts', 'architecture-governance', 'figma-state-matrix.md'),
+    'utf8',
+  )
   assert.match(markdown, /运行状态：error/)
 })

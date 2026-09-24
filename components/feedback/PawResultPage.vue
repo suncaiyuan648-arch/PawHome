@@ -1,23 +1,65 @@
 <template>
   <view class="paw-result-page">
-    <PawPageNav :title="navTitle" background="#ffffff" :fallback-url="fallbackUrl" :auto-back="false"
-      @back="$emit('back')" />
-    <view class="paw-result-page__content" :class="[
-      `paw-result-page__content--${status}`,
-      { 'paw-result-page__content--failure-brand': status === 'failure' && failureTone === 'brand' }
-    ]" :style="contentStyle">
+    <PawPageNav
+      :title="navTitle"
+      background="#ffffff"
+      :fallback-url="fallbackUrl"
+      :auto-back="false"
+      @back="$emit('back')"
+    />
+    <view
+      class="paw-result-page__content"
+      :class="[
+        `paw-result-page__content--${status}`,
+        {
+          'paw-result-page__content--failure-brand':
+            status === 'failure' && failureTone === 'brand',
+        },
+      ]"
+      :style="contentStyle"
+    >
       <view class="paw-result-page__icon">
-        <PawIcon v-if="status !== 'failure'" name="status/check" :size="60" label="成功" />
-        <PawIcon v-else-if="failureIconName" :name="failureIconName" :size="28" label="失败" />
-        <uni-icons v-else type="closeempty" color="#666" :size="34" />
+        <PawIcon
+          v-if="status !== 'failure'"
+          name="status/check"
+          :size="60"
+          label="成功"
+        />
+        <PawIcon
+          v-else-if="failureIconName"
+          :name="failureIconName"
+          :size="28"
+          label="失败"
+        />
+        <uni-icons
+          v-else
+          type="closeempty"
+          color="#666"
+          :size="34"
+        />
       </view>
       <text class="paw-result-page__title">{{ title }}</text>
-      <text v-if="description" class="paw-result-page__description" :style="descriptionStyle">{{ description }}</text>
+      <text
+        v-if="description"
+        class="paw-result-page__description"
+        :style="descriptionStyle"
+        >{{ description }}</text
+      >
     </view>
-    <view class="paw-result-page__action-wrap" :style="actionStyle">
-      <PawButton class="paw-result-page__action" :class="{ 'paw-result-page__action--failure': status === 'failure' }"
-        :text="actionText" :tone="status === 'failure' && failureTone !== 'brand' ? 'secondary' : 'brand'"
-        :size="actionButtonSize" block flush @click="$emit('action')" />
+    <view
+      class="paw-result-page__action-wrap"
+      :style="actionStyle"
+    >
+      <PawButton
+        class="paw-result-page__action"
+        :class="{ 'paw-result-page__action--failure': status === 'failure' }"
+        :text="actionText"
+        :tone="status === 'failure' && failureTone !== 'brand' ? 'secondary' : 'brand'"
+        :size="actionButtonSize"
+        block
+        flush
+        @click="$emit('action')"
+      />
     </view>
   </view>
 </template>
@@ -45,11 +87,11 @@ export default defineComponent({
     actionHeight: { type: [Number, String], default: 45 },
     failureIconName: { type: String, default: '' },
     failureTone: { type: String, default: 'muted' },
-    fallbackUrl: { type: String, default: '/pages/index/index' }
+    fallbackUrl: { type: String, default: '/pages/index/index' },
   },
   emits: {
-    'back': eventContract<[]>(),
-    'action': eventContract<[]>(),
+    back: eventContract<[]>(),
+    action: eventContract<[]>(),
   },
   computed: {
     contentStyle() {
@@ -65,10 +107,10 @@ export default defineComponent({
     actionStyle() {
       return {
         width: `${Number(this.actionWidth) || 209}px`,
-        height: `${Number(this.actionHeight) || 45}px`
+        height: `${Number(this.actionHeight) || 45}px`,
       }
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -98,7 +140,7 @@ export default defineComponent({
   border-radius: 50%;
   background: var(--paw-color-brand, #ffe60f);
   opacity: 0;
-  transform: scale(.72);
+  transform: scale(0.72);
   animation: paw-result-icon-in 180ms var(--paw-ease-enter, ease) forwards;
 }
 

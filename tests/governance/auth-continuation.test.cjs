@@ -16,16 +16,29 @@ before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-auth-continuation-'))
   await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
-  for (const file of ['actorCapabilities.ts', 'routeContracts.ts', 'deeplinkContracts.ts', 'authContinuationStorage.ts']) {
+  for (const file of [
+    'actorCapabilities.ts',
+    'routeContracts.ts',
+    'deeplinkContracts.ts',
+    'authContinuationStorage.ts',
+  ]) {
     await fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
   }
   storage = new Map()
   globalThis.uni = {
-    getStorageSync(key) { return storage.get(key) },
-    setStorageSync(key, value) { storage.set(key, value) },
-    removeStorageSync(key) { storage.delete(key) },
+    getStorageSync(key) {
+      return storage.get(key)
+    },
+    setStorageSync(key, value) {
+      storage.set(key, value)
+    },
+    removeStorageSync(key) {
+      storage.delete(key)
+    },
   }
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/authContinuationStorage.ts')).href}?test=${Date.now()}`)
+  api = await import(
+    `${pathToFileURL(path.join(tempRoot, 'navigation/authContinuationStorage.ts')).href}?test=${Date.now()}`
+  )
 })
 
 beforeEach(() => storage.clear())
@@ -47,7 +60,11 @@ function target(overrides = {}) {
 }
 
 test('continuations persist only validated targets and restore without submit capability', () => {
-  const saved = api.saveAuthContinuation({ target: target(), messageId: 'message-a', category: 'interaction' })
+  const saved = api.saveAuthContinuation({
+    target: target(),
+    messageId: 'message-a',
+    category: 'interaction',
+  })
   assert.equal(saved.success, true)
   const unauthenticated = api.restoreStoredAuthContinuation({ authenticated: false })
   assert.equal(unauthenticated.code, 'AUTH_REQUIRED')
@@ -60,14 +77,18 @@ test('continuations persist only validated targets and restore without submit ca
 })
 
 test('rescue applicant progress targets survive auth continuation validation', () => {
-  const saved = api.saveAuthContinuation({ target: {
-    source: 'message',
-    businessType: 'rescue',
-    businessId: 'rescue-a',
-    targetKind: 'progress',
-    routeName: 'rescue.progress',
-    url: '/packages/rescue/pages/progress/index?rescueId=rescue-a',
-  }, messageId: 'message-rescue', category: 'service' })
+  const saved = api.saveAuthContinuation({
+    target: {
+      source: 'message',
+      businessType: 'rescue',
+      businessId: 'rescue-a',
+      targetKind: 'progress',
+      routeName: 'rescue.progress',
+      url: '/packages/rescue/pages/progress/index?rescueId=rescue-a',
+    },
+    messageId: 'message-rescue',
+    category: 'service',
+  })
   assert.equal(saved.success, true)
   const restored = api.restoreStoredAuthContinuation({ authenticated: true })
   assert.equal(restored.status, 'ready')
@@ -76,7 +97,12 @@ test('rescue applicant progress targets survive auth continuation validation', (
 })
 
 test('malformed, cross-domain, and message-without-ID continuations fail closed', () => {
-  assert.equal(api.saveAuthContinuation({ target: target({ businessType: 'rescue', routeName: 'dynamic.detail' }) }).success, false)
+  assert.equal(
+    api.saveAuthContinuation({
+      target: target({ businessType: 'rescue', routeName: 'dynamic.detail' }),
+    }).success,
+    false,
+  )
   assert.equal(api.saveAuthContinuation({ target: target(), category: 'forged' }).success, false)
   assert.equal(api.saveAuthContinuation({ target: target() }).success, false)
   storage.set(api.AUTH_CONTINUATION_STORAGE_KEY, '{broken')
@@ -84,13 +110,16 @@ test('malformed, cross-domain, and message-without-ID continuations fail closed'
 })
 
 test('stored continuation envelopes reject non-numeric timestamps without asserting their shape', () => {
-  storage.set(api.AUTH_CONTINUATION_STORAGE_KEY, JSON.stringify({
-    version: 1,
-    createdAt: 'not-a-timestamp',
-    target: target(),
-    messageId: 'message-a',
-    category: 'interaction',
-  }))
+  storage.set(
+    api.AUTH_CONTINUATION_STORAGE_KEY,
+    JSON.stringify({
+      version: 1,
+      createdAt: 'not-a-timestamp',
+      target: target(),
+      messageId: 'message-a',
+      category: 'interaction',
+    }),
+  )
   const restored = api.restoreStoredAuthContinuation({ authenticated: true })
   assert.equal(restored.status, 'empty')
   assert.equal(restored.code, 'CONTINUATION_EXPIRED')

@@ -1,5 +1,6 @@
 export type AnimalEditorSpecies = 'cat' | 'dog'
-export type AnimalEditorSheetKind = '' | 'status' | 'value' | 'gender' | 'neuter' | 'vaccine' | 'personality'
+export type AnimalEditorSheetKind =
+  '' | 'status' | 'value' | 'gender' | 'neuter' | 'vaccine' | 'personality'
 
 export interface AnimalEditorForm {
   status: string
@@ -31,11 +32,11 @@ const ANIMAL_EDITOR_DEFAULT_MOCK: Readonly<AnimalEditorMockMetadata> = Object.fr
     neuter: '未绝育',
     vaccine: '接种中',
     personality: '',
-    desc: ''
+    desc: '',
   }),
   petValue: 15,
   personalityValue: 50,
-  birthValue: '2020-06-27'
+  birthValue: '2020-06-27',
 })
 
 const ANIMAL_EDITOR_OPTIONS: Record<AnimalEditorChoiceKind, readonly string[]> = {
@@ -43,7 +44,7 @@ const ANIMAL_EDITOR_OPTIONS: Record<AnimalEditorChoiceKind, readonly string[]> =
   gender: Object.freeze(['男生', '女生']),
   neuter: Object.freeze(['未绝育', '已绝育']),
   vaccine: Object.freeze(['未接种', '接种中', '已接种']),
-  personality: Object.freeze(['非常亲人', '亲人', '不亲人'])
+  personality: Object.freeze(['非常亲人', '亲人', '不亲人']),
 }
 
 const ANIMAL_EDITOR_FIELDS: Partial<Record<AnimalEditorSheetKind, AnimalEditorFormField>> = {
@@ -51,13 +52,13 @@ const ANIMAL_EDITOR_FIELDS: Partial<Record<AnimalEditorSheetKind, AnimalEditorFo
   gender: 'gender',
   neuter: 'neuter',
   vaccine: 'vaccine',
-  personality: 'personality'
+  personality: 'personality',
 }
 
 export function createAnimalEditorMockMetadata(): AnimalEditorMockMetadata {
   return {
     ...ANIMAL_EDITOR_DEFAULT_MOCK,
-    form: { ...ANIMAL_EDITOR_DEFAULT_MOCK.form }
+    form: { ...ANIMAL_EDITOR_DEFAULT_MOCK.form },
   }
 }
 
@@ -66,7 +67,9 @@ export function createAnimalEditorOptions(kind: AnimalEditorSheetKind): string[]
   return [...ANIMAL_EDITOR_OPTIONS[kind]]
 }
 
-export function getAnimalEditorFormField(kind: AnimalEditorSheetKind): AnimalEditorFormField | null {
+export function getAnimalEditorFormField(
+  kind: AnimalEditorSheetKind,
+): AnimalEditorFormField | null {
   return ANIMAL_EDITOR_FIELDS[kind] || null
 }
 

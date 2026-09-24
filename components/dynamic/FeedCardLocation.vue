@@ -1,12 +1,21 @@
 <template>
-  <view v-if="hasLocation" class="feed-card-location" aria-label="定位信息">
-    <PawIcon class="feed-card-location__icon" name="actions/location-pin" :size="13" />
+  <view
+    v-if="hasLocation"
+    class="feed-card-location"
+    aria-label="定位信息"
+  >
+    <PawIcon
+      class="feed-card-location__icon"
+      name="actions/location-pin"
+      :size="13"
+    />
     <text v-if="distance">{{ distance }}</text>
     <text v-if="district">{{ district }}</text>
   </view>
 </template>
 
-<script lang="ts">import { defineComponent } from 'vue'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
@@ -15,11 +24,13 @@ export default defineComponent({
   components: { PawIcon },
   props: {
     distance: { type: String, default: '' },
-    district: { type: String, default: '' }
+    district: { type: String, default: '' },
   },
   computed: {
-    hasLocation() { return Boolean(this.distance || this.district) }
-  }
+    hasLocation() {
+      return Boolean(this.distance || this.district)
+    },
+  },
 })
 </script>
 
@@ -36,7 +47,7 @@ export default defineComponent({
   padding: 1px 5px;
   box-sizing: border-box;
   border-radius: 5px;
-  background: rgba(0, 0, 0, .3);
+  background: rgba(0, 0, 0, 0.3);
   color: #f6f8fa;
   font-size: 10px;
   font-weight: 500;

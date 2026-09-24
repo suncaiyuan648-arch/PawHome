@@ -1,8 +1,20 @@
 <template>
-  <view class="paw-option-row" :style="rowStyle" @tap.stop="$emit('click', option)">
+  <view
+    class="paw-option-row"
+    :style="rowStyle"
+    @tap.stop="$emit('click', option)"
+  >
     <text class="paw-option-row__label">{{ option.label || label }}</text>
-    <text v-if="value || option.value" class="paw-option-row__value">{{ value || option.value }}</text>
-    <PawChevron v-else class="paw-option-row__chevron" :size="8" />
+    <text
+      v-if="value || option.value"
+      class="paw-option-row__value"
+      >{{ value || option.value }}</text
+    >
+    <PawChevron
+      v-else
+      class="paw-option-row__chevron"
+      :size="8"
+    />
   </view>
 </template>
 
@@ -24,17 +36,17 @@ export default defineComponent({
     option: { type: Object as PropType<AccountOptionMetadata>, default: () => ({}) },
     label: { type: String, default: '' },
     value: { type: String, default: '' },
-    height: { type: [Number, String], default: 48 }
+    height: { type: [Number, String], default: 48 },
   },
   emits: {
-    'click': eventContract<[option: AccountOptionMetadata]>(),
+    click: eventContract<[option: AccountOptionMetadata]>(),
   },
   computed: {
     rowStyle() {
       const height = Number(this.height) || 48
       return { height: `${height}px`, minHeight: `${height}px` }
-    }
-  }
+    },
+  },
 })
 </script>
 

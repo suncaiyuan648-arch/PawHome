@@ -3,7 +3,7 @@ export const PAW_ICON_SIZE = Object.freeze({
   sm: 16,
   md: 20,
   base: 24,
-  lg: 28
+  lg: 28,
 })
 
 export const PAW_ICON_DEFAULT_SIZE = 'base'

@@ -1,12 +1,30 @@
 <template>
-  <view v-if="rendered" class="paw-overlay" :class="[
-    `paw-overlay--${placement}`,
-    { 'paw-overlay--open': opened, 'paw-overlay--closing': closing }
-  ]" :style="{ zIndex: zIndex }">
-    <view v-if="showMask" class="paw-overlay__mask" :style="maskStyle" @tap="onMaskTap" @touchmove.stop.prevent="noop">
+  <view
+    v-if="rendered"
+    class="paw-overlay"
+    :class="[
+      `paw-overlay--${placement}`,
+      { 'paw-overlay--open': opened, 'paw-overlay--closing': closing },
+    ]"
+    :style="{ zIndex: zIndex }"
+  >
+    <view
+      v-if="showMask"
+      class="paw-overlay__mask"
+      :style="maskStyle"
+      @tap="onMaskTap"
+      @touchmove.stop.prevent="noop"
+    >
     </view>
-    <view class="paw-overlay__content" @tap.stop @touchmove.stop="noop">
-      <slot :opened="opened" :closing="closing" />
+    <view
+      class="paw-overlay__content"
+      @tap.stop
+      @touchmove.stop="noop"
+    >
+      <slot
+        :opened="opened"
+        :closing="closing"
+      />
     </view>
   </view>
 </template>
@@ -41,11 +59,11 @@ export default defineComponent({
     placement: {
       type: String,
       default: 'center',
-      validator: isOverlayPlacement
+      validator: isOverlayPlacement,
     },
     zIndex: { type: [Number, String], default: 10000 },
     enterDuration: { type: Number, default: 180 },
-    exitDuration: { type: Number, default: 160 }
+    exitDuration: { type: Number, default: 160 },
   },
   emits: {
     'update:modelValue': eventContract<[value: boolean]>(),
@@ -55,7 +73,14 @@ export default defineComponent({
     'after-close': eventContract<[]>(),
   },
   data(): PawOverlayState {
-    return { rendered: false, opened: false, closing: false, closeTimer: null, openTimer: null, afterOpenTimer: null }
+    return {
+      rendered: false,
+      opened: false,
+      closing: false,
+      closeTimer: null,
+      openTimer: null,
+      afterOpenTimer: null,
+    }
   },
   computed: {
     openValue() {
@@ -63,7 +88,7 @@ export default defineComponent({
     },
     maskStyle() {
       return this.maskColor ? { background: this.maskColor } : {}
-    }
+    },
   },
   watch: {
     openValue: {
@@ -71,8 +96,8 @@ export default defineComponent({
       handler(value: boolean) {
         if (value) this.open()
         else this.close()
-      }
-    }
+      },
+    },
   },
   beforeUnmount() {
     this.clearTimers()
@@ -114,8 +139,8 @@ export default defineComponent({
       this.$emit('mask-click')
       if (this.closeOnMask) this.emitValue(false)
     },
-    noop() { }
-  }
+    noop() {},
+  },
 })
 </script>
 
@@ -133,7 +158,7 @@ export default defineComponent({
 }
 
 .paw-overlay__mask {
-  background: rgba(0, 0, 0, .65);
+  background: rgba(0, 0, 0, 0.65);
   opacity: 0;
   transition: opacity 160ms ease;
 }

@@ -2,10 +2,10 @@
 export const ADOPTION_PET_PLACEHOLDER_IMG = '/static/home-feed-1.png'
 
 export interface AdoptionPetDisplayRecord {
-	avatar?: unknown
+  avatar?: unknown
 }
 
 export function adoptionPetAvatarSrc(p?: AdoptionPetDisplayRecord | null): string {
-	const a = p && p.avatar
-	return typeof a === 'string' && a.trim() ? a.trim() : ADOPTION_PET_PLACEHOLDER_IMG
+  const a = p && p.avatar
+  return typeof a === 'string' && a.trim() ? a.trim() : ADOPTION_PET_PLACEHOLDER_IMG
 }

@@ -1,16 +1,47 @@
 <template>
-  <view class="comment-composer" :class="{ 'comment-composer--fluid': fluid }" @tap.stop="onTap">
-    <PawAvatar :src="avatar" :size="34" />
+  <view
+    class="comment-composer"
+    :class="{ 'comment-composer--fluid': fluid }"
+    @tap.stop="onTap"
+  >
+    <PawAvatar
+      :src="avatar"
+      :size="34"
+    />
     <view class="comment-composer__field">
-      <input v-if="!readonly" class="comment-composer__input" :value="value" :placeholder="placeholder"
-        placeholder-class="comment-composer__placeholder" confirm-type="send" @input="onInput" @confirm="onSend" />
-      <text v-else class="comment-composer__placeholder">{{ placeholder }}</text>
+      <input
+        v-if="!readonly"
+        class="comment-composer__input"
+        :value="value"
+        :placeholder="placeholder"
+        placeholder-class="comment-composer__placeholder"
+        confirm-type="send"
+        @input="onInput"
+        @confirm="onSend"
+      />
+      <text
+        v-else
+        class="comment-composer__placeholder"
+        >{{ placeholder }}</text
+      >
       <view class="comment-composer__tools">
-        <view class="comment-composer__hit comment-composer__hit--voice" @tap.stop="$emit('voice')">
-          <PawIcon name="actions/composer-voice" :size="17" />
+        <view
+          class="comment-composer__hit comment-composer__hit--voice"
+          @tap.stop="$emit('voice')"
+        >
+          <PawIcon
+            name="actions/composer-voice"
+            :size="17"
+          />
         </view>
-        <view class="comment-composer__hit comment-composer__hit--emoji" @tap.stop="$emit('pick-image')">
-          <PawIcon name="actions/composer-emoji" :size="17" />
+        <view
+          class="comment-composer__hit comment-composer__hit--emoji"
+          @tap.stop="$emit('pick-image')"
+        >
+          <PawIcon
+            name="actions/composer-emoji"
+            :size="17"
+          />
         </view>
       </view>
     </view>
@@ -26,7 +57,9 @@ import PawAvatar from '@/components/identity/PawAvatar.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import { readPawEventValue } from '@/utils/pawEventMetadata.ts'
 
-interface CommentComposerState { draft: string }
+interface CommentComposerState {
+  draft: string
+}
 
 export default defineComponent({
   name: 'CommentComposer',
@@ -36,22 +69,36 @@ export default defineComponent({
     placeholder: { type: String, default: '有话要说，告诉她这条路并不孤单' },
     readonly: { type: Boolean, default: false },
     fluid: { type: Boolean, default: false },
-    value: { type: String, default: '' }
+    value: { type: String, default: '' },
   },
   emits: {
-    'input': eventContract<[text: string]>(),
-    'send': eventContract<[text: string]>(),
-    'voice': eventContract<[]>(),
+    input: eventContract<[text: string]>(),
+    send: eventContract<[text: string]>(),
+    voice: eventContract<[]>(),
     'pick-image': eventContract<[]>(),
-    'click': eventContract<[event: PawEvent]>(),
+    click: eventContract<[event: PawEvent]>(),
   },
-  data(): CommentComposerState { return { draft: this.value } },
-  watch: { value(value: string) { this.draft = value } },
+  data(): CommentComposerState {
+    return { draft: this.value }
+  },
+  watch: {
+    value(value: string) {
+      this.draft = value
+    },
+  },
   methods: {
-    onTap(event: PawEvent) { this.$emit('click', event) },
-    onInput(event: PawEvent) { this.draft = readPawEventValue(event); this.$emit('input', this.draft) },
-    onSend() { const text = this.draft.trim(); if (text) this.$emit('send', text) }
-  }
+    onTap(event: PawEvent) {
+      this.$emit('click', event)
+    },
+    onInput(event: PawEvent) {
+      this.draft = readPawEventValue(event)
+      this.$emit('input', this.draft)
+    },
+    onSend() {
+      const text = this.draft.trim()
+      if (text) this.$emit('send', text)
+    },
+  },
 })
 </script>
 

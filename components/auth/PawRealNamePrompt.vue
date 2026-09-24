@@ -1,12 +1,27 @@
 <template>
-  <PawOverlay v-model:visible="visibleProxy" :close-on-mask="false" placement="center" :z-index="10000">
-    <view class="real-name-prompt" :class="`real-name-prompt--${type}`" @tap.stop>
+  <PawOverlay
+    v-model:visible="visibleProxy"
+    :close-on-mask="false"
+    placement="center"
+    :z-index="10000"
+  >
+    <view
+      class="real-name-prompt"
+      :class="`real-name-prompt--${type}`"
+      @tap.stop
+    >
       <view class="real-name-prompt__main">
         <text class="real-name-prompt__title">{{ title }}</text>
-        <text v-if="type === 'real-name'" class="real-name-prompt__body">
+        <text
+          v-if="type === 'real-name'"
+          class="real-name-prompt__body"
+        >
           创建小院需要先实名认证，每人仅能创建一个小院，发布虚假违规信息将永久取消您的小院资格，平台将严格保护您的隐私。
         </text>
-        <text v-else class="real-name-prompt__body real-name-prompt__body--privacy">
+        <text
+          v-else
+          class="real-name-prompt__body real-name-prompt__body--privacy"
+        >
           请仔细阅读
           <text class="real-name-prompt__link">《隐私政策》</text>
           和
@@ -14,10 +29,16 @@
         </text>
       </view>
       <view class="real-name-prompt__actions">
-        <view class="real-name-prompt__action real-name-prompt__action--cancel" @tap.stop="onCancel">
+        <view
+          class="real-name-prompt__action real-name-prompt__action--cancel"
+          @tap.stop="onCancel"
+        >
           <text>{{ type === 'privacy' ? '拒绝' : '返回' }}</text>
         </view>
-        <view class="real-name-prompt__action real-name-prompt__action--confirm" @tap.stop="onConfirm">
+        <view
+          class="real-name-prompt__action real-name-prompt__action--confirm"
+          @tap.stop="onConfirm"
+        >
           <text>{{ type === 'privacy' ? '同意' : '开始实名' }}</text>
         </view>
       </view>
@@ -40,22 +61,26 @@ export default defineComponent({
     type: {
       type: String as PropType<'real-name' | 'privacy'>,
       default: 'real-name',
-      validator: (value: unknown) => value === 'real-name' || value === 'privacy'
-    }
+      validator: (value: unknown) => value === 'real-name' || value === 'privacy',
+    },
   },
   emits: {
     'update:visible': eventContract<[value: boolean]>(),
-    'cancel': eventContract<[]>(),
-    'confirm': eventContract<[]>(),
+    cancel: eventContract<[]>(),
+    confirm: eventContract<[]>(),
   },
   computed: {
     visibleProxy: {
-      get() { return this.visible },
-      set(value: boolean) { this.$emit('update:visible', value) }
+      get() {
+        return this.visible
+      },
+      set(value: boolean) {
+        this.$emit('update:visible', value)
+      },
     },
     title() {
       return this.type === 'privacy' ? '隐私政策及用户协议' : '实名认证'
-    }
+    },
   },
   methods: {
     onCancel() {
@@ -65,8 +90,8 @@ export default defineComponent({
     onConfirm() {
       this.$emit('confirm')
       this.visibleProxy = false
-    }
-  }
+    },
+  },
 })
 </script>
 

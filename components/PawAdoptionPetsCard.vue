@@ -1,5 +1,10 @@
 <template>
-  <PawCard class="paw-adoption-pets-card" :style="layoutStyle" :padding="cardPadding" border="none">
+  <PawCard
+    class="paw-adoption-pets-card"
+    :style="layoutStyle"
+    :padding="cardPadding"
+    border="none"
+  >
     <template #title>
       <view class="paw-adoption-pets-card__title">
         <text>{{ title }}</text>
@@ -7,29 +12,70 @@
       </view>
     </template>
     <view class="paw-adoption-pets-card__pet-row">
-      <view v-for="(pet, index) in petList" :key="pet.id || pet.petId || 'pet-' + index"
-        class="paw-adoption-pets-card__pet-cell" :data-qa="qaPrefix ? qaPrefix + (pet.id || pet.petId || index) : null"
-        @tap.stop="onPetTap(pet, index)">
-        <PawImage class="paw-adoption-pets-card__pet-avatar" :src="petAvatarSrc(pet)" :size="48" :radius="24"
-          :preview="false" :clickable="petClickable" @click.stop="onPetTap(pet, index)" />
-        <text class="paw-adoption-pets-card__pet-name" @tap.stop="onPetTap(pet, index)">{{ pet.name }}</text>
+      <view
+        v-for="(pet, index) in petList"
+        :key="pet.id || pet.petId || 'pet-' + index"
+        class="paw-adoption-pets-card__pet-cell"
+        :data-qa="qaPrefix ? qaPrefix + (pet.id || pet.petId || index) : null"
+        @tap.stop="onPetTap(pet, index)"
+      >
+        <PawImage
+          class="paw-adoption-pets-card__pet-avatar"
+          :src="petAvatarSrc(pet)"
+          :size="48"
+          :radius="24"
+          :preview="false"
+          :clickable="petClickable"
+          @click.stop="onPetTap(pet, index)"
+        />
+        <text
+          class="paw-adoption-pets-card__pet-name"
+          @tap.stop="onPetTap(pet, index)"
+          >{{ pet.name }}</text
+        >
       </view>
-      <view v-if="showAdd" class="paw-adoption-pets-card__pet-cell paw-adoption-pets-card__pet-cell--add"
-        :data-qa="qaPrefix ? qaPrefix + 'add' : 'qa-adoption-apply-add-pet'" @tap="onAddTap">
+      <view
+        v-if="showAdd"
+        class="paw-adoption-pets-card__pet-cell paw-adoption-pets-card__pet-cell--add"
+        :data-qa="qaPrefix ? qaPrefix + 'add' : 'qa-adoption-apply-add-pet'"
+        @tap="onAddTap"
+      >
         <view class="paw-adoption-pets-card__add-circle-outer">
-          <view class="paw-adoption-pets-card__add-circle"><text class="paw-adoption-pets-card__add-plus">+</text>
+          <view class="paw-adoption-pets-card__add-circle"
+            ><text class="paw-adoption-pets-card__add-plus">+</text>
           </view>
         </view>
-        <text class="paw-adoption-pets-card__pet-name paw-adoption-pets-card__pet-name--invisible">占位</text>
+        <text class="paw-adoption-pets-card__pet-name paw-adoption-pets-card__pet-name--invisible"
+          >占位</text
+        >
       </view>
     </view>
     <template #footer>
-      <view v-if="showOwner" class="paw-adoption-pets-card__yard-row" @tap.stop="onYardTap">
-        <PawImage class="paw-adoption-pets-card__yard-avatar" :src="yardAvatar" :size="34" :radius="17" :preview="false"
-          :clickable="yardClickable" @click.stop="onYardTap" />
+      <view
+        v-if="showOwner"
+        class="paw-adoption-pets-card__yard-row"
+        @tap.stop="onYardTap"
+      >
+        <PawImage
+          class="paw-adoption-pets-card__yard-avatar"
+          :src="yardAvatar"
+          :size="34"
+          :radius="17"
+          :preview="false"
+          :clickable="yardClickable"
+          @click.stop="onYardTap"
+        />
         <view class="paw-adoption-pets-card__yard-name-line">
-          <text class="paw-adoption-pets-card__yard-name" @tap.stop="onYardTap">{{ yardName }}</text>
-          <YardBadge :label="yardTag" :yard-id="yardClickable ? yardId : ''" :yard-name="yardName" />
+          <text
+            class="paw-adoption-pets-card__yard-name"
+            @tap.stop="onYardTap"
+            >{{ yardName }}</text
+          >
+          <YardBadge
+            :label="yardTag"
+            :yard-id="yardClickable ? yardId : ''"
+            :yard-name="yardName"
+          />
         </view>
       </view>
     </template>
@@ -72,10 +118,10 @@ export default defineComponent({
     cardPadding: { type: String, default: '15px 20px 12px 18px' },
     minHeight: { type: [Number, String], default: 296 },
     marginBottom: { type: [Number, String], default: 12 },
-    qaPrefix: { type: String, default: '' }
+    qaPrefix: { type: String, default: '' },
   },
   emits: {
-    'add': eventContract<[]>(),
+    add: eventContract<[]>(),
     'pet-click': eventContract<[pet: AdoptionPetMetadata, index: number]>(),
     'yard-click': eventContract<[event: PawImageEvent]>(),
   },
@@ -90,7 +136,7 @@ export default defineComponent({
       if (minHeight > 0) style.minHeight = `${minHeight}px`
       if (marginBottom >= 0) style.marginBottom = `${marginBottom}px`
       return style
-    }
+    },
   },
   methods: {
     petAvatarSrc,
@@ -102,8 +148,8 @@ export default defineComponent({
     },
     onYardTap(event: PawImageEvent) {
       if (this.yardClickable) this.$emit('yard-click', event)
-    }
-  }
+    },
+  },
 })
 </script>
 

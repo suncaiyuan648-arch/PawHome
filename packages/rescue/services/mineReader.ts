@@ -101,10 +101,10 @@ function isMineFilter(value: unknown): value is MineFilter {
 }
 
 function id(value: unknown): string {
-  return typeof value === 'string'
-    && value === value.trim()
-    && ID_PATTERN.test(value)
-    && !URL_MARKERS.test(value)
+  return typeof value === 'string' &&
+    value === value.trim() &&
+    ID_PATTERN.test(value) &&
+    !URL_MARKERS.test(value)
     ? value
     : ''
 }
@@ -200,8 +200,8 @@ function project(record: unknown, actorId: string): ProjectResult {
       status: status.value,
       ...(typeof record.summary === 'string' ? { summary: record.summary } : {}),
       ...(typeof record.description === 'string' ? { description: record.description } : {}),
-      ...(record.createdAt !== undefined
-        && (typeof record.createdAt === 'string' || typeof record.createdAt === 'number')
+      ...(record.createdAt !== undefined &&
+      (typeof record.createdAt === 'string' || typeof record.createdAt === 'number')
         ? { createdAt: record.createdAt }
         : {}),
     }),
@@ -256,8 +256,12 @@ export function readRescueMinePage(options: MineReadOptions = {}): MineReadModel
   return Object.freeze({
     actor,
     items: frozenItems,
-    pending: Object.freeze(frozenItems.filter((item) => item.applicationStatus === 'platform_pending')),
-    processed: Object.freeze(frozenItems.filter((item) => item.applicationStatus !== 'platform_pending')),
+    pending: Object.freeze(
+      frozenItems.filter((item) => item.applicationStatus === 'platform_pending'),
+    ),
+    processed: Object.freeze(
+      frozenItems.filter((item) => item.applicationStatus !== 'platform_pending'),
+    ),
     readOnly: true,
     canWrite: false,
     diagnostics: Object.freeze({

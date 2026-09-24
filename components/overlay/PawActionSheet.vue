@@ -1,6 +1,18 @@
 <template>
-  <PawBottomSheet v-model="valueProxy" variant="action" :close-on-mask="true" :safe-area="true">
-    <view v-for="item in items" :key="item.key" class="paw-action-sheet__item" :class="{ danger: item.tone === 'danger' }" @tap.stop="select(item)"><text>{{ item.label }}</text></view>
+  <PawBottomSheet
+    v-model="valueProxy"
+    variant="action"
+    :close-on-mask="true"
+    :safe-area="true"
+  >
+    <view
+      v-for="item in items"
+      :key="item.key"
+      class="paw-action-sheet__item"
+      :class="{ danger: item.tone === 'danger' }"
+      @tap.stop="select(item)"
+      ><text>{{ item.label }}</text></view
+    >
   </PawBottomSheet>
 </template>
 
@@ -12,36 +24,55 @@ import { defineComponent, type PropType } from 'vue'
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 
 export interface PawActionSheetItem {
-	key: string
-	label: string
-	tone?: 'default' | 'danger'
+  key: string
+  label: string
+  tone?: 'default' | 'danger'
 }
 
 export default defineComponent({
-	name: 'PawActionSheet',
-	components: { PawBottomSheet },
-	props: {
-		modelValue: { type: Boolean, default: false },
-		items: { type: Array as PropType<PawActionSheetItem[]>, default: () => [] },
-	},
-	emits: {
-    'update:modelValue': eventContract<[value: boolean]>(),
-    'select': eventContract<[item: PawActionSheetItem]>(),
+  name: 'PawActionSheet',
+  components: { PawBottomSheet },
+  props: {
+    modelValue: { type: Boolean, default: false },
+    items: { type: Array as PropType<PawActionSheetItem[]>, default: () => [] },
   },
-	computed: {
-		valueProxy: {
-			get() { return this.modelValue },
-			set(value: boolean) { this.$emit('update:modelValue', value) },
-		},
-	},
-	methods: {
-		select(item: PawActionSheetItem) { this.$emit('select', item); this.$emit('update:modelValue', false) },
-	},
+  emits: {
+    'update:modelValue': eventContract<[value: boolean]>(),
+    select: eventContract<[item: PawActionSheetItem]>(),
+  },
+  computed: {
+    valueProxy: {
+      get() {
+        return this.modelValue
+      },
+      set(value: boolean) {
+        this.$emit('update:modelValue', value)
+      },
+    },
+  },
+  methods: {
+    select(item: PawActionSheetItem) {
+      this.$emit('select', item)
+      this.$emit('update:modelValue', false)
+    },
+  },
 })
 </script>
 
 <style scoped>
-.paw-action-sheet__item { display: flex; align-items: center; justify-content: center; height: 52px; color: #999; font-size: 15px; font-weight: 500; }
-.paw-action-sheet__item + .paw-action-sheet__item { border-top: 1px solid #f3f3f3; }
-.paw-action-sheet__item.danger { color: var(--paw-color-danger, #ff3d3d); }
+.paw-action-sheet__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  color: #999;
+  font-size: 15px;
+  font-weight: 500;
+}
+.paw-action-sheet__item + .paw-action-sheet__item {
+  border-top: 1px solid #f3f3f3;
+}
+.paw-action-sheet__item.danger {
+  color: var(--paw-color-danger, #ff3d3d);
+}
 </style>

@@ -1,5 +1,9 @@
 <template>
-  <view class="paw-divider" :style="dividerStyle" aria-hidden="true" />
+  <view
+    class="paw-divider"
+    :style="dividerStyle"
+    aria-hidden="true"
+  />
 </template>
 
 <script lang="ts">
@@ -14,17 +18,17 @@ export default defineComponent({
   props: {
     width: { type: [Number, String], default: 34 },
     thickness: { type: [Number, String], default: 0.3 },
-    color: { type: String, default: '#CBCCCC' }
+    color: { type: String, default: '#CBCCCC' },
   },
   computed: {
     dividerStyle() {
       return {
         width: cssLength(this.width),
         height: cssLength(this.thickness),
-        backgroundColor: this.color
+        backgroundColor: this.color,
       }
-    }
-  }
+    },
+  },
 })
 </script>
 

@@ -1,30 +1,80 @@
 <template>
-  <view class="extra-page paw-page" :class="'extra-page--' + mode">
-    <PawPageNav :title="title" background="#f5f5f5" fallback-url="/pages/me/index" />
-    <view v-if="invalid" class="extra-invalid"><PawIcon name="navigation/clock-disabled" :size="22" color="#999" label="额度明细不可用" /><text>缺少额度明细 ID，无法打开账本记录。</text></view>
-    <scroll-view v-else class="extra-scroll" scroll-y :show-scrollbar="false">
+  <view
+    class="extra-page paw-page"
+    :class="'extra-page--' + mode"
+  >
+    <PawPageNav
+      :title="title"
+      background="#f5f5f5"
+      fallback-url="/pages/me/index"
+    />
+    <view
+      v-if="invalid"
+      class="extra-invalid"
+      ><PawIcon
+        name="navigation/clock-disabled"
+        :size="22"
+        color="#999"
+        label="额度明细不可用"
+      /><text>缺少额度明细 ID，无法打开账本记录。</text></view
+    >
+    <scroll-view
+      v-else
+      class="extra-scroll"
+      scroll-y
+      :show-scrollbar="false"
+    >
       <template v-if="mode === 'support'">
-        <view v-for="item in supportList" :key="item.id" class="support-row">
-          <image :src="item.avatar" mode="aspectFill" />
-          <view><text class="support-name">{{ item.name }}</text><text class="support-copy">被申请领养了　<text
-                class="muted">1小时前</text></text>
+        <view
+          v-for="item in supportList"
+          :key="item.id"
+          class="support-row"
+        >
+          <image
+            :src="item.avatar"
+            mode="aspectFill"
+          />
+          <view
+            ><text class="support-name">{{ item.name }}</text
+            ><text class="support-copy">被申请领养了　<text class="muted">1小时前</text></text>
             <view class="support-yard">
-              <image src="/static/avatar.png" mode="aspectFill" /><text>平安是福</text>
-              <PawStatusPill text="小院" tone="warning" />
+              <image
+                src="/static/avatar.png"
+                mode="aspectFill"
+              /><text>平安是福</text>
+              <PawStatusPill
+                text="小院"
+                tone="warning"
+              />
             </view>
           </view>
         </view>
-        <view class="support-hint"><text>所有被你云养过的流浪动物，都在这座城市的角落等待领养，逢猫将持续为它们找寻合适的领养人</text>
-          <view class="support-link" @tap="openHelpedAnimals"><text>我帮助过的动物</text><uni-icons type="right" color="#aaa"
-              :size="12" /></view>
+        <view class="support-hint"
+          ><text
+            >所有被你云养过的流浪动物，都在这座城市的角落等待领养，逢猫将持续为它们找寻合适的领养人</text
+          >
+          <view
+            class="support-link"
+            @tap="openHelpedAnimals"
+            ><text>我帮助过的动物</text
+            ><uni-icons
+              type="right"
+              color="#aaa"
+              :size="12"
+          /></view>
         </view>
       </template>
       <template v-else-if="mode === 'quota-detail'">
         <view class="detail-card paw-surface">
-          <view class="increase-mark">增</view><text class="detail-amount">+1.90</text><text
-            class="detail-success">增加成功</text>
-          <view v-for="row in detailRows" :key="row.label" class="detail-row"><text>{{ row.label }}</text><text>{{
-              row.value }}</text></view>
+          <view class="increase-mark">增</view><text class="detail-amount">+1.90</text
+          ><text class="detail-success">增加成功</text>
+          <view
+            v-for="row in detailRows"
+            :key="row.label"
+            class="detail-row"
+            ><text>{{ row.label }}</text
+            ><text>{{ row.value }}</text></view
+          >
         </view>
         <view class="order-card paw-surface">
           <view><text class="order-title">订单详情</text><text>查看原订单 ›</text></view>
@@ -32,20 +82,47 @@
         </view>
       </template>
       <template v-else>
-        <view class="quota-card paw-surface"><uni-icons class="quota-chart" type="wallet-filled" color="#25bf5d"
-            :size="38" /><text>我的领养额度</text><text class="quota-amount">¥99.00</text></view>
-        <view class="refund-card paw-surface"><text class="refund-title">退款说明</text><text>•
-            投喂云养会增加同等金额的领养额度；</text><text>• 领养额度有效期一年，超时额度将失效；</text><text>• 主动撤回领养申请或超时7天未领养成功将自动恢复额度；</text></view>
-        <view class="ledger paw-surface"><text class="ledger-title">领养额度明细</text>
-          <view v-for="item in ledger" :key="item.id" class="ledger-row" @click="openDetail">
-            <view><text>{{ item.name }}</text><text class="muted">2025-05-12</text></view>
-            <view><text>{{ item.amount }}</text><text class="muted">剩余领养额度99</text></view>
+        <view class="quota-card paw-surface"
+          ><uni-icons
+            class="quota-chart"
+            type="wallet-filled"
+            color="#25bf5d"
+            :size="38"
+          /><text>我的领养额度</text><text class="quota-amount">¥99.00</text></view
+        >
+        <view class="refund-card paw-surface"
+          ><text class="refund-title">退款说明</text
+          ><text>• 投喂云养会增加同等金额的领养额度；</text
+          ><text>• 领养额度有效期一年，超时额度将失效；</text
+          ><text>• 主动撤回领养申请或超时7天未领养成功将自动恢复额度；</text></view
+        >
+        <view class="ledger paw-surface"
+          ><text class="ledger-title">领养额度明细</text>
+          <view
+            v-for="item in ledger"
+            :key="item.id"
+            class="ledger-row"
+            @click="openDetail"
+          >
+            <view
+              ><text>{{ item.name }}</text
+              ><text class="muted">2025-05-12</text></view
+            >
+            <view
+              ><text>{{ item.amount }}</text
+              ><text class="muted">剩余领养额度99</text></view
+            >
           </view>
         </view>
       </template>
     </scroll-view>
-    <PawDialog v-model="showInsufficient" title="领养额度不足"
-      message="您的领养额度不足，暂时无法领养这只宠物；投喂云养获得小院的宠物都可增加等同金额的领养额度，快去投喂云养后再来吧；" confirm-text="我知道了" :close-on-mask="true" />
+    <PawDialog
+      v-model="showInsufficient"
+      title="领养额度不足"
+      message="您的领养额度不足，暂时无法领养这只宠物；投喂云养获得小院的宠物都可增加等同金额的领养额度，快去投喂云养后再来吧；"
+      confirm-text="我知道了"
+      :close-on-mask="true"
+    />
   </view>
 </template>
 
@@ -57,12 +134,22 @@ import PawStatusPill from '@/components/PawStatusPill.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawDialog from '@/components/overlay/PawDialog.vue'
 import { buildRoute } from '@/navigation/routeContracts.ts'
-import { createAdoptionQuotaPageState, getAdoptionQuotaTitle, resolveAdoptionQuotaRouteState } from '../../../services/quotaMetadata.ts'
+import {
+  createAdoptionQuotaPageState,
+  getAdoptionQuotaTitle,
+  resolveAdoptionQuotaRouteState,
+} from '../../../services/quotaMetadata.ts'
 
 export default defineComponent({
   components: { PawPageNav, PawStatusPill, PawDialog, PawIcon },
-  data() { return createAdoptionQuotaPageState('quota-detail') },
-  computed: { title() { return getAdoptionQuotaTitle(this.mode) } },
+  data() {
+    return createAdoptionQuotaPageState('quota-detail')
+  },
+  computed: {
+    title() {
+      return getAdoptionQuotaTitle(this.mode)
+    },
+  },
   onLoad(options: unknown = {}) {
     const route = resolveAdoptionQuotaRouteState(options, 'quota-detail')
     this.mode = 'quota-detail'
@@ -72,11 +159,21 @@ export default defineComponent({
   },
   methods: {
     openDetail() {
-    const quotaId = String(this.recordId || 'quota-demo-1')
-    try { uni.navigateTo({ url: buildRoute('adoption.quota.detail', { quotaId }) }) } catch { uni.showToast({ title: '额度明细暂不可用', icon: 'none' }) }
+      const quotaId = String(this.recordId || 'quota-demo-1')
+      try {
+        uni.navigateTo({ url: buildRoute('adoption.quota.detail', { quotaId }) })
+      } catch {
+        uni.showToast({ title: '额度明细暂不可用', icon: 'none' })
+      }
+    },
+    openHelpedAnimals() {
+      uni.navigateTo({
+        url:
+          '/packages/account/pages/helped-animals/index' +
+          (this.recordId ? `?id=${encodeURIComponent(this.recordId)}` : ''),
+      })
+    },
   },
-    openHelpedAnimals() { uni.navigateTo({ url: '/packages/account/pages/helped-animals/index' + (this.recordId ? `?id=${encodeURIComponent(this.recordId)}` : '') }) }
-  }
 })
 </script>
 
@@ -85,13 +182,13 @@ export default defineComponent({
   height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden
+  overflow: hidden;
 }
 
 .extra-scroll {
   flex: 1;
   min-height: 0;
-  height: auto
+  height: auto;
 }
 
 .support-row {
@@ -100,21 +197,21 @@ export default defineComponent({
   padding: 18rpx 38rpx;
   box-sizing: border-box;
   border-bottom: 1rpx solid #eee;
-  background: #fff
+  background: #fff;
 }
 
-.support-row>image {
+.support-row > image {
   width: 94rpx;
   height: 94rpx;
   margin-right: 22rpx;
-  border-radius: 50%
+  border-radius: 50%;
 }
 
 .support-name,
 .support-copy {
   display: block;
   font-size: 27rpx;
-  line-height: 38rpx
+  line-height: 38rpx;
 }
 
 .support-yard {
@@ -122,19 +219,19 @@ export default defineComponent({
   align-items: center;
   gap: 8rpx;
   margin-top: 6rpx;
-  font-size: 22rpx
+  font-size: 22rpx;
 }
 
 .support-yard image {
   width: 28rpx;
   height: 28rpx;
-  border-radius: 50%
+  border-radius: 50%;
 }
 
 .muted {
   display: block;
   color: #aaa;
-  font-size: 21rpx
+  font-size: 21rpx;
 }
 
 .support-hint {
@@ -143,7 +240,7 @@ export default defineComponent({
   border-radius: 24rpx;
   background: #f3f3f3;
   color: #aaa;
-  font-size: 24rpx
+  font-size: 24rpx;
 }
 
 .support-link {
@@ -151,7 +248,7 @@ export default defineComponent({
   align-items: center;
   justify-content: flex-end;
   gap: 2rpx;
-  margin-top: 12rpx
+  margin-top: 12rpx;
 }
 
 .quota-card {
@@ -159,17 +256,17 @@ export default defineComponent({
   flex-direction: column;
   align-items: center;
   margin: 20rpx 26rpx;
-  padding: 48rpx
+  padding: 48rpx;
 }
 
 .quota-chart {
-  margin-bottom: 24rpx
+  margin-bottom: 24rpx;
 }
 
 .quota-amount {
   margin-top: 8rpx;
   font-size: 54rpx;
-  font-weight: 700
+  font-weight: 700;
 }
 
 .refund-card,
@@ -177,14 +274,14 @@ export default defineComponent({
 .detail-card,
 .order-card {
   margin: 28rpx 26rpx;
-  padding: 32rpx
+  padding: 32rpx;
 }
 
 .refund-card text {
   display: block;
   margin-top: 12rpx;
   font-size: 23rpx;
-  line-height: 34rpx
+  line-height: 34rpx;
 }
 
 .refund-title,
@@ -192,11 +289,11 @@ export default defineComponent({
 .order-title {
   font-size: 30rpx !important;
   font-weight: 500;
-  text-align: center
+  text-align: center;
 }
 
 .ledger-title {
-  text-align: left
+  text-align: left;
 }
 
 .ledger-row {
@@ -204,17 +301,17 @@ export default defineComponent({
   justify-content: space-between;
   padding: 16rpx 0;
   border-bottom: 1rpx solid #eee;
-  font-size: 25rpx
+  font-size: 25rpx;
 }
 
-.ledger-row>view:last-child {
-  text-align: right
+.ledger-row > view:last-child {
+  text-align: right;
 }
 
 .detail-card {
   display: flex;
   flex-direction: column;
-  align-items: center
+  align-items: center;
 }
 
 .increase-mark {
@@ -226,18 +323,18 @@ export default defineComponent({
   border-radius: 50%;
   background: #f9bd00;
   color: #fff;
-  font-size: 30rpx
+  font-size: 30rpx;
 }
 
 .detail-amount {
   margin-top: 14rpx;
   font-size: 58rpx;
-  font-weight: 700
+  font-weight: 700;
 }
 
 .detail-success {
   margin: 20rpx 0 38rpx;
-  color: #999
+  color: #999;
 }
 
 .detail-row {
@@ -246,35 +343,35 @@ export default defineComponent({
   width: 100%;
   padding: 15rpx 0;
   color: #444;
-  font-size: 24rpx
+  font-size: 24rpx;
 }
 
 .detail-row text:first-child {
-  color: #999
+  color: #999;
 }
 
-.order-card>view {
+.order-card > view {
   display: flex;
   justify-content: space-between;
   padding: 10rpx 0;
-  font-size: 24rpx
+  font-size: 24rpx;
 }
 
 .extra-page--support,
 .extra-page--support .extra-scroll {
-  background: #fff
+  background: #fff;
 }
 
 .extra-page--support .support-row {
   height: 83px;
   min-height: 83px;
-  padding: 12px 19px
+  padding: 12px 19px;
 }
 
-.extra-page--support .support-row>image {
+.extra-page--support .support-row > image {
   width: 50px;
   height: 50px;
-  margin-right: 14px
+  margin-right: 14px;
 }
 
 .extra-page--support .support-hint {
@@ -282,69 +379,79 @@ export default defineComponent({
   padding: 13px 16px;
   border-radius: 13px;
   box-sizing: border-box;
-  font-size: 12px
+  font-size: 12px;
 }
 
 .extra-page--support .support-link {
-  margin-top: 13px
+  margin-top: 13px;
 }
 
 .extra-page--quota .quota-card {
   height: 179px;
   margin: 7px 13px 0;
   padding: 26px;
-  box-sizing: border-box
+  box-sizing: border-box;
 }
 
 .extra-page--quota .refund-card {
   height: 174px;
   margin: 16px 13px 0;
   padding: 18px 16px;
-  box-sizing: border-box
+  box-sizing: border-box;
 }
 
-.extra-page--quota .refund-card .refund-title+text {
-  margin-top: 22px
+.extra-page--quota .refund-card .refund-title + text {
+  margin-top: 22px;
 }
 
-.extra-page--quota .refund-card>text:not(.refund-title) {
-  line-height: 17px
+.extra-page--quota .refund-card > text:not(.refund-title) {
+  line-height: 17px;
 }
 
-.extra-page--quota .refund-card>text:not(.refund-title):not(:first-of-type) {
-  margin-top: 0
+.extra-page--quota .refund-card > text:not(.refund-title):not(:first-of-type) {
+  margin-top: 0;
 }
 
 .extra-page--quota .ledger {
   height: 349px;
   margin: 18px 13px 0;
   padding: 22px 16px 16px;
-  box-sizing: border-box
+  box-sizing: border-box;
 }
 
 .extra-page--quota .ledger-title {
   display: block;
-  margin-bottom: 6px
+  margin-bottom: 6px;
 }
 
 .extra-page--quota .ledger-row {
   height: 57px;
   padding: 7px 0;
-  box-sizing: border-box
+  box-sizing: border-box;
 }
 
 .extra-page--quota-detail .detail-card {
   height: 333px;
   margin: -11px 13px 0;
   padding: 16px;
-  box-sizing: border-box
+  box-sizing: border-box;
 }
 
 .extra-page--quota-detail .order-card {
   height: 96px;
   margin: 12px 13px 0;
   padding: 12px;
-  box-sizing: border-box
+  box-sizing: border-box;
 }
-.extra-invalid { display: flex; min-height: 300px; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #999; font-size: 14px; text-align: center; }
+.extra-invalid {
+  display: flex;
+  min-height: 300px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #999;
+  font-size: 14px;
+  text-align: center;
+}
 </style>

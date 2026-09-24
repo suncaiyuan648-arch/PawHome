@@ -6,7 +6,7 @@ const {
   iconMetadata,
   manifest,
   sourceAbsolutePath,
-  sourceRelativePath
+  sourceRelativePath,
 } = require('./paw-icon-manifest.cjs')
 const { DESIGN_CANVAS, OPTICAL_SLOTS } = require('./paw-icon-normalize.cjs')
 
@@ -27,8 +27,15 @@ const PADDING_ERROR_THRESHOLD = 0.03
 const DEFAULT_SIZES = [12, 16, 20, 24, 28]
 const COMPARISON_SIZES = [12, 16, 20, 24, 28]
 const TRANSFORM_CASES = [
-  [0, false, false], [45, false, false], [90, false, false], [135, false, false], [180, false, false], [270, false, false],
-  [0, true, false], [0, false, true], [0, true, true]
+  [0, false, false],
+  [45, false, false],
+  [90, false, false],
+  [135, false, false],
+  [180, false, false],
+  [270, false, false],
+  [0, true, false],
+  [0, false, true],
+  [0, true, true],
 ]
 
 function round(value, digits = 4) {
@@ -36,13 +43,19 @@ function round(value, digits = 4) {
 }
 
 function parseAnalyzeSizes(argv) {
-  const sizeArg = argv.find(value => value === '--sizes' || value.startsWith('--sizes='))
+  const sizeArg = argv.find((value) => value === '--sizes' || value.startsWith('--sizes='))
   if (!sizeArg) return DEFAULT_SIZES
-  const raw = sizeArg === '--sizes' ? argv[argv.indexOf(sizeArg) + 1] : sizeArg.slice('--sizes='.length)
-  const sizes = String(raw || '').split(',').map(value => Number(value.trim()))
-    .filter(value => Number.isFinite(value) && value > 0 && value <= 512)
+  const raw =
+    sizeArg === '--sizes' ? argv[argv.indexOf(sizeArg) + 1] : sizeArg.slice('--sizes='.length)
+  const sizes = String(raw || '')
+    .split(',')
+    .map((value) => Number(value.trim()))
+    .filter((value) => Number.isFinite(value) && value > 0 && value <= 512)
   const unique = [...new Set(sizes)].sort((a, b) => a - b)
-  if (!unique.length) throw new Error('`--sizes` must contain positive numbers no greater than 512, e.g. --sizes 16,17.5,24,37.5')
+  if (!unique.length)
+    throw new Error(
+      '`--sizes` must contain positive numbers no greater than 512, e.g. --sizes 16,17.5,24,37.5',
+    )
   return unique
 }
 
@@ -50,14 +63,25 @@ const ANALYZE_SIZES = parseAnalyzeSizes(process.argv.slice(2))
 
 function readViewBox(source) {
   const match = source.match(/\bviewBox\s*=\s*["']([^"']+)["']/i)
-  const values = match ? match[1].trim().split(/[\s,]+/).map(Number) : []
+  const values = match
+    ? match[1]
+        .trim()
+        .split(/[\s,]+/)
+        .map(Number)
+    : []
   return values.length === 4 && values.every(Number.isFinite) && values[2] > 0 && values[3] > 0
     ? { x: values[0], y: values[1], width: values[2], height: values[3] }
     : null
 }
 
 function isCanonicalViewBox(viewBox) {
-  return Boolean(viewBox) && viewBox.x === 0 && viewBox.y === 0 && viewBox.width === DESIGN_CANVAS && viewBox.height === DESIGN_CANVAS
+  return (
+    Boolean(viewBox) &&
+    viewBox.x === 0 &&
+    viewBox.y === 0 &&
+    viewBox.width === DESIGN_CANVAS &&
+    viewBox.height === DESIGN_CANVAS
+  )
 }
 
 function readRegistry() {
@@ -75,28 +99,37 @@ function sourceForIcon(name, definition) {
 }
 
 function rawSourceForIcon(name) {
-  const entry = iconEntries().find(item => item.name === name)
+  const entry = iconEntries().find((item) => item.name === name)
   if (!entry) throw new Error(`manifest entry missing for ${name}`)
   const sourcePath = sourceRelativePath(name, entry.configuredPath)
   return {
     sourcePath,
-    source: fs.readFileSync(sourceAbsolutePath(name, entry.configuredPath), 'utf8')
+    source: fs.readFileSync(sourceAbsolutePath(name, entry.configuredPath), 'utf8'),
   }
 }
 
 function fidelitySource(rawSource, metadata) {
   if (!metadata.sourceBounds) return rawSource
   const bounds = metadata.sourceBounds
-  return rawSource.replace(/<svg\b[^>]*>/i, opening => opening
-    .replace(/(\bwidth\s*=\s*["'])[^"']+(["'])/i, `$1${bounds.width}$2`)
-    .replace(/(\bheight\s*=\s*["'])[^"']+(["'])/i, `$1${bounds.height}$2`)
-    .replace(/(\bviewBox\s*=\s*["'])[^"']+(["'])/i, `$1${bounds.x || 0} ${bounds.y || 0} ${bounds.width} ${bounds.height}$2`))
+  return rawSource.replace(/<svg\b[^>]*>/i, (opening) =>
+    opening
+      .replace(/(\bwidth\s*=\s*["'])[^"']+(["'])/i, `$1${bounds.width}$2`)
+      .replace(/(\bheight\s*=\s*["'])[^"']+(["'])/i, `$1${bounds.height}$2`)
+      .replace(
+        /(\bviewBox\s*=\s*["'])[^"']+(["'])/i,
+        `$1${bounds.x || 0} ${bounds.y || 0} ${bounds.width} ${bounds.height}$2`,
+      ),
+  )
 }
 
 function strokeWidths(source) {
-  return [...new Set([...source.matchAll(/\bstroke-width\s*=\s*["']([^"']+)["']/gi)]
-    .map(match => Number(match[1]))
-    .filter(Number.isFinite))].sort((a, b) => a - b)
+  return [
+    ...new Set(
+      [...source.matchAll(/\bstroke-width\s*=\s*["']([^"']+)["']/gi)]
+        .map((match) => Number(match[1]))
+        .filter(Number.isFinite),
+    ),
+  ].sort((a, b) => a - b)
 }
 
 function opticalConfig(name) {
@@ -107,7 +140,7 @@ function opticalConfig(name) {
     offsetX: configured.offsetX === undefined ? 0 : Number(configured.offsetX),
     offsetY: configured.offsetY === undefined ? 0 : Number(configured.offsetY),
     slot: manifest.meta && manifest.meta[name] ? manifest.meta[name].slot || null : null,
-    family: manifest.meta && manifest.meta[name] ? manifest.meta[name].family || null : null
+    family: manifest.meta && manifest.meta[name] ? manifest.meta[name].family || null : null,
   }
 }
 
@@ -156,13 +189,13 @@ function measureSvg(source, targetSize) {
           centerY: 0.5,
           occupancy: 0,
           touchesCanvasEdge: false,
-          rasterSize: canvasSize
+          rasterSize: canvasSize,
         }
       }
-      const left = minX * targetSize / canvasSize
-      const top = minY * targetSize / canvasSize
-      const right = (maxX + 1) * targetSize / canvasSize
-      const bottom = (maxY + 1) * targetSize / canvasSize
+      const left = (minX * targetSize) / canvasSize
+      const top = (minY * targetSize) / canvasSize
+      const right = ((maxX + 1) * targetSize) / canvasSize
+      const bottom = ((maxY + 1) * targetSize) / canvasSize
       return {
         painted: true,
         width: round(right - left, 4),
@@ -174,8 +207,9 @@ function measureSvg(source, targetSize) {
         centerX: round((left + right) / 2 / targetSize, 5),
         centerY: round((top + bottom) / 2 / targetSize, 5),
         occupancy: round(paintedPixels / (canvasSize * canvasSize), 6),
-        touchesCanvasEdge: minX === 0 || minY === 0 || maxX === canvasSize - 1 || maxY === canvasSize - 1,
-        rasterSize: canvasSize
+        touchesCanvasEdge:
+          minX === 0 || minY === 0 || maxX === canvasSize - 1 || maxY === canvasSize - 1,
+        rasterSize: canvasSize,
       }
     })
 }
@@ -212,15 +246,24 @@ function measureTransformedSvg(source, targetSize, rotate, flipX, flipY) {
         }
       }
       if (maxX < 0) return { painted: false, bounds: null, clipped: false, rasterSize: canvasSize }
-      const left = minX * 48 / canvasSize - 12
-      const top = minY * 48 / canvasSize - 12
-      const right = (maxX + 1) * 48 / canvasSize - 12
-      const bottom = (maxY + 1) * 48 / canvasSize - 12
+      const left = (minX * 48) / canvasSize - 12
+      const top = (minY * 48) / canvasSize - 12
+      const right = ((maxX + 1) * 48) / canvasSize - 12
+      const bottom = ((maxY + 1) * 48) / canvasSize - 12
       return {
         painted: true,
-        bounds: { minX: round(left, 4), maxX: round(right, 4), minY: round(top, 4), maxY: round(bottom, 4) },
-        clipped: left < -0.01 || top < -0.01 || right > DESIGN_CANVAS + 0.01 || bottom > DESIGN_CANVAS + 0.01,
-        rasterSize: canvasSize
+        bounds: {
+          minX: round(left, 4),
+          maxX: round(right, 4),
+          minY: round(top, 4),
+          maxY: round(bottom, 4),
+        },
+        clipped:
+          left < -0.01 ||
+          top < -0.01 ||
+          right > DESIGN_CANVAS + 0.01 ||
+          bottom > DESIGN_CANVAS + 0.01,
+        rasterSize: canvasSize,
       }
     })
 }
@@ -241,7 +284,7 @@ function normalizedBounds(measured, size) {
       paintedCenterXRatio: 0.5,
       paintedCenterYRatio: 0.5,
       centerOffsetXRatio: 0,
-      centerOffsetYRatio: 0
+      centerOffsetYRatio: 0,
     }
   }
   const widthRatio = round(measured.width / size, 6)
@@ -260,7 +303,7 @@ function normalizedBounds(measured, size) {
     paintedCenterXRatio: round(measured.centerX, 6),
     paintedCenterYRatio: round(measured.centerY, 6),
     centerOffsetXRatio: round(measured.centerX - 0.5, 6),
-    centerOffsetYRatio: round(measured.centerY - 0.5, 6)
+    centerOffsetYRatio: round(measured.centerY - 0.5, 6),
   }
 }
 
@@ -296,7 +339,7 @@ function assessSize(measured, size) {
       left: round(Math.max(0, -measured.left), 4),
       top: round(Math.max(0, -measured.top), 4),
       right: round(Math.max(0, measured.right - size), 4),
-      bottom: round(Math.max(0, measured.bottom - size), 4)
+      bottom: round(Math.max(0, measured.bottom - size), 4),
     },
     anomalies: [],
     checks: {
@@ -308,9 +351,9 @@ function assessSize(measured, size) {
       slotStable: true,
       strokeStable: true,
       noPaddingExpansion: true,
-      noAbruptChange: true
+      noAbruptChange: true,
     },
-    status: 'pass'
+    status: 'pass',
   }
 }
 
@@ -319,38 +362,43 @@ function transformBounds(bounds, rotate, flipX, flipY) {
     [bounds.leftRatio * DESIGN_CANVAS, bounds.topRatio * DESIGN_CANVAS],
     [bounds.rightRatio * DESIGN_CANVAS, bounds.topRatio * DESIGN_CANVAS],
     [bounds.leftRatio * DESIGN_CANVAS, bounds.bottomRatio * DESIGN_CANVAS],
-    [bounds.rightRatio * DESIGN_CANVAS, bounds.bottomRatio * DESIGN_CANVAS]
+    [bounds.rightRatio * DESIGN_CANVAS, bounds.bottomRatio * DESIGN_CANVAS],
   ].map(([x, y]) => {
     const px = flipX ? DESIGN_CANVAS - x : x
     const py = flipY ? DESIGN_CANVAS - y : y
-    const radians = rotate * Math.PI / 180
+    const radians = (rotate * Math.PI) / 180
     const dx = px - DESIGN_CENTER
     const dy = py - DESIGN_CENTER
     return [
       DESIGN_CENTER + dx * Math.cos(radians) - dy * Math.sin(radians),
-      DESIGN_CENTER + dx * Math.sin(radians) + dy * Math.cos(radians)
+      DESIGN_CENTER + dx * Math.sin(radians) + dy * Math.cos(radians),
     ]
   })
   return {
-    minX: round(Math.min(...points.map(point => point[0])), 4),
-    maxX: round(Math.max(...points.map(point => point[0])), 4),
-    minY: round(Math.min(...points.map(point => point[1])), 4),
-    maxY: round(Math.max(...points.map(point => point[1])), 4)
+    minX: round(Math.min(...points.map((point) => point[0])), 4),
+    maxX: round(Math.max(...points.map((point) => point[0])), 4),
+    minY: round(Math.min(...points.map((point) => point[1])), 4),
+    maxY: round(Math.max(...points.map((point) => point[1])), 4),
   }
 }
 
 function sourceFlags(source, definition) {
   const opening = (source.match(/<svg\b[^>]*>/i) || [''])[0]
-  const rootExportAttributes = ['width', 'height', 'preserveAspectRatio', 'overflow', 'style']
-    .filter(attribute => new RegExp(`(?:^|\\s)${attribute}\\s*=`, 'i').test(opening))
+  const rootExportAttributes = [
+    'width',
+    'height',
+    'preserveAspectRatio',
+    'overflow',
+    'style',
+  ].filter((attribute) => new RegExp(`(?:^|\\s)${attribute}\\s*=`, 'i').test(opening))
   const widths = strokeWidths(source)
   return {
     canonicalViewBox: isCanonicalViewBox(readViewBox(source)),
     rootExportAttributes,
     hasNonScalingStroke: /vector-effect\s*=\s*["']non-scaling-stroke/i.test(source),
     strokeWidths: widths,
-    strokeWidthRatios: widths.map(width => round(width / DESIGN_CANVAS, 6)),
-    colorAssetException: definition.kind === 'color'
+    strokeWidthRatios: widths.map((width) => round(width / DESIGN_CANVAS, 6)),
+    colorAssetException: definition.kind === 'color',
   }
 }
 
@@ -391,14 +439,17 @@ async function analyze() {
       sizes: {},
       anomalies: [],
       warnings: [],
-      status: 'pass'
+      status: 'pass',
     }
 
     if (sharpAvailable) {
       const fidelitySourceSvg = fidelitySource(raw.source, metadata)
       const fidelityBounds = metadata.sourceBounds || metadata.sourceFrame
       const sourceReferenceSize = Math.max(fidelityBounds.width, fidelityBounds.height)
-      const sourceReference = await measureSvg(fidelitySourceSvg.replace(/currentColor/gi, '#666666'), sourceReferenceSize)
+      const sourceReference = await measureSvg(
+        fidelitySourceSvg.replace(/currentColor/gi, '#666666'),
+        sourceReferenceSize,
+      )
       const normalizedReference = await measureSvg(source, metadata.slot)
       const widthDelta = Math.abs(sourceReference.width - normalizedReference.width)
       const heightDelta = Math.abs(sourceReference.height - normalizedReference.height)
@@ -409,17 +460,22 @@ async function analyze() {
         normalizedReference,
         delta: { width: round(widthDelta, 4), height: round(heightDelta, 4) },
         tolerance: 0.5,
-        pass: widthDelta < 0.5 && heightDelta < 0.5
+        pass: widthDelta < 0.5 && heightDelta < 0.5,
       }
       if (!entry.fidelity.pass) {
         entry.anomalies.push({
           type: 'normalization-error',
           severity: 'error',
-          message: `Original Fidelity delta exceeds 0.5px (${round(widthDelta, 3)}×${round(heightDelta, 3)}px)`
+          message: `Original Fidelity delta exceeds 0.5px (${round(widthDelta, 3)}×${round(heightDelta, 3)}px)`,
         })
       }
     } else {
-      entry.fidelity = { renderSize: metadata.slot, tolerance: 0.5, pass: null, source: 'sharp-not-installed' }
+      entry.fidelity = {
+        renderSize: metadata.slot,
+        tolerance: 0.5,
+        pass: null,
+        source: 'sharp-not-installed',
+      }
     }
 
     for (const size of ANALYZE_SIZES) {
@@ -441,7 +497,7 @@ async function analyze() {
             occupancy: 0,
             touchesCanvasEdge: false,
             rasterSize: null,
-            source: 'rasterization-error'
+            source: 'rasterization-error',
           }
           entry.warnings.push(`${size}px: rasterization failed: ${error.message}`)
         }
@@ -459,7 +515,7 @@ async function analyze() {
           occupancy: null,
           touchesCanvasEdge: false,
           rasterSize: null,
-          source: 'sharp-not-installed'
+          source: 'sharp-not-installed',
         }
         entry.warnings.push(`${size}px: sharp is not installed; painted bounds unavailable`)
       }
@@ -474,21 +530,21 @@ async function analyze() {
       const normalized = result.normalizedBounds
       const boundsDeviation = Math.max(
         relativeDeviation(normalized.widthRatio, referenceBounds.widthRatio),
-        relativeDeviation(normalized.heightRatio, referenceBounds.heightRatio)
+        relativeDeviation(normalized.heightRatio, referenceBounds.heightRatio),
       )
       const centerDeviation = Math.max(
         Math.abs(normalized.centerXRatio - referenceBounds.centerXRatio),
-        Math.abs(normalized.centerYRatio - referenceBounds.centerYRatio)
+        Math.abs(normalized.centerYRatio - referenceBounds.centerYRatio),
       )
       const paddingDeviation = Math.max(
         Math.abs(normalized.leftRatio - referenceBounds.leftRatio),
         Math.abs(normalized.topRatio - referenceBounds.topRatio),
         Math.abs(normalized.rightRatio - referenceBounds.rightRatio),
-        Math.abs(normalized.bottomRatio - referenceBounds.bottomRatio)
+        Math.abs(normalized.bottomRatio - referenceBounds.bottomRatio),
       )
       const centeredDeviation = Math.max(
         Math.abs(normalized.centerOffsetXRatio),
-        Math.abs(normalized.centerOffsetYRatio)
+        Math.abs(normalized.centerOffsetYRatio),
       )
       result.scaleReferenceSize = scaleReferenceSize
       result.audit = {
@@ -497,120 +553,206 @@ async function analyze() {
         normalizedPaddingDeviation: percentage(paddingDeviation),
         centerOffset: {
           x: round(normalized.centerOffsetXRatio * size, 4),
-          y: round(normalized.centerOffsetYRatio * size, 4)
+          y: round(normalized.centerOffsetYRatio * size, 4),
         },
         centerOffsetRatio: {
           x: normalized.centerOffsetXRatio,
-          y: normalized.centerOffsetYRatio
+          y: normalized.centerOffsetYRatio,
         },
         canonicalCanvas: '24 × 24',
         runtimeSize: size,
-        slot: entry.slot
+        slot: entry.slot,
       }
-      result.checks.withinLayout = Object.values(result.overflow).every(value => value <= 0.01)
+      result.checks.withinLayout = Object.values(result.overflow).every((value) => value <= 0.01)
       result.checks.centered = centeredDeviation <= CENTER_WARNING_THRESHOLD
       result.checks.normalizedStable = boundsDeviation <= RATIO_WARNING_THRESHOLD
       result.checks.centerStable = centerDeviation <= CENTER_WARNING_THRESHOLD
       result.checks.slotStable = true
       result.checks.noPaddingExpansion = paddingDeviation <= PADDING_WARNING_THRESHOLD
       result.checks.strokeStable = !entry.source.hasNonScalingStroke
-      if (!result.measured.painted) addFinding(result, 'unrendered', 'error', 'artwork produced no detectable alpha pixels')
-      if (!result.checks.withinLayout) addFinding(result, 'clipping', 'error', 'painted bounds exceed the square PawIcon layout box')
-      if (result.measured.touchesCanvasEdge) addFinding(result, 'edge-contact', 'warning', 'painted alpha touches the 24-unit canvas edge; verify live-area clipping')
-      addFinding(result, 'normalized-bounds-deviation', severityFor(boundsDeviation, RATIO_WARNING_THRESHOLD, RATIO_ERROR_THRESHOLD), `normalized bounds deviate ${percentage(boundsDeviation)}% from ${scaleReferenceSize}px`)
-      addFinding(result, 'center-drift', severityFor(centerDeviation, CENTER_WARNING_THRESHOLD, CENTER_ERROR_THRESHOLD), `normalized center deviates ${percentage(centerDeviation)}% from ${scaleReferenceSize}px`)
+      if (!result.measured.painted)
+        addFinding(result, 'unrendered', 'error', 'artwork produced no detectable alpha pixels')
+      if (!result.checks.withinLayout)
+        addFinding(
+          result,
+          'clipping',
+          'error',
+          'painted bounds exceed the square PawIcon layout box',
+        )
+      if (result.measured.touchesCanvasEdge)
+        addFinding(
+          result,
+          'edge-contact',
+          'warning',
+          'painted alpha touches the 24-unit canvas edge; verify live-area clipping',
+        )
+      addFinding(
+        result,
+        'normalized-bounds-deviation',
+        severityFor(boundsDeviation, RATIO_WARNING_THRESHOLD, RATIO_ERROR_THRESHOLD),
+        `normalized bounds deviate ${percentage(boundsDeviation)}% from ${scaleReferenceSize}px`,
+      )
+      addFinding(
+        result,
+        'center-drift',
+        severityFor(centerDeviation, CENTER_WARNING_THRESHOLD, CENTER_ERROR_THRESHOLD),
+        `normalized center deviates ${percentage(centerDeviation)}% from ${scaleReferenceSize}px`,
+      )
       // The source frame is the Designer's optical coordinate system. A
       // deliberate optical offset is review material, not a normalization
       // failure; the pipeline must not re-center it from painted bounds.
-      addFinding(result, 'center-offset', severityFor(centeredDeviation, CENTER_WARNING_THRESHOLD, Infinity), `artwork center offset is ${percentage(centeredDeviation)}% from the square box center; preserve source optical intent`)
-      addFinding(result, 'svg-padding-expansion', severityFor(paddingDeviation, PADDING_WARNING_THRESHOLD, PADDING_ERROR_THRESHOLD), `normalized padding changes ${percentage(paddingDeviation)}% across sizes`)
-      if (entry.source.hasNonScalingStroke) addFinding(result, 'stroke-anomaly', 'error', 'vector-effect="non-scaling-stroke" prevents proportional stroke scaling')
+      addFinding(
+        result,
+        'center-offset',
+        severityFor(centeredDeviation, CENTER_WARNING_THRESHOLD, Infinity),
+        `artwork center offset is ${percentage(centeredDeviation)}% from the square box center; preserve source optical intent`,
+      )
+      addFinding(
+        result,
+        'svg-padding-expansion',
+        severityFor(paddingDeviation, PADDING_WARNING_THRESHOLD, PADDING_ERROR_THRESHOLD),
+        `normalized padding changes ${percentage(paddingDeviation)}% across sizes`,
+      )
+      if (entry.source.hasNonScalingStroke)
+        addFinding(
+          result,
+          'stroke-anomaly',
+          'error',
+          'vector-effect="non-scaling-stroke" prevents proportional stroke scaling',
+        )
       const previous = ANALYZE_SIZES[ANALYZE_SIZES.indexOf(size) - 1]
       if (previous !== undefined) {
         const previousBounds = entry.sizes[String(previous)].normalizedBounds
         const abruptChange = Math.max(
           relativeDeviation(normalized.widthRatio, previousBounds.widthRatio),
-          relativeDeviation(normalized.heightRatio, previousBounds.heightRatio)
+          relativeDeviation(normalized.heightRatio, previousBounds.heightRatio),
         )
         result.audit.abruptChangeFromPrevious = percentage(abruptChange)
         result.checks.noAbruptChange = abruptChange <= RATIO_ERROR_THRESHOLD
-        addFinding(result, 'abrupt-size-change', severityFor(abruptChange, RATIO_WARNING_THRESHOLD, RATIO_ERROR_THRESHOLD), `normalized bounds jump ${percentage(abruptChange)}% from ${previous}px`)
+        addFinding(
+          result,
+          'abrupt-size-change',
+          severityFor(abruptChange, RATIO_WARNING_THRESHOLD, RATIO_ERROR_THRESHOLD),
+          `normalized bounds jump ${percentage(abruptChange)}% from ${previous}px`,
+        )
       }
-      result.status = result.anomalies.some(anomaly => anomaly.severity === 'error')
+      result.status = result.anomalies.some((anomaly) => anomaly.severity === 'error')
         ? 'error'
-        : result.anomalies.length ? 'warning' : 'pass'
+        : result.anomalies.length
+          ? 'warning'
+          : 'pass'
     }
 
     const referenceResult = entry.sizes[String(scaleReferenceSize)]
     const transformSourceBounds = referenceResult.normalizedBounds
-    const transformResults = await Promise.all(TRANSFORM_CASES.map(async ([rotate, flipX, flipY]) => {
-      const measured = sharpAvailable && referenceResult.measured.painted
-        ? await measureTransformedSvg(source, scaleReferenceSize, rotate, flipX, flipY)
-        : null
-      return {
-        rotate,
-        flipX,
-        flipY,
-        bounds: measured ? measured.bounds : (transformSourceBounds && referenceResult.measured.painted
-          ? transformBounds(transformSourceBounds, rotate, flipX, flipY)
-          : null),
-        clipped: measured ? measured.clipped : null,
-        rasterSize: measured ? measured.rasterSize : null
-      }
-    }))
-    const transformUnsafe = transformResults.some(result => result.clipped || (result.bounds && (
-      result.bounds.minX < -0.01 || result.bounds.maxX > DESIGN_CANVAS + 0.01 ||
-      result.bounds.minY < -0.01 || result.bounds.maxY > DESIGN_CANVAS + 0.01
-    )))
+    const transformResults = await Promise.all(
+      TRANSFORM_CASES.map(async ([rotate, flipX, flipY]) => {
+        const measured =
+          sharpAvailable && referenceResult.measured.painted
+            ? await measureTransformedSvg(source, scaleReferenceSize, rotate, flipX, flipY)
+            : null
+        return {
+          rotate,
+          flipX,
+          flipY,
+          bounds: measured
+            ? measured.bounds
+            : transformSourceBounds && referenceResult.measured.painted
+              ? transformBounds(transformSourceBounds, rotate, flipX, flipY)
+              : null,
+          clipped: measured ? measured.clipped : null,
+          rasterSize: measured ? measured.rasterSize : null,
+        }
+      }),
+    )
+    const transformUnsafe = transformResults.some(
+      (result) =>
+        result.clipped ||
+        (result.bounds &&
+          (result.bounds.minX < -0.01 ||
+            result.bounds.maxX > DESIGN_CANVAS + 0.01 ||
+            result.bounds.minY < -0.01 ||
+            result.bounds.maxY > DESIGN_CANVAS + 0.01)),
+    )
     entry.transformSafety = {
       pivot: 'PawIcon box center (12,12), never painted bounds center',
       cases: transformResults,
-      safe: !transformUnsafe
+      safe: !transformUnsafe,
     }
     if (transformUnsafe) {
-      entry.anomalies.push({ type: 'transform-clipping', severity: 'warning', message: 'rotate 45°/135° or another transform reaches beyond the canonical 24-unit canvas; review the source frame without changing the runtime layout box' })
+      entry.anomalies.push({
+        type: 'transform-clipping',
+        severity: 'warning',
+        message:
+          'rotate 45°/135° or another transform reaches beyond the canonical 24-unit canvas; review the source frame without changing the runtime layout box',
+      })
     }
     if (entry.source.hasNonScalingStroke) {
-      entry.anomalies.push({ type: 'stroke-anomaly', severity: 'error', message: 'source uses vector-effect="non-scaling-stroke"' })
+      entry.anomalies.push({
+        type: 'stroke-anomaly',
+        severity: 'error',
+        message: 'source uses vector-effect="non-scaling-stroke"',
+      })
     }
     if (definition.kind === 'color') {
-      entry.anomalies.push({ type: 'color-asset-exception', severity: 'info', message: 'fixed-color asset; it still uses the same square 24-unit layout and transform contract' })
+      entry.anomalies.push({
+        type: 'color-asset-exception',
+        severity: 'info',
+        message:
+          'fixed-color asset; it still uses the same square 24-unit layout and transform contract',
+      })
     }
-    entry.anomalies.push(...ANALYZE_SIZES.flatMap(size => entry.sizes[String(size)].anomalies.map(anomaly => ({ ...anomaly, size }))))
-    entry.warnings.push(...entry.anomalies
-      .filter(anomaly => anomaly.severity !== 'info')
-      .map(anomaly => `${anomaly.size ? `${anomaly.size}px: ` : ''}${anomaly.message}`))
-    entry.status = entry.anomalies.some(anomaly => anomaly.severity === 'error')
+    entry.anomalies.push(
+      ...ANALYZE_SIZES.flatMap((size) =>
+        entry.sizes[String(size)].anomalies.map((anomaly) => ({ ...anomaly, size })),
+      ),
+    )
+    entry.warnings.push(
+      ...entry.anomalies
+        .filter((anomaly) => anomaly.severity !== 'info')
+        .map((anomaly) => `${anomaly.size ? `${anomaly.size}px: ` : ''}${anomaly.message}`),
+    )
+    entry.status = entry.anomalies.some((anomaly) => anomaly.severity === 'error')
       ? 'error'
-      : entry.anomalies.some(anomaly => anomaly.severity === 'warning')
+      : entry.anomalies.some((anomaly) => anomaly.severity === 'warning')
         ? 'warning'
         : 'pass'
     entry.measured = referenceResult.measured
     icons.push(entry)
   }
 
-  const bySize = Object.fromEntries(ANALYZE_SIZES.map(size => {
-    const results = icons.map(icon => icon.sizes[String(size)])
-    return [String(size), {
-      total: results.length,
-      pass: results.filter(result => result.status === 'pass').length,
-      warning: results.filter(result => result.status === 'warning').length,
-      error: results.filter(result => result.status === 'error').length,
-      overflow: results.filter(result => !result.checks.withinLayout).length,
-      clipped: results.filter(result => result.anomalies.some(anomaly => anomaly.type === 'clipping')).length,
-      edgeContact: results.filter(result => result.anomalies.some(anomaly => anomaly.type === 'edge-contact')).length,
-      uncentered: results.filter(result => !result.checks.centered).length,
-      scaleInconsistent: results.filter(result => !result.checks.normalizedStable).length,
-      centerDrift: results.filter(result => !result.checks.centerStable).length,
-      paddingExpansion: results.filter(result => !result.checks.noPaddingExpansion).length,
-      slot: results.filter(result => !result.checks.slotStable).length,
-      strokeAnomaly: results.filter(result => !result.checks.strokeStable).length,
-      abruptChange: results.filter(result => !result.checks.noAbruptChange).length,
-      unrendered: results.filter(result => !result.checks.rendered).length
-    }]
-  }))
-  const anomalyIcons = icons.filter(icon => icon.anomalies.some(anomaly => anomaly.severity !== 'info'))
-    .map(icon => ({ name: icon.name, status: icon.status, anomalies: icon.anomalies }))
+  const bySize = Object.fromEntries(
+    ANALYZE_SIZES.map((size) => {
+      const results = icons.map((icon) => icon.sizes[String(size)])
+      return [
+        String(size),
+        {
+          total: results.length,
+          pass: results.filter((result) => result.status === 'pass').length,
+          warning: results.filter((result) => result.status === 'warning').length,
+          error: results.filter((result) => result.status === 'error').length,
+          overflow: results.filter((result) => !result.checks.withinLayout).length,
+          clipped: results.filter((result) =>
+            result.anomalies.some((anomaly) => anomaly.type === 'clipping'),
+          ).length,
+          edgeContact: results.filter((result) =>
+            result.anomalies.some((anomaly) => anomaly.type === 'edge-contact'),
+          ).length,
+          uncentered: results.filter((result) => !result.checks.centered).length,
+          scaleInconsistent: results.filter((result) => !result.checks.normalizedStable).length,
+          centerDrift: results.filter((result) => !result.checks.centerStable).length,
+          paddingExpansion: results.filter((result) => !result.checks.noPaddingExpansion).length,
+          slot: results.filter((result) => !result.checks.slotStable).length,
+          strokeAnomaly: results.filter((result) => !result.checks.strokeStable).length,
+          abruptChange: results.filter((result) => !result.checks.noAbruptChange).length,
+          unrendered: results.filter((result) => !result.checks.rendered).length,
+        },
+      ]
+    }),
+  )
+  const anomalyIcons = icons
+    .filter((icon) => icon.anomalies.some((anomaly) => anomaly.severity !== 'info'))
+    .map((icon) => ({ name: icon.name, status: icon.status, anomalies: icon.anomalies }))
 
   const report = {
     version: 3,
@@ -620,7 +762,15 @@ async function analyze() {
       designUnits: DESIGN_CANVAS,
       rasterScale: RASTER_SCALE,
       alphaThreshold: ALPHA_THRESHOLD,
-      perSize: Object.fromEntries(ANALYZE_SIZES.map(size => [String(size), { width: Math.max(1, Math.ceil(size * RASTER_SCALE)), height: Math.max(1, Math.ceil(size * RASTER_SCALE)) }]))
+      perSize: Object.fromEntries(
+        ANALYZE_SIZES.map((size) => [
+          String(size),
+          {
+            width: Math.max(1, Math.ceil(size * RASTER_SCALE)),
+            height: Math.max(1, Math.ceil(size * RASTER_SCALE)),
+          },
+        ]),
+      ),
     },
     target: {
       referenceSize: TARGET_SIZE,
@@ -637,44 +787,62 @@ async function analyze() {
         centerDeviationWarning: '1.5%',
         centerDeviationError: '3%',
         paddingExpansionWarning: '2%',
-        paddingExpansionError: '3%'
-      }
+        paddingExpansionError: '3%',
+      },
     },
     transformContract: {
       pivot: '12,12 design units / 50% 50% PawIcon box center',
-      cases: TRANSFORM_CASES.map(([rotate, flipX, flipY]) => ({ rotate, flipX, flipY }))
+      cases: TRANSFORM_CASES.map(([rotate, flipX, flipY]) => ({ rotate, flipX, flipY })),
     },
     summary: {
       total: icons.length,
-      pass: icons.filter(icon => icon.status === 'pass').length,
-      warning: icons.filter(icon => icon.status === 'warning').length,
-      error: icons.filter(icon => icon.status === 'error').length,
+      pass: icons.filter((icon) => icon.status === 'pass').length,
+      warning: icons.filter((icon) => icon.status === 'warning').length,
+      error: icons.filter((icon) => icon.status === 'error').length,
       bySize,
-      anomalyIcons: anomalyIcons.length
+      anomalyIcons: anomalyIcons.length,
     },
     anomalies: anomalyIcons,
-    icons
+    icons,
   }
-  const metrics = Object.fromEntries(icons.map(icon => [icon.name, {
-    kind: icon.kind,
-    sizes: Object.fromEntries(ANALYZE_SIZES.map(size => {
-      const result = icon.sizes[String(size)]
-      return [String(size), result.normalizedBounds]
-    }))
-  }]))
+  const metrics = Object.fromEntries(
+    icons.map((icon) => [
+      icon.name,
+      {
+        kind: icon.kind,
+        sizes: Object.fromEntries(
+          ANALYZE_SIZES.map((size) => {
+            const result = icon.sizes[String(size)]
+            return [String(size), result.normalizedBounds]
+          }),
+        ),
+      },
+    ]),
+  )
   fs.mkdirSync(REPORT_DIR, { recursive: true })
   fs.writeFileSync(REPORT_FILE, `${JSON.stringify(report, null, 2)}\n`)
-  fs.writeFileSync(METRICS_FILE, `// AUTO-GENERATED FILE. Run \`npm run icons:analyze\` after changing an icon source.\nexport const PAW_ICON_AUDIT_METRICS = Object.freeze(${JSON.stringify(metrics, null, 2)})\n`)
-  console.log(`[PawIcon] analyzed ${icons.length} icons (${report.analysisMode}); pass=${report.summary.pass}, warning=${report.summary.warning}, error=${report.summary.error}`)
-  console.log(`[PawIcon] ratio audit: ${ANALYZE_SIZES.map(size => `${size}px ${bySize[String(size)].pass} pass / ${bySize[String(size)].warning} warning / ${bySize[String(size)].error} error`).join(', ')}`)
-  console.log(`[PawIcon] geometry: ${ANALYZE_SIZES.map(size => {
-    const result = bySize[String(size)]
-    return `${size}px clipping=${result.clipped}, edgeContact=${result.edgeContact}, center=${result.uncentered}, scale=${result.scaleInconsistent}, padding=${result.paddingExpansion}, stroke=${result.strokeAnomaly}`
-  }).join(', ')}`)
-  console.log(`[PawIcon] transform unsafe: ${icons.filter(icon => !icon.transformSafety.safe).length}; anomaly list: ${path.relative(ROOT, REPORT_FILE)}`)
+  fs.writeFileSync(
+    METRICS_FILE,
+    `// AUTO-GENERATED FILE. Run \`npm run icons:analyze\` after changing an icon source.\nexport const PAW_ICON_AUDIT_METRICS = Object.freeze(${JSON.stringify(metrics, null, 2)})\n`,
+  )
+  console.log(
+    `[PawIcon] analyzed ${icons.length} icons (${report.analysisMode}); pass=${report.summary.pass}, warning=${report.summary.warning}, error=${report.summary.error}`,
+  )
+  console.log(
+    `[PawIcon] ratio audit: ${ANALYZE_SIZES.map((size) => `${size}px ${bySize[String(size)].pass} pass / ${bySize[String(size)].warning} warning / ${bySize[String(size)].error} error`).join(', ')}`,
+  )
+  console.log(
+    `[PawIcon] geometry: ${ANALYZE_SIZES.map((size) => {
+      const result = bySize[String(size)]
+      return `${size}px clipping=${result.clipped}, edgeContact=${result.edgeContact}, center=${result.uncentered}, scale=${result.scaleInconsistent}, padding=${result.paddingExpansion}, stroke=${result.strokeAnomaly}`
+    }).join(', ')}`,
+  )
+  console.log(
+    `[PawIcon] transform unsafe: ${icons.filter((icon) => !icon.transformSafety.safe).length}; anomaly list: ${path.relative(ROOT, REPORT_FILE)}`,
+  )
 }
 
-analyze().catch(error => {
+analyze().catch((error) => {
   console.error(`[PawIcon] analyze failed: ${error.stack || error.message}`)
   process.exitCode = 1
 })

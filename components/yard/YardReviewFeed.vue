@@ -1,115 +1,253 @@
 <template>
-  <view class="yard-review-feed" :class="{ 'yard-review-feed--flat': hideStatusTab }">
-    <YardCommentComposer v-if="showCommentBar" :comment-total-text="commentTotalText" :avatar-src="composerAvatar"
-      :placeholder="composerPlaceholder" @voice="onComposerVoice" @pick-image="onComposerPickImage" />
-    <view v-else-if="hideStatusTab && commentTotalText" class="comment-cap">
+  <view
+    class="yard-review-feed"
+    :class="{ 'yard-review-feed--flat': hideStatusTab }"
+  >
+    <YardCommentComposer
+      v-if="showCommentBar"
+      :comment-total-text="commentTotalText"
+      :avatar-src="composerAvatar"
+      :placeholder="composerPlaceholder"
+      @voice="onComposerVoice"
+      @pick-image="onComposerPickImage"
+    />
+    <view
+      v-else-if="hideStatusTab && commentTotalText"
+      class="comment-cap"
+    >
       <text class="comment-cap-txt">{{ commentTotalText }}</text>
     </view>
     <view class="review">
-      <view v-if="!hideStatusTab" class="status-tab">
-        <view class="status-item" :class="{ active: activeTab === 'dynamic' }" style="margin-right: 32px"
-          @click="changeReview('dynamic')">
+      <view
+        v-if="!hideStatusTab"
+        class="status-tab"
+      >
+        <view
+          class="status-item"
+          :class="{ active: activeTab === 'dynamic' }"
+          style="margin-right: 32px"
+          @click="changeReview('dynamic')"
+        >
           <view class="tab-text">动态</view>
-          <image v-if="activeTab === 'dynamic'" class="tab-icon" src="/static/tiao.png"></image>
+          <image
+            v-if="activeTab === 'dynamic'"
+            class="tab-icon"
+            src="/static/tiao.png"
+          ></image>
         </view>
-        <view class="status-item" :class="{ active: activeTab === 'throw' }" @click="changeReview('throw')">
+        <view
+          class="status-item"
+          :class="{ active: activeTab === 'throw' }"
+          @click="changeReview('throw')"
+        >
           <view class="tab-text">投粮记录</view>
-          <image v-if="activeTab === 'throw'" class="tab-icon" src="/static/tiao.png"></image>
+          <image
+            v-if="activeTab === 'throw'"
+            class="tab-icon"
+            src="/static/tiao.png"
+          ></image>
         </view>
       </view>
-      <view v-if="hideStatusTab || activeTab === 'dynamic'" class="reviewList">
+      <view
+        v-if="hideStatusTab || activeTab === 'dynamic'"
+        class="reviewList"
+      >
         <view class="review-item">
-          <view class="avatar" @click.stop="openReviewMainUser">
-            <image class="avatar-img" :src="mainReview.avatar"></image>
+          <view
+            class="avatar"
+            @click.stop="openReviewMainUser"
+          >
+            <image
+              class="avatar-img"
+              :src="mainReview.avatar"
+            ></image>
           </view>
           <view class="review-content">
-            <view class="review-name" @click.stop="openReviewMainUser">
+            <view
+              class="review-name"
+              @click.stop="openReviewMainUser"
+            >
               <view>{{ mainReview.name }}</view>
               <LevelBadge :level="1" />
             </view>
             <view class="review-text">
               <view class="avatar-group">
-                <view v-for="n in 4" :key="'ag-' + n" :style="{ left: `${(n - 1) * 15}px`, 'z-index': n }"
-                  class="avatar-box">
-                  <image class="avatar-img" src="/static/avatarlog.png"></image>
+                <view
+                  v-for="n in 4"
+                  :key="'ag-' + n"
+                  :style="{ left: `${(n - 1) * 15}px`, 'z-index': n }"
+                  class="avatar-box"
+                >
+                  <image
+                    class="avatar-img"
+                    src="/static/avatarlog.png"
+                  ></image>
                 </view>
               </view>
-              <view class="review-text-full"><text>{{ mainReview.sourceText }}</text></view>
+              <view class="review-text-full"
+                ><text>{{ mainReview.sourceText }}</text></view
+              >
             </view>
             <view class="review-context">
               <view class="review-long-text">
                 <text>{{
                   isReviewExpanded(reviewRowKey) || !isReviewLong ? mainReview.copy : reviewPreview
                 }}</text>
-                <text v-if="isReviewLong && !isReviewExpanded(reviewRowKey)" class="review-toggle"
-                  @click.stop="toggleReview(reviewRowKey)"><text>...</text><text
-                    class="review-toggle-word">全文</text></text>
-                <text v-if="isReviewLong && isReviewExpanded(reviewRowKey)" class="review-toggle"
-                  @click.stop="toggleReview(reviewRowKey)">收起</text>
+                <text
+                  v-if="isReviewLong && !isReviewExpanded(reviewRowKey)"
+                  class="review-toggle"
+                  @click.stop="toggleReview(reviewRowKey)"
+                  ><text>...</text><text class="review-toggle-word">全文</text></text
+                >
+                <text
+                  v-if="isReviewLong && isReviewExpanded(reviewRowKey)"
+                  class="review-toggle"
+                  @click.stop="toggleReview(reviewRowKey)"
+                  >收起</text
+                >
               </view>
             </view>
-            <view class="voice-msg" :class="{ 'voice-msg--playing': mainVoicePlaying }" @click.stop="toggleMainVoice">
+            <view
+              class="voice-msg"
+              :class="{ 'voice-msg--playing': mainVoicePlaying }"
+              @click.stop="toggleMainVoice"
+            >
               <view class="voice-msg__inner">
-                <uni-icons type="sound" :size="18" color="#384d7b"></uni-icons>
+                <uni-icons
+                  type="sound"
+                  :size="18"
+                  color="#384d7b"
+                ></uni-icons>
                 <view class="voice-msg__wave">
-                  <view v-for="(h, wi) in mainReview.voiceBars" :key="'wb-' + wi" class="voice-msg__bar"
-                    :style="{ height: h + 'px' }"></view>
+                  <view
+                    v-for="(h, wi) in mainReview.voiceBars"
+                    :key="'wb-' + wi"
+                    class="voice-msg__bar"
+                    :style="{ height: h + 'px' }"
+                  ></view>
                 </view>
               </view>
               <text class="voice-msg__dur">{{ mainReview.voiceDuration }}</text>
             </view>
             <view class="review-media">
-              <NineGridLayout :NineGridList="mainReview.mediaUrls" :container-width="300" :border-radius-size="0" />
+              <NineGridLayout
+                :NineGridList="mainReview.mediaUrls"
+                :container-width="300"
+                :border-radius-size="0"
+              />
             </view>
             <view class="reply">
-              <view class="reply-info"><text>{{ mainReview.meta }}</text>
-                <view class="reply-btn" @tap.stop="openReplySheet('main')">回复</view>
+              <view class="reply-info"
+                ><text>{{ mainReview.meta }}</text>
+                <view
+                  class="reply-btn"
+                  @tap.stop="openReplySheet('main')"
+                  >回复</view
+                >
               </view>
-              <view class="reply-num" @tap.stop="toggleMainReviewLike">
-                <image class="reply-icon" :src="safeImgSrc(mainReviewLiked ? zan2 : zan1)" mode="aspectFit" />
+              <view
+                class="reply-num"
+                @tap.stop="toggleMainReviewLike"
+              >
+                <image
+                  class="reply-icon"
+                  :src="safeImgSrc(mainReviewLiked ? zan2 : zan1)"
+                  mode="aspectFit"
+                />
                 <text>{{ mainReviewLikes }}</text>
               </view>
             </view>
             <view class="comment-list">
-              <view v-for="r in visibleReplies" :key="'r-' + r.id" class="comment-item">
-                <image class="comment-avatar-img" :src="safeImgSrc(r.avatar)" mode="aspectFill"
-                  @click.stop="openReplyUser(r)"></image>
+              <view
+                v-for="r in visibleReplies"
+                :key="'r-' + r.id"
+                class="comment-item"
+              >
+                <image
+                  class="comment-avatar-img"
+                  :src="safeImgSrc(r.avatar)"
+                  mode="aspectFill"
+                  @click.stop="openReplyUser(r)"
+                ></image>
                 <view class="comment-body">
                   <view class="comment-header">
-                    <view class="comment-name" @click.stop="openReplyUser(r)">
+                    <view
+                      class="comment-name"
+                      @click.stop="openReplyUser(r)"
+                    >
                       <text>{{ r.name }}</text>
-                      <view v-if="r.tag" class="comment-tag"><text>{{ r.tag }}</text></view>
+                      <view
+                        v-if="r.tag"
+                        class="comment-tag"
+                        ><text>{{ r.tag }}</text></view
+                      >
                     </view>
                   </view>
-                  <view v-if="r.kind === 'voice'" class="comment-voice" @click.stop="playReplyVoice(r)">
-                    <view class="comment-voice__inner" :class="{ 'comment-voice__inner--on': playingReplyId === r.id }">
-                      <uni-icons type="sound" :size="16" color="#384d7b"></uni-icons>
+                  <view
+                    v-if="r.kind === 'voice'"
+                    class="comment-voice"
+                    @click.stop="playReplyVoice(r)"
+                  >
+                    <view
+                      class="comment-voice__inner"
+                      :class="{ 'comment-voice__inner--on': playingReplyId === r.id }"
+                    >
+                      <uni-icons
+                        type="sound"
+                        :size="16"
+                        color="#384d7b"
+                      ></uni-icons>
                       <view class="comment-voice__wave">
-                        <view v-for="(h, vi) in r.voiceBars" :key="r.id + '-v-' + vi" class="comment-voice__bar"
-                          :style="{ height: h + 'px' }"></view>
+                        <view
+                          v-for="(h, vi) in r.voiceBars"
+                          :key="r.id + '-v-' + vi"
+                          class="comment-voice__bar"
+                          :style="{ height: h + 'px' }"
+                        ></view>
                       </view>
                     </view>
                     <text class="comment-voice__dur">{{ r.duration }}</text>
                   </view>
-                  <view v-else class="comment-text">{{ r.text }}</view>
+                  <view
+                    v-else
+                    class="comment-text"
+                    >{{ r.text }}</view
+                  >
                   <view class="comment-meta">
                     <view class="comment-meta-left">
                       <text>{{ r.meta }}</text>
-                      <text class="comment-reply" @tap.stop="openReplySheet(r.id)">回复</text>
+                      <text
+                        class="comment-reply"
+                        @tap.stop="openReplySheet(r.id)"
+                        >回复</text
+                      >
                     </view>
-                    <view class="comment-like" @tap.stop="toggleReplyLike(r)">
-                      <image class="comment-like-icon" :src="safeImgSrc(r.liked ? zan2 : zan1)" mode="aspectFit" />
+                    <view
+                      class="comment-like"
+                      @tap.stop="toggleReplyLike(r)"
+                    >
+                      <image
+                        class="comment-like-icon"
+                        :src="safeImgSrc(r.liked ? zan2 : zan1)"
+                        mode="aspectFit"
+                      />
                       <text>{{ r.likes }}</text>
                     </view>
                   </view>
                 </view>
               </view>
-              <view v-if="hiddenReplyCount > 0 && !replyExpanded" class="comment-expand"
-                @click.stop="replyExpanded = true">
+              <view
+                v-if="hiddenReplyCount > 0 && !replyExpanded"
+                class="comment-expand"
+                @click.stop="replyExpanded = true"
+              >
                 <text>展开 {{ hiddenReplyCount }} 条回复</text>
               </view>
-              <view v-if="hiddenReplyCount > 0 && replyExpanded" class="comment-expand comment-expand--collapse"
-                @click.stop="replyExpanded = false">
+              <view
+                v-if="hiddenReplyCount > 0 && replyExpanded"
+                class="comment-expand comment-expand--collapse"
+                @click.stop="replyExpanded = false"
+              >
                 <text>收起</text>
               </view>
             </view>
@@ -117,12 +255,26 @@
         </view>
       </view>
 
-      <view v-if="!hideStatusTab && activeTab === 'throw'" class="throw-records">
-        <view v-for="item in throwRecords" :key="item.id" class="throw-row">
-          <image class="throw-row__avatar" :src="safeImgSrc(item.avatar)" mode="aspectFill"
-            @click.stop="openThrowUser(item)"></image>
+      <view
+        v-if="!hideStatusTab && activeTab === 'throw'"
+        class="throw-records"
+      >
+        <view
+          v-for="item in throwRecords"
+          :key="item.id"
+          class="throw-row"
+        >
+          <image
+            class="throw-row__avatar"
+            :src="safeImgSrc(item.avatar)"
+            mode="aspectFill"
+            @click.stop="openThrowUser(item)"
+          ></image>
           <view class="throw-row__grow">
-            <view class="throw-row__name-lv" @click.stop="openThrowUser(item)">
+            <view
+              class="throw-row__name-lv"
+              @click.stop="openThrowUser(item)"
+            >
               <text class="throw-row__name">{{ item.name }}</text>
               <LevelBadge :level="item.level" />
             </view>
@@ -135,21 +287,26 @@
       </view>
     </view>
 
-    <ReplyComposerSheet v-model:visible="replySheetVisible" :reply-to-name="replyTargetName" @send="onReplySheetSend"
-      @voice="onReplySheetVoice" @pick-image="onReplySheetPickImage" />
+    <ReplyComposerSheet
+      v-model:visible="replySheetVisible"
+      :reply-to-name="replyTargetName"
+      @send="onReplySheetSend"
+      @voice="onReplySheetVoice"
+      @pick-image="onReplySheetPickImage"
+    />
   </view>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import NineGridLayout from "@/components/libai-NineGridLayout/libai-NineGridLayout.vue";
-import uniIcons from "@/uni_modules/uni-icons/components/uni-icons/uni-icons.vue";
-import YardCommentComposer from "@/components/yard/YardCommentComposer.vue";
-import ReplyComposerSheet from "@/components/ReplyComposerSheet.vue";
-import LevelBadge from "@/components/customBadge/LevelBadge.vue";
-import { safeImgSrc } from "@/utils/safeImgSrc.ts";
-import { openUserProfile } from "@/utils/profileNav.ts";
+import NineGridLayout from '@/components/libai-NineGridLayout/libai-NineGridLayout.vue'
+import uniIcons from '@/uni_modules/uni-icons/components/uni-icons/uni-icons.vue'
+import YardCommentComposer from '@/components/yard/YardCommentComposer.vue'
+import ReplyComposerSheet from '@/components/ReplyComposerSheet.vue'
+import LevelBadge from '@/components/customBadge/LevelBadge.vue'
+import { safeImgSrc } from '@/utils/safeImgSrc.ts'
+import { openUserProfile } from '@/utils/profileNav.ts'
 import {
   createYardReviewFeedMocks,
   type YardReviewFeedTab,
@@ -157,8 +314,8 @@ import {
   type YardReviewReplyMetadata,
   type YardReviewReplySendMetadata,
   type YardReviewReplyTarget,
-  type YardThrowRecordMetadata
-} from "@/utils/yardReviewFeedMetadata.ts";
+  type YardThrowRecordMetadata,
+} from '@/utils/yardReviewFeedMetadata.ts'
 
 interface YardReviewFeedState {
   mainReview: YardReviewMainMetadata
@@ -182,7 +339,7 @@ interface YardReviewFeedState {
 }
 
 export default defineComponent({
-  name: "YardReviewFeed",
+  name: 'YardReviewFeed',
   components: { NineGridLayout, uniIcons, YardCommentComposer, ReplyComposerSheet, LevelBadge },
   props: {
     /** 为 true 时隐藏「动态 / 投粮记录」Tab（动态详情页评论流样式） */
@@ -193,7 +350,7 @@ export default defineComponent({
     /** 例如：共 2026 条评论 */
     commentTotalText: {
       type: String,
-      default: "",
+      default: '',
     },
     /** 动态详情页底部评论条（头像 + 输入框 + 麦克风 / 图片） */
     showCommentBar: {
@@ -202,22 +359,24 @@ export default defineComponent({
     },
     composerAvatar: {
       type: String,
-      default: "/static/me/yard-feed.svg",
+      default: '/static/me/yard-feed.svg',
     },
     composerPlaceholder: {
       type: String,
-      default: "有话要说，告诉她这条路并不孤单",
+      default: '有话要说，告诉她这条路并不孤单',
     },
   },
   emits: {
-    "composer-voice": () => true,
-    "composer-pick-image": () => true,
-    "tab-change": (tab: YardReviewFeedTab) => tab === "dynamic" || tab === "throw",
-    "reply-send": (payload: YardReviewReplySendMetadata) =>
+    'composer-voice': () => true,
+    'composer-pick-image': () => true,
+    'tab-change': (tab: YardReviewFeedTab) => tab === 'dynamic' || tab === 'throw',
+    'reply-send': (payload: YardReviewReplySendMetadata) =>
       Boolean(
         payload &&
-          typeof payload.text === "string" &&
-          (payload.target === null || payload.target === "main" || typeof payload.target === "number"),
+        typeof payload.text === 'string' &&
+        (payload.target === null ||
+          payload.target === 'main' ||
+          typeof payload.target === 'number'),
       ),
   },
   data(): YardReviewFeedState {
@@ -235,44 +394,42 @@ export default defineComponent({
       mainReviewLiked: false,
       mainReviewLikes: mocks.main.likes,
       mockReplies: mocks.replies,
-      reviewRowKey: "main",
-      activeTab: "dynamic",
+      reviewRowKey: 'main',
+      activeTab: 'dynamic',
       /** 投粮记录 Tab 列表（对接接口后替换） */
       throwRecords: mocks.throwRecords,
       reviewExpandedMap: {},
-      zan1:
-        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAeCAYAAAA/xX6fAAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAF+SURBVEiJvZdbtoMgDEVPWJ3XpUOqDqA6gMiQpBMz/bjElVK10JaeL1FwmwcJEioVQvAicgXgAUBERudcvFwusWQ91cCYeSCi6+aLiM4lUFcDNLBIRGcRGQFEAEhWv9SpFMbMg153XXdWcHKxR3LxKxVbSER/wH/M7P3S2FUDkSxwzj0AQgj+60DrztyiZVkU+HD/I6AmS+5OKxG5fQVorev7fsifa2xLdQgMIfgC6zzwHNtqIDMPIjKnYdyyziZMabaedOGyLN64x5s50ey7B6U1AIBpmuatORpb/eBT2rizLswmj1uWqbL4+Z05HgCYGX3fD2TqY0wTRqDcRTapDj5szQOapkl0cGTNJ7JGrUlTmmXvyLzbV3WLd2Wr0U+ApvDffgKEKQ7NgXnhbw7MS2NToC19uuWaArd6ZVOgcefaK5sB9/poM+BeH3UoPIvU6OiUsJ5LRWRm5vGTmmp/AdL46ZRAAKAd45va6z4OALquo6MTWYUi0m/AXqu7A58a2QJRlyArAAAAAElFTkSuQmCC",
-      zan2:
-        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAcCAYAAAB/E6/TAAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAE4SURBVEiJvZYxVoNAFEXvo05va+EyACcLcQG6iZBduAnX4IRhAR4b25xjZW/NtwiJRCFMQuBVw5n5//Lf8IcRZ8jS1CGtAAeAtFZZFjGxiobkeYHZqmPKK4TlUHwSC+qESG+AszR1VwFZnhc98EUD7Kr0fNAJ3cUujAN1782vpM1oUK9tO22H4qNBmN2fmL0FoK79KFBTjRtKoqq6HHSib/5qEAKthrU0dSSJa6xyEbFbdtb53o+hrv2+WgFYlr1GJm+9or4wu4lYt1ZZFjpYFBt4iaS1LMtskuTH8mNPhli5uUCTV/QOgLSZZY8UguawzsP438Swmmae3DqFIJi+os/9YGrQ4QycFKQQHuYAPbcfEuDjSom/W2OvEB6PQWZPVwItWpB/F8pEVeUxWwIvI0Ees2XfrfUHCTFt74bNhAQAAAAASUVORK5CYII=",
-    };
+      zan1: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAeCAYAAAA/xX6fAAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAF+SURBVEiJvZdbtoMgDEVPWJ3XpUOqDqA6gMiQpBMz/bjElVK10JaeL1FwmwcJEioVQvAicgXgAUBERudcvFwusWQ91cCYeSCi6+aLiM4lUFcDNLBIRGcRGQFEAEhWv9SpFMbMg153XXdWcHKxR3LxKxVbSER/wH/M7P3S2FUDkSxwzj0AQgj+60DrztyiZVkU+HD/I6AmS+5OKxG5fQVorev7fsifa2xLdQgMIfgC6zzwHNtqIDMPIjKnYdyyziZMabaedOGyLN64x5s50ey7B6U1AIBpmuatORpb/eBT2rizLswmj1uWqbL4+Z05HgCYGX3fD2TqY0wTRqDcRTapDj5szQOapkl0cGTNJ7JGrUlTmmXvyLzbV3WLd2Wr0U+ApvDffgKEKQ7NgXnhbw7MS2NToC19uuWaArd6ZVOgcefaK5sB9/poM+BeH3UoPIvU6OiUsJ5LRWRm5vGTmmp/AdL46ZRAAKAd45va6z4OALquo6MTWYUi0m/AXqu7A58a2QJRlyArAAAAAElFTkSuQmCC',
+      zan2: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAcCAYAAAB/E6/TAAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAE4SURBVEiJvZYxVoNAFEXvo05va+EyACcLcQG6iZBduAnX4IRhAR4b25xjZW/NtwiJRCFMQuBVw5n5//Lf8IcRZ8jS1CGtAAeAtFZZFjGxiobkeYHZqmPKK4TlUHwSC+qESG+AszR1VwFZnhc98EUD7Kr0fNAJ3cUujAN1782vpM1oUK9tO22H4qNBmN2fmL0FoK79KFBTjRtKoqq6HHSib/5qEAKthrU0dSSJa6xyEbFbdtb53o+hrv2+WgFYlr1GJm+9or4wu4lYt1ZZFjpYFBt4iaS1LMtskuTH8mNPhli5uUCTV/QOgLSZZY8UguawzsP438Swmmae3DqFIJi+os/9YGrQ4QycFKQQHuYAPbcfEuDjSom/W2OvEB6PQWZPVwItWpB/F8pEVeUxWwIvI0Ees2XfrfUHCTFt74bNhAQAAAAASUVORK5CYII=',
+    }
   },
   computed: {
     reviewLimit(): number {
-      return 100;
+      return 100
     },
     isReviewLong(): boolean {
-      return this.mainReview.copy.length > this.reviewLimit;
+      return this.mainReview.copy.length > this.reviewLimit
     },
     reviewPreview(): string {
-      return this.mainReview.copy.slice(0, this.reviewLimit);
+      return this.mainReview.copy.slice(0, this.reviewLimit)
     },
     visibleReplies(): YardReviewReplyMetadata[] {
-      if (this.replyExpanded) return this.mockReplies;
-      return this.mockReplies.slice(0, this.previewReplyCount);
+      if (this.replyExpanded) return this.mockReplies
+      return this.mockReplies.slice(0, this.previewReplyCount)
     },
     hiddenReplyCount(): number {
-      return Math.max(0, this.mockReplies.length - this.previewReplyCount);
+      return Math.max(0, this.mockReplies.length - this.previewReplyCount)
     },
     replyTargetName(): string {
-      if (this.replySheetTarget === "main") return this.mainReview.name;
-      if (typeof this.replySheetTarget !== "number") return "";
-      const reply = this.mockReplies.find((item) => item.id === this.replySheetTarget);
-      return reply ? reply.name : "";
+      if (this.replySheetTarget === 'main') return this.mainReview.name
+      if (typeof this.replySheetTarget !== 'number') return ''
+      const reply = this.mockReplies.find((item) => item.id === this.replySheetTarget)
+      return reply ? reply.name : ''
     },
   },
   beforeUnmount() {
-    this.clearMainVoiceTimer();
-    this.clearReplyVoiceTimer();
+    this.clearMainVoiceTimer()
+    this.clearReplyVoiceTimer()
   },
   methods: {
     safeImgSrc,
@@ -299,95 +456,95 @@ export default defineComponent({
         pawId: this.mainReview.pawId,
         nickname: this.mainReview.name,
         avatar: this.mainReview.avatar,
-      });
+      })
     },
     openReplyUser(r: YardReviewReplyMetadata) {
       openUserProfile({
-        pawId: r.pawId || "reply-" + r.id,
+        pawId: r.pawId || 'reply-' + r.id,
         nickname: r.name,
-        avatar: r.avatar || "",
-      });
+        avatar: r.avatar || '',
+      })
     },
     openThrowUser(item: YardThrowRecordMetadata) {
       openUserProfile({
-        pawId: item.pawId || "throw-" + item.id,
+        pawId: item.pawId || 'throw-' + item.id,
         nickname: item.name,
-        avatar: item.avatar || "",
-      });
+        avatar: item.avatar || '',
+      })
     },
     onComposerVoice() {
-      this.$emit("composer-voice");
+      this.$emit('composer-voice')
     },
     onComposerPickImage() {
-      this.$emit("composer-pick-image");
+      this.$emit('composer-pick-image')
     },
     clearMainVoiceTimer() {
       if (this.mainVoiceTimer !== null) {
-        clearTimeout(this.mainVoiceTimer);
-        this.mainVoiceTimer = null;
+        clearTimeout(this.mainVoiceTimer)
+        this.mainVoiceTimer = null
       }
     },
     clearReplyVoiceTimer() {
       if (this.replyVoiceTimer !== null) {
-        clearTimeout(this.replyVoiceTimer);
-        this.replyVoiceTimer = null;
+        clearTimeout(this.replyVoiceTimer)
+        this.replyVoiceTimer = null
       }
     },
     toggleMainVoice() {
-      this.mainVoicePlaying = !this.mainVoicePlaying;
-      this.clearMainVoiceTimer();
+      this.mainVoicePlaying = !this.mainVoicePlaying
+      this.clearMainVoiceTimer()
       if (this.mainVoicePlaying) {
         this.mainVoiceTimer = setTimeout(() => {
-          this.mainVoicePlaying = false;
-          this.mainVoiceTimer = null;
-        }, 2500);
+          this.mainVoicePlaying = false
+          this.mainVoiceTimer = null
+        }, 2500)
       }
     },
     playReplyVoice(r: YardReviewReplyMetadata) {
-      if (r.kind !== "voice") return;
-      this.clearReplyVoiceTimer();
+      if (r.kind !== 'voice') return
+      this.clearReplyVoiceTimer()
       if (this.playingReplyId === r.id) {
-        this.playingReplyId = null;
-        return;
+        this.playingReplyId = null
+        return
       }
-      this.playingReplyId = r.id;
+      this.playingReplyId = r.id
       this.replyVoiceTimer = setTimeout(() => {
-        this.playingReplyId = null;
-        this.replyVoiceTimer = null;
-      }, 2000);
+        this.playingReplyId = null
+        this.replyVoiceTimer = null
+      }, 2000)
     },
     changeReview(tab: YardReviewFeedTab) {
-      this.activeTab = tab;
-      this.$emit("tab-change", tab);
+      this.activeTab = tab
+      this.$emit('tab-change', tab)
     },
     openReplySheet(target: YardReviewReplyTarget) {
-      this.replySheetTarget = target;
-      this.replySheetVisible = true;
+      this.replySheetTarget = target
+      this.replySheetVisible = true
     },
     onReplySheetSend(text: string) {
-      this.$emit("reply-send", { text, target: this.replySheetTarget });
-      uni.showToast({ title: "已发送", icon: "none" });
+      this.$emit('reply-send', { text, target: this.replySheetTarget })
+      uni.showToast({ title: '已发送', icon: 'none' })
     },
     onReplySheetVoice() {
-      uni.showToast({ title: "语音输入敬请期待", icon: "none" });
+      uni.showToast({ title: '语音输入敬请期待', icon: 'none' })
     },
     onReplySheetPickImage() {
       uni.chooseImage({
         count: 1,
         success: () => {
-          uni.showToast({ title: "已选择图片（演示）", icon: "none" });
+          uni.showToast({ title: '已选择图片（演示）', icon: 'none' })
         },
-      });
+      })
     },
     isReviewExpanded(key: string) {
-      return !!this.reviewExpandedMap[key];
+      return !!this.reviewExpandedMap[key]
     },
     toggleReview(key: string) {
-      const cur = !!this.reviewExpandedMap[key];
-      this.reviewExpandedMap = { ...this.reviewExpandedMap, [key]: !cur };
+      const cur = !!this.reviewExpandedMap[key]
+      this.reviewExpandedMap = { ...this.reviewExpandedMap, [key]: !cur }
     },
   },
-});
+})
 </script>
 
 <style lang="less" scoped>

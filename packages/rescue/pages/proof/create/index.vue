@@ -1,5 +1,10 @@
 <template>
-  <RescueProofForm :rescue-id="rescueId" :record="record" :load-state="loadState" @submitted="onSubmitted" />
+  <RescueProofForm
+    :rescue-id="rescueId"
+    :record="record"
+    :load-state="loadState"
+    @submitted="onSubmitted"
+  />
 </template>
 
 <script lang="ts">
@@ -8,17 +13,25 @@ import { defineComponent } from 'vue'
 import RescueProofForm from '../../../components/RescueProofForm.vue'
 import { getRescueById } from '@/utils/rescueStorage.ts'
 import { buildRoute } from '@/navigation/routeContracts.ts'
-import { createRescueRecordPageState, resolveRescueRecordLoadRoute } from '../../../services/componentMetadata.ts'
+import {
+  createRescueRecordPageState,
+  resolveRescueRecordLoadRoute,
+} from '../../../services/componentMetadata.ts'
 
 export default defineComponent({
   name: 'RescueProofCreatePage',
   components: { RescueProofForm },
-  data() { return createRescueRecordPageState() },
+  data() {
+    return createRescueRecordPageState()
+  },
   onLoad(options: unknown = {}) {
     this.record = null
     this.rescueId = ''
     const route = resolveRescueRecordLoadRoute(options, 'rescue.proof.create')
-    if (!route.ok) { this.loadState = route.loadState; return }
+    if (!route.ok) {
+      this.loadState = route.loadState
+      return
+    }
     this.rescueId = route.rescueId
     this.refresh()
   },
@@ -29,10 +42,16 @@ export default defineComponent({
   methods: {
     refresh() {
       this.record = null
-      if (!this.rescueId) { this.loadState = 'missing-id'; return }
+      if (!this.rescueId) {
+        this.loadState = 'missing-id'
+        return
+      }
       this.loadState = 'loading'
       const record = getRescueById(this.rescueId)
-      if (!record) { this.loadState = 'not-found'; return }
+      if (!record) {
+        this.loadState = 'not-found'
+        return
+      }
       this.record = record
       this.loadState = 'ready'
     },
@@ -46,7 +65,7 @@ export default defineComponent({
       } catch {
         uni.showToast({ title: '证实已处理，请返回列表查看', icon: 'none' })
       }
-    }
-  }
+    },
+  },
 })
 </script>

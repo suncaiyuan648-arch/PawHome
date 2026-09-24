@@ -14,12 +14,18 @@ let api
 const POLICY = Object.freeze({
   profile: Object.freeze({ readStates: ['active'], editStates: ['active'] }),
   yard: Object.freeze({
-    readStates: ['active'], manageStates: ['active'], editStates: ['active'],
-    ownerRoles: ['yard_owner'], yardOwnerRoles: ['yard_owner'],
+    readStates: ['active'],
+    manageStates: ['active'],
+    editStates: ['active'],
+    ownerRoles: ['yard_owner'],
+    yardOwnerRoles: ['yard_owner'],
   }),
   animal: Object.freeze({
-    readStates: ['active'], manageStates: ['active'], editStates: ['active'],
-    yardOwnerRoles: ['yard_owner'], managerRoles: ['animal_manager'],
+    readStates: ['active'],
+    manageStates: ['active'],
+    editStates: ['active'],
+    yardOwnerRoles: ['yard_owner'],
+    managerRoles: ['animal_manager'],
   }),
 })
 
@@ -28,17 +34,38 @@ function actor(id, roles = []) {
 }
 
 function profile(overrides = {}) {
-  return { userId: 'user-a', status: 'active', visibility: 'public', nickname: 'A', phone: 'private', ...overrides }
+  return {
+    userId: 'user-a',
+    status: 'active',
+    visibility: 'public',
+    nickname: 'A',
+    phone: 'private',
+    ...overrides,
+  }
 }
 
 function yard(overrides = {}) {
-  return { yardId: 'yard-a', yardOwnerId: 'owner-a', status: 'active', visibility: 'public', name: 'A yard', ...overrides }
+  return {
+    yardId: 'yard-a',
+    yardOwnerId: 'owner-a',
+    status: 'active',
+    visibility: 'public',
+    name: 'A yard',
+    ...overrides,
+  }
 }
 
 function animal(overrides = {}) {
   return {
-    animalId: 'animal-a', yardId: 'yard-a', yardOwnerId: 'owner-a', managerIds: ['manager-a'],
-    status: 'active', visibility: 'public', name: 'A cat', privateNote: 'private', ...overrides,
+    animalId: 'animal-a',
+    yardId: 'yard-a',
+    yardOwnerId: 'owner-a',
+    managerIds: ['manager-a'],
+    status: 'active',
+    visibility: 'public',
+    name: 'A cat',
+    privateNote: 'private',
+    ...overrides,
   }
 }
 
@@ -65,13 +92,21 @@ before(async () => {
   await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'packages/account/services'), { recursive: true })
-  await fs.copyFile(path.join(ROOT, 'navigation/actorCapabilities.ts'), path.join(tempRoot, 'navigation/actorCapabilities.ts'))
-  await fs.copyFile(path.join(ROOT, 'navigation/managementContracts.ts'), path.join(tempRoot, 'navigation/managementContracts.ts'))
+  await fs.copyFile(
+    path.join(ROOT, 'navigation/actorCapabilities.ts'),
+    path.join(tempRoot, 'navigation/actorCapabilities.ts'),
+  )
+  await fs.copyFile(
+    path.join(ROOT, 'navigation/managementContracts.ts'),
+    path.join(tempRoot, 'navigation/managementContracts.ts'),
+  )
   await fs.copyFile(
     path.join(ROOT, 'packages/account/services/managementAdapter.ts'),
     path.join(tempRoot, 'packages/account/services/managementAdapter.ts'),
   )
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/managementAdapter.ts')).href}?test=${Date.now()}`)
+  api = await import(
+    `${pathToFileURL(path.join(tempRoot, 'packages/account/services/managementAdapter.ts')).href}?test=${Date.now()}`
+  )
 })
 
 after(async () => {
@@ -79,7 +114,10 @@ after(async () => {
 })
 
 test('management adapter is a read-only reader seam with no page or storage binding', async () => {
-  const source = await fs.readFile(path.join(ROOT, 'packages/account/services/managementAdapter.ts'), 'utf8')
+  const source = await fs.readFile(
+    path.join(ROOT, 'packages/account/services/managementAdapter.ts'),
+    'utf8',
+  )
   assert.match(source, /managementContracts\.ts/)
   assert.doesNotMatch(source, /from\s+['"][^'"]*(?:pages|utils\/|storage|mock)/i)
   assert.doesNotMatch(source, /setStorageSync|removeStorageSync|save[A-Z]|update[A-Z]|delete[A-Z]/)
@@ -89,14 +127,19 @@ test('management adapter is a read-only reader seam with no page or storage bind
 })
 
 test('missing storage readers return an explicit empty result and never import demo fixtures', () => {
-  const result = api.readManagementResource('yard', 'yard-a', { actorProvider: actor('owner-a'), policy: POLICY })
+  const result = api.readManagementResource('yard', 'yard-a', {
+    actorProvider: actor('owner-a'),
+    policy: POLICY,
+  })
   assert.equal(result.success, false)
   assert.equal(result.error.code, 'READER_MISSING')
   assert.equal(result.data, null)
   assert.equal(result.readOnly, true)
   assert.equal(result.canWrite, false)
   const demo = api.readManagementResource('yard', 'yard-a', {
-    actorProvider: actor('owner-a'), policy: POLICY, includeDemo: true,
+    actorProvider: actor('owner-a'),
+    policy: POLICY,
+    includeDemo: true,
   })
   assert.equal(demo.error.code, 'DEMO_FALLBACK_DISABLED')
 })
@@ -210,7 +253,11 @@ test('cross-yard locator and cross-domain/demo IDs fail before a reader can retu
   assert.equal(calls, 1)
 
   for (const [resourceType, id] of [
-    ['animal', 'yard-a'], ['yard', 'animal-a'], ['profile', 'yard-a'], ['animal', 'demo-animal-a'], ['yard', 'yard/a'],
+    ['animal', 'yard-a'],
+    ['yard', 'animal-a'],
+    ['profile', 'yard-a'],
+    ['animal', 'demo-animal-a'],
+    ['yard', 'yard/a'],
   ]) {
     const result = readWith(resourceType, id, { reader })
     assert.equal(result.success, false)
@@ -220,7 +267,11 @@ test('cross-yard locator and cross-domain/demo IDs fail before a reader can retu
 })
 
 test('reader exceptions, promises, malformed records, and forged records fail closed', () => {
-  const throwing = readWith('yard', 'yard-a', { reader: () => { throw new Error('boom') } })
+  const throwing = readWith('yard', 'yard-a', {
+    reader: () => {
+      throw new Error('boom')
+    },
+  })
   assert.equal(throwing.success, false)
   assert.equal(throwing.error.code, 'READER_FAILED')
 
@@ -228,7 +279,9 @@ test('reader exceptions, promises, malformed records, and forged records fail cl
   assert.equal(asyncResult.success, false)
   assert.equal(asyncResult.error.code, 'ASYNC_READER_UNSUPPORTED')
 
-  const malformed = readWith('yard', 'yard-a', { reader: () => ({ id: 'other-yard', status: 'active' }) })
+  const malformed = readWith('yard', 'yard-a', {
+    reader: () => ({ id: 'other-yard', status: 'active' }),
+  })
   assert.equal(malformed.success, false)
   assert.ok(['MISSING_ID', 'READER_SCOPE_VIOLATION'].includes(malformed.error.code))
 
@@ -278,7 +331,10 @@ test('fixed adapter re-reads actor and source, while per-call reader replacement
   assert.equal(denied.success, false)
   assert.equal(denied.error.reason, 'YARD_OWNER_RELATION_REQUIRED')
   assert.equal(reads, 2)
-  const replaced = adapter.readYard('yard-a', { reader: () => yard({ yardOwnerId: 'owner-b' }), access: 'management' })
+  const replaced = adapter.readYard('yard-a', {
+    reader: () => yard({ yardOwnerId: 'owner-b' }),
+    access: 'management',
+  })
   assert.equal(replaced.success, false)
   assert.equal(replaced.error.code, 'READER_OVERRIDE_UNSUPPORTED')
 })

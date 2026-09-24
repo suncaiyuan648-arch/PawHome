@@ -1,6 +1,12 @@
 <template>
-  <view class="paw-card" :style="cardStyle">
-    <view v-if="title || $slots.title" class="paw-card__head">
+  <view
+    class="paw-card"
+    :style="cardStyle"
+  >
+    <view
+      v-if="title || $slots.title"
+      class="paw-card__head"
+    >
       <slot name="title">
         <text class="paw-card__title">{{ title }}</text>
       </slot>
@@ -8,13 +14,17 @@
     <view class="paw-card__body">
       <slot />
     </view>
-    <view v-if="$slots.footer" class="paw-card__footer">
+    <view
+      v-if="$slots.footer"
+      class="paw-card__footer"
+    >
       <slot name="footer" />
     </view>
   </view>
 </template>
 
-<script lang="ts">import { defineComponent } from 'vue'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'PawCard',
@@ -30,7 +40,7 @@ export default defineComponent({
     width: { type: [String, Number], default: '100%' },
     gap: { type: [String, Number], default: '0' },
     padding: { type: [String, Number], default: '20px' },
-    border: { type: [String, Boolean], default: 'none' }
+    border: { type: [String, Boolean], default: 'none' },
   },
   computed: {
     cardStyle() {
@@ -38,7 +48,7 @@ export default defineComponent({
         width: this.normalizedWidth,
         gap: this.normalizedGap,
         padding: this.normalizedPadding,
-        border: this.normalizedBorder
+        border: this.normalizedBorder,
       }
     },
     normalizedWidth() {
@@ -57,8 +67,8 @@ export default defineComponent({
       if (this.border === true) return '1px solid #f0f0f0'
       if (this.border === false) return 'none'
       return String(this.border || 'none')
-    }
-  }
+    },
+  },
 })
 </script>
 

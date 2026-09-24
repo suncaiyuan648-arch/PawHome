@@ -16,9 +16,12 @@
           :style="{
             height: height + 'px',
             background: currentAppearance.background,
-            color: currentAppearance.color
+            color: currentAppearance.color,
           }"
-        ><text :class="{ 'paw-announcement__text--premium': currentAppearance.premium }">{{ currentItem.text }}</text></text>
+          ><text :class="{ 'paw-announcement__text--premium': currentAppearance.premium }">{{
+            currentItem.text
+          }}</text></text
+        >
       </view>
     </view>
   </view>
@@ -31,7 +34,7 @@ import {
   getAnnouncementFeedingWeightJin,
   normalizeAnnouncement,
   type AnnouncementInput,
-  type NormalizedAnnouncement
+  type NormalizedAnnouncement,
 } from '@/utils/announcementMetadata'
 
 interface AnnouncementMarqueeState {
@@ -52,7 +55,7 @@ interface AnnouncementMarqueeState {
 }
 
 function readNodeWidth(
-  result: UniNamespace.NodeInfo | UniNamespace.NodeInfo[] | null | undefined
+  result: UniNamespace.NodeInfo | UniNamespace.NodeInfo[] | null | undefined,
 ): number {
   const node = Array.isArray(result) ? result[0] : result
   return node?.width ?? 0
@@ -72,12 +75,12 @@ export default defineComponent({
     pollUrl: { type: String, default: '' },
     pollInterval: { type: Number, default: 30000 },
     // 传入 WebSocket 地址后自动监听消息；轮询和 WS 可以同时开启。
-    wsUrl: { type: String, default: '' }
+    wsUrl: { type: String, default: '' },
   },
   emits: {
     queued: (queue: NormalizedAnnouncement[]) => Array.isArray(queue),
     finished: (item: NormalizedAnnouncement['raw']) => item !== undefined,
-    click: (item: NormalizedAnnouncement['raw'] | null) => item !== undefined
+    click: (item: NormalizedAnnouncement['raw'] | null) => item !== undefined,
   },
   data(): AnnouncementMarqueeState {
     return {
@@ -94,17 +97,18 @@ export default defineComponent({
       socketTask: null,
       destroyed: false,
       isMounted: false,
-      knownIds: new Set<string>()
+      knownIds: new Set<string>(),
     }
   },
   computed: {
     currentAppearance() {
       const weight = this.currentItem ? getAnnouncementFeedingWeightJin(this.currentItem.raw) : null
       if (weight === 40) return { background: '#282827', color: '#E0FF89', premium: true }
-      if (weight === 4) return { background: 'linear-gradient(90deg, #FFF599 0%, #FFFBDC 100%)', color: '#333333' }
+      if (weight === 4)
+        return { background: 'linear-gradient(90deg, #FFF599 0%, #FFFBDC 100%)', color: '#333333' }
       if (weight === 0.4) return { background: '#FFFBDC', color: '#505050' }
       return { background: this.backgroundColor, color: this.color }
-    }
+    },
   },
   watch: {
     items: {
@@ -112,8 +116,8 @@ export default defineComponent({
       immediate: true,
       handler(value: AnnouncementInput[]) {
         this.enqueue(value)
-      }
-    }
+      },
+    },
   },
   mounted() {
     this.destroyed = false
@@ -174,14 +178,14 @@ export default defineComponent({
           // 部分基础库首次查询文本宽度会返回 0，使用字号估算兜底，避免动画距离为零。
           if (!this.textWidth) this.textWidth = Math.max(12, this.currentItem.text.length * 13 + 12)
           const distance = Math.max(1, this.viewportWidth + this.textWidth)
-          const duration = Math.max(1600, Math.round(distance / Math.max(1, this.speed) * 1000))
+          const duration = Math.max(1600, Math.round((distance / Math.max(1, this.speed)) * 1000))
 
           // 微信小程序对运行时 inline transition 支持不稳定，改用原生 animation 指令。
           const animation = uni.createAnimation({
             duration: 0,
             timingFunction: 'linear',
             delay: 0,
-            transformOrigin: '0 50%'
+            transformOrigin: '0 50%',
           })
           animation.translateX(this.viewportWidth).step({ duration: 0 })
           this.animationData = animation.export()
@@ -193,7 +197,7 @@ export default defineComponent({
               duration,
               timingFunction: 'linear',
               delay: 0,
-              transformOrigin: '0 50%'
+              transformOrigin: '0 50%',
             })
             movingAnimation.translateX(-this.textWidth).step()
             this.animationData = movingAnimation.export()
@@ -218,10 +222,13 @@ export default defineComponent({
       this.$emit('finished', finished.raw)
 
       if (this.gapTimer) clearTimeout(this.gapTimer)
-      this.gapTimer = setTimeout(() => {
-        this.gapTimer = null
-        this.startNext()
-      }, Math.max(0, this.gap))
+      this.gapTimer = setTimeout(
+        () => {
+          this.gapTimer = null
+          this.startNext()
+        },
+        Math.max(0, this.gap),
+      )
     },
 
     startDataSources() {
@@ -240,7 +247,7 @@ export default defineComponent({
         success: (response) => {
           const payload: unknown = response.data
           if (!this.destroyed) this.enqueue(payload)
-        }
+        },
       })
     },
 
@@ -291,8 +298,8 @@ export default defineComponent({
         }
       }
       this.socketTask = null
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -333,7 +340,14 @@ export default defineComponent({
   box-sizing: border-box;
   padding: 0 6px;
   border-radius: 4px;
-  font-family: var(--paw-font-family, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif);
+  font-family: var(
+    --paw-font-family,
+    -apple-system,
+    BlinkMacSystemFont,
+    'PingFang SC',
+    'Microsoft YaHei',
+    sans-serif
+  );
   font-size: 13px;
   font-weight: 400;
   line-height: 11px;
@@ -342,7 +356,7 @@ export default defineComponent({
 }
 
 .paw-announcement__text--premium {
-  background: linear-gradient(90deg, #E0FF89 0%, #FFED48 100%);
+  background: linear-gradient(90deg, #e0ff89 0%, #ffed48 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

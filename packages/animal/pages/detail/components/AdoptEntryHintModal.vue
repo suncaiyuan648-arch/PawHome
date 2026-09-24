@@ -12,10 +12,10 @@
 import { eventContract } from '@/utils/componentEvents.ts'
 import { defineComponent } from 'vue'
 
-import PawNoticeModal from "@/components/PawNoticeModal.vue";
+import PawNoticeModal from '@/components/PawNoticeModal.vue'
 
 export default defineComponent({
-  name: "AdoptEntryHintModal",
+  name: 'AdoptEntryHintModal',
   components: { PawNoticeModal },
   props: {
     visible: {
@@ -24,16 +24,16 @@ export default defineComponent({
     },
     message: {
       type: String,
-      default: "抱歉，您今日领养次数已用完",
+      default: '抱歉，您今日领养次数已用完',
     },
     confirmText: {
       type: String,
-      default: "我知道了",
+      default: '我知道了',
     },
   },
   emits: {
     'update:visible': eventContract<[value: boolean]>(),
-    'confirm': eventContract<[]>(),
+    confirm: eventContract<[]>(),
   },
-});
+})
 </script>

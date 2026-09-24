@@ -27,8 +27,8 @@ function createFixture({ unknown = false, collision = false } = {}) {
       { root: 'packages/rescue', pages: [{ path: 'pages/index' }] },
       { root: 'packages/adoption', pages: [{ path: 'pages/index' }] },
       { root: 'pages/example', pages: [{ path: 'pages/index' }] },
-      { root: 'pages/dev', pages: [{ path: 'paw-icon-lab' }] }
-    ]
+      { root: 'pages/dev', pages: [{ path: 'paw-icon-lab' }] },
+    ],
   }
   put(root, 'pages.json', `// JSON5 route fixture\n${JSON.stringify(pages, null, 2)}\n`)
 
@@ -40,20 +40,40 @@ function createFixture({ unknown = false, collision = false } = {}) {
     "import '../utils/side-effect.js'",
     "const sideEffect = require ('../utils/side-effect.js')",
     '</script>',
-    '<template><RescueCard /><image src="/static/private.svg" /><image src="/static/shared.svg" /></template>'
+    '<template><RescueCard /><image src="/static/private.svg" /><image src="/static/shared.svg" /></template>',
   ]
   if (unknown) {
     rescueTemplate.push('<image src="/static/missing-source.svg" />')
     rescueTemplate.push('<image src="/packages/adoption/static/private.svg" />')
   }
   put(root, 'packages/rescue/pages/index.vue', rescueTemplate.join('\n'))
-  put(root, 'packages/adoption/pages/index.vue', '<template><image src="/static/dup-b.svg" /></template>')
-  put(root, 'pages/example/pages/index.vue', '<template><image src="/static/example.svg" /></template>')
+  put(
+    root,
+    'packages/adoption/pages/index.vue',
+    '<template><image src="/static/dup-b.svg" /></template>',
+  )
+  put(
+    root,
+    'pages/example/pages/index.vue',
+    '<template><image src="/static/example.svg" /></template>',
+  )
   put(root, 'pages/dev/paw-icon-lab.vue', '<template><view /></template>')
 
-  put(root, 'packages/rescue/components/RescueCard.vue', '<template><image src="/static/private.svg" /></template>')
-  put(root, 'packages/rescue/utils/assets.js', `const ASSET_ROOT = '/static/dyn/';\nexport const image = ASSET_ROOT + 'item.svg'\n`)
-  put(root, 'packages/rescue/utils/side-effect.js', `const side = '/static/side.svg'\nexport default side\n`)
+  put(
+    root,
+    'packages/rescue/components/RescueCard.vue',
+    '<template><image src="/static/private.svg" /></template>',
+  )
+  put(
+    root,
+    'packages/rescue/utils/assets.js',
+    `const ASSET_ROOT = '/static/dyn/';\nexport const image = ASSET_ROOT + 'item.svg'\n`,
+  )
+  put(
+    root,
+    'packages/rescue/utils/side-effect.js',
+    `const side = '/static/side.svg'\nexport default side\n`,
+  )
 
   put(root, 'static/main.svg', 'main')
   put(root, 'static/main-alias.svg', 'main')
@@ -73,23 +93,46 @@ function createFixture({ unknown = false, collision = false } = {}) {
 
   const app = {
     pages: ['pages/index/index'],
-    subPackages: pages.subPackages.map((item) => ({ root: item.root, pages: item.pages.map((page) => `${item.root}/${page.path}`) }))
+    subPackages: pages.subPackages.map((item) => ({
+      root: item.root,
+      pages: item.pages.map((page) => `${item.root}/${page.path}`),
+    })),
   }
   const output = path.join(root, 'out')
   put(output, 'app.json', JSON.stringify(app, null, 2))
-  put(output, 'pages/index/index.js', `const main = '/static/main.svg'; const shared = '/static/shared.svg'; const remote = 'https://cdn.example/static/unknown-remote.svg';`)
-  put(output, 'pages/index/index.wxss', `.main { background: url('/static/main.svg?cache=1#hash'); }`)
-  put(output, 'packages/rescue/pages/index.js', [
-    `const privateImage = '/static/private.svg';`,
-    `const mainAlias = '/static/main-alias.svg';`,
-    `const explicitPrivateImage = '/packages/rescue/static/private.svg';`,
-    `const shared = '/static/shared.svg';`,
-    `const dynamic = '/static/dyn/item.svg';`,
-    `const side = '/static/side.svg';`,
-    unknown ? `const missing = '/static/missing.svg';` : ''
-  ].join('\n'))
-  put(output, 'packages/rescue/pages/index.wxss', `.card { background: url("/static/css.svg?x=1#hash"); }`)
-  put(output, 'packages/adoption/pages/index.js', `const duplicate = '/static/dup-b.svg'; const suffix = '/static/dup-b.svg.bak'; const shared = '/static/shared.svg';`)
+  put(
+    output,
+    'pages/index/index.js',
+    `const main = '/static/main.svg'; const shared = '/static/shared.svg'; const remote = 'https://cdn.example/static/unknown-remote.svg';`,
+  )
+  put(
+    output,
+    'pages/index/index.wxss',
+    `.main { background: url('/static/main.svg?cache=1#hash'); }`,
+  )
+  put(
+    output,
+    'packages/rescue/pages/index.js',
+    [
+      `const privateImage = '/static/private.svg';`,
+      `const mainAlias = '/static/main-alias.svg';`,
+      `const explicitPrivateImage = '/packages/rescue/static/private.svg';`,
+      `const shared = '/static/shared.svg';`,
+      `const dynamic = '/static/dyn/item.svg';`,
+      `const side = '/static/side.svg';`,
+      unknown ? `const missing = '/static/missing.svg';` : '',
+    ].join('\n'),
+  )
+  put(
+    output,
+    'packages/rescue/pages/index.wxss',
+    `.card { background: url("/static/css.svg?x=1#hash"); }`,
+  )
+  put(
+    output,
+    'packages/adoption/pages/index.js',
+    `const duplicate = '/static/dup-b.svg'; const suffix = '/static/dup-b.svg.bak'; const shared = '/static/shared.svg';`,
+  )
   put(output, 'pages/example/pages/index.js', `const privateImage = '/static/private.svg';`)
   put(output, 'pages/dev/paw-icon-lab.js', `const dev = '/static/dev.svg';`)
   // The pipeline must retain unknown pre-existing output assets rather than
@@ -107,7 +150,7 @@ function run(fixture) {
   return spawnSync(process.execPath, [fixture.script, fixture.output], {
     cwd: path.join(fixture.root, 'outside-cwd'),
     encoding: 'utf8',
-    env: { ...process.env, NODE_PATH: dependencyRoot }
+    env: { ...process.env, NODE_PATH: dependencyRoot },
   })
 }
 
@@ -116,7 +159,12 @@ function setupOutsideCwd(fixture) {
 }
 
 function report(fixture) {
-  return JSON.parse(fs.readFileSync(path.join(fixture.root, '.artifacts/architecture-governance/package-assets.json'), 'utf8'))
+  return JSON.parse(
+    fs.readFileSync(
+      path.join(fixture.root, '.artifacts/architecture-governance/package-assets.json'),
+      'utf8',
+    ),
+  )
 }
 
 function snapshot(directory) {
@@ -125,7 +173,11 @@ function snapshot(directory) {
     for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
       const file = path.join(current, entry.name)
       if (entry.isDirectory()) visit(file)
-      else files.push([path.relative(directory, file).split(path.sep).join('/'), fs.readFileSync(file)])
+      else
+        files.push([
+          path.relative(directory, file).split(path.sep).join('/'),
+          fs.readFileSync(file),
+        ])
     }
   }
   visit(directory)
@@ -140,18 +192,30 @@ test('assigns assets by dependency owner, preserves package static, rewrites onl
   assert.equal(report(fixture).status, 'ok')
 
   assert.equal(fs.existsSync(path.join(fixture.output, 'static/main-alias.svg')), true)
-  assert.equal(fs.existsSync(path.join(fixture.output, 'packages/rescue/static/main-alias.svg')), false)
+  assert.equal(
+    fs.existsSync(path.join(fixture.output, 'packages/rescue/static/main-alias.svg')),
+    false,
+  )
   assert.equal(fs.existsSync(path.join(fixture.output, 'static/shared.svg')), true)
   assert.equal(fs.existsSync(path.join(fixture.output, 'static/private.svg')), false)
   assert.equal(fs.existsSync(path.join(fixture.output, 'packages/rescue/static/shared.svg')), false)
   assert.equal(fs.existsSync(path.join(fixture.output, 'packages/rescue/static/private.svg')), true)
-  assert.equal(fs.readFileSync(path.join(fixture.output, 'packages/rescue/static/private.svg'), 'utf8'), 'private-source')
+  assert.equal(
+    fs.readFileSync(path.join(fixture.output, 'packages/rescue/static/private.svg'), 'utf8'),
+    'private-source',
+  )
   assert.equal(fs.existsSync(path.join(fixture.output, 'pages/example/static/private.svg')), true)
   assert.equal(fs.existsSync(path.join(fixture.output, 'static/unknown-output.svg')), true)
   assert.equal(fs.existsSync(path.join(fixture.output, 'static/paw-icons/mono/stale.svg')), false)
-  assert.equal(fs.existsSync(path.join(fixture.output, 'packages/adoption/static/paw-icons/mono/stale.svg')), false)
+  assert.equal(
+    fs.existsSync(path.join(fixture.output, 'packages/adoption/static/paw-icons/mono/stale.svg')),
+    false,
+  )
   assert.equal(fs.existsSync(path.join(fixture.output, 'pages/dev')), false)
-  assert.match(fs.readFileSync(path.join(fixture.output, 'pages/index/index.js'), 'utf8'), /https:\/\/cdn\.example\/static\/unknown-remote\.svg/)
+  assert.match(
+    fs.readFileSync(path.join(fixture.output, 'pages/index/index.js'), 'utf8'),
+    /https:\/\/cdn\.example\/static\/unknown-remote\.svg/,
+  )
 
   const rescueJsPath = path.join(fixture.output, 'packages/rescue/pages/index.js')
   const rescueJs = fs.readFileSync(rescueJsPath, 'utf8')
@@ -159,8 +223,14 @@ test('assigns assets by dependency owner, preserves package static, rewrites onl
   assert.match(rescueJs, /\/packages\/rescue\/static\/dyn\/item\.svg/)
   assert.match(rescueJs, /\/packages\/rescue\/static\/side\.svg/)
   assert.doesNotMatch(rescueJs, /\/packages\/rescue\/packages\/rescue\/static/)
-  assert.match(fs.readFileSync(path.join(fixture.output, 'packages/rescue/pages/index.wxss'), 'utf8'), /\/packages\/rescue\/static\/css\.svg\?x=1#hash/)
-  const adoptionJs = fs.readFileSync(path.join(fixture.output, 'packages/adoption/pages/index.js'), 'utf8')
+  assert.match(
+    fs.readFileSync(path.join(fixture.output, 'packages/rescue/pages/index.wxss'), 'utf8'),
+    /\/packages\/rescue\/static\/css\.svg\?x=1#hash/,
+  )
+  const adoptionJs = fs.readFileSync(
+    path.join(fixture.output, 'packages/adoption/pages/index.js'),
+    'utf8',
+  )
   assert.match(adoptionJs, /\/packages\/adoption\/static\/dup-a\.svg'/)
   assert.match(adoptionJs, /\/static\/dup-b\.svg\.bak'/)
 
@@ -181,7 +251,11 @@ test('reports unknown source static references, keeps unknown output assets, and
   assert.ok(matrix.unknownReferences.some((item) => item.value === 'missing.svg'))
   assert.ok(matrix.unknownReferences.some((item) => item.value === 'missing-source.svg'))
   assert.ok(matrix.errors.some((item) => item.code === 'cross-package-static-reference'))
-  assert.ok(matrix.assets.some((item) => item.source === 'static/shared.svg' && item.owners.includes('main')))
+  assert.ok(
+    matrix.assets.some(
+      (item) => item.source === 'static/shared.svg' && item.owners.includes('main'),
+    ),
+  )
   assert.equal(fs.existsSync(path.join(fixture.output, 'static/unknown-output.svg')), true)
 })
 
@@ -221,9 +295,18 @@ test('fails a root/package collision without changing root absolute URL semantic
   assert.notEqual(result.status, 0)
   const matrix = report(fixture)
   assert.ok(matrix.errors.some((item) => item.code === 'root-package-static-collision'))
-  assert.equal(fs.readFileSync(path.join(fixture.output, 'static/private.svg'), 'utf8'), 'root-private')
-  assert.equal(fs.readFileSync(path.join(fixture.output, 'packages/rescue/static/private.svg'), 'utf8'), 'private-source')
-  const rescueJs = fs.readFileSync(path.join(fixture.output, 'packages/rescue/pages/index.js'), 'utf8')
+  assert.equal(
+    fs.readFileSync(path.join(fixture.output, 'static/private.svg'), 'utf8'),
+    'root-private',
+  )
+  assert.equal(
+    fs.readFileSync(path.join(fixture.output, 'packages/rescue/static/private.svg'), 'utf8'),
+    'private-source',
+  )
+  const rescueJs = fs.readFileSync(
+    path.join(fixture.output, 'packages/rescue/pages/index.js'),
+    'utf8',
+  )
   assert.match(rescueJs, /const privateImage = '\/static\/private\.svg'/)
   assert.doesNotMatch(rescueJs, /const privateImage = '\/packages\/rescue\/static\/private\.svg'/)
 })
@@ -233,14 +316,31 @@ test('computed filenames retain identical aliases and root prefixes do not dupli
   setupOutsideCwd(fixture)
   put(fixture.root, 'static/computed/a.svg', 'same-computed')
   put(fixture.root, 'static/computed/b.svg', 'same-computed')
-  put(fixture.root, 'packages/rescue/utils/computed.js', "export const image = `/static/computed/${name}.svg`")
-  fs.appendFileSync(path.join(fixture.root, 'packages/rescue/pages/index.vue'), "\n<script>import '../utils/computed.js'</script>")
-  fs.appendFileSync(path.join(fixture.output, 'packages/rescue/pages/index.js'), "\nconst image = `/static/computed/${name}.svg`; const remote = 'https://cdn.example/static/dup-b.svg';")
+  put(
+    fixture.root,
+    'packages/rescue/utils/computed.js',
+    'export const image = `/static/computed/${name}.svg`',
+  )
+  fs.appendFileSync(
+    path.join(fixture.root, 'packages/rescue/pages/index.vue'),
+    "\n<script>import '../utils/computed.js'</script>",
+  )
+  fs.appendFileSync(
+    path.join(fixture.output, 'packages/rescue/pages/index.js'),
+    "\nconst image = `/static/computed/${name}.svg`; const remote = 'https://cdn.example/static/dup-b.svg';",
+  )
   put(fixture.root, 'pages/dev/paw-icon-lab.vue', '<text>/static/nonexistent.svg</text>')
   const first = run(fixture)
   assert.equal(first.status, 0, first.stderr)
-  for (const name of ['a', 'b']) assert.equal(fs.existsSync(path.join(fixture.output, `packages/rescue/static/computed/${name}.svg`)), true)
-  const source = fs.readFileSync(path.join(fixture.output, 'packages/rescue/pages/index.js'), 'utf8')
+  for (const name of ['a', 'b'])
+    assert.equal(
+      fs.existsSync(path.join(fixture.output, `packages/rescue/static/computed/${name}.svg`)),
+      true,
+    )
+  const source = fs.readFileSync(
+    path.join(fixture.output, 'packages/rescue/pages/index.js'),
+    'utf8',
+  )
   assert.ok(source.includes('/packages/rescue/static/computed/${name}.svg'))
   assert.ok(source.includes('https://cdn.example/static/dup-b.svg'))
   const once = snapshot(fixture.output)

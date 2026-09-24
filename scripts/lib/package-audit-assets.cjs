@@ -11,7 +11,7 @@ const {
   relPath,
   resolveAssetTarget,
   stripQueryHash,
-  walkFiles
+  walkFiles,
 } = require('./package-audit-common.cjs')
 
 function lineNumber(source, index) {
@@ -27,12 +27,17 @@ function addReference(references, file, source, index, raw, kind) {
 function extractStaticReferences(source, file) {
   const references = []
   const unknownDynamic = []
-  const staticPattern = /(?:^|["'`(=:\s])((?:\/[^"'`\s]*\/)?static\/[^"'`\s)};,]+|\/static\/[^"'`\s)};,]+)/g
+  const staticPattern =
+    /(?:^|["'`(=:\s])((?:\/[^"'`\s]*\/)?static\/[^"'`\s)};,]+|\/static\/[^"'`\s)};,]+)/g
   for (const match of source.matchAll(staticPattern)) {
     const raw = stripQueryHash(match[1]).replace(/[),;]+$/, '')
     if (raw.includes('${') || raw.includes('`')) continue
     if (raw.endsWith('/')) {
-      unknownDynamic.push({ file, line: lineNumber(source, match.index || 0), expression: match[1] })
+      unknownDynamic.push({
+        file,
+        line: lineNumber(source, match.index || 0),
+        expression: match[1],
+      })
       continue
     }
     addReference(references, file, source, match.index || 0, raw, 'static')
@@ -40,12 +45,17 @@ function extractStaticReferences(source, file) {
   const dynamicPatterns = [
     /(?:\/[^"'`\s]*\/)?static\/[^"'`\s]*\$\{[^}]*\}/g,
     /(?:\/static\/|static\/)["'`]?(?:\s*\+|\$\{)/g,
-    /["'`]\/static\/["'`]\s*\+/g
+    /["'`]\/static\/["'`]\s*\+/g,
   ]
   for (const pattern of dynamicPatterns) {
     for (const match of source.matchAll(pattern)) {
       const line = lineNumber(source, match.index || 0)
-      const duplicate = unknownDynamic.some(item => item.file === file && item.line === line && (item.expression.includes(match[0]) || match[0].includes(item.expression)))
+      const duplicate = unknownDynamic.some(
+        (item) =>
+          item.file === file &&
+          item.line === line &&
+          (item.expression.includes(match[0]) || match[0].includes(item.expression)),
+      )
       if (!duplicate) unknownDynamic.push({ file, line, expression: match[0] })
     }
   }
@@ -65,8 +75,11 @@ function extractStyleReferences(source, file) {
 
 function extractMediaReferences(source, file) {
   const references = []
-  for (const match of source.matchAll(/<(?:image|audio|video)\b[^>]*?\b(?:src|poster)\s*=\s*(['"])([^'"]+)\1/gi)) {
-    if (!match[2].includes('{{')) addReference(references, file, source, match.index || 0, match[2], 'template-media')
+  for (const match of source.matchAll(
+    /<(?:image|audio|video)\b[^>]*?\b(?:src|poster)\s*=\s*(['"])([^'"]+)\1/gi,
+  )) {
+    if (!match[2].includes('{{'))
+      addReference(references, file, source, match.index || 0, match[2], 'template-media')
   }
   return references
 }
@@ -77,7 +90,11 @@ function extractRequireReferences(source, file) {
   for (const match of source.matchAll(pattern)) {
     const raw = match[2]
     const clean = stripQueryHash(raw)
-    if (clean.includes('/static/') || clean.startsWith('static/') || ASSET_EXTENSIONS.has(path.extname(clean).toLowerCase())) {
+    if (
+      clean.includes('/static/') ||
+      clean.startsWith('static/') ||
+      ASSET_EXTENSIONS.has(path.extname(clean).toLowerCase())
+    ) {
       addReference(references, file, source, match.index || 0, raw, 'module-asset')
     }
   }
@@ -93,7 +110,7 @@ function extractUsingComponents(source, file) {
     return { references: [], errors: [{ file, error: `invalid JSON: ${error.message}` }] }
   }
   const references = []
-  const visit = node => {
+  const visit = (node) => {
     if (!node || typeof node !== 'object') return
     if (node.usingComponents && typeof node.usingComponents === 'object') {
       for (const [name, target] of Object.entries(node.usingComponents)) {
@@ -116,9 +133,25 @@ function ownerVisibility(referencingPackage, targetPackage) {
 }
 
 function inspectReference(reference, output, roots) {
-  const target = resolveAssetTarget(reference.file, reference.path, output, reference.kind === 'usingComponents' ? 'usingComponents' : reference.kind === 'style-import' ? 'style-import' : 'asset')
+  const target = resolveAssetTarget(
+    reference.file,
+    reference.path,
+    output,
+    reference.kind === 'usingComponents'
+      ? 'usingComponents'
+      : reference.kind === 'style-import'
+        ? 'style-import'
+        : 'asset',
+  )
   if (!target) return { reference, skipped: true }
-  const candidates = candidateFiles(target, reference.kind === 'usingComponents' ? 'usingComponents' : reference.kind === 'style-import' ? 'style-import' : 'asset')
+  const candidates = candidateFiles(
+    target,
+    reference.kind === 'usingComponents'
+      ? 'usingComponents'
+      : reference.kind === 'style-import'
+        ? 'style-import'
+        : 'asset',
+  )
   if (!candidates.length) return { reference, target: relPath(output, target), missing: true }
   const targetFile = candidates[0]
   const targetRelative = relPath(output, targetFile)
@@ -131,13 +164,17 @@ function inspectReference(reference, output, roots) {
     target: targetRelative,
     referencingPackage,
     targetPackage,
-    violation: outsideOutput ? 'outside-output' : ownerVisibility(referencingPackage, targetPackage)
+    violation: outsideOutput
+      ? 'outside-output'
+      : ownerVisibility(referencingPackage, targetPackage),
   }
 }
 
 function auditAssets(options) {
   const { output, roots } = options
-  const files = walkFiles(output).filter(file => CODE_EXTENSIONS.has(path.extname(file).toLowerCase()))
+  const files = walkFiles(output).filter((file) =>
+    CODE_EXTENSIONS.has(path.extname(file).toLowerCase()),
+  )
   const references = []
   const unknownDynamic = []
   const parseErrors = []
@@ -146,19 +183,24 @@ function auditAssets(options) {
     const staticResult = extractStaticReferences(source, file)
     references.push(...staticResult.references)
     unknownDynamic.push(...staticResult.unknownDynamic)
-    if (['.wxss', '.css'].includes(path.extname(file).toLowerCase())) references.push(...extractStyleReferences(source, file))
-    if (['.js', '.wxs'].includes(path.extname(file).toLowerCase())) references.push(...extractRequireReferences(source, file))
-    if (path.extname(file).toLowerCase() === '.wxml') references.push(...extractMediaReferences(source, file))
+    if (['.wxss', '.css'].includes(path.extname(file).toLowerCase()))
+      references.push(...extractStyleReferences(source, file))
+    if (['.js', '.wxs'].includes(path.extname(file).toLowerCase()))
+      references.push(...extractRequireReferences(source, file))
+    if (path.extname(file).toLowerCase() === '.wxml')
+      references.push(...extractMediaReferences(source, file))
     const components = extractUsingComponents(source, file)
     references.push(...components.references)
     parseErrors.push(...components.errors)
   }
-  const resolved = references.map(reference => inspectReference(reference, output, roots)).filter(item => !item.skipped)
-  const missing = resolved.filter(item => item.missing)
-  const crossPackage = resolved.filter(item => item.violation)
+  const resolved = references
+    .map((reference) => inspectReference(reference, output, roots))
+    .filter((item) => !item.skipped)
+  const missing = resolved.filter((item) => item.missing)
+  const crossPackage = resolved.filter((item) => item.violation)
   return {
     filesScanned: files.length,
-    references: resolved.map(item => ({
+    references: resolved.map((item) => ({
       source: relPath(output, item.reference.file),
       line: item.reference.line,
       kind: item.reference.kind,
@@ -166,15 +208,45 @@ function auditAssets(options) {
       target: item.target || null,
       referencingPackage: item.referencingPackage || null,
       targetPackage: item.targetPackage || null,
-      violation: item.violation || null
+      violation: item.violation || null,
     })),
-    missing: missing.map(item => ({ source: relPath(output, item.reference.file), line: item.reference.line, kind: item.reference.kind, path: item.reference.path, target: item.target })),
-    crossPackage: crossPackage.map(item => ({ source: relPath(output, item.reference.file), line: item.reference.line, path: item.reference.path, target: item.target, from: item.referencingPackage, to: item.targetPackage, violation: item.violation })),
+    missing: missing.map((item) => ({
+      source: relPath(output, item.reference.file),
+      line: item.reference.line,
+      kind: item.reference.kind,
+      path: item.reference.path,
+      target: item.target,
+    })),
+    crossPackage: crossPackage.map((item) => ({
+      source: relPath(output, item.reference.file),
+      line: item.reference.line,
+      path: item.reference.path,
+      target: item.target,
+      from: item.referencingPackage,
+      to: item.targetPackage,
+      violation: item.violation,
+    })),
     unknownDynamic: unknownDynamic
-      .map(item => ({ file: relPath(output, item.file), line: item.line, expression: item.expression }))
-      .filter((item, index, list) => list.findIndex(other => other.file === item.file && other.line === item.line && other.expression === item.expression) === index),
+      .map((item) => ({
+        file: relPath(output, item.file),
+        line: item.line,
+        expression: item.expression,
+      }))
+      .filter(
+        (item, index, list) =>
+          list.findIndex(
+            (other) =>
+              other.file === item.file &&
+              other.line === item.line &&
+              other.expression === item.expression,
+          ) === index,
+      ),
     parseErrors,
-    pass: missing.length === 0 && crossPackage.length === 0 && unknownDynamic.length === 0 && parseErrors.length === 0
+    pass:
+      missing.length === 0 &&
+      crossPackage.length === 0 &&
+      unknownDynamic.length === 0 &&
+      parseErrors.length === 0,
   }
 }
 
@@ -184,5 +256,5 @@ module.exports = {
   extractStaticReferences,
   extractStyleReferences,
   extractUsingComponents,
-  ownerVisibility
+  ownerVisibility,
 }

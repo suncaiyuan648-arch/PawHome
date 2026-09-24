@@ -1,29 +1,50 @@
 <template>
-  <view class="paw-adoption-reject-reason" :class="{ 'is-expanded': expanded }" data-qa="qa-adoption-reject-reason"
-    @tap="toggle">
+  <view
+    class="paw-adoption-reject-reason"
+    :class="{ 'is-expanded': expanded }"
+    data-qa="qa-adoption-reject-reason"
+    @tap="toggle"
+  >
     <view class="paw-adoption-reject-reason__summary">
       <text>拒绝说明</text>
       <view class="paw-adoption-reject-reason__action">
         <text>{{ expanded ? '收起' : '查看' }}</text>
-        <PawIcon name="navigation/chevron-right" :size="12" :rotate="expanded ? 90 : 0" />
+        <PawIcon
+          name="navigation/chevron-right"
+          :size="12"
+          :rotate="expanded ? 90 : 0"
+        />
       </view>
     </view>
-    <view v-if="expanded" class="paw-adoption-reject-reason__detail">
-      <PawImage class="paw-adoption-reject-reason__avatar" :src="actor.avatar" :size="34" :radius="17"
-        :preview="false" />
+    <view
+      v-if="expanded"
+      class="paw-adoption-reject-reason__detail"
+    >
+      <PawImage
+        class="paw-adoption-reject-reason__avatar"
+        :src="actor.avatar"
+        :size="34"
+        :radius="17"
+        :preview="false"
+      />
       <view class="paw-adoption-reject-reason__content">
         <view class="paw-adoption-reject-reason__identity">
           <text class="paw-adoption-reject-reason__name">{{ actor.name }}</text>
           <LevelBadge :level="actor.level" />
-          <view class="paw-adoption-reject-reason__role"><text>{{ actor.role }}</text></view>
+          <view class="paw-adoption-reject-reason__role"
+            ><text>{{ actor.role }}</text></view
+          >
         </view>
-        <text class="paw-adoption-reject-reason__note">{{ note || '当前申请暂未通过，请关注其他小院。' }}</text>
+        <text class="paw-adoption-reject-reason__note">{{
+          note || '当前申请暂未通过，请关注其他小院。'
+        }}</text>
       </view>
     </view>
   </view>
 </template>
 
-<script lang="ts">import { defineComponent, type PropType } from 'vue'
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
 
 import PawImage from '@/components/base/PawImage.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
@@ -36,14 +57,16 @@ interface AdoptionRejector {
   role?: string
 }
 
-interface AdoptionRejectReasonState { expanded: boolean }
+interface AdoptionRejectReasonState {
+  expanded: boolean
+}
 
 export default defineComponent({
   name: 'PawAdoptionRejectReason',
   components: { PawImage, PawIcon, LevelBadge },
   props: {
     rejector: { type: Object as PropType<AdoptionRejector>, default: () => ({}) },
-    note: { type: String, default: '' }
+    note: { type: String, default: '' },
   },
   data(): AdoptionRejectReasonState {
     return { expanded: false }
@@ -54,13 +77,15 @@ export default defineComponent({
         name: this.rejector.name || '拒绝者',
         avatar: this.rejector.avatar || '/static/figma/home/feed-avatar.png',
         level: this.rejector.level || 1,
-        role: this.rejector.role || '院主'
+        role: this.rejector.role || '院主',
       }
-    }
+    },
   },
   methods: {
-    toggle() { this.expanded = !this.expanded }
-  }
+    toggle() {
+      this.expanded = !this.expanded
+    },
+  },
 })
 </script>
 

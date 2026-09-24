@@ -1,9 +1,22 @@
 <template>
-  <view class="evidence-page" :class="listMode ? 'evidence-page--list' : 'evidence-page--confirm'"
-    :data-qa="isRescue && listMode ? 'qa-rescue-evidence-list' : 'qa-adoption-evidence'">
-    <PawPageNav :title="listMode ? '逢猫' : (isRescue ? '我也来证实' : '确认领养')" :title-centered="true"
-      :background="navBackground" :fallback-url="fallbackUrl" :auto-back="false" @back="goBack" />
-    <scroll-view class="evidence-scroll" scroll-y :show-scrollbar="false">
+  <view
+    class="evidence-page"
+    :class="listMode ? 'evidence-page--list' : 'evidence-page--confirm'"
+    :data-qa="isRescue && listMode ? 'qa-rescue-evidence-list' : 'qa-adoption-evidence'"
+  >
+    <PawPageNav
+      :title="listMode ? '逢猫' : isRescue ? '我也来证实' : '确认领养'"
+      :title-centered="true"
+      :background="navBackground"
+      :fallback-url="fallbackUrl"
+      :auto-back="false"
+      @back="goBack"
+    />
+    <scroll-view
+      class="evidence-scroll"
+      scroll-y
+      :show-scrollbar="false"
+    >
       <template v-if="listMode">
         <view class="truth-row">
           <view class="truth-count">
@@ -11,45 +24,110 @@
             <text class="truth-number">{{ evidenceCount }}</text>
             <text>人证实为真</text>
           </view>
-          <PawButton v-if="isRescue && rescueRecord" :text="hasCurrentUserProof ? '已证实' : '我也来证实'"
-            :tone="hasCurrentUserProof ? 'secondary' : 'accent'" size="xs" qa="qa-rescue-evidence-proof"
-            :disabled="hasCurrentUserProof" @click="openProof" />
+          <PawButton
+            v-if="isRescue && rescueRecord"
+            :text="hasCurrentUserProof ? '已证实' : '我也来证实'"
+            :tone="hasCurrentUserProof ? 'secondary' : 'accent'"
+            size="xs"
+            qa="qa-rescue-evidence-proof"
+            :disabled="hasCurrentUserProof"
+            @click="openProof"
+          />
         </view>
         <view class="proof-card">
-          <view class="proof-title"><text>全部证实</text><text>({{ proofList.length }}人)</text></view>
-          <CommentThread class="proof-comment-thread" :comments="proofList" :readonly="true"
-            :comment-preview-count="proofList.length" @user-click="openProofUser" @like="toggleProofLike" />
+          <view class="proof-title"
+            ><text>全部证实</text><text>({{ proofList.length }}人)</text></view
+          >
+          <CommentThread
+            class="proof-comment-thread"
+            :comments="proofList"
+            :readonly="true"
+            :comment-preview-count="proofList.length"
+            @user-click="openProofUser"
+            @like="toggleProofLike"
+          />
         </view>
       </template>
       <template v-else>
-        <view class="confirm-toolbar"><text @tap="goBack">取消</text>
-          <PawButton text="提交" size="xs" shape="rounded" qa="qa-adoption-evidence-submit" :disabled="!canSubmit"
-            @click="submit" />
+        <view class="confirm-toolbar"
+          ><text @tap="goBack">取消</text>
+          <PawButton
+            text="提交"
+            size="xs"
+            shape="rounded"
+            qa="qa-adoption-evidence-submit"
+            :disabled="!canSubmit"
+            @click="submit"
+          />
         </view>
         <view class="compare-card">
-          <view v-for="(slot, index) in photoSlots" :key="slot.key" class="photo-field"
-            :data-qa="'qa-adoption-evidence-photo-' + slot.key" @tap="choosePhoto(index)">
+          <view
+            v-for="(slot, index) in photoSlots"
+            :key="slot.key"
+            class="photo-field"
+            :data-qa="'qa-adoption-evidence-photo-' + slot.key"
+            @tap="choosePhoto(index)"
+          >
             <view class="upload-box">
-              <PawImage v-if="slot.src" class="upload-image" :src="slot.src" display-mode="fixed" :width="106"
-                :height="106" :radius="3" :preview="true" />
-              <view v-else class="upload-placeholder">
-                <uni-icons type="image" color="#999" :size="22" />
+              <PawImage
+                v-if="slot.src"
+                class="upload-image"
+                :src="slot.src"
+                display-mode="fixed"
+                :width="106"
+                :height="106"
+                :radius="3"
+                :preview="true"
+              />
+              <view
+                v-else
+                class="upload-placeholder"
+              >
+                <uni-icons
+                  type="image"
+                  color="#999"
+                  :size="22"
+                />
                 <text>正脸照片/视频</text>
               </view>
-              <view v-if="slot.src" class="upload-edit" @tap.stop="removePhoto(index)">
-                <PawIcon name="navigation/close" :size="12" color="#fff" />
+              <view
+                v-if="slot.src"
+                class="upload-edit"
+                @tap.stop="removePhoto(index)"
+              >
+                <PawIcon
+                  name="navigation/close"
+                  :size="12"
+                  color="#fff"
+                />
               </view>
             </view>
             <text>{{ slot.label }}</text>
           </view>
         </view>
-        <view class="story-field"><textarea v-model="story" maxlength="500" placeholder="分享您的领养过程以及您领养后的感受" /><text>{{
-          story.length }}/500</text></view>
+        <view class="story-field">
+          <textarea
+            v-model="story"
+            maxlength="500"
+            placeholder="分享您的领养过程以及您领养后的感受"
+          /><text>{{ story.length }}/500</text></view
+        >
         <text class="explain">院主和审核团会根据您上传的图片及领养申请来投票您是否为真实领养</text>
         <view class="examples">
-          <view v-for="example in examples" :key="example" class="example">
-            <PawImage class="example-image" :src="example" display-mode="fixed" :width="83" :height="83" :radius="3"
-              :preview="true">
+          <view
+            v-for="example in examples"
+            :key="example"
+            class="example"
+          >
+            <PawImage
+              class="example-image"
+              :src="example"
+              display-mode="fixed"
+              :width="83"
+              :height="83"
+              :radius="3"
+              :preview="true"
+            >
               <view class="example-overlay">示例</view>
             </PawImage>
           </view>
@@ -94,16 +172,19 @@ export default defineComponent({
     recordId: { type: String, default: '' },
     source: { type: String, default: '' },
     sourceType: { type: String, default: 'adoption' },
-    rescueId: { type: String, default: '' }
+    rescueId: { type: String, default: '' },
   },
   emits: {
-    submitted: (payload: AdoptionEvidenceSubmitPayload) => Array.isArray(payload.photos) && typeof payload.story === 'string'
+    submitted: (payload: AdoptionEvidenceSubmitPayload) =>
+      Array.isArray(payload.photos) && typeof payload.story === 'string',
   },
   data(): AdoptionEvidencePageState {
     return createAdoptionEvidencePageState()
   },
   computed: {
-    listMode() { return this.mode === 'list' },
+    listMode() {
+      return this.mode === 'list'
+    },
     navBackground() {
       return 'linear-gradient(to bottom, #fffcdc 0%, #ffffff 100%)'
     },
@@ -111,40 +192,82 @@ export default defineComponent({
       const source = this.source || this.sourceType
       return source === 'rescue' ? 'rescue' : 'adoption'
     },
-    isRescue() { return this.contextType === 'rescue' },
-    resolvedRescueId() { return this.rescueId || this.recordId },
-    rescueRecord() { return this.isRescue && this.resolvedRescueId ? getRescueById(this.resolvedRescueId) : null },
-		hasCurrentUserProof() { return this.isRescue && Boolean(this.rescueRecord && hasRescueProofByUser(this.rescueRecord, SELF_PAW_ID)) },
+    isRescue() {
+      return this.contextType === 'rescue'
+    },
+    resolvedRescueId() {
+      return this.rescueId || this.recordId
+    },
+    rescueRecord() {
+      return this.isRescue && this.resolvedRescueId ? getRescueById(this.resolvedRescueId) : null
+    },
+    hasCurrentUserProof() {
+      return (
+        this.isRescue &&
+        Boolean(this.rescueRecord && hasRescueProofByUser(this.rescueRecord, SELF_PAW_ID))
+      )
+    },
     evidenceCount(): number {
       if (!this.isRescue) return 0
       const count = this.rescueRecord ? Number(this.rescueRecord.evidenceCount) : Number.NaN
       return Number.isFinite(count) ? count : this.proofList.length
     },
     fallbackUrl() {
-      if (this.isRescue && this.resolvedRescueId) return `/packages/rescue/pages/detail/index?rescueId=${encodeURIComponent(this.resolvedRescueId)}`
+      if (this.isRescue && this.resolvedRescueId)
+        return `/packages/rescue/pages/detail/index?rescueId=${encodeURIComponent(this.resolvedRescueId)}`
       return '/pages/me/index'
     },
-    photoSlots(): AdoptionEvidencePhotoSlot[] { return [{ key: 'before', label: '小咪流浪时的样子', src: this.selectedPhotos[0] }, { key: 'after', label: '小咪在新家的样子', src: this.selectedPhotos[1] }] },
-    canSubmit() { return this.selectedPhotos.every(Boolean) && this.story.trim().length > 0 }
+    photoSlots(): AdoptionEvidencePhotoSlot[] {
+      return [
+        { key: 'before', label: '小咪流浪时的样子', src: this.selectedPhotos[0] },
+        { key: 'after', label: '小咪在新家的样子', src: this.selectedPhotos[1] },
+      ]
+    },
+    canSubmit() {
+      return this.selectedPhotos.every(Boolean) && this.story.trim().length > 0
+    },
   },
   watch: {
-    recordId: { immediate: true, handler() { this.loadRecord() } },
-    rescueId() { this.loadRecord() },
-    source() { this.loadRecord() },
-    sourceType() { this.loadRecord() }
+    recordId: {
+      immediate: true,
+      handler() {
+        this.loadRecord()
+      },
+    },
+    rescueId() {
+      this.loadRecord()
+    },
+    source() {
+      this.loadRecord()
+    },
+    sourceType() {
+      this.loadRecord()
+    },
   },
   methods: {
     actorProvider() {
-      try { return typeof uni !== 'undefined' && uni && typeof uni.getStorageSync === 'function' ? uni.getStorageSync('PAWHOME_ACTOR_SESSION') : null } catch { return null }
+      try {
+        return typeof uni !== 'undefined' && uni && typeof uni.getStorageSync === 'function'
+          ? uni.getStorageSync('PAWHOME_ACTOR_SESSION')
+          : null
+      } catch {
+        return null
+      }
     },
     loadRecord() {
       this.proofList = []
-      const adoptionResult = !this.isRescue && this.recordId
-        ? getApplication('adoption', this.recordId, { actorProvider: () => this.actorProvider(), requireActor: true })
-        : null
+      const adoptionResult =
+        !this.isRescue && this.recordId
+          ? getApplication('adoption', this.recordId, {
+              actorProvider: () => this.actorProvider(),
+              requireActor: true,
+            })
+          : null
       const record = this.isRescue
         ? this.rescueRecord
-        : (adoptionResult && adoptionResult.success ? adoptionResult.data : null)
+        : adoptionResult && adoptionResult.success
+          ? adoptionResult.data
+          : null
       if (!record) return
       if (this.isRescue) {
         this.proofList = readAdoptionEvidenceProofEntries(record)
@@ -170,11 +293,13 @@ export default defineComponent({
       next.splice(index, 1, {
         ...current,
         liked,
-        likes: Math.max(0, Number(current.likes || 0) + (liked ? 1 : -1))
+        likes: Math.max(0, Number(current.likes || 0) + (liked ? 1 : -1)),
       })
       this.proofList = next
     },
-    goBack() { goBackSmart({ fallbackUrl: this.fallbackUrl }) },
+    goBack() {
+      goBackSmart({ fallbackUrl: this.fallbackUrl })
+    },
     openProof() {
       if (this.hasCurrentUserProof) return
       if (!this.isRescue || !this.resolvedRescueId || !this.rescueRecord) {
@@ -182,7 +307,9 @@ export default defineComponent({
         return
       }
       try {
-        uni.navigateTo({ url: buildRoute('rescue.proof.create', { rescueId: this.resolvedRescueId }) })
+        uni.navigateTo({
+          url: buildRoute('rescue.proof.create', { rescueId: this.resolvedRescueId }),
+        })
       } catch {
         uni.showToast({ title: '救助证实表单暂不可用', icon: 'none' })
       }
@@ -192,10 +319,19 @@ export default defineComponent({
       const photoIndex: AdoptionEvidencePhotoIndex = index
       const done = (result: unknown) => {
         const paths = readChosenEvidenceMediaPaths(result)
-        this.selectedPhotos = updateAdoptionEvidencePhoto(this.selectedPhotos, photoIndex, paths[0] || '')
+        this.selectedPhotos = updateAdoptionEvidencePhoto(
+          this.selectedPhotos,
+          photoIndex,
+          paths[0] || '',
+        )
       }
       // #ifdef MP-WEIXIN
-      uni.chooseMedia({ count: 1, mediaType: ['image', 'video'], sourceType: ['album', 'camera'], success: (res) => done(res) })
+      uni.chooseMedia({
+        count: 1,
+        mediaType: ['image', 'video'],
+        sourceType: ['album', 'camera'],
+        success: (res) => done(res),
+      })
       // #endif
       // #ifndef MP-WEIXIN
       uni.chooseImage({ count: 1, sourceType: ['album', 'camera'], success: (res) => done(res) })
@@ -206,18 +342,28 @@ export default defineComponent({
       this.selectedPhotos = updateAdoptionEvidencePhoto(this.selectedPhotos, index, '')
     },
     submit() {
-      if (!this.canSubmit) { uni.showToast({ title: '请补充照片和领养感受', icon: 'none' }); return }
+      if (!this.canSubmit) {
+        uni.showToast({ title: '请补充照片和领养感受', icon: 'none' })
+        return
+      }
       if (this.recordId) {
-        const result = submitAdoptionEvidence(this.recordId, {
-          photos: [...this.selectedPhotos],
-          story: this.story.trim()
-        }, { actorProvider: () => this.actorProvider() })
-        if (!result.success) { uni.showToast({ title: result.error.message || '当前状态不能提交证实', icon: 'none' }); return }
+        const result = submitAdoptionEvidence(
+          this.recordId,
+          {
+            photos: [...this.selectedPhotos],
+            story: this.story.trim(),
+          },
+          { actorProvider: () => this.actorProvider() },
+        )
+        if (!result.success) {
+          uni.showToast({ title: result.error.message || '当前状态不能提交证实', icon: 'none' })
+          return
+        }
       }
       uni.showToast({ title: '已提交', icon: 'none' })
       this.$emit('submitted', { photos: [...this.selectedPhotos], story: this.story.trim() })
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -227,7 +373,7 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   background: #f5f5f5;
-  color: #333
+  color: #333;
 }
 
 .evidence-page--list {
@@ -240,7 +386,7 @@ export default defineComponent({
 
 .evidence-scroll {
   flex: 1;
-  min-height: 0
+  min-height: 0;
 }
 
 .evidence-page--list .evidence-scroll {
@@ -256,7 +402,7 @@ export default defineComponent({
   margin: 0 0 10px;
   padding: 6px 8px;
   box-sizing: border-box;
-  border-radius: 6px
+  border-radius: 6px;
 }
 
 .truth-count {
@@ -268,26 +414,26 @@ export default defineComponent({
   color: #333;
   font-size: 12px;
   line-height: 18px;
-  white-space: nowrap
+  white-space: nowrap;
 }
 
 .truth-number {
   color: #ee8002;
   font-size: 22px;
-  line-height: 26px
+  line-height: 26px;
 }
 
 .truth-row .paw-button {
   flex: 0 0 auto;
   padding: 0 13px;
-  white-space: nowrap
+  white-space: nowrap;
 }
 
 .truth-row :deep(.paw-button) {
   background: #ffaa00;
   color: #fff;
   font-size: 12px;
-  font-weight: 400
+  font-weight: 400;
 }
 
 .truth-row :deep(.paw-button--disabled) {
@@ -299,7 +445,7 @@ export default defineComponent({
   margin: 0 0 24px;
   padding: 22px 15px;
   border-radius: 20px;
-  background: #fff
+  background: #fff;
 }
 
 .proof-title {
@@ -310,7 +456,7 @@ export default defineComponent({
   margin-bottom: 17px;
   color: #333;
   font-size: 15px;
-  line-height: 21px
+  line-height: 21px;
 }
 
 .confirm-toolbar {
@@ -321,13 +467,13 @@ export default defineComponent({
   justify-content: space-between;
   padding: 0 15px;
   box-sizing: border-box;
-  background: transparent
+  background: transparent;
 }
 
-.confirm-toolbar>text {
+.confirm-toolbar > text {
   color: #333;
   font-size: 16px;
-  line-height: 23px
+  line-height: 23px;
 }
 
 .confirm-toolbar .paw-button {
@@ -337,7 +483,7 @@ export default defineComponent({
   min-height: 30px;
   padding: 0;
   border-radius: 4px;
-  font-size: 14px
+  font-size: 14px;
 }
 
 .compare-card {
@@ -348,7 +494,7 @@ export default defineComponent({
   padding: 22px 47px 20px;
   box-sizing: border-box;
   border-radius: 9px 9px 0 0;
-  background: #fff
+  background: #fff;
 }
 
 .photo-field {
@@ -358,16 +504,16 @@ export default defineComponent({
   flex: 0 0 106px;
   flex-direction: column;
   align-items: center;
-  gap: 8px
+  gap: 8px;
 }
 
-.photo-field>text {
+.photo-field > text {
   flex: 0 0 20px;
   height: 20px;
   color: #999;
   font-size: 14px;
   line-height: 20px;
-  white-space: nowrap
+  white-space: nowrap;
 }
 
 .upload-box {
@@ -382,7 +528,7 @@ export default defineComponent({
   justify-content: center;
   background: #f5f5f5;
   color: #999;
-  border-radius: 3px
+  border-radius: 3px;
 }
 
 .upload-image,
@@ -404,9 +550,9 @@ export default defineComponent({
   justify-content: center;
 }
 
-.upload-placeholder>text {
+.upload-placeholder > text {
   margin-top: 5px;
-  font-size: 12px
+  font-size: 12px;
 }
 
 .upload-edit {
@@ -419,7 +565,7 @@ export default defineComponent({
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgba(0, 0, 0, .5)
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .story-field {
@@ -427,8 +573,8 @@ export default defineComponent({
   height: 161px;
   margin: 0 15px;
   background: #fff;
-  border-top: .3px solid #e4e4e4;
-  border-radius: 0 0 9px 9px
+  border-top: 0.3px solid #e4e4e4;
+  border-radius: 0 0 9px 9px;
 }
 
 .story-field textarea {
@@ -438,15 +584,15 @@ export default defineComponent({
   box-sizing: border-box;
   color: #929296;
   font-size: 14px;
-  line-height: normal
+  line-height: normal;
 }
 
-.story-field>text {
+.story-field > text {
   position: absolute;
   right: 12px;
   bottom: 11px;
   color: #aaa;
-  font-size: 12px
+  font-size: 12px;
 }
 
 .explain {
@@ -454,25 +600,25 @@ export default defineComponent({
   margin: 12px 25px 0;
   color: #929296;
   font-size: 14px;
-  line-height: normal
+  line-height: normal;
 }
 
 .examples {
   display: flex;
   gap: 6px;
-  margin: 38px 17px
+  margin: 38px 17px;
 }
 
 .example {
   position: relative;
   width: 83px;
-  height: 83px
+  height: 83px;
 }
 
 .example-image {
   position: relative;
   width: 100%;
-  height: 100%
+  height: 100%;
 }
 
 .example-overlay {
@@ -481,9 +627,9 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, .45);
+  background: rgba(0, 0, 0, 0.45);
   border-radius: 3px;
   color: #fff;
-  font-size: 13px
+  font-size: 13px;
 }
 </style>

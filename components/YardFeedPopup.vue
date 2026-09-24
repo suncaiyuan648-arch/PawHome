@@ -1,25 +1,58 @@
 <template>
-  <view class="yfp-host" :data-pet-id="petId">
-    <PawBottomSheet v-model:visible="visibleProxy" variant="feed" height="599px" :close-on-mask="true"
-      :safe-area="false" :z-index="10050">
-      <view class="yfp-sheet" @tap.stop>
-        <view class="yfp-close-hit" @tap="close">
-          <PawIcon class="yfp-close" name="navigation/close" :size="12" label="关闭" />
+  <view
+    class="yfp-host"
+    :data-pet-id="petId"
+  >
+    <PawBottomSheet
+      v-model:visible="visibleProxy"
+      variant="feed"
+      height="599px"
+      :close-on-mask="true"
+      :safe-area="false"
+      :z-index="10050"
+    >
+      <view
+        class="yfp-sheet"
+        @tap.stop
+      >
+        <view
+          class="yfp-close-hit"
+          @tap="close"
+        >
+          <PawIcon
+            class="yfp-close"
+            name="navigation/close"
+            :size="12"
+            label="关闭"
+          />
         </view>
 
         <view class="yfp-title">
-          <text>加入</text><text class="yfp-title-number">{{ heroFormatted }}</text><text>位逢猫侠，一起照顾流浪猫</text>
+          <text>加入</text><text class="yfp-title-number">{{ heroFormatted }}</text
+          ><text>位逢猫侠，一起照顾流浪猫</text>
         </view>
         <text class="yfp-sub yfp-sub--first">支付成功后平台将猫粮寄给该小院</text>
         <text class="yfp-sub yfp-sub--second">院主会在规定时间内喂猫并向您反馈</text>
 
         <view class="yfp-cards">
-          <view v-for="pkg in packages" :key="pkg.key" class="yfp-card-col" :class="`yfp-card-col--${pkg.key}`"
-            @tap="selectKey(pkg.key)">
-            <view class="yfp-card" :class="{ 'yfp-card--selected': selectedKey === pkg.key }">
+          <view
+            v-for="pkg in packages"
+            :key="pkg.key"
+            class="yfp-card-col"
+            :class="`yfp-card-col--${pkg.key}`"
+            @tap="selectKey(pkg.key)"
+          >
+            <view
+              class="yfp-card"
+              :class="{ 'yfp-card--selected': selectedKey === pkg.key }"
+            >
               <view class="yfp-card-top-row">
-                <PawIcon class="yfp-card-icon" :class="`yfp-card-icon--${pkg.key}`" :name="pkg.iconName"
-                  :size="pkg.iconSize" />
+                <PawIcon
+                  class="yfp-card-icon"
+                  :class="`yfp-card-icon--${pkg.key}`"
+                  :name="pkg.iconName"
+                  :size="pkg.iconSize"
+                />
                 <text class="yfp-card-weight">{{ pkg.weightLabel }}</text>
               </view>
               <text class="yfp-card-price">{{ pkg.priceLabel }}</text>
@@ -28,36 +61,66 @@
           </view>
         </view>
 
-        <view class="yfp-learn" @tap="onLearnFood">
+        <view
+          class="yfp-learn"
+          @tap="onLearnFood"
+        >
           <text>了解猫粮</text>
-          <PawIcon name="navigation/chevron-right" :size="7" />
+          <PawIcon
+            name="navigation/chevron-right"
+            :size="7"
+          />
         </view>
 
         <view class="yfp-rules">
           <text class="yfp-rules-title">云养300天权益：</text>
-          <text v-for="(right, index) in feedRights" :key="index" class="yfp-rule-line">{{ Number(index) + 1 }}.{{ right
-            }}</text>
+          <text
+            v-for="(right, index) in feedRights"
+            :key="index"
+            class="yfp-rule-line"
+            >{{ Number(index) + 1 }}.{{ right }}</text
+          >
         </view>
 
-        <PawButton class="yfp-pay-btn" size="md" tone="brand" block @click="onPay">
-          <text class="yfp-pay-amount">{{ selectedPkg.payPriceLabel }}</text><text class="yfp-pay-unit">元</text><text
-            class="yfp-pay-copy">给小咪们投喂{{ selectedPkg.payJinLabel }}猫粮</text>
+        <PawButton
+          class="yfp-pay-btn"
+          size="md"
+          tone="brand"
+          block
+          @click="onPay"
+        >
+          <text class="yfp-pay-amount">{{ selectedPkg.payPriceLabel }}</text
+          ><text class="yfp-pay-unit">元</text
+          ><text class="yfp-pay-copy">给小咪们投喂{{ selectedPkg.payJinLabel }}猫粮</text>
         </PawButton>
 
         <view class="yfp-agree-row">
           <PawCheckbox v-model="agreed" />
           <view class="yfp-agree-text">
             <text class="yfp-agree-plain">已经阅读完</text>
-            <text class="yfp-agree-link" @tap.stop="openAgreement('feed')">《投喂协议》</text>
+            <text
+              class="yfp-agree-link"
+              @tap.stop="openAgreement('feed')"
+              >《投喂协议》</text
+            >
             <text class="yfp-agree-plain">和</text>
-            <text class="yfp-agree-link" @tap.stop="openAgreement('fraud')">《防诱导诈骗提醒》</text>
+            <text
+              class="yfp-agree-link"
+              @tap.stop="openAgreement('fraud')"
+              >《防诱导诈骗提醒》</text
+            >
           </view>
         </view>
       </view>
     </PawBottomSheet>
 
-    <PawResultSheet v-model="successVisible" title="投喂成功" description="饿了就睡 醒了就找\n日子浑浑噩噩\n谢谢你给我一口粮\n也给我一点盼头"
-      action-text="查看投喂订单" @action="onFeedOrder" />
+    <PawResultSheet
+      v-model="successVisible"
+      title="投喂成功"
+      description="饿了就睡 醒了就找\n日子浑浑噩噩\n谢谢你给我一口粮\n也给我一点盼头"
+      action-text="查看投喂订单"
+      @action="onFeedOrder"
+    />
   </view>
 </template>
 
@@ -90,7 +153,7 @@ export default defineComponent({
     visible: { type: Boolean, default: false },
     petId: { type: String, default: '' },
     heroCount: { type: Number, default: 1199999 },
-    paymentParams: { type: Object as PropType<YardFeedPaymentParams | null>, default: null }
+    paymentParams: { type: Object as PropType<YardFeedPaymentParams | null>, default: null },
   },
   emits: {
     'update:visible': (visible: boolean) => typeof visible === 'boolean',
@@ -107,15 +170,26 @@ export default defineComponent({
   },
   computed: {
     visibleProxy: {
-      get() { return this.visible },
-      set(value: boolean) { this.$emit('update:visible', value) }
+      get() {
+        return this.visible
+      },
+      set(value: boolean) {
+        this.$emit('update:visible', value)
+      },
     },
     heroFormatted() {
-      try { return Number(this.heroCount).toLocaleString('zh-CN') } catch { return String(this.heroCount) }
+      try {
+        return Number(this.heroCount).toLocaleString('zh-CN')
+      } catch {
+        return String(this.heroCount)
+      }
     },
     selectedPkg(): YardFeedPackageOption {
-      return this.packages.find(pkg => pkg.key === this.selectedKey) || this.packages[this.packages.length - 1]
-    }
+      return (
+        this.packages.find((pkg) => pkg.key === this.selectedKey) ||
+        this.packages[this.packages.length - 1]
+      )
+    },
   },
   watch: {
     visible(value: boolean) {
@@ -124,13 +198,21 @@ export default defineComponent({
         this.successVisible = false
         this.paymentPending = false
       }
-    }
+    },
   },
   methods: {
-    close() { this.$emit('update:visible', false) },
-    selectKey(key: YardFeedPackageKey) { if (!this.paymentPending) this.selectedKey = key },
-    onLearnFood() { this.$emit('learn-food') },
-    openAgreement(which: Exclude<YardFeedAgreement, 'required'>) { this.$emit('agreement', which) },
+    close() {
+      this.$emit('update:visible', false)
+    },
+    selectKey(key: YardFeedPackageKey) {
+      if (!this.paymentPending) this.selectedKey = key
+    },
+    onLearnFood() {
+      this.$emit('learn-food')
+    },
+    openAgreement(which: Exclude<YardFeedAgreement, 'required'>) {
+      this.$emit('agreement', which)
+    },
     onPay() {
       if (this.paymentPending) return
       if (!this.agreed) {
@@ -144,7 +226,7 @@ export default defineComponent({
         key: pkg.key,
         jin: pkg.jin,
         price: pkg.price,
-        feedbackTimes: 1
+        feedbackTimes: 1,
       }
       this.$emit('pay', payload)
 
@@ -158,8 +240,11 @@ export default defineComponent({
       const done = () => this.onPaymentSuccess(payload)
       const failed = (error: unknown) => {
         this.paymentPending = false
-        const isCancellation = error !== null && typeof error === 'object'
-          && 'errMsg' in error && error.errMsg === 'requestPayment:fail cancel'
+        const isCancellation =
+          error !== null &&
+          typeof error === 'object' &&
+          'errMsg' in error &&
+          error.errMsg === 'requestPayment:fail cancel'
         if (!isCancellation) uni.showToast({ title: '支付未完成', icon: 'none' })
       }
       if (typeof wx !== 'undefined' && typeof wx.requestPayment === 'function') {
@@ -180,8 +265,8 @@ export default defineComponent({
     onFeedOrder() {
       this.successVisible = false
       this.$emit('feed-order')
-    }
-  }
+    },
+  },
 })
 </script>
 

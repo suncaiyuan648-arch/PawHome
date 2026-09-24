@@ -15,13 +15,13 @@
       "function normalizeAddress(value: unknown): AddressRecord | null {": 1
     },
     "components/auth/PawRealNamePrompt.vue": {
-      "validator: (value: unknown) => value === 'real-name' || value === 'privacy'": 1
+      "validator: (value: unknown) => value === 'real-name' || value === 'privacy',": 1
     },
     "components/base/PawCheckbox.vue": {
       "function isCheckboxSize(value: unknown): value is CheckboxSize {": 1
     },
     "components/base/PawChevron.vue": {
-      "size: { type: [Number, String] as unknown as PropType<PawIconSize>, default: 8 }": 1
+      "size: { type: [Number, String] as unknown as PropType<PawIconSize>, default: 8 },": 1
     },
     "components/base/PawIconButton.vue": {
       "iconSize: { type: [String, Number] as unknown as PropType<PawIconSize>, default: 'base' },": 1
@@ -62,10 +62,10 @@
     },
     "components/PawIcon/PawIcon.vue": {
       "size: { type: [String, Number] as unknown as () => PawIconSize, default: 'base' },": 1,
-      "validator: (value: unknown) => typeof value === 'string' && ['none', 'horizontal', 'vertical', 'both'].includes(value)": 1
+      "validator: (value: unknown) =>": 1
     },
     "components/PawJuryVoteDialog.vue": {
-      "validator: (value: unknown) => value === 'real' || value === 'fake'": 1
+      "validator: (value: unknown) => value === 'real' || value === 'fake',": 1
     },
     "components/PawPageNav.vue": {
       "function isNavSlotPosition(value: unknown): value is NavSlotPosition {": 1
@@ -92,7 +92,7 @@
       "const failed = (error: unknown) => {": 1
     },
     "contracts/adoptionCondition.ts": {
-      "}>) => unknown": 1,
+      ") => unknown": 1,
       "record: Readonly<Record<string, unknown>>": 1
     },
     "contracts/adoptionProjection.ts": {
@@ -119,11 +119,11 @@
     },
     "navigation/actorCapabilities.ts": {
       "actorProvider?: () => unknown": 1,
-      "assert: (capability: unknown, object: unknown) => assertCapability(capability, { actorProvider, policy: fixedPolicy, object }),": 2,
-      "can: (capability: unknown, object: unknown) => canCapability(capability, { actorProvider, policy: fixedPolicy, object }),": 2,
-      "const stateFields: unknown[] = Array.isArray(rawStateFields) ? rawStateFields.slice() : [rawStateFields]": 1,
-      "const states: unknown[] = rule.states === undefined": 1,
-      "evaluate: (object: unknown) => evaluateCapabilities({ actorProvider, policy: fixedPolicy, object }),": 1,
+      "assert: (capability: unknown, object: unknown) =>": 2,
+      "can: (capability: unknown, object: unknown) =>": 2,
+      "const stateFields: unknown[] = Array.isArray(rawStateFields)": 1,
+      "const states: unknown[] =": 1,
+      "evaluate: (object: unknown) =>": 1,
       "function assertCapability(capability: unknown, context: unknown = {}): Authorization {": 2,
       "function assertPlainRecord(value: unknown, label: string): asserts value is JsonRecord {": 1,
       "function assertPrivateRead(capability: unknown, context: unknown = {}): Authorization {": 2,
@@ -131,23 +131,23 @@
       "function errorCode(error: unknown, fallback: string): string {": 1,
       "function errorMessage(error: unknown, fallback: string): string {": 1,
       "function evaluateCapabilities(context: unknown = {}): CapabilityEvaluation {": 1,
-      "function evaluateOne(capability: Capability, actor: TrustedActor | null, object: unknown, policy: CapabilityPolicy): CapabilityDecision {": 1,
       "function isCapability(value: unknown): value is Capability {": 1,
       "function isCapabilityCallback(value: unknown): value is CapabilityCallback<unknown, unknown> {": 3,
       "function isPlainRecord(value: unknown): value is JsonRecord {": 1,
-      "function normalizeId(value: unknown, label: string, { required = false }: { required?: boolean } = {}): string {": 1,
       "function normalizeIdList(value: unknown, label: string): string[] {": 1,
       "function normalizePolicy(policy: unknown = {}): CapabilityPolicy {": 1,
       "function normalizeRoles(value: unknown): readonly ActorRole[] {": 1,
-      "function normalizeRule(rule: unknown, label: string, category: CapabilityCategory): CapabilityRule | null {": 1,
       "function readPrivate(capability: unknown, context: unknown = {}, reader: unknown): unknown {": 4,
       "function resolveCurrentObject(context: unknown = {}): unknown {": 2,
       "function resolveTrustedActor(actorProvider: unknown): TrustedActor | null {": 1,
       "function safeEvaluate(context: unknown = {}): CapabilityEvaluation {": 1,
       "function writeWithCapability(capability: unknown, context: unknown = {}, writer: unknown): unknown {": 4,
       "let provided: unknown": 1,
+      "object: unknown,": 1,
       "policy?: unknown": 1,
-      "type JsonRecord = Record<string, unknown>": 1
+      "rule: unknown,": 1,
+      "type JsonRecord = Record<string, unknown>": 1,
+      "value: unknown,": 1
     },
     "navigation/adoptionConditionContract.ts": {
       "allowedNext(currentStatus: unknown): readonly string[] {": 1,
@@ -159,27 +159,28 @@
       "function isPlainRecord(value: unknown): value is JsonRecord {": 1,
       "function isReviewResolver(value: unknown): value is ReviewResolver {": 1,
       "function normalizeActor(actorProvider: unknown): ActorResolution {": 1,
-      "function normalizeId(value: unknown, label: string, { required = false }: { required?: boolean } = {}): string {": 1,
       "function normalizeIdList(value: unknown, label: string): string[] {": 1,
       "function normalizePolicy(policy: unknown): NormalizedPolicy | null {": 1,
-      "function perspectiveResult(record: JsonRecord, actorProvider: ActorProvider | undefined, perspective: unknown): PerspectiveResolution {": 1,
-      "function reviewEntries(record: JsonRecord, ids: readonly string[], reviewResolver: unknown, legalStates: readonly string[] | null = null): ReviewResult {": 1,
       "let entries: unknown[]": 1,
+      "perspective: unknown,": 1,
       "perspective?: unknown": 1,
       "policy?: unknown": 3,
       "query?: unknown": 1,
       "record?: unknown": 4,
+      "reviewResolver: unknown,": 1,
       "reviewResolver?: unknown": 1,
       "targetStatus?: unknown": 1,
       "type ActorProvider = () => unknown": 1,
       "type JsonRecord = Record<string, unknown>": 1,
-      "type ReviewResolver = (input: Readonly<{ record: Readonly<JsonRecord> }>) => unknown": 1
+      "type ReviewResolver = (input: Readonly<{ record: Readonly<JsonRecord> }>) => unknown": 1,
+      "value: unknown,": 1
     },
     "navigation/adoptionReviewContract.ts": {
       "[key: string]: unknown": 1,
       "actorProvider?: () => unknown": 2,
       "applicationId?: unknown": 1,
       "catch?: (...args: unknown[]) => unknown": 2,
+      "cloudParentPolicy: unknown,": 1,
       "cloudParentPolicy?: unknown": 3,
       "const domains: Array<{ field: string; value: unknown }> = []": 1,
       "function actorState(actorProvider: unknown, roleRequired?: string): ActorState {": 1,
@@ -188,23 +189,22 @@
       "function isPlainRecord(value: unknown): value is JsonRecord {": 1,
       "function isSourceResolver(value: unknown): value is SourceResolver {": 1,
       "function isThenable(value: unknown): value is ThenableWithCatch {": 1,
-      "function listItems(records: readonly unknown[], actor: TrustedActor, cloudParentPolicy: unknown, skipped: JsonRecord[]): ReviewItem[] {": 2,
       "function normalizeActor(value: unknown): TrustedActor | null {": 1,
-      "function normalizeApplicantDetail(record: unknown, actor: TrustedActor, { expectedApplicationId = '', expectedReviewItemId = '', cloudParentPolicy }: ReviewRecordOptions = {}): ReviewItem {": 1,
       "function normalizedFilter(filter: unknown): ReviewFilter {": 1,
-      "function normalizeReviewRecord(record: unknown, actor: TrustedActor, { expectedApplicationId = '', expectedReviewItemId = '', cloudParentPolicy }: ReviewRecordOptions = {}): ReviewItem {": 1,
-      "function opaqueId(value: unknown, label: string, { required = true }: { required?: boolean } = {}): string {": 1,
       "function readCloudParent(record: JsonRecord, cloudParentPolicy: unknown): CloudParentCondition {": 1,
       "let source: unknown": 1,
       "perspective?: unknown": 1,
       "query?: unknown": 2,
+      "record: unknown,": 2,
       "record?: unknown": 1,
+      "records: readonly unknown[],": 1,
       "records: unknown[]": 1,
       "records?: unknown[]": 2,
       "reviewItemId?: unknown": 1,
       "then: (...args: unknown[]) => unknown": 2,
       "type JsonRecord = Record<string, unknown>": 1,
-      "type SourceResolver = (context: Readonly<ResolverContext>) => unknown": 1
+      "type SourceResolver = (context: Readonly<ResolverContext>) => unknown": 1,
+      "value: unknown,": 1
     },
     "navigation/authContinuationStorage.ts": {
       "[key: string]: unknown": 1,
@@ -228,37 +228,37 @@
       "value: unknown": 1
     },
     "navigation/deeplinkContracts.ts": {
+      "): { record: unknown; error: ErrorInfo | null } {": 1,
+      "): value is (context: Readonly<{ target: DeepLinkEnvelope }>) => unknown {": 1,
       "[key: string]: unknown": 1,
       "actorProvider?: () => unknown": 1,
       "catch?: (...args: unknown[]) => unknown": 2,
       "export function parseDeepLinkInput(input: unknown): DeepLinkEnvelope {": 1,
       "export type DeepLinkAuthorizer = (context: Readonly<DeepLinkAuthorizationContext>) => unknown": 1,
       "function assertRecord(value: unknown, label: string): asserts value is JsonRecord {": 1,
-      "function callResolver(resolver: unknown, context: ResolverContext): { record: unknown; error: ErrorInfo | null } {": 2,
       "function cloneFreeze(value: unknown, label: string, seen = new Set<object>()): unknown {": 2,
       "function enumValue<T extends string>(value: unknown, label: string, values: readonly T[]): T {": 1,
       "function errorCode(error: unknown, fallback: string): string {": 1,
-      "function isBridge(value: unknown): value is (context: Readonly<{ target: DeepLinkEnvelope }>) => unknown {": 2,
       "function isDeepLinkAuthorizer(value: unknown): value is DeepLinkAuthorizer {": 1,
       "function isDeepLinkResolver(value: unknown): value is DeepLinkResolver {": 1,
       "function isExistingEnvelope(value: unknown): value is DeepLinkEnvelope {": 1,
       "function isPlainRecord(value: unknown): value is JsonRecord {": 1,
       "function isThenable(value: unknown): value is ThenableWithCatch {": 1,
       "function normalizeActor(value: unknown): TrustedActor | null {": 1,
-      "function normalizedEnvelope(input: unknown, { sourceDefault = 'route' }: { sourceDefault?: DeepLinkSource } = {}): DeepLinkEnvelope {": 1,
-      "function opaqueId(value: unknown, label: string, { rejectDomainPrefix = true, domain = '' }: { rejectDomainPrefix?: boolean; domain?: BusinessType | '' } = {}): string {": 1,
+      "input: unknown,": 1,
       "let allowed: unknown": 1,
       "let copy: unknown": 1,
       "let result: unknown": 2,
       "record: Readonly<Record<string, unknown>>": 1,
+      "resolver: unknown,": 1,
       "then: (...args: unknown[]) => unknown": 2,
       "type AuthBridge = (context: Readonly<{ target: DeepLinkEnvelope }>) => unknown": 1,
       "type DeepLinkResolver = (context: Readonly<ResolverContext>) => unknown": 1,
-      "type JsonRecord = Record<string, unknown>": 1
+      "type JsonRecord = Record<string, unknown>": 1,
+      "value: unknown,": 2
     },
     "navigation/feedbackContracts.ts": {
-      "export function dedupeFeedbackEvidence(evidence: unknown, { policy, now }: DedupeOptions = {}): readonly NormalizedEvidence[] {": 1,
-      "export function summarizeFeedbackTask(input: unknown, { policy, now, actorProvider }: TaskSummaryOptions = {}): FeedbackTaskSummary {": 1,
+      "evidence: unknown,": 1,
       "function assertEnum<T extends string>(value: unknown, label: string, allowed: readonly T[]): T {": 1,
       "function assertId(value: unknown, label: string): string {": 1,
       "function assertRecord(value: unknown, label: string): asserts value is JsonRecord {": 1,
@@ -268,29 +268,29 @@
       "function normalizeEvidenceRecord(input: unknown, policy: FeedbackPolicy): NormalizedEvidence {": 1,
       "function normalizeOrderAndAnimal(orderInput: unknown, animalInput: unknown): Association {": 2,
       "function normalizePolicy(policy: unknown): FeedbackPolicy {": 1,
-      "function normalizeTimestamp(value: unknown, label: string, { required = false }: TimestampOptions = {}): TimestampValue | null {": 1,
       "function resolveTrustedActor(actorProvider: unknown): TrustedActor {": 1,
-      "function timestampValue(value: unknown, label: string, options: TimestampOptions = {}): TimestampValue | null {": 1,
+      "input: unknown,": 1,
       "let provided: unknown": 1,
       "type FeedbackActorProvider = () => unknown": 1,
-      "type JsonRecord = Record<string, unknown>": 1
+      "type JsonRecord = Record<string, unknown>": 1,
+      "value: unknown,": 2
     },
     "navigation/legacyRoutes.ts": {
       "[key: string]: unknown": 1,
       "const metadataDomains: unknown[] = ['businessType', 'reviewType', 'juryType', 'type']": 1,
+      "error: { code: string; message: string; details: Record<string, unknown> }": 1,
       "function assertNonEmptyLegacy(value: unknown, label: string): string {": 1,
       "function isThenable(value: unknown): boolean {": 1,
       "function parseLegacyInput(input: unknown): { path: string; query: LegacyQuery } {": 1,
-      "function tryResolveLegacyRoute(input: LegacyRouteInput, options: LegacyRouteOptions = {}): LegacyRouteResult | Readonly<{ ok: false; error: { code: string; message: string; details: Record<string, unknown> } }> {": 1,
       "reviewMetadataResolver?: (reviewItemId: string) => unknown": 1,
       "type JsonRecord = Record<string, unknown>": 1
     },
     "navigation/managementContracts.ts": {
       "actorProvider?: () => unknown": 1,
-      "assert: (capability: unknown, context: unknown = {}) => assertManagementCapability(capability, { ...(isPlainRecord(context) ? context : {}), actorProvider, policy: fixedPolicy }),": 2,
-      "can: (capability: unknown, context: unknown = {}) => canManagementCapability(capability, { ...(isPlainRecord(context) ? context : {}), actorProvider, policy: fixedPolicy }),": 2,
+      "assert: (capability: unknown, context: unknown = {}) =>": 2,
+      "can: (capability: unknown, context: unknown = {}) =>": 2,
       "error?: unknown": 1,
-      "evaluate: (context: unknown = {}) => evaluateManagementCapabilities({ ...(isPlainRecord(context) ? context : {}), actorProvider, policy: fixedPolicy }),": 1,
+      "evaluate: (context: unknown = {}) =>": 1,
       "function assertManagementCapability(capability: unknown, context: unknown = {}): JsonRecord {": 2,
       "function assertRecord(value: unknown, label: string): asserts value is JsonRecord {": 1,
       "function canManagementCapability(capability: unknown, context: unknown = {}): boolean {": 2,
@@ -301,13 +301,11 @@
       "function isManagementCapability(value: unknown): value is ManagementCapability {": 1,
       "function isPlainRecord(value: unknown): value is JsonRecord {": 1,
       "function normalizeAnimal(input: unknown): AnimalRecord {": 1,
-      "function normalizeId(value: unknown, label: string, { required = false }: { required?: boolean } = {}): string {": 1,
       "function normalizeIdList(value: unknown, label: string): string[] {": 1,
       "function normalizePolicy(policy: unknown): ManagementPolicy | null {": 1,
       "function normalizeProfile(input: unknown): ProfileRecord {": 1,
       "function normalizeQuery(query: unknown): JsonRecord {": 1,
       "function normalizeResourcePolicy(input: unknown, resource: ResourceType): ResourcePolicy | null {": 1,
-      "function normalizeRoleList(value: unknown, label: string, fallback: readonly ActorRole[]): readonly ActorRole[] {": 1,
       "function normalizeSource(context: unknown): ManagementSource {": 1,
       "function normalizeStateList(value: unknown, label: string): readonly string[] {": 1,
       "function normalizeYard(input: unknown): YardRecord {": 1,
@@ -315,11 +313,13 @@
       "let profile: unknown = context.profile": 1,
       "let yard: unknown = context.yard": 1,
       "policy?: unknown": 1,
-      "type JsonRecord = Record<string, unknown>": 1
+      "type JsonRecord = Record<string, unknown>": 1,
+      "value: unknown,": 2
     },
     "navigation/orderContracts.ts": {
       "[key: string]: unknown": 1,
-      "export function getOrderAccess(orderInput: unknown, actorInput: unknown, options: OrderAccessOptions = {}): OrderAccess {": 2,
+      "actorInput: unknown,": 1,
+      "entries: unknown,": 1,
       "export function normalizeOrderList(value: unknown): readonly OrderRecord[] {": 1,
       "export function normalizeOrderRecord(input: unknown): OrderRecord {": 1,
       "export function normalizeVisibilityEntry(input: unknown): VisibilityEntry {": 1,
@@ -330,7 +330,6 @@
       "function assertOrderId(value: unknown): string {": 1,
       "function assertRecord(value: unknown, label: string): asserts value is JsonRecord {": 1,
       "function explicitWriteSuccess(value: unknown): boolean {": 1,
-      "function isOrderHiddenForUserFromUnknown(entries: unknown, userId: unknown, orderId: unknown): boolean {": 3,
       "function isOrderReader(value: unknown): value is () => unknown {": 2,
       "function isOrderWriter(value: unknown): value is (orders: readonly OrderRecord[]) => unknown {": 2,
       "function isPlainRecord(value: unknown): value is JsonRecord {": 1,
@@ -338,13 +337,17 @@
       "function normalizeId(value: unknown): string {": 1,
       "function readAliasedValue(input: JsonRecord, primary: string, alias: string): unknown {": 1,
       "hiddenEntries?: unknown": 1,
+      "orderId: unknown,": 1,
+      "orderInput: unknown,": 1,
       "readOrders?: () => unknown": 1,
       "type JsonRecord = Record<string, unknown>": 1,
+      "userId: unknown,": 1,
       "writeOrders?: (orders: readonly OrderRecord[]) => unknown": 1
     },
     "navigation/productionDeepLinkResolver.ts": {
+      "(item: unknown) =>": 1,
+      "): unknown {": 2,
       "actorProvider?: () => unknown": 1,
-      "const record = source.rows.find((item: unknown) => (": 1,
       "const value: unknown = typeof raw === 'string' ? JSON.parse(raw) : raw": 1,
       "export type ProductionDeepLinkReader = (context: ProductionDeepLinkReaderContext) => unknown": 1,
       "function assertConfig(config: unknown): asserts config is ProductionDeepLinkConfig {": 1,
@@ -352,8 +355,6 @@
       "function isPlainRecord(value: unknown): value is Record<string, unknown> {": 2,
       "function isReader(value: unknown): value is ProductionDeepLinkReader {": 1,
       "function normalizeReaders(value: unknown): Readonly<ReaderMap> {": 1,
-      "function persistedById(keys: readonly string[], businessId: string | undefined, aliases: readonly string[], identityField: string): unknown {": 1,
-      "function readerFor(readers: Readonly<ReaderMap>, context: ProductionDeepLinkReaderContext): unknown {": 1,
       "function withIdentity(record: unknown, field: string, id: string | undefined): unknown {": 2,
       "let raw: unknown": 1,
       "rows: unknown[]": 1
@@ -371,7 +372,6 @@
       "function isPlainRecord(value: unknown): value is JsonRecord {": 1,
       "function isSourceResolver(value: unknown): value is SourceResolver {": 1,
       "function isThenable(value: unknown): value is ThenableWithCatch {": 1,
-      "function normalizeId(value: unknown, label: string, { required = false }: { required?: boolean } = {}): string {": 1,
       "function normalizeIdList(value: unknown, label: string): string[] {": 1,
       "function normalizeMineRecord(record: unknown, actorId: string): RescueListItem {": 1,
       "function normalizeReviewRecord(record: unknown, actorId: string): RescueListItem {": 1,
@@ -381,59 +381,56 @@
       "records?: unknown[]": 3,
       "then: (...args: unknown[]) => unknown": 2,
       "type JsonRecord = Record<string, unknown>": 1,
-      "type SourceResolver = (context: Readonly<ResolverContext>) => unknown": 1
+      "type SourceResolver = (context: Readonly<ResolverContext>) => unknown": 1,
+      "value: unknown,": 1
     },
     "navigation/routeContracts.ts": {
+      "): asserts value is Record<string, unknown> {": 1,
+      "): unknown {": 1,
       "[key: string]: unknown": 1,
-      "| Map<string, unknown>": 1,
-      "| Record<string, unknown>": 1,
       "constructor(code: string, message: string, details?: Record<string, unknown>) {": 1,
       "details: Record<string, unknown>": 1,
+      "expectedRequestId?: unknown,": 1,
       "function assertEnum(value: unknown, label: string, values: readonly string[]): string {": 1,
       "function assertId(value: unknown, label: string): string {": 1,
-      "function assertIdList(value: unknown, label: string, options?: Pick<RouteFieldSpec, 'maxItems'>): string {": 1,
-      "function assertPlainRecord(value: unknown, label: string): asserts value is Record<string, unknown> {": 2,
-      "function assertText(value: unknown, label: string, options?: Pick<RouteFieldSpec, 'maxLength'>): string {": 1,
-      "function buildAuthContinuation(routeName: string, params?: unknown): { intent: string; routeName: string; url: string; params: Readonly<QueryParams> } {": 1,
       "function buildRoute(routeName: string, params?: unknown): string {": 1,
       "function createSelectorRequest(kind: SelectorKind, requestId: unknown): SelectorRequest {": 1,
       "function decodeQueryPart(raw: unknown, label: string): string {": 1,
       "function fail(code: string, message: string, details?: Record<string, unknown>): never {": 1,
-      "function field(kind: RouteFieldSpec['kind'], options: Record<string, unknown> = {}): RouteFieldSpec {": 1,
       "function isPlainRecord(value: unknown): value is Record<string, unknown> {": 2,
-      "function navigateRoute(routeName: string, params?: unknown, options?: NavigateRouteOptions): unknown {": 2,
       "function normalizeRegisteredPath(value: unknown): string | null {": 1,
       "function registeredRouteMatches(routeName: string, registeredRoutes: unknown): boolean {": 1,
       "function validateField(value: unknown, fieldSpec: RouteFieldSpec, label: string): string {": 1,
       "function validateParams(routeName: string, params: unknown): QueryParams {": 1,
-      "function validateSelectorResponse(kind: SelectorKind, response: unknown, expectedRequestId?: unknown): SelectorResponse {": 2,
       "navigateTo?: (options: { url: string }) => unknown": 1,
+      "options: Record<string, unknown> = {},": 1,
+      "params?: unknown,": 2,
       "path?: unknown": 1,
+      "readonly (string | ActiveRouteEntry)[] | Map<string, unknown> | Record<string, unknown>": 2,
+      "response: unknown,": 1,
       "switchTab?: (options: { url: string }) => unknown": 1,
-      "value: unknown,": 1
+      "value: unknown,": 4
     },
     "navigation/selectorBridge.ts": {
+      "): asserts value is Record<string, unknown> {": 1,
+      "callerId: unknown,": 1,
       "cancel: (input: unknown) => CancelPayload": 1,
       "cancelCaller: (callerId: unknown, reason?: unknown) => readonly CancelPayload[]": 2,
       "cause?: unknown": 1,
       "confirm: (input: unknown) => SelectorResult": 1,
-      "const animalIds = result.animalIds.map((animalId: unknown, index: number) => assertId(animalId, `animalIds[${index}]`))": 1,
+      "const animalIds = result.animalIds.map((animalId: unknown, index: number) =>": 1,
       "const parts = result.parts.map((part: unknown, index: number) => {": 1,
       "constructor(code: string, message: string, details: Record<string, unknown> = {}) {": 1,
       "createRequest: (input: unknown) => SelectorRequest": 1,
       "defaultTtlMs?: unknown": 1,
       "function assertId(value: unknown, label: string): string {": 1,
       "function assertKind(value: unknown): SelectorKind {": 1,
-      "function assertNoUnknownKeys(value: Record<string, unknown>, allowed: readonly string[], label: string): void {": 1,
-      "function assertPlainRecord(value: unknown, label: string): asserts value is Record<string, unknown> {": 2,
       "function assertReason(reason: unknown): string {": 1,
       "function assertRequestEnvelope(input: unknown, label: string): RequestEnvelope {": 1,
       "function assertResult(kind: SelectorKind, result: unknown, requestId: string): SelectorResult {": 1,
       "function asyncCallbackFailure(result: unknown, phase: string): SelectorBridgeError {": 1,
       "function callbackFailure(error: unknown, phase: string): SelectorBridgeError {": 1,
       "function cancel(input: unknown): CancelPayload {": 1,
-      "function cancelCaller(callerId: unknown, reason: unknown = 'caller-destroyed'): readonly CancelPayload[] {": 2,
-      "function cloneAndFreeze(value: unknown, label: string, seen = new Set<object>()): SelectorContextValue {": 1,
       "function confirm(input: unknown): SelectorResult {": 1,
       "function createRequest(input: unknown): SelectorRequest {": 1,
       "function fail(code: string, message: string, details?: Record<string, unknown>): never {": 1,
@@ -449,8 +446,11 @@
       "let then: unknown": 1,
       "now?: unknown": 1,
       "readonly details: Record<string, unknown>": 1,
+      "reason: unknown = 'caller-destroyed',": 1,
       "result: unknown": 1,
-      "type SelectorCallback = (payload: SelectorPayload, context: SelectorContextValue) => unknown": 1
+      "type SelectorCallback = (payload: SelectorPayload, context: SelectorContextValue) => unknown": 1,
+      "value: Record<string, unknown>,": 1,
+      "value: unknown,": 2
     },
     "navigation/socialMutationContracts.ts": {
       "actorProvider: () => unknown": 1,
@@ -470,7 +470,6 @@
       "function assertId(value: unknown, label: string): string {": 1,
       "function assertInput(value: unknown): asserts value is JsonRecord {": 1,
       "function assertReviewItemDomain(businessType: TaskBusinessType, reviewItemId: unknown): void {": 1,
-      "function assertString(value: unknown, label: string, { maxLength = 128 }: StringOptions = {}): string {": 1,
       "function canReadTaskSummary(summary: unknown, actor: unknown): boolean {": 2,
       "function dedupeTaskSummaries(items: unknown): readonly TaskSummary[] {": 1,
       "function errorCode(error: unknown): string {": 1,
@@ -481,7 +480,8 @@
       "function isTaskProcessed(summary: unknown): boolean {": 1,
       "function normalizeTaskSummary(input: unknown): TaskSummary {": 1,
       "function taskIdFor(input: unknown): string {": 1,
-      "type JsonRecord = Record<string, unknown>": 1
+      "type JsonRecord = Record<string, unknown>": 1,
+      "value: unknown,": 1
     },
     "navigation/taskReadModel.ts": {
       "actorError?: unknown": 1,
@@ -506,12 +506,12 @@
       "onLoad(options: unknown = {}) {": 1
     },
     "packages/account/pages/level/index.vue": {
-      "? value as Record<string, unknown>": 1,
+      "? (value as Record<string, unknown>)": 1,
       "function queryRecord(value: unknown): Record<string, unknown> {": 2,
       "onLoad(query: unknown) {": 1
     },
     "packages/account/pages/profile/editor/index.vue": {
-      "? options as Record<string, unknown>": 1,
+      "? (options as Record<string, unknown>)": 1,
       "function queryRecord(options: unknown): Record<string, unknown> {": 2,
       "onLoad(options: unknown = {}) {": 1
     },
@@ -531,15 +531,16 @@
       "getStorageSync(key: string): unknown": 1
     },
     "packages/account/services/domainTaskReaders.ts": {
+      "code: unknown,": 1,
       "const read: unknown = readAdoptionApplication(record.id, {": 1,
       "const rows: unknown = typeof raw === 'string' ? JSON.parse(raw) : raw": 1,
       "const state: unknown = readRescueStateById(item.rescueId, { includeDemo: false })": 1,
       "function assertReaderContext(context: unknown): TaskReaderActor {": 1,
-      "function diagnostic(domain: TaskDiagnostic['domain'], index: unknown, code: unknown): TaskDiagnostic {": 2,
       "function errorCode(error: unknown, fallback: string): string {": 1,
       "function isPlainRecord(value: unknown): value is JsonRecord {": 1,
       "function isTaskReaderActor(value: unknown): value is TaskReaderActor {": 1,
       "function opaqueId(value: unknown): value is string {": 1,
+      "index: unknown,": 1,
       "let raw: unknown": 1,
       "let records: unknown": 1,
       "let result: unknown": 1,
@@ -575,7 +576,7 @@
     "packages/account/services/managementAdapter.ts": {
       ") => unknown": 1,
       "actorProvider?: unknown": 1,
-      "const reader: unknown = allowReaderOverride && options.reader ? options.reader : readers[resource]": 1,
+      "const reader: unknown =": 1,
       "const readers: unknown = fixed || options.readers || {}": 1,
       "error: unknown": 1,
       "export function readManagement(options: unknown = {}): ManagementResult {": 1,
@@ -589,7 +590,6 @@
       "function isReader(value: unknown): value is Reader {": 1,
       "function isResourceType(value: unknown): value is ResourceType {": 1,
       "function isThenable(value: unknown): value is object {": 1,
-      "function normalizeId(value: unknown, label: string, resource: ResourceType, { required = true }: { required?: boolean } = {}): string {": 1,
       "function normalizeOptions(options: unknown): JsonRecord {": 1,
       "function normalizeQuery(query: unknown): JsonRecord | undefined {": 1,
       "function normalizeResource(value: unknown): ResourceType {": 1,
@@ -606,10 +606,11 @@
       "rawOptions: unknown,": 1,
       "resourceType: unknown,": 2,
       "type JsonRecord = Record<string, unknown>": 1,
-      "type Reader = (locator: JsonRecord) => unknown": 1
+      "type Reader = (locator: JsonRecord) => unknown": 1,
+      "value: unknown,": 1
     },
     "packages/account/services/managementEditorRuntime.ts": {
-      "const source = isRecord(options) ? options as unknown as ManagementEditorOptions<NoInfer<R>> : {}": 2,
+      "? (options as unknown as ManagementEditorOptions<NoInfer<R>>)": 2,
       "function isRecord(value: unknown): value is JsonRecord {": 1,
       "function isResourceType(value: unknown): value is ManagementResourceType {": 1,
       "type JsonRecord = Record<string, unknown>": 1
@@ -660,19 +661,19 @@
       "function isRecord(value: unknown): value is Record<string, unknown> {": 2
     },
     "packages/account/services/taskAdapter.ts": {
+      "): unknown {": 1,
+      "}: { skipped?: readonly TaskSkip[]; actorError?: unknown } = {}): TaskDiagnostics {": 1,
+      "actorError?: unknown": 1,
       "export type TaskReader = (context: TaskReaderContext) => unknown": 1,
       "function assertReaderConfig(readers: unknown): Readonly<TaskReaders> {": 1,
-      "function captureSourceDiagnostics(domain: TaskBusinessType, result: unknown, sourceDiagnostics: TaskSkip[]): void {": 1,
       "function diagnostic(domain: TaskDiagnosticDomain, index: number, code: unknown): TaskSkip {": 1,
       "function diagnosticCode(value: unknown, fallback: string): string {": 1,
-      "function emptyDiagnostics({ skipped = [], actorError = null }: { skipped?: readonly TaskSkip[]; actorError?: unknown } = {}): TaskDiagnostics {": 1,
-      "function emptyModel({ actor = null, skipped = [], actorError = null }: { actor?: TaskActor | null; skipped?: readonly TaskSkip[]; actorError?: unknown } = {}): TaskReadModel {": 1,
-      "function extractReaderItems(domain: TaskBusinessType, result: unknown, sourceDiagnostics: TaskSkip[]): unknown {": 2,
       "function failedRead(error: unknown): TaskReadModel {": 1,
       "function isPlainRecord(value: unknown): value is JsonRecord {": 1,
       "function isThenable(value: unknown): boolean {": 1,
       "let result: unknown": 1,
       "readonly actorProvider?: () => unknown": 1,
+      "result: unknown,": 2,
       "type JsonRecord = Record<string, unknown>": 1
     },
     "packages/account/services/taskPageModel.ts": {
@@ -684,17 +685,14 @@
       "? uni.getStorageSync<unknown>('PAWHOME_ACTOR_SESSION')": 1,
       "const source: unknown = isRecord(raw) && raw.actor ? raw.actor : raw": 1,
       "const value: unknown = typeof raw === 'string' ? JSON.parse(raw) : raw": 2,
-      "function adoptionTasks(records: readonly unknown[], actor: Actor, diagnostics: Diagnostic[]): TaskRecord[] {": 1,
       "function diagnostic(domain: Domain, index: unknown, code: unknown): Diagnostic {": 2,
-      "function dynamicTasks(records: readonly unknown[], actor: Actor, diagnostics: Diagnostic[]): TaskRecord[] {": 1,
-      "function feedingTasks(records: readonly unknown[], actor: Actor, diagnostics: Diagnostic[]): TaskRecord[] {": 1,
       "function includesString(values: readonly string[], value: unknown): boolean {": 1,
       "function isRecord(value: unknown): value is JsonRecord {": 1,
       "function opaque(value: unknown): value is string {": 1,
       "function relationValues(sources: readonly unknown[], fields: readonly string[]): Relation {": 1,
-      "function rescueTasks(records: readonly unknown[], actor: Actor, diagnostics: Diagnostic[]): TaskRecord[] {": 1,
       "let raw: unknown": 3,
       "raw = uni.getStorageSync<unknown>(key)": 2,
+      "records: readonly unknown[],": 4,
       "type JsonRecord = Record<string, unknown>": 1,
       "value: unknown[]": 2
     },
@@ -705,7 +703,7 @@
       "regionSelected: (value: unknown) => {": 1
     },
     "packages/address/components/form/PawAddressCard.vue": {
-      "validator: (value: unknown): value is AddressCardMode => value === 'display' || value === 'manage' || value === 'select'": 1
+      "validator: (value: unknown): value is AddressCardMode =>": 1
     },
     "packages/address/pages/editor/index.vue": {
       "const addressForm: unknown = this.$refs.addressForm": 1,
@@ -783,11 +781,11 @@
     },
     "packages/adoption/services/actorCapabilities.ts": {
       "actorProvider?: () => unknown": 1,
-      "assert: (capability: unknown, object: unknown) => assertCapability(capability, { actorProvider, policy: fixedPolicy, object }),": 2,
-      "can: (capability: unknown, object: unknown) => canCapability(capability, { actorProvider, policy: fixedPolicy, object }),": 2,
-      "const stateFields: unknown[] = Array.isArray(rawStateFields) ? rawStateFields.slice() : [rawStateFields]": 1,
-      "const states: unknown[] = rule.states === undefined": 1,
-      "evaluate: (object: unknown) => evaluateCapabilities({ actorProvider, policy: fixedPolicy, object }),": 1,
+      "assert: (capability: unknown, object: unknown) =>": 2,
+      "can: (capability: unknown, object: unknown) =>": 2,
+      "const stateFields: unknown[] = Array.isArray(rawStateFields)": 1,
+      "const states: unknown[] =": 1,
+      "evaluate: (object: unknown) =>": 1,
       "function assertCapability(capability: unknown, context: unknown = {}): Authorization {": 2,
       "function assertPlainRecord(value: unknown, label: string): asserts value is JsonRecord {": 1,
       "function assertPrivateRead(capability: unknown, context: unknown = {}): Authorization {": 2,
@@ -795,23 +793,23 @@
       "function errorCode(error: unknown, fallback: string): string {": 1,
       "function errorMessage(error: unknown, fallback: string): string {": 1,
       "function evaluateCapabilities(context: unknown = {}): CapabilityEvaluation {": 1,
-      "function evaluateOne(capability: Capability, actor: TrustedActor | null, object: unknown, policy: CapabilityPolicy): CapabilityDecision {": 1,
       "function isCapability(value: unknown): value is Capability {": 1,
       "function isCapabilityCallback(value: unknown): value is CapabilityCallback<unknown, unknown> {": 3,
       "function isPlainRecord(value: unknown): value is JsonRecord {": 1,
-      "function normalizeId(value: unknown, label: string, { required = false }: { required?: boolean } = {}): string {": 1,
       "function normalizeIdList(value: unknown, label: string): string[] {": 1,
       "function normalizePolicy(policy: unknown = {}): CapabilityPolicy {": 1,
       "function normalizeRoles(value: unknown): readonly ActorRole[] {": 1,
-      "function normalizeRule(rule: unknown, label: string, category: CapabilityCategory): CapabilityRule | null {": 1,
       "function readPrivate(capability: unknown, context: unknown = {}, reader: unknown): unknown {": 4,
       "function resolveCurrentObject(context: unknown = {}): unknown {": 2,
       "function resolveTrustedActor(actorProvider: unknown): TrustedActor | null {": 1,
       "function safeEvaluate(context: unknown = {}): CapabilityEvaluation {": 1,
       "function writeWithCapability(capability: unknown, context: unknown = {}, writer: unknown): unknown {": 4,
       "let provided: unknown": 1,
+      "object: unknown,": 1,
       "policy?: unknown": 1,
-      "type JsonRecord = Record<string, unknown>": 1
+      "rule: unknown,": 1,
+      "type JsonRecord = Record<string, unknown>": 1,
+      "value: unknown,": 1
     },
     "packages/adoption/services/adoptionConditionContract.ts": {
       "allowedNext(currentStatus: unknown): readonly string[] {": 1,
@@ -823,23 +821,24 @@
       "function isPlainRecord(value: unknown): value is JsonRecord {": 1,
       "function isReviewResolver(value: unknown): value is ReviewResolver {": 1,
       "function normalizeActor(actorProvider: unknown): ActorResolution {": 1,
-      "function normalizeId(value: unknown, label: string, { required = false }: { required?: boolean } = {}): string {": 1,
       "function normalizeIdList(value: unknown, label: string): string[] {": 1,
       "function normalizePolicy(policy: unknown): NormalizedPolicy | null {": 1,
-      "function perspectiveResult(record: JsonRecord, actorProvider: ActorProvider | undefined, perspective: unknown): PerspectiveResolution {": 1,
-      "function reviewEntries(record: JsonRecord, ids: readonly string[], reviewResolver: unknown, legalStates: readonly string[] | null = null): ReviewResult {": 1,
       "let entries: unknown[]": 1,
+      "perspective: unknown,": 1,
       "perspective?: unknown": 1,
       "policy?: unknown": 3,
       "query?: unknown": 1,
       "record?: unknown": 4,
+      "reviewResolver: unknown,": 1,
       "reviewResolver?: unknown": 1,
       "targetStatus?: unknown": 1,
       "type ActorProvider = () => unknown": 1,
       "type JsonRecord = Record<string, unknown>": 1,
-      "type ReviewResolver = (input: Readonly<{ record: Readonly<JsonRecord> }>) => unknown": 1
+      "type ReviewResolver = (input: Readonly<{ record: Readonly<JsonRecord> }>) => unknown": 1,
+      "value: unknown,": 1
     },
     "packages/adoption/services/applicationAdapter.ts": {
+      "catch?: (handler: () => void) => unknown": 1,
       "export type AdoptionApplicationResolver = (context: Readonly<{ applicationId: string }>) => unknown": 1,
       "function errorCode(error: unknown, fallback: string): string {": 1,
       "function errorMessage(error: unknown, fallback: string): string {": 1,
@@ -855,22 +854,22 @@
       "function validateRelations(record: unknown): Relations {": 1,
       "let record: unknown": 2,
       "readonly actorProvider?: () => unknown": 1,
+      "then: (...args: unknown[]) => unknown": 2,
       "type AdapterError = { code: string; message: string; [key: string]: unknown }": 1,
       "type JsonRecord = Record<string, unknown>": 1,
-      "type Reader = (id: string) => unknown": 1,
-      "type ThenableValue = { then: (...args: unknown[]) => unknown; catch?: (handler: () => void) => unknown }": 3
+      "type Reader = (id: string) => unknown": 1
     },
     "packages/adoption/services/evidenceMetadata.ts": {
       "export function normalizeAdoptionEvidencePhotos(value: unknown): [string, string] {": 1,
-      "export function normalizeAdoptionEvidenceProof(value: unknown, index = 0): AdoptionEvidenceProofComment {": 1,
       "export function readAdoptionEvidenceDraft(value: unknown): AdoptionEvidenceDraft {": 1,
       "export function readAdoptionEvidenceProofEntries(value: unknown): AdoptionEvidenceProofComment[] {": 1,
       "export function readAdoptionEvidenceStory(value: unknown): string {": 1,
       "export function readChosenEvidenceMediaPaths(value: unknown): string[] {": 1,
-      "function firstText(source: Record<string, unknown>, keys: readonly string[], fallback: string): string {": 1,
       "function isRecord(value: unknown): value is Record<string, unknown> {": 2,
       "function photoPath(value: unknown): string {": 1,
-      "function text(value: unknown, fallback = ''): string {": 1
+      "function text(value: unknown, fallback = ''): string {": 1,
+      "source: Record<string, unknown>,": 1,
+      "value: unknown,": 1
     },
     "packages/adoption/services/messageStore.ts": {
       "const actionEventKey: unknown = eventKey || action.idempotencyKey || action.actionId": 1,
@@ -883,7 +882,6 @@
       "function actorOf(provider: unknown): { actor: Actor | null; error: { code: string } | null } {": 1,
       "function errorCode(error: unknown, fallback: string): string {": 1,
       "function errorMessage(error: unknown, fallback: string): string {": 1,
-      "function id(value: unknown, label: string, { allowEmpty = false }: { allowEmpty?: boolean } = {}): string {": 1,
       "function isActorRole(value: unknown): value is ActorRole {": 1,
       "function isBusinessType(value: unknown): value is BusinessType {": 1,
       "function isEventChannel(value: unknown): value is EventChannel {": 1,
@@ -895,7 +893,6 @@
       "function isRecordWithActor(value: unknown): value is JsonRecord & { readonly actor: unknown } {": 2,
       "function isResolveAuthorizer(value: unknown): value is ResolveAuthorizer {": 1,
       "function isThenable(value: unknown): boolean {": 1,
-      "function messageInput(value: unknown, { requireRecipient = true }: { requireRecipient?: boolean } = {}): MessageRecord {": 1,
       "function plain(value: unknown): value is JsonRecord {": 1,
       "function rejectDangerous(value: unknown, label: string): asserts value is JsonRecord {": 1,
       "function scalarIds(values: readonly unknown[]): string[] {": 1,
@@ -908,7 +905,8 @@
       "readonly actorProvider?: () => unknown": 3,
       "readonly data: unknown": 1,
       "readonly rows: unknown[]": 2,
-      "type JsonRecord = Readonly<Record<string, unknown>>": 1
+      "type JsonRecord = Readonly<Record<string, unknown>>": 1,
+      "value: unknown,": 2
     },
     "packages/adoption/services/mineMetadata.ts": {
       "export function normalizeAdoptionMineRouteOptions(input: unknown): AdoptionMineRouteState {": 1,
@@ -928,7 +926,6 @@
     "packages/adoption/services/progressPageMetadata.ts": {
       "} catch (error: unknown) {": 1,
       "actorProvider: () => unknown": 1,
-      "export function isAdoptionProgressPrimaryAction(value: unknown): value is AdoptionProgressPrimaryAction {": 1,
       "export function normalizeAdoptionProgressRecord(value: unknown): AdoptionProgressRecordView | null {": 1,
       "export function resolveAdoptionProgressRoute(options: unknown): AdoptionProgressRouteResult {": 1,
       "function isRecord(value: unknown): value is UnknownRecord {": 1,
@@ -936,12 +933,13 @@
       "function stringList(value: unknown): string[] {": 1,
       "function text(value: unknown): string {": 1,
       "let params: unknown = options": 1,
-      "type UnknownRecord = Record<string, unknown>": 1
+      "type UnknownRecord = Record<string, unknown>": 1,
+      "value: unknown,": 1
     },
     "packages/adoption/services/quotaMetadata.ts": {
-      "export function resolveAdoptionQuotaRouteState(options: unknown, mode: AdoptionQuotaMode): AdoptionQuotaRouteState {": 1,
       "function isAdoptionQuotaMode(value: unknown): value is AdoptionQuotaMode {": 1,
-      "function isRecord(value: unknown): value is Record<string, unknown> {": 2
+      "function isRecord(value: unknown): value is Record<string, unknown> {": 2,
+      "options: unknown,": 1
     },
     "packages/adoption/services/resultMetadata.ts": {
       "export function normalizeAdoptionResultRouteOptions(input: unknown): AdoptionResultPageState {": 1,
@@ -956,13 +954,13 @@
       "function actionKey(value: unknown): string {": 1,
       "function actionOutcome(value: unknown): ReviewOutcome {": 1,
       "function isRecord(value: unknown): value is JsonRecord {": 1,
-      "function opaqueId(value: unknown, label: string, { required = true }: { required?: boolean } = {}): string {": 1,
       "function text(value: unknown): string {": 1,
-      "type JsonRecord = Record<string, unknown>": 1
+      "type JsonRecord = Record<string, unknown>": 1,
+      "value: unknown,": 1
     },
     "packages/adoption/services/reviewListMetadata.ts": {
       "actorProvider: () => unknown": 1,
-      "export function createAdoptionReviewListPageState(actorProvider: () => unknown): AdoptionReviewListPageState {": 1,
+      "actorProvider: () => unknown,": 1,
       "export function isAdoptionReviewTab(value: unknown): value is AdoptionReviewTab {": 1
     },
     "packages/animal/pages/album/index.vue": {
@@ -1038,17 +1036,17 @@
       "function isRecord(value: unknown): value is Record<string, unknown> {": 2
     },
     "packages/auth/pages/real-name/index.vue": {
-      "? value as Record<string, unknown>": 1,
+      "? (value as Record<string, unknown>)": 1,
       "function queryRecord(value: unknown): Record<string, unknown> {": 2,
       "onLoad(options: unknown = {}) {": 1
     },
     "packages/auth/pages/sms-verify/index.vue": {
-      "? options as Record<string, unknown>": 1,
+      "? (options as Record<string, unknown>)": 1,
       "function queryRecord(options: unknown): Record<string, unknown> {": 2,
       "onLoad(options: unknown = {}) {": 1
     },
     "packages/auth/pages/verification-result/index.vue": {
-      "? options as Record<string, unknown>": 1,
+      "? (options as Record<string, unknown>)": 1,
       "function queryRecord(options: unknown): Record<string, unknown> {": 2,
       "onLoad(query: unknown = {}) {": 1
     },
@@ -1083,7 +1081,7 @@
       "recordActor(): unknown {": 1
     },
     "packages/dynamic/pages/editor/index.vue": {
-      "const firstYardRow = rows.find((row): row is Record<string, unknown> =>": 1,
+      "(row): row is Record<string, unknown> => isRecord(row) && Boolean(row.yardId),": 1,
       "const parsed: unknown = typeof stored === 'string' ? JSON.parse(stored) : stored": 1,
       "const rows: unknown[] = parsed": 1,
       "const stored: unknown = uni.getStorageSync('PAWHOME_ANIMAL_RECORDS')": 1,
@@ -1092,7 +1090,7 @@
       "onLoad(options: Record<string, unknown> = {}) {": 1
     },
     "packages/dynamic/pages/result/index.vue": {
-      "? options as Record<string, unknown>": 1,
+      "? (options as Record<string, unknown>)": 1,
       "function queryRecord(options: unknown): Record<string, unknown> {": 2,
       "onLoad(options: unknown = {}) {": 1
     },
@@ -1100,10 +1098,10 @@
       "export function normalizeDynamicDetailRecord(value: unknown): DynamicDetailRecordModel | null {": 1,
       "export function normalizeDynamicDetailRoute(value: unknown): DynamicDetailRoute {": 1,
       "export interface DynamicDetailYard extends Record<string, unknown> {": 1,
+      "fallback?: Record<string, unknown>,": 1,
       "function finiteNumber(value: unknown): number | undefined {": 1,
       "function isRecord(value: unknown): value is Record<string, unknown> {": 2,
       "function list(value: unknown): unknown[] {": 2,
-      "function normalizeAuthor(value: unknown, fallback?: Record<string, unknown>): DynamicDetailCommentAuthor {": 2,
       "function normalizeComment(value: unknown, index: number, depth = 0): DynamicDetailComment | null {": 1,
       "function normalizeComments(value: unknown): DynamicDetailComment[] {": 1,
       "function normalizeDetailAuthor(value: unknown): DynamicDetailAuthor {": 1,
@@ -1119,26 +1117,27 @@
       "function petState(value: unknown): value is YardPetState {": 1,
       "function readRouteText(value: unknown): string {": 1,
       "function stringList(value: unknown): string[] {": 1,
-      "function text(value: unknown, fallback = ''): string {": 1
+      "function text(value: unknown, fallback = ''): string {": 1,
+      "value: unknown,": 1
     },
     "packages/dynamic/services/feedbackPublisher.ts": {
+      "): { present: boolean; rows: unknown[]; raw: unknown } {": 2,
+      "): unknown[] {": 1,
       "{ storage, actor }: { storage?: unknown; actor: FeedbackActor },": 1,
       "const list: unknown[] = Array.isArray(source) ? source : [source]": 1,
       "const nextRecords: unknown[] = existingDynamic": 1,
       "const parsed: unknown = typeof raw === 'string' ? JSON.parse(raw) : raw": 1,
       "const result: unknown = JSON.parse(serialized)": 1,
       "const rows: unknown[] = parsed": 1,
-      "const source: unknown[] = Array.isArray(record[plural]) ? record[plural] : record[singular] !== undefined ? [record[singular]] : []": 1,
+      "const source: unknown[] = Array.isArray(record[plural])": 1,
       "const source: unknown[] = Array.isArray(value) ? value : []": 1,
-      "const valid = (value: unknown): value is string => typeof value === 'string' && SAFE_ID.test(value)": 1,
+      "const valid = (value: unknown): value is string =>": 1,
       "const values: unknown[] = record[plural]": 1,
       "const values: unknown[] = source": 1,
       "error: unknown | null": 1,
       "function actorOf(actorProvider: unknown): ActorResolution {": 1,
       "function associationOf(order: unknown, animal: unknown): AssociationResult {": 2,
-      "function dynamicIdFor(kind: 'feedback' | 'dynamic', actorId: string, attemptKey: string, requested: unknown): string {": 1,
       "function errorCode(error: unknown, fallback: string): string {": 1,
-      "function exactRow(rows: readonly unknown[], id: string, aliases: readonly string[], code: string): JsonRecord {": 1,
       "function idOrEmpty(value: unknown): string {": 1,
       "function idsOf(value: unknown): FeedbackIds {": 1,
       "function inputOf(value: unknown): JsonRecord {": 1,
@@ -1146,13 +1145,10 @@
       "function isSafeInteger(value: unknown): value is number {": 1,
       "function isStoragePort(value: unknown): value is FeedbackStoragePort {": 1,
       "function mediaOf(value: unknown): string[] {": 1,
-      "function normalizeEvidenceRows(raw: readonly unknown[], policy: FeedbackPolicy): NormalizedEvidence[] {": 1,
       "function normalizeRows(raw: readonly unknown[], policy: FeedbackPolicy): NormalizedEvidence[] {": 1,
       "function policyFor(order: JsonRecord, override: unknown): FeedbackPolicy {": 1,
-      "function readArray(storage: unknown, key: string, { missingOk = true }: { missingOk?: boolean } = {}): { present: boolean; rows: unknown[]; raw: unknown } {": 3,
       "function readRaw(storage: unknown): unknown[] {": 2,
       "function readValue(storage: unknown, key: string): unknown {": 2,
-      "function relevantEvidenceRows(raw: readonly unknown[], ids: FeedbackIds, actorId: string): unknown[] {": 2,
       "function selectedIds(input: unknown, plural: string, singular: string): string[] {": 1,
       "function selectedList(input: unknown, plural: string, singular: string): JsonRecord[] {": 1,
       "function serialize(value: unknown): string {": 1,
@@ -1165,8 +1161,12 @@
       "let currentRecords: unknown[]": 1,
       "let normalizedExisting: unknown[]": 1,
       "let records: unknown[]": 1,
+      "raw: readonly unknown[],": 2,
       "readonly actorProvider?: () => unknown": 3,
+      "requested: unknown,": 1,
+      "rows: readonly unknown[],": 1,
       "setStorageSync(key: string, value: unknown): void": 1,
+      "storage: unknown,": 1,
       "type JsonRecord = Record<string, unknown>": 1
     },
     "packages/dynamic/services/orderAssociation.ts": {
@@ -1176,7 +1176,7 @@
     },
     "packages/dynamic/services/orderPicker.ts": {
       "const parsed: unknown = typeof raw === 'string' ? JSON.parse(raw) : raw": 1,
-      "const raw: unknown = typeof uni !== 'undefined' && uni && typeof uni.getStorageSync === 'function'": 1,
+      "const raw: unknown =": 1,
       "function displayText(value: unknown, fallback = ''): string {": 1,
       "function isRecord(value: unknown): value is JsonRecord {": 1,
       "type JsonRecord = Record<string, unknown>": 1
@@ -1241,7 +1241,6 @@
     },
     "packages/feeding/services/feedbackAdapter.ts": {
       "actorProvider: () => unknown,": 1,
-      "async function readCandidates({ reader, context, kind }: { reader: unknown; context: FeedbackReaderContext; kind: FeedbackKind }): Promise<LoadedCandidates> {": 1,
       "export type FeedbackReader = (context: FeedbackReaderContext) => unknown": 1,
       "function defaultFeedingTask(raw: unknown, context: FeedbackReaderContext): JsonRecord {": 1,
       "function errorCode(error: unknown, fallback = 'FEEDBACK_READ_FAILED'): string {": 1,
@@ -1258,6 +1257,7 @@
       "let response: unknown": 1,
       "let value: unknown": 1,
       "rawItems: readonly unknown[],": 1,
+      "reader: unknown": 1,
       "readonly actorProvider: () => unknown": 1,
       "readonly error: unknown": 1,
       "readonly error: unknown | null": 1,
@@ -1297,12 +1297,12 @@
       "function readErrorCode(error: unknown, fallback = 'ORDER_READ_FAILED'): string {": 1,
       "function resolveActor(actorProvider: unknown): ActorResolution {": 1,
       "function text(value: unknown): string {": 1,
-      "function validateOpaqueId(value: unknown, label: string, crossDomainPrefixes: readonly string[] = []): ValidationResult<{ id: string }> {": 1,
       "hiddenEntries?: readonly unknown[]": 1,
       "hiddenEntries?: unknown": 1,
       "let result: unknown": 1,
       "perspective?: unknown": 1,
       "source?: unknown": 1,
+      "value: unknown,": 1,
       "yardId?: unknown": 1
     },
     "packages/feeding/services/orderListMetadata.ts": {
@@ -1365,6 +1365,8 @@
       "type JsonRecord = Record<string, unknown>": 1
     },
     "packages/jury/pages/queue/components/PawJuryItemCard.vue": {
+      ".filter((entry: unknown) => Boolean(entry))": 1,
+      ".map((entry: unknown, index: number) => normalizeEvidence(entry, index, this.itemId))": 1,
       "function clampPercent(value: unknown, fallback: number): number {": 1,
       "function displayScalar(value: unknown): string | number {": 1,
       "function firstDefined(...values: unknown[]): unknown {": 2,
@@ -1374,7 +1376,6 @@
       "function normalizeEvidence(entry: unknown, index: number, itemId: string): JuryEvidence {": 1,
       "function recordOf(value: unknown): JsonRecord {": 1,
       "function textValue(value: unknown): string {": 1,
-      "return source.filter((entry: unknown) => Boolean(entry)).map((entry: unknown, index: number) => normalizeEvidence(entry, index, this.itemId))": 2,
       "type JsonRecord = Record<string, unknown>": 1
     },
     "packages/jury/pages/queue/index.vue": {
@@ -1392,13 +1393,16 @@
     },
     "packages/message/services/messageListMetadata.ts": {
       "actorProvider: () => unknown": 1,
-      "export function createNotificationListPageMetadata(actorProvider: () => unknown): NotificationListPageState {": 1,
+      "actorProvider: () => unknown,": 1,
       "export function normalizeNotificationRouteOptions(input: unknown): NotificationRouteOptions {": 1,
       "function isMessageCategory(value: unknown): value is MessageCategory {": 1,
       "function isRecord(value: unknown): value is Record<string, unknown> {": 2,
       "function routeString(value: unknown): string {": 1
     },
     "packages/message/services/messageStore.ts": {
+      "action: unknown,": 1,
+      "businessId: unknown,": 1,
+      "businessType: unknown,": 1,
       "const actionEventKey: unknown = eventKey || action.idempotencyKey || action.actionId": 1,
       "const parsed: unknown = typeof raw === 'string' ? JSON.parse(raw) : raw": 1,
       "const rawRoles: unknown[] = Array.isArray(source.roles)": 1,
@@ -1406,11 +1410,9 @@
       "data: unknown = null,": 1,
       "emit(name: string, value: unknown): void": 1,
       "export type MessageCurrentReader = (context: ReaderContext) => unknown": 1,
-      "function actionTargetMatches(action: unknown, businessType: unknown, businessId: unknown, reviewItemId: unknown): boolean {": 4,
       "function actorOf(provider: unknown): { actor: Actor | null; error: { code: string } | null } {": 1,
       "function errorCode(error: unknown, fallback: string): string {": 1,
       "function errorMessage(error: unknown, fallback: string): string {": 1,
-      "function id(value: unknown, label: string, { allowEmpty = false }: { allowEmpty?: boolean } = {}): string {": 1,
       "function isActorRole(value: unknown): value is ActorRole {": 1,
       "function isBusinessType(value: unknown): value is BusinessType {": 1,
       "function isEventChannel(value: unknown): value is EventChannel {": 1,
@@ -1422,7 +1424,6 @@
       "function isRecordWithActor(value: unknown): value is JsonRecord & { readonly actor: unknown } {": 2,
       "function isResolveAuthorizer(value: unknown): value is ResolveAuthorizer {": 1,
       "function isThenable(value: unknown): boolean {": 1,
-      "function messageInput(value: unknown, { requireRecipient = true }: { requireRecipient?: boolean } = {}): MessageRecord {": 1,
       "function plain(value: unknown): value is JsonRecord {": 1,
       "function rejectDangerous(value: unknown, label: string): asserts value is JsonRecord {": 1,
       "function scalarIds(values: readonly unknown[]): string[] {": 1,
@@ -1435,7 +1436,9 @@
       "readonly actorProvider?: () => unknown": 3,
       "readonly data: unknown": 1,
       "readonly rows: unknown[]": 2,
-      "type JsonRecord = Readonly<Record<string, unknown>>": 1
+      "reviewItemId: unknown,": 1,
+      "type JsonRecord = Readonly<Record<string, unknown>>": 1,
+      "value: unknown,": 2
     },
     "packages/rescue/pages/apply/index.vue": {
       "onLoad(query: Record<string, unknown> = {}) {": 1
@@ -1469,11 +1472,10 @@
     },
     "packages/rescue/services/componentMetadata.ts": {
       "export function rescueResultIdFromOptions(options: unknown): string {": 1,
-      "export function resolveRescueRecordLoadRoute(options: unknown, routeName: RescueRecordRouteName): RescueRouteResolution {": 1,
-      "export function resolveRescueRecordRoute(options: unknown, routeName: RescueRecordRouteName): RescueRouteResolution {": 1,
       "export interface RescueProgressRecordSnapshot extends Record<string, unknown> {": 1,
       "function isUnknownRecord(value: unknown): value is Record<string, unknown> {": 2,
-      "let params: unknown = options": 1
+      "let params: unknown = options": 1,
+      "options: unknown,": 2
     },
     "packages/rescue/services/messageStore.ts": {
       "const actionEventKey: unknown = eventKey || action.idempotencyKey || action.actionId": 1,
@@ -1486,7 +1488,6 @@
       "function actorOf(provider: unknown): { actor: Actor | null; error: { code: string } | null } {": 1,
       "function errorCode(error: unknown, fallback: string): string {": 1,
       "function errorMessage(error: unknown, fallback: string): string {": 1,
-      "function id(value: unknown, label: string, { allowEmpty = false }: { allowEmpty?: boolean } = {}): string {": 1,
       "function isActorRole(value: unknown): value is ActorRole {": 1,
       "function isBusinessType(value: unknown): value is BusinessType {": 1,
       "function isEventChannel(value: unknown): value is EventChannel {": 1,
@@ -1498,7 +1499,6 @@
       "function isRecordWithActor(value: unknown): value is JsonRecord & { readonly actor: unknown } {": 2,
       "function isResolveAuthorizer(value: unknown): value is ResolveAuthorizer {": 1,
       "function isThenable(value: unknown): boolean {": 1,
-      "function messageInput(value: unknown, { requireRecipient = true }: { requireRecipient?: boolean } = {}): MessageRecord {": 1,
       "function plain(value: unknown): value is JsonRecord {": 1,
       "function rejectDangerous(value: unknown, label: string): asserts value is JsonRecord {": 1,
       "function scalarIds(values: readonly unknown[]): string[] {": 1,
@@ -1511,7 +1511,8 @@
       "readonly actorProvider?: () => unknown": 3,
       "readonly data: unknown": 1,
       "readonly rows: unknown[]": 2,
-      "type JsonRecord = Readonly<Record<string, unknown>>": 1
+      "type JsonRecord = Readonly<Record<string, unknown>>": 1,
+      "value: unknown,": 2
     },
     "packages/rescue/services/mineMetadata.ts": {
       "export function isMineFilter(value: unknown): value is MineFilter {": 1
@@ -1556,13 +1557,14 @@
       "const raw: unknown = uni.getStorageSync(RESCUE_STORAGE_KEY)": 1,
       "const result: unknown = options.writer(Object.freeze({ records, current, next, ...context }))": 1,
       "const result: unknown = reader ? reader(Object.freeze({ actor: context })) : readStorageRecords()": 1,
+      "expectedRescueId: unknown,": 1,
+      "expectedReviewItemId: unknown,": 1,
       "export type RescueReviewActorProvider = () => unknown": 1,
       "export type RescueReviewRecord = Readonly<Record<string, unknown>>": 1,
       "function actionKey(value: unknown): string {": 1,
       "function actionOutcome(value: unknown): ReviewOutcome {": 1,
       "function cloneValue(value: unknown): unknown {": 2,
       "function fail(code: string, message: string, details: unknown = {}): never {": 1,
-      "function findReviewRecord(records: readonly JsonRecord[], expectedReviewItemId: unknown, expectedRescueId: unknown): JsonRecord | null {": 2,
       "function id(value: unknown, label: string, options: Readonly<{ required?: boolean }> = {}): string {": 1,
       "function isActorProvider(value: unknown): value is ActorProvider {": 1,
       "function isPromiseLike(value: unknown): value is PromiseLike<unknown> {": 2,
@@ -1610,7 +1612,7 @@
       "onLoad(options: unknown = {}) {": 1
     },
     "packages/yard/pages/editor/index.vue": {
-      "}, { actorProvider: () => uni.getStorageSync<unknown>('PAWHOME_ACTOR_SESSION') })": 1,
+      "{ actorProvider: () => uni.getStorageSync<unknown>('PAWHOME_ACTOR_SESSION') },": 1,
       "const detail: unknown = event.detail": 1,
       "function isRecord(value: unknown): value is Record<string, unknown> {": 2,
       "function readText(value: unknown): string {": 1,
@@ -1667,12 +1669,13 @@
       "onLoad(options: Record<string, unknown> = {}) {": 1
     },
     "pages/me/index.vue": {
-      "? options as Record<string, unknown>": 1,
+      "? (options as Record<string, unknown>)": 1,
       "function queryRecord(options: unknown): Record<string, unknown> {": 2,
       "onLoad(options: unknown = {}) {": 1,
       "success: (result: unknown) => {": 2
     },
     "services/domainReads/adoption/applicationAdapter.ts": {
+      "catch?: (handler: () => void) => unknown": 1,
       "export type AdoptionApplicationResolver = (context: Readonly<{ applicationId: string }>) => unknown": 1,
       "function errorCode(error: unknown, fallback: string): string {": 1,
       "function errorMessage(error: unknown, fallback: string): string {": 1,
@@ -1688,10 +1691,10 @@
       "function validateRelations(record: unknown): Relations {": 1,
       "let record: unknown": 2,
       "readonly actorProvider?: () => unknown": 1,
+      "then: (...args: unknown[]) => unknown": 2,
       "type AdapterError = { code: string; message: string; [key: string]: unknown }": 1,
       "type JsonRecord = Record<string, unknown>": 1,
-      "type Reader = (id: string) => unknown": 1,
-      "type ThenableValue = { then: (...args: unknown[]) => unknown; catch?: (handler: () => void) => unknown }": 3
+      "type Reader = (id: string) => unknown": 1
     },
     "services/domainReads/adoption/reviewAdapter.ts": {
       "export function createReviewSessionProvider(): () => unknown {": 1,
@@ -1787,16 +1790,17 @@
       "const value: unknown = readJSON(PICK_KEY, {})": 1,
       "export function addAdoptionFromUnknown(rec: unknown): AdoptionRecord | null {": 1,
       "export function normalizeAdoptionRecord(record: unknown): AdoptionRecord | null {": 1,
-      "export function reopenAdoptionFromUnknown(id: unknown, patch: unknown = {}): AdoptionRecord | false | null {": 2,
       "export function toAdoptionCard(record: unknown): AdoptionCard | null {": 1,
-      "export function transitionAdoptionFromUnknown(id: unknown, toStatus: unknown, patch: unknown = {}): AdoptionRecord | false | null {": 3,
-      "export function updateAdoptionFromUnknown(id: unknown, patch: unknown): AdoptionRecord | false | null {": 2,
       "function canReopenAdoptionInput(idOrRecord: unknown): boolean {": 1,
       "function isRecord(value: unknown): value is JsonRecord {": 1,
       "function normalizeId(value: unknown): string {": 1,
       "function normalizePet(pet: unknown, index: number): AdoptionPet | null {": 1,
       "function readJSON(key: string, fallback: unknown): unknown {": 2,
       "function recordOf(value: unknown): JsonRecord {": 1,
+      "id: unknown,": 3,
+      "patch: unknown = {},": 2,
+      "patch: unknown,": 1,
+      "toStatus: unknown,": 1,
       "type JsonRecord = Record<string, unknown>": 1
     },
     "utils/animalEditorMetadata.ts": {
@@ -1814,20 +1818,18 @@
     },
     "utils/applicationMockApi.ts": {
       "actorProvider?: () => unknown": 1,
-      "export function advanceApplication(type: unknown, id: unknown, nextStatus: unknown, patch: unknown = {}, options: ActorOptions = {}): ApiResult<ApplicationRecord> {": 4,
-      "export function createApplication(type: unknown, payload: unknown = {}, options: ActorOptions = {}): ApiResult<ApplicationRecord> {": 2,
-      "export function getApplication(type: unknown, id: unknown, options: ActorOptions = {}): ApiResult<ApplicationRecord> {": 2,
-      "export function getApplicationStatus(type: unknown, id: unknown, options: ActorOptions = {}): ApiResult<{ id: string; type: ApplicationType; status: AdoptionStatus | RescueApplicationStatus; record: ApplicationRecord }> {": 2,
-      "export function listApplications(type: unknown, options: ActorOptions = {}): ApiResult<ApplicationRecord[]> {": 1,
-      "export function reopenApplication(type: unknown, id: unknown, patch: unknown = {}): ApiResult<ApplicationRecord> {": 3,
-      "export function updateApplication(type: unknown, id: unknown, patch: unknown = {}): ApiResult<ApplicationRecord> {": 3,
       "function defaultActorProvider(): unknown {": 1,
       "function isErrorWithCode(value: unknown): value is { code: string; message: string } {": 1,
       "function isRecord(value: unknown): value is JsonRecord {": 1,
       "function normalizeId(value: unknown): string {": 1,
       "function normalizeType(type: unknown): ApplicationType | '' {": 1,
       "function recordOf(value: unknown): JsonRecord {": 1,
-      "type JsonRecord = Record<string, unknown>": 1
+      "id: unknown,": 5,
+      "nextStatus: unknown,": 1,
+      "patch: unknown = {},": 3,
+      "payload: unknown = {},": 1,
+      "type JsonRecord = Record<string, unknown>": 1,
+      "type: unknown,": 7
     },
     "utils/componentEvents.ts": {
       "export function eventContract<Args extends readonly unknown[]>(): (...args: Args) => true {": 1
@@ -1939,19 +1941,17 @@
       "function stringArray(value: unknown): string[] {": 1
     },
     "utils/regionMock.ts": {
-      ".map((part: unknown) => typeof part === 'string' ? part : '')": 1,
       "export function createRegionPickerDemoMetadata(state: unknown): RegionPickerDemoMetadata | null {": 1,
       "export function normalizeRegionParts(value: unknown, limit = 4): string[] {": 1,
-      "export function normalizeRegionSelectionPayload(value: unknown): RegionSelectionPayload | null {": 1
+      "export function normalizeRegionSelectionPayload(value: unknown): RegionSelectionPayload | null {": 1,
+      "return value.slice(0, safeLimit).map((part: unknown) => (typeof part === 'string' ? part : ''))": 1
     },
     "utils/rescueStorage.ts": {
       "const parsed: unknown = JSON.parse(raw)": 1,
       "const raw: unknown = readJSON(KEY, [])": 1,
       "const raw: unknown = uni.getStorageSync(key)": 1,
-      "export function addRescueProofFromUnknown(id: unknown, submission: unknown = {}): RescueRecord | null {": 2,
       "export function createRescueFromUnknown(input: unknown): RescueRecord | null {": 1,
       "export function normalizeRescueRecord(record: unknown): RescueRecord | null {": 1,
-      "export function transitionRescueApplicationFromUnknown(id: unknown, toStatus: unknown, patch: unknown = {}): RescueRecord | null {": 3,
       "export function updateRescueFromUnknown(id: unknown, patch: unknown = {}): RescueRecord | null {": 2,
       "function isRecord(value: unknown): value is JsonRecord {": 1,
       "function normalizeAnimal(animal: unknown, index: number, rescueId: string): RescueAnimal | null {": 1,
@@ -1963,13 +1963,17 @@
       "function readJSON(key: string, fallback: unknown): unknown {": 2,
       "function recordOf(value: unknown): JsonRecord {": 1,
       "function saveRescues(list: unknown): RescueRecord[] {": 1,
+      "id: unknown,": 2,
+      "patch: unknown = {},": 1,
+      "submission: unknown = {},": 1,
+      "toStatus: unknown,": 1,
       "type JsonRecord = Record<string, unknown>": 1
     },
     "utils/rewardOrderMetadata.ts": {
-      "export function isRewardOrderSubmittedPayload(value: unknown): value is RewardOrderSubmittedPayload {": 1,
       "export function normalizeRewardOrderAddress(value: unknown): AddressRecord | null {": 1,
       "function isRecord(value: unknown): value is Record<string, unknown> {": 2,
-      "record: Record<string, unknown>": 1
+      "record: Record<string, unknown>": 1,
+      "value: unknown,": 1
     },
     "utils/rewardOrderStorage.ts": {
       "[key: string]: unknown": 1,
@@ -1980,7 +1984,7 @@
       "function normalizeOrderList(value: unknown): RewardOrderRecord[] {": 1
     },
     "utils/safeImgSrc.ts": {
-      "export function safeImgSrc(v: unknown, fallback = \"/static/avatarlog.png\"): string {": 1
+      "export function safeImgSrc(v: unknown, fallback = '/static/avatarlog.png'): string {": 1
     },
     "utils/yardCreateMetadata.ts": {
       "export function normalizeYardRecorderStopMetadata(value: unknown): YardRecorderStopMetadata {": 1,

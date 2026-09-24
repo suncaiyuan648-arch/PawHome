@@ -8,6 +8,6 @@ export type FeedingOrderDetailPerspectiveInput = FeedingOrderDetailPerspective |
 export type FeedingOrderSort = 'smart' | 'newest' | 'status'
 
 export interface FeedingOrderSortOption {
-	readonly key: FeedingOrderSort
-	readonly label: string
+  readonly key: FeedingOrderSort
+  readonly label: string
 }

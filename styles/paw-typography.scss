@@ -1,7 +1,8 @@
 page {
   /* Typography tokens are deliberately system-first: the bundled Source Han OTFs
    * are too large to make the runtime's default font, and are not globally loaded. */
-  --paw-font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --paw-font-family:
+    -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   --paw-font-body-s: 12px;
   --paw-font-body-m: 13px;
   --paw-font-body-l: 14px;

@@ -1,122 +1,311 @@
 <template>
-  <view v-if="mode === 'list'" class="audit-list-page" data-qa="qa-adoption-audit-list">
-    <PawPageNav title="领养审核" background="#f5f5f5" fallback-url="/pages/me/index" :auto-back="false" @back="goBack" />
-    <scroll-view class="audit-list-scroll" scroll-y :show-scrollbar="false" :bounces="false">
+  <view
+    v-if="mode === 'list'"
+    class="audit-list-page"
+    data-qa="qa-adoption-audit-list"
+  >
+    <PawPageNav
+      title="领养审核"
+      background="#f5f5f5"
+      fallback-url="/pages/me/index"
+      :auto-back="false"
+      @back="goBack"
+    />
+    <scroll-view
+      class="audit-list-scroll"
+      scroll-y
+      :show-scrollbar="false"
+      :bounces="false"
+    >
       <view class="audit-list-content">
-        <view class="audit-tabs" data-qa="qa-adoption-audit-tabs">
-          <view v-for="tab in reviewTabs" :key="tab.key" class="audit-tab"
-            :class="{ 'audit-tab--active': reviewTab === tab.key }" :data-qa="`qa-adoption-audit-tab-${tab.key}`"
-            @tap="switchReviewTab(tab.key)">
+        <view
+          class="audit-tabs"
+          data-qa="qa-adoption-audit-tabs"
+        >
+          <view
+            v-for="tab in reviewTabs"
+            :key="tab.key"
+            class="audit-tab"
+            :class="{ 'audit-tab--active': reviewTab === tab.key }"
+            :data-qa="`qa-adoption-audit-tab-${tab.key}`"
+            @tap="switchReviewTab(tab.key)"
+          >
             <text>{{ tab.label }}</text>
             <text class="audit-tab__count">{{ tab.count }}</text>
           </view>
         </view>
 
-        <view v-if="!reviewList.length" class="audit-list-empty" data-qa="qa-adoption-audit-empty">
+        <view
+          v-if="!reviewList.length"
+          class="audit-list-empty"
+          data-qa="qa-adoption-audit-empty"
+        >
           <text>{{ reviewTab === 'pending' ? '暂无待审核领养单' : '暂无已审核领养单' }}</text>
         </view>
-        <PawAdoptionReviewCard v-for="item in reviewList" :key="`${item.recordId}-${item.reviewerRole}`" :review="item"
-          :qa="`qa-adoption-audit-card-${item.recordId}-${item.reviewerRole}`" @tap="openReview(item)" />
+        <PawAdoptionReviewCard
+          v-for="item in reviewList"
+          :key="`${item.recordId}-${item.reviewerRole}`"
+          :review="item"
+          :qa="`qa-adoption-audit-card-${item.recordId}-${item.reviewerRole}`"
+          @tap="openReview(item)"
+        />
       </view>
     </scroll-view>
   </view>
-  <view v-else class="audit-page"
-    :class="{ 'audit-page--with-actions': canAct, 'audit-page--owner-confirm': ['ownerConfirm', 'ownerConfirmed', 'ownerConfirmRejected'].includes(mode) }">
-    <PawPageNav :title="reviewPageTitle" :background="reviewNavBackground" fallback-url="/pages/me/index"
-      :auto-back="false" @back="goBack" />
-    <scroll-view class="audit-scroll" scroll-y :show-scrollbar="false">
-      <view v-if="record && ['info', 'application'].includes(mode)" class="audit-content">
-        <view v-if="mode === 'info'" class="card">
+  <view
+    v-else
+    class="audit-page"
+    :class="{
+      'audit-page--with-actions': canAct,
+      'audit-page--owner-confirm': [
+        'ownerConfirm',
+        'ownerConfirmed',
+        'ownerConfirmRejected',
+      ].includes(mode),
+    }"
+  >
+    <PawPageNav
+      :title="reviewPageTitle"
+      :background="reviewNavBackground"
+      fallback-url="/pages/me/index"
+      :auto-back="false"
+      @back="goBack"
+    />
+    <scroll-view
+      class="audit-scroll"
+      scroll-y
+      :show-scrollbar="false"
+    >
+      <view
+        v-if="record && ['info', 'application'].includes(mode)"
+        class="audit-content"
+      >
+        <view
+          v-if="mode === 'info'"
+          class="card"
+        >
           <text class="card-title">小院信息</text>
-          <view class="manager-info-row"><text>小院名称</text><text>{{ record.yardName || record.ownerName }}</text></view>
-          <view class="manager-info-row"><text>小院位置</text><text>{{ record.location || '暂未填写' }}</text></view>
-          <view class="manager-info-row"><text>联系方式</text><text>{{ record.ownerNick || '暂未填写' }}</text></view>
-          <text class="manager-info-copy">{{ record.ownerMessage || '院主暂未补充小院说明。' }}</text>
+          <view class="manager-info-row"
+            ><text>小院名称</text><text>{{ record.yardName || record.ownerName }}</text></view
+          >
+          <view class="manager-info-row"
+            ><text>小院位置</text><text>{{ record.location || '暂未填写' }}</text></view
+          >
+          <view class="manager-info-row"
+            ><text>联系方式</text><text>{{ record.ownerNick || '暂未填写' }}</text></view
+          >
+          <text class="manager-info-copy">{{
+            record.ownerMessage || '院主暂未补充小院说明。'
+          }}</text>
         </view>
-        <view v-else class="card">
+        <view
+          v-else
+          class="card"
+        >
           <text class="card-title">申请内容</text>
           <text class="apply-body">{{ record.applyText || '申请人暂未填写申请内容。' }}</text>
-          <view v-if="record.mediaPaths && record.mediaPaths.length" class="media-row">
-            <image v-for="(src, index) in record.mediaPaths.slice(0, 2)" :key="src + index" class="media-image"
-              :src="src" mode="aspectFill" />
+          <view
+            v-if="record.mediaPaths && record.mediaPaths.length"
+            class="media-row"
+          >
+            <image
+              v-for="(src, index) in record.mediaPaths.slice(0, 2)"
+              :key="src + index"
+              class="media-image"
+              :src="src"
+              mode="aspectFill"
+            />
           </view>
         </view>
       </view>
-      <view v-else-if="record && ['ownerConfirm', 'ownerConfirmed', 'ownerConfirmRejected'].includes(mode)"
-        class="audit-content audit-content--owner-confirm">
+      <view
+        v-else-if="
+          record && ['ownerConfirm', 'ownerConfirmed', 'ownerConfirmRejected'].includes(mode)
+        "
+        class="audit-content audit-content--owner-confirm"
+      >
         <view class="owner-confirm-top">
           <view class="status-row">
-            <PawIcon :name="statusIconName" :size="17" />
+            <PawIcon
+              :name="statusIconName"
+              :size="17"
+            />
             <text class="status-title">{{ titleByMode }}</text>
           </view>
           <view class="owner-confirm-proof card">
             <view class="owner-confirm-proof__photos">
-              <view v-for="(photo, index) in ownerConfirmProofPhotos" :key="photo + index"
-                class="owner-confirm-proof__item">
-                <PawImage class="owner-confirm-proof__photo" :src="photo" display-mode="fixed" :width="106"
-                  :height="106" :radius="4" :preview="true" :preview-urls="ownerConfirmProofPhotos"
-                  :preview-index="index" />
+              <view
+                v-for="(photo, index) in ownerConfirmProofPhotos"
+                :key="photo + index"
+                class="owner-confirm-proof__item"
+              >
+                <PawImage
+                  class="owner-confirm-proof__photo"
+                  :src="photo"
+                  display-mode="fixed"
+                  :width="106"
+                  :height="106"
+                  :radius="4"
+                  :preview="true"
+                  :preview-urls="ownerConfirmProofPhotos"
+                  :preview-index="index"
+                />
                 <text class="owner-confirm-proof__date">{{ ownerConfirmProofDate }}</text>
-                <text class="owner-confirm-proof__label">{{ index === 0 ? '来到逢猫' : '有家啦' }}</text>
+                <text class="owner-confirm-proof__label">{{
+                  index === 0 ? '来到逢猫' : '有家啦'
+                }}</text>
               </view>
             </view>
             <text class="owner-confirm-proof__copy">{{ ownerConfirmProofCopy }}</text>
           </view>
         </view>
-        <view class="card link-card" @tap="openAuditSubpage('info')">
+        <view
+          class="card link-card"
+          @tap="openAuditSubpage('info')"
+        >
           <text>领养信息</text>
-          <view class="link-value"><text>查看</text>
-            <PawIcon name="navigation/chevron-right" :size="14" />
+          <view class="link-value"
+            ><text>查看</text>
+            <PawIcon
+              name="navigation/chevron-right"
+              :size="14"
+            />
           </view>
         </view>
-        <view class="card link-card" @tap="openAuditSubpage('application')">
+        <view
+          class="card link-card"
+          @tap="openAuditSubpage('application')"
+        >
           <text>申请内容</text>
-          <view class="link-value"><text>查看</text>
-            <PawIcon name="navigation/chevron-right" :size="14" />
+          <view class="link-value"
+            ><text>查看</text>
+            <PawIcon
+              name="navigation/chevron-right"
+              :size="14"
+            />
           </view>
         </view>
       </view>
-      <view v-else-if="record" class="audit-content">
+      <view
+        v-else-if="record"
+        class="audit-content"
+      >
         <view class="status-row">
-          <PawIcon :name="statusIconName" :size="17" />
+          <PawIcon
+            :name="statusIconName"
+            :size="17"
+          />
           <text class="status-title">{{ titleByMode }}</text>
         </view>
         <view class="audit-application-card">
           <view class="audit-applicant-row">
-            <PawImage class="audit-applicant-avatar" :src="applicantAvatar" :size="34" :radius="17" :preview="false" />
+            <PawImage
+              class="audit-applicant-avatar"
+              :src="applicantAvatar"
+              :size="34"
+              :radius="17"
+              :preview="false"
+            />
             <text class="audit-applicant-name">{{ applicantName }}</text>
             <view class="audit-applicant-tag"><text>申请人</text></view>
           </view>
           <text class="apply-body">{{ record.applyText || '申请人暂未填写申请内容。' }}</text>
           <view class="media-row">
-            <PawImage v-for="(src, index) in applicationPhotos" :key="src + index" class="media-image" :src="src"
-              display-mode="fixed" :width="106" :height="106" :radius="4" :preview="true"
-              :preview-urls="applicationPhotos" :preview-index="index" />
+            <PawImage
+              v-for="(src, index) in applicationPhotos"
+              :key="src + index"
+              class="media-image"
+              :src="src"
+              display-mode="fixed"
+              :width="106"
+              :height="106"
+              :radius="4"
+              :preview="true"
+              :preview-urls="applicationPhotos"
+              :preview-index="index"
+            />
           </view>
         </view>
 
-        <PawAdoptionPetsCard :title="catSectionTitle" :pets="displayPets"
-          :yard-name="record.yardName || record.ownerName" :yard-id="record.yardId" :yard-avatar="record.ownerAvatar"
-          :yard-tag="record.yardTag || '小院'" :show-add="false" :show-owner="true" :pet-clickable="true"
-          :yard-clickable="true" :min-height="231" :margin-bottom="0" qa-prefix="qa-adoption-audit-pet-"
-          @pet-click="openPetDetail" @yard-click="openYardDetail" />
-        <PawAdoptionRejectReason v-if="showRejectReason" :rejector="record.rejector" :note="record.rejectNote" />
+        <PawAdoptionPetsCard
+          :title="catSectionTitle"
+          :pets="displayPets"
+          :yard-name="record.yardName || record.ownerName"
+          :yard-id="record.yardId"
+          :yard-avatar="record.ownerAvatar"
+          :yard-tag="record.yardTag || '小院'"
+          :show-add="false"
+          :show-owner="true"
+          :pet-clickable="true"
+          :yard-clickable="true"
+          :min-height="231"
+          :margin-bottom="0"
+          qa-prefix="qa-adoption-audit-pet-"
+          @pet-click="openPetDetail"
+          @yard-click="openYardDetail"
+        />
+        <PawAdoptionRejectReason
+          v-if="showRejectReason"
+          :rejector="record.rejector"
+          :note="record.rejectNote"
+        />
       </view>
-      <view v-else class="empty-state"><text>领养记录不存在</text></view>
+      <view
+        v-else
+        class="empty-state"
+        ><text>领养记录不存在</text></view
+      >
     </scroll-view>
 
-    <PawFixedActionBar v-if="canAct" :secondary-action="reviewRejectAction" :primary-action="reviewAgreeAction"
-      @secondary="showReject = true" @primary="showAgree = true" />
+    <PawFixedActionBar
+      v-if="canAct"
+      :secondary-action="reviewRejectAction"
+      :primary-action="reviewAgreeAction"
+      @secondary="showReject = true"
+      @primary="showAgree = true"
+    />
 
-    <PawDialog v-model="showAgree" variant="adoption-confirm" :title="agreeDialogTitle" :message="agreeDescription"
-      :show-cancel="true" cancel-text="返回" confirm-text="确认" @confirm="onAgree" />
-    <PawDialog v-if="mode === 'ownerConfirm'" v-model="showReject" variant="adoption-confirm" title="确认驳回已领养申请吗"
-      message="驳回后领养信息申请人不再可见。" :show-cancel="true" cancel-text="返回" confirm-text="确认" @confirm="onReject" />
-    <PawDialog v-else v-model="showReject" variant="adoption-reject" title="驳回" :show-cancel="true" cancel-text="返回"
-      confirm-text="确认" :confirm-enabled="hasRejectReason" :auto-close="false" @confirm="onReject"
-      @cancel="rejectReason = ''">
-      <textarea v-model="rejectReason" class="reject-reason" maxlength="120" placeholder="简短说明驳回的原因"
-        placeholder-style="color:#999;" />
+    <PawDialog
+      v-model="showAgree"
+      variant="adoption-confirm"
+      :title="agreeDialogTitle"
+      :message="agreeDescription"
+      :show-cancel="true"
+      cancel-text="返回"
+      confirm-text="确认"
+      @confirm="onAgree"
+    />
+    <PawDialog
+      v-if="mode === 'ownerConfirm'"
+      v-model="showReject"
+      variant="adoption-confirm"
+      title="确认驳回已领养申请吗"
+      message="驳回后领养信息申请人不再可见。"
+      :show-cancel="true"
+      cancel-text="返回"
+      confirm-text="确认"
+      @confirm="onReject"
+    />
+    <PawDialog
+      v-else
+      v-model="showReject"
+      variant="adoption-reject"
+      title="驳回"
+      :show-cancel="true"
+      cancel-text="返回"
+      confirm-text="确认"
+      :confirm-enabled="hasRejectReason"
+      :auto-close="false"
+      @confirm="onReject"
+      @cancel="rejectReason = ''"
+    >
+      <textarea
+        v-model="rejectReason"
+        class="reject-reason"
+        maxlength="120"
+        placeholder="简短说明驳回的原因"
+        placeholder-style="color:#999;"
+      />
     </PawDialog>
   </view>
 </template>
@@ -149,7 +338,11 @@ import {
   type AdoptionReviewTab,
 } from '@/utils/adoptionReviewMetadata.ts'
 import { buildRoute } from '@/navigation/routeContracts.ts'
-import { createReviewSessionProvider, readAdoptionReviewDetail, readAdoptionReviewList } from '../../../services/reviewAdapter.ts'
+import {
+  createReviewSessionProvider,
+  readAdoptionReviewDetail,
+  readAdoptionReviewList,
+} from '../../../services/reviewAdapter.ts'
 import { applyAdoptionReviewAction } from '../../../services/reviewActionAdapter.ts'
 import { produceLocalActionNotification } from '../../../services/messageStore.ts'
 
@@ -224,16 +417,22 @@ function isAdoptionReviewActionMode(value: string): value is AdoptionReviewActio
 function decodeValue(value: unknown): string {
   if (value === undefined || value === null) return ''
   const text = String(value)
-  try { return decodeURIComponent(text) } catch { return text }
+  try {
+    return decodeURIComponent(text)
+  } catch {
+    return text
+  }
 }
 
 function recordForApplication(applicationId: string): AdoptionReviewRecordMetadata | null {
-  const source = getAdoptionRecords({ includeDemo: false }).find(record => (
-    record.applicationId === applicationId || record.id === applicationId || record.recordId === applicationId
-  ))
+  const source = getAdoptionRecords({ includeDemo: false }).find(
+    (record) =>
+      record.applicationId === applicationId ||
+      record.id === applicationId ||
+      record.recordId === applicationId,
+  )
   return normalizeAdoptionReviewRecord(source)
 }
-
 
 export default defineComponent({
   components: {
@@ -244,7 +443,7 @@ export default defineComponent({
     PawIcon,
     PawAdoptionPetsCard,
     PawAdoptionRejectReason,
-    PawAdoptionReviewCard
+    PawAdoptionReviewCard,
   },
   data(): AdoptionReviewPageState {
     return {
@@ -260,14 +459,14 @@ export default defineComponent({
       actorProvider: createReviewSessionProvider(),
       showAgree: false,
       showReject: false,
-      rejectReason: ''
+      rejectReason: '',
     }
   },
   computed: {
     reviewTabs(): AdoptionReviewTabMetadata[] {
       return [
         { key: 'pending', label: '待审核', count: this.getReviewCount('pending') },
-        { key: 'reviewed', label: '已审核', count: this.getReviewCount('reviewed') }
+        { key: 'reviewed', label: '已审核', count: this.getReviewCount('reviewed') },
       ]
     },
     reviewPageTitle(): string {
@@ -288,7 +487,7 @@ export default defineComponent({
         label: this.mode === 'ownerConfirm' ? '驳回' : '拒绝',
         tone: 'ghost',
         shape: 'rounded',
-        qa: 'qa-adoption-audit-reject'
+        qa: 'qa-adoption-audit-reject',
       }
     },
     reviewAgreeAction(): { key: string; label: string; tone: string; shape: string; qa: string } {
@@ -297,11 +496,16 @@ export default defineComponent({
         label: this.mode === 'ownerConfirm' ? '确认已领养' : '同意',
         tone: 'brand',
         shape: 'rounded',
-        qa: 'qa-adoption-audit-agree'
+        qa: 'qa-adoption-audit-agree',
       }
     },
     statusIconName(): string {
-      if (['rejectDone', 'confirmReject', 'ownerConfirmRejected', 'cloudRejectDone'].includes(this.mode)) return 'status/rejected'
+      if (
+        ['rejectDone', 'confirmReject', 'ownerConfirmRejected', 'cloudRejectDone'].includes(
+          this.mode,
+        )
+      )
+        return 'status/rejected'
       if (['ownerConfirm', 'ownerConfirmed'].includes(this.mode)) return 'status/check'
       return 'navigation/clock'
     },
@@ -318,7 +522,7 @@ export default defineComponent({
       const media = this.record?.mediaPaths ?? []
       return [
         media[0] || '/static/figma/adoption-flow/04a93fa17267335f49e6e818f8caa78dd3afc80b.png',
-        media[1] || '/static/figma/adoption-flow/b61b026ea991c01c6257c909021245fd64956837.png'
+        media[1] || '/static/figma/adoption-flow/b61b026ea991c01c6257c909021245fd64956837.png',
       ]
     },
     ownerConfirmProofPhotos(): string[] {
@@ -331,33 +535,59 @@ export default defineComponent({
       return typeof value === 'string' && value.trim() ? value : '2026.01.03'
     },
     ownerConfirmProofCopy(): string {
-      return (this.record && this.record.confirmStory)
-        || '我第一次去的时候小猫一直躲着我，去了几次都没有逮到，后来我买了一个网，趁着小猫睡着的时候我一个网兜给盖上去了，终于把小猫猫带回家了'
+      return (
+        (this.record && this.record.confirmStory) ||
+        '我第一次去的时候小猫一直躲着我，去了几次都没有逮到，后来我买了一个网，趁着小猫睡着的时候我一个网兜给盖上去了，终于把小猫猫带回家了'
+      )
     },
-    isCloudParentReview(): boolean { return this.reviewerRole === 'cloud_parent' || this.mode === 'cloudReview' || this.mode === 'cloudAgreeWaiting' || this.mode === 'cloudAgreeDone' || this.mode === 'cloudRejectDone' },
-    hasRejectReason(): boolean { return Boolean(String(this.rejectReason || '').trim()) },
+    isCloudParentReview(): boolean {
+      return (
+        this.reviewerRole === 'cloud_parent' ||
+        this.mode === 'cloudReview' ||
+        this.mode === 'cloudAgreeWaiting' ||
+        this.mode === 'cloudAgreeDone' ||
+        this.mode === 'cloudRejectDone'
+      )
+    },
+    hasRejectReason(): boolean {
+      return Boolean(String(this.rejectReason || '').trim())
+    },
     agreeDialogTitle(): string {
       return this.mode === 'ownerConfirm' ? '确认已领养吗' : '确定同意领养吗'
     },
     agreeDescription(): string {
-      if (this.isCloudParentReview) return '同意后申请将发给院主，由院主再次审核，为防止虐猫群体恶意领养，请您点击申请人头像审查领养人的历史记录后再做决定。'
+      if (this.isCloudParentReview)
+        return '同意后申请将发给院主，由院主再次审核，为防止虐猫群体恶意领养，请您点击申请人头像审查领养人的历史记录后再做决定。'
       if (this.mode === 'ownerConfirm') return '请确认小动物已经找到新家，并且健康快乐的生活了。'
       return '同意后申请人可以查看小院位置（非收货地址）、您的联系方式以及您的领养留言。为防止虐猫群体恶意领养，请您点击申请人头像审查领养人的历史记录后再做决定。'
     },
     titleByMode(): string {
       const titles: Record<string, string> = {
-        cloudReview: '等待云家长审核中……', cloudAgreeWaiting: '等待云家长审核中……', cloudAgreeDone: '云家长已同意', cloudRejectDone: '云家长已拒绝',
-        ownerReview: '等待院主审核中……', ownerPending: '院主已同意',
-        ownerConfirm: '待院主确认', ownerConfirmed: '院主已确认', ownerConfirmRejected: '院主已驳回', agreeDone: '院主已同意',
-        confirmAgree: '院主已确认', confirmReject: '院主已拒绝', rejectDone: '院主已拒绝', success: '院主已确认',
-        info: '小院信息', application: '申请内容'
+        cloudReview: '等待云家长审核中……',
+        cloudAgreeWaiting: '等待云家长审核中……',
+        cloudAgreeDone: '云家长已同意',
+        cloudRejectDone: '云家长已拒绝',
+        ownerReview: '等待院主审核中……',
+        ownerPending: '院主已同意',
+        ownerConfirm: '待院主确认',
+        ownerConfirmed: '院主已确认',
+        ownerConfirmRejected: '院主已驳回',
+        agreeDone: '院主已同意',
+        confirmAgree: '院主已确认',
+        confirmReject: '院主已拒绝',
+        rejectDone: '院主已拒绝',
+        success: '院主已确认',
+        info: '小院信息',
+        application: '申请内容',
       }
       return titles[this.mode] || '领养申请'
     },
     resultBtnText(): string {
       return ['agreeDone', 'cloudAgreeDone', 'cloudAgreeWaiting'].includes(this.mode)
         ? '查看领养进度'
-        : this.mode === 'confirmAgree' ? '查看领养进度' : '查看详情'
+        : this.mode === 'confirmAgree'
+          ? '查看领养进度'
+          : '查看详情'
     },
     displayPets(): AdoptionPetMetadata[] {
       const pets = this.record?.pets ?? []
@@ -365,7 +595,7 @@ export default defineComponent({
     },
     catSectionTitle(): string {
       return this.mode === 'success' ? '领走的猫咪' : '申请领养的猫咪'
-    }
+    },
   },
   onLoad(options: Record<string, unknown> = {}) {
     const requestedMode = String(options.mode || '').trim()
@@ -382,9 +612,7 @@ export default defineComponent({
     this.loadRecord()
     if (this.reviewAccess && this.reviewAccess.canRead && this.reviewAccess.item) {
       const resolvedMode = this.modeForRecord(this.record, this.reviewerRole)
-      this.mode = ['info', 'application'].includes(requestedMode)
-        ? requestedMode
-        : resolvedMode
+      this.mode = ['info', 'application'].includes(requestedMode) ? requestedMode : resolvedMode
     } else if (!['info', 'application'].includes(requestedMode)) {
       this.mode = requestedMode || 'ownerReview'
     }
@@ -407,9 +635,9 @@ export default defineComponent({
     loadReviewList() {
       const filter = this.reviewTab === 'pending' ? 'pending' : 'processed'
       const result = readAdoptionReviewList({ actorProvider: this.actorProvider, filter })
-      this.reviewList = result.items.map((item) => (
-        createAdoptionReviewQueueCard(item, recordForApplication(item.applicationId))
-      ))
+      this.reviewList = result.items.map((item) =>
+        createAdoptionReviewQueueCard(item, recordForApplication(item.applicationId)),
+      )
     },
     switchReviewTab(tab: AdoptionReviewTab) {
       if (!['pending', 'reviewed'].includes(tab) || this.reviewTab === tab) return
@@ -424,8 +652,10 @@ export default defineComponent({
         `reviewItemId=${encodeURIComponent(item.reviewItemId)}`,
         `reviewerRole=${encodeURIComponent(item.reviewerRole || '')}`,
         `reviewerId=${encodeURIComponent(item.reviewerId || '')}`,
-        item.detailMode && `mode=${encodeURIComponent(item.detailMode)}`
-      ].filter(Boolean).join('&')
+        item.detailMode && `mode=${encodeURIComponent(item.detailMode)}`,
+      ]
+        .filter(Boolean)
+        .join('&')
       uni.navigateTo({ url: `/packages/adoption/pages/review/detail/index?${query}` })
     },
     loadRecord() {
@@ -472,14 +702,17 @@ export default defineComponent({
       return !validStatuses || Boolean(record && validStatuses.includes(record.status))
     },
     syncActionMode() {
-      if (!this.record || !['cloudReview', 'ownerReview', 'ownerConfirm'].includes(this.mode)) return
+      if (!this.record || !['cloudReview', 'ownerReview', 'ownerConfirm'].includes(this.mode))
+        return
       if (this.isActionModeCompatible(this.mode, this.record)) return
       this.mode = this.modeForRecord(this.record, this.reviewerRole)
       this.showAgree = false
       this.showReject = false
       this.rejectReason = ''
     },
-    refreshActionRecord(): AdoptionReviewRefreshResult | { success: false; stale: true; error: { code: string; message: string } } {
+    refreshActionRecord():
+      | AdoptionReviewRefreshResult
+      | { success: false; stale: true; error: { code: string; message: string } } {
       const actionMode = this.mode
       const result = this.refreshRecord()
       if (!result.success) return result
@@ -497,7 +730,9 @@ export default defineComponent({
       }
       return result
     },
-    goBack() { goBackSmart({ fallbackUrl: '/pages/me/index' }) },
+    goBack() {
+      goBackSmart({ fallbackUrl: '/pages/me/index' })
+    },
     openPetDetail(pet: AdoptionPetMetadata, index: number) {
       const petId = [pet.id, pet.petId, pet.yardPetId].find(isNonEmptyString) || ''
       if (!petId) return
@@ -506,7 +741,7 @@ export default defineComponent({
         `yardId=${encodeURIComponent((this.record && this.record.yardId) || '1')}`,
         'state=35',
         `idx=${encodeURIComponent(String(index))}`,
-        `yardName=${encodeURIComponent(((this.record && (this.record.yardName || this.record.ownerName)) || ''))}`
+        `yardName=${encodeURIComponent((this.record && (this.record.yardName || this.record.ownerName)) || '')}`,
       ].join('&')
       uni.navigateTo({ url: '/packages/animal/pages/detail/index?' + params })
     },
@@ -514,7 +749,7 @@ export default defineComponent({
       if (!this.record) return
       openYardDetail({
         yardId: this.record.yardId || '1',
-        yardName: this.record.yardName || this.record.ownerName || '小院'
+        yardName: this.record.yardName || this.record.ownerName || '小院',
       })
     },
     openAuditSubpage(nextMode: 'info' | 'application') {
@@ -522,7 +757,7 @@ export default defineComponent({
       const view = frame === 49 ? 'application' : 'adoption-info'
       try {
         uni.navigateTo({
-          url: buildRoute('adoption.progress', { applicationId: this.recordId, view })
+          url: buildRoute('adoption.progress', { applicationId: this.recordId, view }),
         })
       } catch {
         uni.showToast({ title: '申请内容链接无效', icon: 'none' })
@@ -531,10 +766,16 @@ export default defineComponent({
     goMode(nextMode: string) {
       const role = this.reviewerRole ? `&reviewerRole=${encodeURIComponent(this.reviewerRole)}` : ''
       const reviewer = this.reviewerId ? `&reviewerId=${encodeURIComponent(this.reviewerId)}` : ''
-      uni.redirectTo({ url: `/packages/adoption/pages/review/detail/index?mode=${nextMode}&applicationId=${encodeURIComponent(this.recordId)}${role}${reviewer}` })
+      uni.redirectTo({
+        url: `/packages/adoption/pages/review/detail/index?mode=${nextMode}&applicationId=${encodeURIComponent(this.recordId)}${role}${reviewer}`,
+      })
     },
     openReviewResult(variant: AdoptionReviewResultVariant, nextMode: string) {
-      const outcomeByVariant: Record<AdoptionReviewResultVariant, string> = { '81': 'review-approved', '82': 'adoption-confirmed-by-owner', '83': 'review-rejected' }
+      const outcomeByVariant: Record<AdoptionReviewResultVariant, string> = {
+        '81': 'review-approved',
+        '82': 'adoption-confirmed-by-owner',
+        '83': 'review-rejected',
+      }
       const outcome = outcomeByVariant[variant]
       if (!outcome || !this.recordId) return
       const params = {
@@ -542,9 +783,13 @@ export default defineComponent({
         outcome,
         nextMode,
         ...(this.reviewerRole ? { reviewerRole: this.reviewerRole } : {}),
-        ...(this.reviewerId ? { reviewerId: this.reviewerId } : {})
+        ...(this.reviewerId ? { reviewerId: this.reviewerId } : {}),
       }
-      try { uni.redirectTo({ url: buildRoute('adoption.result', params) }) } catch { uni.showToast({ title: '审核结果暂不可用', icon: 'none' }) }
+      try {
+        uni.redirectTo({ url: buildRoute('adoption.result', params) })
+      } catch {
+        uni.showToast({ title: '审核结果暂不可用', icon: 'none' })
+      }
     },
     onAgree() {
       const current = this.refreshActionRecord()
@@ -570,8 +815,10 @@ export default defineComponent({
           this.syncActionMode()
         }
         uni.showToast({
-          title: changed ? '审核状态已更新，请重新操作' : (result.error.message || '当前状态不能执行此操作'),
-          icon: 'none'
+          title: changed
+            ? '审核状态已更新，请重新操作'
+            : result.error.message || '当前状态不能执行此操作',
+          icon: 'none',
         })
         return
       }
@@ -579,9 +826,15 @@ export default defineComponent({
       this.refreshRecord()
       this.notifyReviewAction(result)
       const cloudNextMode = isCloud
-        ? (result.applicationStatus === 'cloud_pending' ? 'cloudAgreeWaiting' : 'cloudAgreeDone')
+        ? result.applicationStatus === 'cloud_pending'
+          ? 'cloudAgreeWaiting'
+          : 'cloudAgreeDone'
         : ''
-      const nextMode = isCloud ? cloudNextMode : this.mode === 'ownerConfirm' ? 'ownerConfirmed' : 'ownerPending'
+      const nextMode = isCloud
+        ? cloudNextMode
+        : this.mode === 'ownerConfirm'
+          ? 'ownerConfirmed'
+          : 'ownerPending'
       if (['cloudReview', 'ownerReview'].includes(this.mode)) {
         this.openReviewResult('81', nextMode)
         return
@@ -628,10 +881,15 @@ export default defineComponent({
       }
       this.refreshRecord()
       this.notifyReviewAction(result)
-      this.mode = this.isCloudParentReview ? 'cloudRejectDone' : this.mode === 'ownerConfirm' ? 'confirmReject' : 'rejectDone'
+      this.mode = this.isCloudParentReview
+        ? 'cloudRejectDone'
+        : this.mode === 'ownerConfirm'
+          ? 'confirmReject'
+          : 'rejectDone'
     },
     nextFromResult() {
-      if (['agreeDone', 'cloudAgreeWaiting', 'cloudAgreeDone'].includes(this.mode)) return this.openAdoptionProgress()
+      if (['agreeDone', 'cloudAgreeWaiting', 'cloudAgreeDone'].includes(this.mode))
+        return this.openAdoptionProgress()
       if (['confirmAgree', 'ownerConfirmed'].includes(this.mode)) return this.openAdoptionProgress()
       if (this.mode === 'confirmReject') return this.goBack()
       return this.goBack()
@@ -639,7 +897,7 @@ export default defineComponent({
     openAdoptionProgress() {
       try {
         uni.redirectTo({
-          url: buildRoute('adoption.progress', { applicationId: this.recordId })
+          url: buildRoute('adoption.progress', { applicationId: this.recordId }),
         })
       } catch {
         uni.showToast({ title: '领养申请链接无效', icon: 'none' })
@@ -663,20 +921,39 @@ export default defineComponent({
         reviewItemId: action.reviewItemId || this.reviewItemId,
         category: 'system',
         title: action.toStatus === 'approved' ? '领养审核已通过' : '领养审核未通过',
-        preview: action.toStatus === 'approved' ? '你的领养申请已进入下一步处理。' : '你的领养申请审核未通过，请查看当前进度。',
-        authorize: ({ actor, message }: ReviewNotificationAuthorizationContext) => actor.id === action.actorId
-          && message.businessType === 'adoption'
-          && message.reviewItemId === (action.reviewItemId || this.reviewItemId),
+        preview:
+          action.toStatus === 'approved'
+            ? '你的领养申请已进入下一步处理。'
+            : '你的领养申请审核未通过，请查看当前进度。',
+        authorize: ({ actor, message }: ReviewNotificationAuthorizationContext) =>
+          actor.id === action.actorId &&
+          message.businessType === 'adoption' &&
+          message.reviewItemId === (action.reviewItemId || this.reviewItemId),
         actorProvider: this.actorProvider,
       })
     },
     normalizeReviewerRole(value: unknown): '' | 'owner' | 'cloud_parent' {
-      const role = String(value || '').trim().toLowerCase()
-      return ['cloud_parent', 'cloud-parent', 'cloud', 'owner', 'yard_owner', 'yard-owner'].includes(role)
-        ? (['cloud_parent', 'cloud-parent', 'cloud'].includes(role) ? 'cloud_parent' : 'owner')
+      const role = String(value || '')
+        .trim()
+        .toLowerCase()
+      return [
+        'cloud_parent',
+        'cloud-parent',
+        'cloud',
+        'owner',
+        'yard_owner',
+        'yard-owner',
+      ].includes(role)
+        ? ['cloud_parent', 'cloud-parent', 'cloud'].includes(role)
+          ? 'cloud_parent'
+          : 'owner'
         : ''
     },
-    resolveReviewerRole(explicitRole: string | undefined, reviewerId: string | undefined, record: AdoptionReviewRecordMetadata | null): string {
+    resolveReviewerRole(
+      explicitRole: string | undefined,
+      reviewerId: string | undefined,
+      record: AdoptionReviewRecordMetadata | null,
+    ): string {
       if (explicitRole) return String(explicitRole)
       const id = String(reviewerId || '').trim()
       if (id && record) {
@@ -684,28 +961,36 @@ export default defineComponent({
         if (cloudId && id === String(cloudId)) return 'cloud_parent'
         if (record.ownerPawId && id === String(record.ownerPawId)) return 'owner'
       }
-      if (record && (record.status === 'cloud_pending' || record.failureStage === 'cloud_parent')) return 'cloud_parent'
+      if (record && (record.status === 'cloud_pending' || record.failureStage === 'cloud_parent'))
+        return 'cloud_parent'
       return 'owner'
     },
     modeForRecord(record: AdoptionReviewRecordMetadata | null, role: string): string {
       if (!record) return role === 'cloud_parent' ? 'cloudReview' : 'ownerReview'
       if (role === 'cloud_parent') {
-        if (record.status === 'cloud_pending' && Array.isArray(record.cloudParentApprovals)
-          && record.cloudParentApprovals.includes(this.reviewerId)) return 'cloudAgreeWaiting'
+        if (
+          record.status === 'cloud_pending' &&
+          Array.isArray(record.cloudParentApprovals) &&
+          record.cloudParentApprovals.includes(this.reviewerId)
+        )
+          return 'cloudAgreeWaiting'
         if (record.status === 'cloud_pending') return 'cloudReview'
-        if (record.status === 'rejected' && record.failureStage === 'cloud_parent') return 'cloudRejectDone'
+        if (record.status === 'rejected' && record.failureStage === 'cloud_parent')
+          return 'cloudRejectDone'
         if (record.status === 'pending') return 'cloudAgreeDone'
         return 'cloudReview'
       }
       if (record.status === 'pending') return 'ownerReview'
       if (record.status === 'pickup') return 'ownerPending'
       if (['owner_confirm', 'owner_confirm_pending'].includes(record.status)) return 'ownerConfirm'
-      if (record.status === 'rejected' && record.failureStage === 'owner_review') return 'rejectDone'
-      if (record.status === 'rejected' && record.failureStage === 'owner_confirm') return 'ownerConfirmRejected'
+      if (record.status === 'rejected' && record.failureStage === 'owner_review')
+        return 'rejectDone'
+      if (record.status === 'rejected' && record.failureStage === 'owner_confirm')
+        return 'ownerConfirmRejected'
       if (['jury_confirm', 'jury_confirm_pending'].includes(record.status)) return 'ownerConfirmed'
       return 'ownerReview'
     },
-  }
+  },
 })
 </script>
 
@@ -784,12 +1069,24 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: linear-gradient(to bottom, var(--paw-color-adoption-review-bg, #fcf276) 0, var(--paw-color-adoption-review-bg, #fcf276) 279px, #f5f5f5 279px, #f5f5f5 100%);
+  background: linear-gradient(
+    to bottom,
+    var(--paw-color-adoption-review-bg, #fcf276) 0,
+    var(--paw-color-adoption-review-bg, #fcf276) 279px,
+    #f5f5f5 279px,
+    #f5f5f5 100%
+  );
   color: #333;
 }
 
 .audit-page--owner-confirm {
-  background: linear-gradient(to bottom, var(--paw-color-adoption-review-bg, #fcf276) 0, var(--paw-color-adoption-review-bg, #fcf276) 279px, #f5f5f5 279px, #f5f5f5 100%);
+  background: linear-gradient(
+    to bottom,
+    var(--paw-color-adoption-review-bg, #fcf276) 0,
+    var(--paw-color-adoption-review-bg, #fcf276) 279px,
+    #f5f5f5 279px,
+    #f5f5f5 100%
+  );
 }
 
 .audit-scroll {
@@ -931,7 +1228,7 @@ export default defineComponent({
   padding: 11px 10px 15px;
   background: #fff;
   border-radius: 9px;
-  box-shadow: 0 -1px 4px rgba(0, 0, 0, .05);
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.05);
   box-sizing: border-box;
 }
 
@@ -1034,7 +1331,7 @@ export default defineComponent({
   align-items: center;
   justify-content: center;
   padding: 100px 20px;
-  color: #999
+  color: #999;
 }
 
 .reject-reason {

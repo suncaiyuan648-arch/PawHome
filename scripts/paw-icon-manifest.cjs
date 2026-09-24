@@ -7,8 +7,16 @@ const SOURCE_ROOT = manifest.sourceRoot || 'assets/paw-icons/source'
 
 function iconEntries() {
   return [
-    ...Object.entries(manifest.mono || {}).map(([name, configuredPath]) => ({ name, kind: 'mono', configuredPath })),
-    ...Object.entries(manifest.color || {}).map(([name, configuredPath]) => ({ name, kind: 'color', configuredPath }))
+    ...Object.entries(manifest.mono || {}).map(([name, configuredPath]) => ({
+      name,
+      kind: 'mono',
+      configuredPath,
+    })),
+    ...Object.entries(manifest.color || {}).map(([name, configuredPath]) => ({
+      name,
+      kind: 'color',
+      configuredPath,
+    })),
   ]
 }
 
@@ -23,12 +31,14 @@ function sourceAbsolutePath(name) {
 function sourceFrameFor(name, sourceViewBox) {
   const configured = (manifest.meta && manifest.meta[name]) || {}
   return {
-    width: configured.sourceFrame && configured.sourceFrame.width !== undefined
-      ? Number(configured.sourceFrame.width)
-      : Number(sourceViewBox.width),
-    height: configured.sourceFrame && configured.sourceFrame.height !== undefined
-      ? Number(configured.sourceFrame.height)
-      : Number(sourceViewBox.height)
+    width:
+      configured.sourceFrame && configured.sourceFrame.width !== undefined
+        ? Number(configured.sourceFrame.width)
+        : Number(sourceViewBox.width),
+    height:
+      configured.sourceFrame && configured.sourceFrame.height !== undefined
+        ? Number(configured.sourceFrame.height)
+        : Number(sourceViewBox.height),
   }
 }
 
@@ -47,7 +57,7 @@ function iconMetadata(name, sourceViewBox) {
     family,
     ...(configured.preserveRects === true ? { preserveRects: true } : {}),
     figmaNodeId: configured.figmaNodeId || null,
-    sourceLabel: configured.sourceLabel || null
+    sourceLabel: configured.sourceLabel || null,
   }
 }
 
@@ -58,5 +68,5 @@ module.exports = {
   iconMetadata,
   manifest,
   sourceAbsolutePath,
-  sourceRelativePath
+  sourceRelativePath,
 }

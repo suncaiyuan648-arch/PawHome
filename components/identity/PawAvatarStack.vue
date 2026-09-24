@@ -1,16 +1,27 @@
 <template>
-  <view class="paw-avatar-stack" :style="stackStyle" @tap.stop="$emit('click')">
+  <view
+    class="paw-avatar-stack"
+    :style="stackStyle"
+    @tap.stop="$emit('click')"
+  >
     <PawAvatar
       v-for="(item, index) in visibleItems"
-      :key="typeof item === 'string' ? index : (item.id || item.pawId || index)"
+      :key="typeof item === 'string' ? index : item.id || item.pawId || index"
       class="paw-avatar-stack__item"
       :src="typeof item === 'string' ? item : item.avatar"
       :size="size"
       :fallback="fallback"
       ring-color="#fff"
-      :style="{ marginLeft: index === 0 ? '0' : `-${overlap}px`, zIndex: visibleItems.length - index }"
+      :style="{
+        marginLeft: index === 0 ? '0' : `-${overlap}px`,
+        zIndex: visibleItems.length - index,
+      }"
     />
-    <text v-if="hiddenCount > 0" class="paw-avatar-stack__more">+{{ hiddenCount }}</text>
+    <text
+      v-if="hiddenCount > 0"
+      class="paw-avatar-stack__more"
+      >+{{ hiddenCount }}</text
+    >
   </view>
 </template>
 
@@ -29,23 +40,38 @@ export default defineComponent({
     size: { type: [Number, String], default: 22 },
     overlap: { type: [Number, String], default: 8 },
     max: { type: Number, default: 5 },
-    fallback: { type: String, default: '/static/avatarlog.png' }
+    fallback: { type: String, default: '/static/avatarlog.png' },
   },
   emits: {
-    'click': eventContract<[]>(),
+    click: eventContract<[]>(),
   },
   computed: {
-    visibleItems() { return this.items.slice(0, this.max) },
-    hiddenCount() { return Math.max(0, this.items.length - this.max) },
+    visibleItems() {
+      return this.items.slice(0, this.max)
+    },
+    hiddenCount() {
+      return Math.max(0, this.items.length - this.max)
+    },
     stackStyle() {
       const resolvedSize = typeof this.size === 'number' ? `${this.size}px` : this.size
       return { height: resolvedSize, minHeight: resolvedSize }
-    }
-  }
+    },
+  },
 })
 </script>
 
 <style scoped>
-.paw-avatar-stack { display: inline-flex; align-items: center; min-width: 0; padding: 0; box-sizing: border-box; cursor: pointer; }
-.paw-avatar-stack__more { margin-left: 4px; color: #666; font-size: 11px; }
+.paw-avatar-stack {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  padding: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.paw-avatar-stack__more {
+  margin-left: 4px;
+  color: #666;
+  font-size: 11px;
+}
 </style>

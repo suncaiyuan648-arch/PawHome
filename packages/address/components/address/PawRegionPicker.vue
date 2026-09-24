@@ -1,23 +1,63 @@
 <template>
-  <view class="region-picker" data-qa="region-picker">
-    <PawPageNav background="#f5f5f5" :title="title" :show-back="true" :auto-back="false" :fallback-url="fallbackUrl"
-      @back="$emit('cancel')" />
+  <view
+    class="region-picker"
+    data-qa="region-picker"
+  >
+    <PawPageNav
+      background="#f5f5f5"
+      :title="title"
+      :show-back="true"
+      :auto-back="false"
+      :fallback-url="fallbackUrl"
+      @back="$emit('cancel')"
+    />
 
-    <view class="region-picker__crumbs" data-qa="region-picker-crumbs">
-      <text v-for="(label, index) in crumbList" :key="`crumb-${index}`" class="region-picker__crumb"
-        :class="{ 'region-picker__crumb--active': index === level, 'region-picker__crumb--placeholder': !parts[index] }"
-        :data-index="index" @tap="onCrumbTap(index)">{{ label }}</text>
+    <view
+      class="region-picker__crumbs"
+      data-qa="region-picker-crumbs"
+    >
+      <text
+        v-for="(label, index) in crumbList"
+        :key="`crumb-${index}`"
+        class="region-picker__crumb"
+        :class="{
+          'region-picker__crumb--active': index === level,
+          'region-picker__crumb--placeholder': !parts[index],
+        }"
+        :data-index="index"
+        @tap="onCrumbTap(index)"
+        >{{ label }}</text
+      >
     </view>
 
-    <scroll-view class="region-picker__scroll" scroll-y :show-scrollbar="false" :bounces="false" :enable-flex="true">
+    <scroll-view
+      class="region-picker__scroll"
+      scroll-y
+      :show-scrollbar="false"
+      :bounces="false"
+      :enable-flex="true"
+    >
       <view class="region-picker__list">
-        <view v-for="(item, index) in currentOptions" :key="item.name || index" class="region-picker__item"
-          :class="{ 'region-picker__item--selected': item.name === selectedName }" :data-index="index"
-          :data-qa="`region-picker-item-${index}`" @tap="onItemTap(item)">
+        <view
+          v-for="(item, index) in currentOptions"
+          :key="item.name || index"
+          class="region-picker__item"
+          :class="{ 'region-picker__item--selected': item.name === selectedName }"
+          :data-index="index"
+          :data-qa="`region-picker-item-${index}`"
+          @tap="onItemTap(item)"
+        >
           <text class="region-picker__item-name">{{ item.name }}</text>
-          <text v-if="item.name === selectedName" class="region-picker__check">✓</text>
+          <text
+            v-if="item.name === selectedName"
+            class="region-picker__check"
+            >✓</text
+          >
         </view>
-        <view v-if="!currentOptions.length" class="region-picker__empty">
+        <view
+          v-if="!currentOptions.length"
+          class="region-picker__empty"
+        >
           <text>暂无可选地区</text>
         </view>
       </view>
@@ -35,7 +75,7 @@ import {
   REGION_TREE,
   type RegionChangePayload,
   type RegionNode,
-  type RegionSelectionPayload
+  type RegionSelectionPayload,
 } from '@/utils/regionMock.ts'
 
 interface PawRegionPickerState {
@@ -54,22 +94,23 @@ export default defineComponent({
     initialParts: { type: Array as PropType<string[]>, default: () => [] },
     maxLevel: { type: Number, default: 2 },
     startLevel: { type: Number, default: -1 },
-    tree: { type: Array as PropType<RegionNode[]>, default: () => REGION_TREE }
+    tree: { type: Array as PropType<RegionNode[]>, default: () => REGION_TREE },
   },
   emits: {
-    complete: (payload: RegionSelectionPayload) => Array.isArray(payload.parts)
-      && payload.parts.every(part => typeof part === 'string'),
+    complete: (payload: RegionSelectionPayload) =>
+      Array.isArray(payload.parts) && payload.parts.every((part) => typeof part === 'string'),
     cancel: () => true,
-    change: (payload: RegionChangePayload) => Number.isInteger(payload.level)
-      && Array.isArray(payload.parts)
-      && payload.parts.every(part => typeof part === 'string')
+    change: (payload: RegionChangePayload) =>
+      Number.isInteger(payload.level) &&
+      Array.isArray(payload.parts) &&
+      payload.parts.every((part) => typeof part === 'string'),
   },
   data(): PawRegionPickerState {
     return {
       level: 0,
       parts: ['', '', '', ''],
       currentOptions: [],
-      selectedName: ''
+      selectedName: '',
     }
   },
   computed: {
@@ -81,15 +122,21 @@ export default defineComponent({
         if (part) return part
         return index <= this.level ? '请选择' : ''
       })
-    }
+    },
   },
   watch: {
     initialParts: {
       deep: true,
-      handler(value: string[]) { this.initialize(value) }
+      handler(value: string[]) {
+        this.initialize(value)
+      },
     },
-    maxLevel() { this.initialize(this.initialParts) },
-    startLevel() { this.initialize(this.initialParts) }
+    maxLevel() {
+      this.initialize(this.initialParts)
+    },
+    startLevel() {
+      this.initialize(this.initialParts)
+    },
   },
   created() {
     this.initialize(this.initialParts)
@@ -99,11 +146,14 @@ export default defineComponent({
       const parts = normalizeRegionParts(value)
       while (parts.length < 4) parts.push('')
       this.parts = parts
-      const firstEmpty = this.parts.slice(0, this.safeMaxLevel + 1).findIndex(part => !part)
+      const firstEmpty = this.parts.slice(0, this.safeMaxLevel + 1).findIndex((part) => !part)
       const requestedLevel = Number(this.startLevel)
-      this.level = requestedLevel >= 0
-        ? Math.min(this.safeMaxLevel, requestedLevel)
-        : (firstEmpty >= 0 ? firstEmpty : this.safeMaxLevel)
+      this.level =
+        requestedLevel >= 0
+          ? Math.min(this.safeMaxLevel, requestedLevel)
+          : firstEmpty >= 0
+            ? firstEmpty
+            : this.safeMaxLevel
       this.selectedName = this.parts[this.level] || ''
       this.rebuildOptions()
     },
@@ -112,7 +162,10 @@ export default defineComponent({
       this.level = index
       this.selectedName = this.parts[index] || ''
       this.rebuildOptions()
-      const payload: RegionChangePayload = { parts: this.parts.slice(0, this.safeMaxLevel + 1), level: this.level }
+      const payload: RegionChangePayload = {
+        parts: this.parts.slice(0, this.safeMaxLevel + 1),
+        level: this.level,
+      }
       this.$emit('change', payload)
     },
     onItemTap(item: RegionNode) {
@@ -121,20 +174,25 @@ export default defineComponent({
       this.parts[this.level] = item.name
       for (let current = this.level + 1; current <= 3; current += 1) this.parts[current] = ''
       if (this.level >= this.safeMaxLevel) {
-        const payload: RegionSelectionPayload = { parts: this.parts.slice(0, this.safeMaxLevel + 1) }
+        const payload: RegionSelectionPayload = {
+          parts: this.parts.slice(0, this.safeMaxLevel + 1),
+        }
         this.$emit('complete', payload)
         return
       }
       this.level += 1
       this.selectedName = ''
       this.rebuildOptions()
-      const payload: RegionChangePayload = { parts: this.parts.slice(0, this.safeMaxLevel + 1), level: this.level }
+      const payload: RegionChangePayload = {
+        parts: this.parts.slice(0, this.safeMaxLevel + 1),
+        level: this.level,
+      }
       this.$emit('change', payload)
     },
     rebuildOptions() {
       this.currentOptions = findRegionOptions(this.parts, this.level, this.tree)
-    }
-  }
+    },
+  },
 })
 </script>
 

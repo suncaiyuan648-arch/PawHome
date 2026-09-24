@@ -1,35 +1,77 @@
 <template>
-  <view class="paw-icon-lab" data-qa="paw-icon-lab">
-    <PawPageNav title="PawIcon Lab" background="#F5F5F5" />
+  <view
+    class="paw-icon-lab"
+    data-qa="paw-icon-lab"
+  >
+    <PawPageNav
+      title="PawIcon Lab"
+      background="#F5F5F5"
+    />
 
     <view class="lab-content">
       <view class="lab-heading">
         <text class="lab-heading__title">PawIcon Test Lab</text>
-        <text class="lab-heading__hint">注册表自动枚举 · Figma source frame → optical slot → canonical 24 × 24</text>
+        <text class="lab-heading__hint"
+          >注册表自动枚举 · Figma source frame → optical slot → canonical 24 × 24</text
+        >
       </view>
 
-      <view class="lab-mode-tabs" data-qa="paw-icon-lab-mode-tabs">
-        <view v-for="item in modes" :key="item.value" class="lab-mode-tab"
-          :class="{ 'lab-mode-tab--active': mode === item.value }" :data-qa="`paw-icon-lab-mode-${item.value}`"
-          role="button" @tap="selectMode(item.value)">
+      <view
+        class="lab-mode-tabs"
+        data-qa="paw-icon-lab-mode-tabs"
+      >
+        <view
+          v-for="item in modes"
+          :key="item.value"
+          class="lab-mode-tab"
+          :class="{ 'lab-mode-tab--active': mode === item.value }"
+          :data-qa="`paw-icon-lab-mode-${item.value}`"
+          role="button"
+          @tap="selectMode(item.value)"
+        >
           <text>{{ item.label }}</text>
         </view>
       </view>
 
-      <view v-if="mode !== 'transform'" class="lab-toolbar" data-qa="paw-icon-lab-toolbar">
+      <view
+        v-if="mode !== 'transform'"
+        class="lab-toolbar"
+        data-qa="paw-icon-lab-toolbar"
+      >
         <view class="lab-toolbar__row">
           <text class="lab-toolbar__label">Size</text>
           <view class="lab-toolbar__options">
-            <view v-for="item in availableSizes" :key="item" class="lab-chip"
-              :class="{ 'lab-chip--active': currentSize === item }" :data-qa="`paw-icon-lab-size-${item}`" role="button"
-              @tap="selectSize(item)">
+            <view
+              v-for="item in availableSizes"
+              :key="item"
+              class="lab-chip"
+              :class="{ 'lab-chip--active': currentSize === item }"
+              :data-qa="`paw-icon-lab-size-${item}`"
+              role="button"
+              @tap="selectSize(item)"
+            >
               <text>{{ item }}px</text>
             </view>
-            <view v-if="mode !== 'uniform'" class="lab-size-custom">
-              <input class="lab-size-input" data-qa="paw-icon-lab-size-custom-input" type="digit"
-                :value="customSizeInput" placeholder="36" maxlength="6" @input="onCustomSizeInput" />
-              <view class="lab-chip lab-size-apply" :class="{ 'lab-chip--active': currentSize === customSize }"
-                data-qa="paw-icon-lab-size-custom" role="button" @tap="applyCustomSize">
+            <view
+              v-if="mode !== 'uniform'"
+              class="lab-size-custom"
+            >
+              <input
+                class="lab-size-input"
+                data-qa="paw-icon-lab-size-custom-input"
+                type="digit"
+                :value="customSizeInput"
+                placeholder="36"
+                maxlength="6"
+                @input="onCustomSizeInput"
+              />
+              <view
+                class="lab-chip lab-size-apply"
+                :class="{ 'lab-chip--active': currentSize === customSize }"
+                data-qa="paw-icon-lab-size-custom"
+                role="button"
+                @tap="applyCustomSize"
+              >
                 <text>自定义</text>
               </view>
             </view>
@@ -38,72 +80,149 @@
         <view class="lab-toolbar__row">
           <text class="lab-toolbar__label">Color</text>
           <view class="lab-toolbar__options">
-            <view v-for="item in colorModes" :key="item.value" class="lab-chip"
-              :class="{ 'lab-chip--active': colorMode === item.value }" :data-qa="`paw-icon-lab-color-${item.value}`"
-              role="button" @tap="selectColorMode(item.value)">
+            <view
+              v-for="item in colorModes"
+              :key="item.value"
+              class="lab-chip"
+              :class="{ 'lab-chip--active': colorMode === item.value }"
+              :data-qa="`paw-icon-lab-color-${item.value}`"
+              role="button"
+              @tap="selectColorMode(item.value)"
+            >
               <text>{{ item.label }}</text>
             </view>
           </view>
         </view>
         <view class="lab-toolbar__row">
           <text class="lab-toolbar__label">Bounds</text>
-          <view class="lab-chip" :class="{ 'lab-chip--active': showBounds }" role="button" data-qa="paw-icon-lab-bounds"
-            @tap="showBounds = !showBounds">
+          <view
+            class="lab-chip"
+            :class="{ 'lab-chip--active': showBounds }"
+            role="button"
+            data-qa="paw-icon-lab-bounds"
+            @tap="showBounds = !showBounds"
+          >
             <text>{{ showBounds ? 'ON' : 'OFF' }}</text>
           </view>
         </view>
         <view class="lab-category-row">
           <text class="lab-toolbar__label">Category</text>
-          <scroll-view class="lab-category-scroll" scroll-x>
+          <scroll-view
+            class="lab-category-scroll"
+            scroll-x
+          >
             <view class="lab-category-options">
-              <view v-for="item in categories" :key="item.value" class="lab-chip"
-                :class="{ 'lab-chip--active': category === item.value }" role="button"
-                @tap="selectCategory(item.value)">
+              <view
+                v-for="item in categories"
+                :key="item.value"
+                class="lab-chip"
+                :class="{ 'lab-chip--active': category === item.value }"
+                role="button"
+                @tap="selectCategory(item.value)"
+              >
                 <text>{{ item.label }}</text>
               </view>
             </view>
           </scroll-view>
         </view>
         <view class="lab-search">
-          <PawIcon class="lab-search__icon" name="navigation/search" :size="14" />
-          <input class="lab-search__input" :value="search" placeholder="搜索图标名" confirm-type="search"
-            @input="onSearch" />
-          <text v-if="search" class="lab-search__clear" role="button" @tap="search = ''">清除</text>
+          <PawIcon
+            class="lab-search__icon"
+            name="navigation/search"
+            :size="14"
+          />
+          <input
+            class="lab-search__input"
+            :value="search"
+            placeholder="搜索图标名"
+            confirm-type="search"
+            @input="onSearch"
+          />
+          <text
+            v-if="search"
+            class="lab-search__clear"
+            role="button"
+            @tap="search = ''"
+            >清除</text
+          >
         </view>
       </view>
 
-      <view v-if="mode !== 'transform'" class="lab-summary">
+      <view
+        v-if="mode !== 'transform'"
+        class="lab-summary"
+      >
         <text>{{ filteredCount }} 个图标</text>
-        <text v-if="mode === 'comparison'">对比 {{ comparisonSizes.join(' / ') }}px · {{ colorModeLabel }}</text>
-        <text v-else-if="mode === 'fidelity'">每个图标使用自己的 Final Slot · {{ colorModeLabel }}</text>
+        <text v-if="mode === 'comparison'"
+          >对比 {{ comparisonSizes.join(' / ') }}px · {{ colorModeLabel }}</text
+        >
+        <text v-else-if="mode === 'fidelity'"
+          >每个图标使用自己的 Final Slot · {{ colorModeLabel }}</text
+        >
         <text v-else>当前 {{ renderSize }}px · {{ colorModeLabel }}</text>
       </view>
 
-      <view v-if="mode === 'comparison'" class="lab-comparison" data-qa="paw-icon-lab-comparison">
-        <text class="lab-comparison__hint">同一基线排列；Render Size 只描述 canvas，Source Frame / Final Slot 不参与运行时尺寸计算。</text>
-        <scroll-view class="lab-comparison-scroll" scroll-x>
+      <view
+        v-if="mode === 'comparison'"
+        class="lab-comparison"
+        data-qa="paw-icon-lab-comparison"
+      >
+        <text class="lab-comparison__hint"
+          >同一基线排列；Render Size 只描述 canvas，Source Frame / Final Slot
+          不参与运行时尺寸计算。</text
+        >
+        <scroll-view
+          class="lab-comparison-scroll"
+          scroll-x
+        >
           <view class="lab-comparison__body">
             <view class="lab-comparison__header">
               <view class="lab-comparison__name">Icon</view>
-              <view v-for="size in comparisonSizes" :key="`comparison-head-${size}`" class="lab-comparison__cell">
+              <view
+                v-for="size in comparisonSizes"
+                :key="`comparison-head-${size}`"
+                class="lab-comparison__cell"
+              >
                 <text>{{ size }}px</text>
               </view>
             </view>
-            <view v-for="group in groupedIcons" :key="`comparison-${group.value}`" class="lab-comparison__group">
+            <view
+              v-for="group in groupedIcons"
+              :key="`comparison-${group.value}`"
+              class="lab-comparison__group"
+            >
               <view class="lab-section__title">
                 <text>{{ group.label }}</text>
                 <text class="lab-section__count">{{ group.names.length }}</text>
               </view>
-              <view v-for="name in group.names" :key="`comparison-${name}`" class="lab-comparison__row"
-                :data-qa="`paw-icon-comparison-${name}`">
+              <view
+                v-for="name in group.names"
+                :key="`comparison-${name}`"
+                class="lab-comparison__row"
+                :data-qa="`paw-icon-comparison-${name}`"
+              >
                 <view class="lab-comparison__name lab-comparison__name--row">
                   <text>{{ name }}</text>
-                  <text class="lab-comparison__kind">{{ registry[name].kind === 'mono' ? 'mono' : 'color' }}</text>
+                  <text class="lab-comparison__kind">{{
+                    registry[name].kind === 'mono' ? 'mono' : 'color'
+                  }}</text>
                 </view>
-                <view v-for="size in comparisonSizes" :key="`${name}-${size}`" class="lab-comparison__cell">
+                <view
+                  v-for="size in comparisonSizes"
+                  :key="`${name}-${size}`"
+                  class="lab-comparison__cell"
+                >
                   <view class="lab-comparison__stage">
-                    <view v-if="showBounds" class="lab-guide lab-guide--layout" :style="guideStyle(size)" />
-                    <PawIcon :name="name" :size="size" :color="iconColor(name)" />
+                    <view
+                      v-if="showBounds"
+                      class="lab-guide lab-guide--layout"
+                      :style="guideStyle(size)"
+                    />
+                    <PawIcon
+                      :name="name"
+                      :size="size"
+                      :color="iconColor(name)"
+                    />
                   </view>
                   <text class="lab-comparison__ratio">{{ comparisonLabel(name, size) }}</text>
                 </view>
@@ -113,32 +232,74 @@
         </scroll-view>
       </view>
 
-      <view v-else-if="mode !== 'transform'" class="lab-sections" data-qa="paw-icon-lab-grid">
-        <view v-for="group in groupedIcons" :key="group.value" class="lab-section">
+      <view
+        v-else-if="mode !== 'transform'"
+        class="lab-sections"
+        data-qa="paw-icon-lab-grid"
+      >
+        <view
+          v-for="group in groupedIcons"
+          :key="group.value"
+          class="lab-section"
+        >
           <view class="lab-section__title">
             <text>{{ group.label }}</text>
             <text class="lab-section__count">{{ group.names.length }}</text>
           </view>
           <view class="lab-grid">
-            <view v-for="name in group.names" :key="name" class="lab-card" :data-qa="`paw-icon-card-${name}`">
-              <view class="lab-stage" :style="iconStageStyleFor(name)">
-                <view v-if="showBounds" class="lab-guide lab-guide--layout" :style="guideStyle(renderSizeFor(name))" />
-                <PawIcon :name="name" :size="renderSizeFor(name)" :color="iconColor(name)" />
+            <view
+              v-for="name in group.names"
+              :key="name"
+              class="lab-card"
+              :data-qa="`paw-icon-card-${name}`"
+            >
+              <view
+                class="lab-stage"
+                :style="iconStageStyleFor(name)"
+              >
+                <view
+                  v-if="showBounds"
+                  class="lab-guide lab-guide--layout"
+                  :style="guideStyle(renderSizeFor(name))"
+                />
+                <PawIcon
+                  :name="name"
+                  :size="renderSizeFor(name)"
+                  :color="iconColor(name)"
+                />
               </view>
               <text class="lab-card__name">{{ name }}</text>
               <text class="lab-card__meta">{{ dimensionsLabel(name) }}</text>
-              <text class="lab-card__kind">{{ registry[name].kind === 'mono' ? 'mono' : 'color' }}</text>
+              <text class="lab-card__kind">{{
+                registry[name].kind === 'mono' ? 'mono' : 'color'
+              }}</text>
             </view>
           </view>
         </view>
-        <view v-if="!filteredCount" class="lab-empty">没有匹配的图标</view>
+        <view
+          v-if="!filteredCount"
+          class="lab-empty"
+          >没有匹配的图标</view
+        >
       </view>
 
-      <view v-else class="lab-transform" data-qa="paw-icon-lab-transform">
+      <view
+        v-else
+        class="lab-transform"
+        data-qa="paw-icon-lab-transform"
+      >
         <view class="lab-transform__picker">
           <text class="lab-toolbar__label">Icon</text>
-          <picker mode="selector" :range="transformCandidates" :value="transformIndex" @change="onTransformPick">
-            <view class="lab-picker-value" role="button">
+          <picker
+            mode="selector"
+            :range="transformCandidates"
+            :value="transformIndex"
+            @change="onTransformPick"
+          >
+            <view
+              class="lab-picker-value"
+              role="button"
+            >
               <text>{{ transformName }}</text>
               <text class="lab-picker-value__arrow">⌄</text>
             </view>
@@ -147,37 +308,82 @@
         <text class="lab-transform__hint">旋转以组件中心为原点；flip 在旋转前执行</text>
         <view class="lab-transform__controls">
           <text class="lab-toolbar__label">Size</text>
-          <view v-for="item in sizes" :key="`transform-size-${item}`" class="lab-chip"
-            :class="{ 'lab-chip--active': currentSize === item }" :data-qa="`paw-icon-lab-size-${item}`" role="button"
-            @tap="selectSize(item)">
+          <view
+            v-for="item in sizes"
+            :key="`transform-size-${item}`"
+            class="lab-chip"
+            :class="{ 'lab-chip--active': currentSize === item }"
+            :data-qa="`paw-icon-lab-size-${item}`"
+            role="button"
+            @tap="selectSize(item)"
+          >
             <text>{{ item }}px</text>
           </view>
           <view class="lab-size-custom">
-            <input class="lab-size-input" data-qa="paw-icon-lab-transform-size-custom-input" type="digit"
-              :value="customSizeInput" placeholder="36" maxlength="6" @input="onCustomSizeInput" />
-            <view class="lab-chip lab-size-apply" :class="{ 'lab-chip--active': currentSize === customSize }"
-              data-qa="paw-icon-lab-transform-size-custom" role="button" @tap="applyCustomSize">
+            <input
+              class="lab-size-input"
+              data-qa="paw-icon-lab-transform-size-custom-input"
+              type="digit"
+              :value="customSizeInput"
+              placeholder="36"
+              maxlength="6"
+              @input="onCustomSizeInput"
+            />
+            <view
+              class="lab-chip lab-size-apply"
+              :class="{ 'lab-chip--active': currentSize === customSize }"
+              data-qa="paw-icon-lab-transform-size-custom"
+              role="button"
+              @tap="applyCustomSize"
+            >
               <text>自定义</text>
             </view>
           </view>
           <text class="lab-toolbar__label">Color</text>
-          <view v-for="item in colorModes" :key="`transform-${item.value}`" class="lab-chip"
-            :class="{ 'lab-chip--active': colorMode === item.value }" :data-qa="`paw-icon-lab-transform-${item.value}`"
-            role="button" @tap="selectColorMode(item.value)">
+          <view
+            v-for="item in colorModes"
+            :key="`transform-${item.value}`"
+            class="lab-chip"
+            :class="{ 'lab-chip--active': colorMode === item.value }"
+            :data-qa="`paw-icon-lab-transform-${item.value}`"
+            role="button"
+            @tap="selectColorMode(item.value)"
+          >
             <text>{{ item.label }}</text>
           </view>
-          <view class="lab-chip" :class="{ 'lab-chip--active': showBounds }" data-qa="paw-icon-lab-transform-bounds"
-            role="button" @tap="showBounds = !showBounds">
+          <view
+            class="lab-chip"
+            :class="{ 'lab-chip--active': showBounds }"
+            data-qa="paw-icon-lab-transform-bounds"
+            role="button"
+            @tap="showBounds = !showBounds"
+          >
             <text>Bounds {{ showBounds ? 'ON' : 'OFF' }}</text>
           </view>
         </view>
         <view class="lab-transform__grid">
-          <view v-for="item in transformCases" :key="item.label" class="lab-transform-card"
-            :data-qa="`paw-icon-transform-${item.rotate}-${item.flip}`">
-            <view class="lab-transform-card__stage" :style="iconStageStyle">
-              <view v-if="showBounds" class="lab-guide lab-guide--layout" :style="guideStyle(renderSize)" />
-              <PawIcon :name="transformName" :size="renderSize" :rotate="item.rotate" :flip="item.flip"
-                :color="transformColor" />
+          <view
+            v-for="item in transformCases"
+            :key="item.label"
+            class="lab-transform-card"
+            :data-qa="`paw-icon-transform-${item.rotate}-${item.flip}`"
+          >
+            <view
+              class="lab-transform-card__stage"
+              :style="iconStageStyle"
+            >
+              <view
+                v-if="showBounds"
+                class="lab-guide lab-guide--layout"
+                :style="guideStyle(renderSize)"
+              />
+              <PawIcon
+                :name="transformName"
+                :size="renderSize"
+                :rotate="item.rotate"
+                :flip="item.flip"
+                :color="transformColor"
+              />
             </view>
             <text class="lab-transform-card__label">{{ item.label }}</text>
             <text class="lab-card__meta">rotate {{ item.rotate }}° · flip {{ item.flip }}</text>
@@ -206,10 +412,19 @@ type IconCategory = 'navigation' | 'actions' | 'status' | 'common' | 'badges' | 
 type IconLabMode = 'optical' | 'regression' | 'comparison' | 'fidelity' | 'uniform' | 'transform'
 type IconLabColorMode = 'optical' | 'actual'
 
-interface IconLabOption<Value extends string> { value: Value; label: string }
+interface IconLabOption<Value extends string> {
+  value: Value
+  label: string
+}
 interface IconLabCategory extends IconLabOption<'all' | IconCategory> {}
-interface IconLabGroup extends IconLabCategory { names: IconName[] }
-interface IconLabTransformCase { label: string; rotate: number; flip: PawIconFlip }
+interface IconLabGroup extends IconLabCategory {
+  names: IconName[]
+}
+interface IconLabTransformCase {
+  label: string
+  rotate: number
+  flip: PawIconFlip
+}
 interface PawIconLabState {
   registry: typeof PAW_ICON_REGISTRY
   metrics: typeof PAW_ICON_AUDIT_METRICS
@@ -231,7 +446,14 @@ interface PawIconLabState {
   transformCases: IconLabTransformCase[]
 }
 
-const ICON_CATEGORIES: readonly IconCategory[] = ['navigation', 'actions', 'status', 'common', 'badges', 'brand']
+const ICON_CATEGORIES: readonly IconCategory[] = [
+  'navigation',
+  'actions',
+  'status',
+  'common',
+  'badges',
+  'brand',
+]
 
 const CATEGORY_LABELS: Record<IconCategory, string> = {
   navigation: 'Navigation',
@@ -239,7 +461,7 @@ const CATEGORY_LABELS: Record<IconCategory, string> = {
   status: 'Status',
   common: 'Common',
   badges: 'Badges',
-  brand: 'Brand'
+  brand: 'Brand',
 }
 
 function isIconName(value: string): value is IconName {
@@ -250,7 +472,10 @@ function isIconCategory(value: string): value is IconCategory {
   return ICON_CATEGORIES.some((category) => category === value)
 }
 
-interface IconAuditSizeMetric { widthRatio: number; heightRatio: number }
+interface IconAuditSizeMetric {
+  widthRatio: number
+  heightRatio: number
+}
 
 function iconAuditMetric(name: IconName, size: number): IconAuditSizeMetric | undefined {
   const sizes: Readonly<Record<string, IconAuditSizeMetric>> = PAW_ICON_AUDIT_METRICS[name].sizes
@@ -273,24 +498,26 @@ export default defineComponent({
       showBounds: true,
       customSizeInput: '36',
       customSize: 36,
-      transformName: PAW_ICON_NAMES.includes('navigation/chevron-right') ? 'navigation/chevron-right' : 'navigation/back',
+      transformName: PAW_ICON_NAMES.includes('navigation/chevron-right')
+        ? 'navigation/chevron-right'
+        : 'navigation/back',
       modes: [
         { value: 'optical', label: 'Optical' },
         { value: 'regression', label: 'Size Regression' },
         { value: 'comparison', label: 'Size Comparison' },
         { value: 'fidelity', label: 'Original Fidelity' },
         { value: 'uniform', label: 'Uniform Render' },
-        { value: 'transform', label: 'Transform' }
+        { value: 'transform', label: 'Transform' },
       ],
       sizes: [12, 16, 20, 24, 28],
       comparisonSizes: [12, 16, 20, 24, 28],
       colorModes: [
         { value: 'optical', label: 'Optical #666' },
-        { value: 'actual', label: 'Actual' }
+        { value: 'actual', label: 'Actual' },
       ],
       categories: [
         { value: 'all', label: 'All' },
-        ...ICON_CATEGORIES.map((value) => ({ value, label: CATEGORY_LABELS[value] }))
+        ...ICON_CATEGORIES.map((value) => ({ value, label: CATEGORY_LABELS[value] })),
       ],
       transformCases: [
         { label: 'Normal', rotate: 0, flip: 'none' },
@@ -301,8 +528,8 @@ export default defineComponent({
         { label: 'Rotate 270', rotate: 270, flip: 'none' },
         { label: 'Flip H', rotate: 0, flip: 'horizontal' },
         { label: 'Flip V', rotate: 0, flip: 'vertical' },
-        { label: 'Flip Both', rotate: 0, flip: 'both' }
-      ]
+        { label: 'Flip Both', rotate: 0, flip: 'both' },
+      ],
     }
   },
   computed: {
@@ -346,7 +573,9 @@ export default defineComponent({
       return this.filteredNames.length
     },
     transformCandidates(): IconName[] {
-      const preferred = this.names.filter((name) => /(?:arrow|chevron|edit|share|refresh|close|pet)/i.test(name))
+      const preferred = this.names.filter((name) =>
+        /(?:arrow|chevron|edit|share|refresh|close|pet)/i.test(name),
+      )
       return preferred.length ? preferred : this.names
     },
     transformIndex() {
@@ -358,7 +587,7 @@ export default defineComponent({
     },
     transformColor() {
       return this.colorMode === 'actual' ? PAW_ICON_DEFAULT_COLOR : '#666666'
-    }
+    },
   },
   methods: {
     selectMode(mode: IconLabMode) {
@@ -387,11 +616,14 @@ export default defineComponent({
       this.search = readPawEventValue(event)
     },
     onTransformPick(event: PawEvent) {
-      this.transformName = this.transformCandidates[readPawEventNumber(event, 'value')] || this.transformCandidates[0]
+      this.transformName =
+        this.transformCandidates[readPawEventNumber(event, 'value')] || this.transformCandidates[0]
     },
     iconColor(name: IconName) {
       return this.registry[name].kind === 'mono'
-        ? this.colorMode === 'actual' ? PAW_ICON_DEFAULT_COLOR : '#666666'
+        ? this.colorMode === 'actual'
+          ? PAW_ICON_DEFAULT_COLOR
+          : '#666666'
         : undefined
     },
     renderSizeFor(name: IconName) {
@@ -414,8 +646,8 @@ export default defineComponent({
     },
     guideStyle(size: number) {
       return { width: `${size}px`, height: `${size}px` }
-    }
-  }
+    },
+  },
 })
 </script>
 

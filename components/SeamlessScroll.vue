@@ -1,16 +1,31 @@
 <template>
   <view class="css-scroll-container">
-    <view class="scroll-content" :style="{
-      transform: `translateY(${translateY}px)`,
-      transition: enableTransition ? 'transform var(--paw-motion-ticker, 350ms) var(--paw-ease-standard, ease)' : 'none'
-    }">
-      <view v-for="(item, index) in renderList"
-        :key="'ss-' + index + '-' + (item.text || '') + '-' + (item.rankTitle || '')" class="scroll-item"
-        hover-class="scroll-item--tap" @tap.stop="onUserTap(item)">
+    <view
+      class="scroll-content"
+      :style="{
+        transform: `translateY(${translateY}px)`,
+        transition: enableTransition
+          ? 'transform var(--paw-motion-ticker, 350ms) var(--paw-ease-standard, ease)'
+          : 'none',
+      }"
+    >
+      <view
+        v-for="(item, index) in renderList"
+        :key="'ss-' + index + '-' + (item.text || '') + '-' + (item.rankTitle || '')"
+        class="scroll-item"
+        hover-class="scroll-item--tap"
+        @tap.stop="onUserTap(item)"
+      >
         <view class="info">
           <view class="info-avatarlog">
-            <PawAvatar class="avatar" :src="resolveAvatar(item)" :fallback="avatarFallback" :size="30" :clickable="true"
-              @click="onUserTap(item)" />
+            <PawAvatar
+              class="avatar"
+              :src="resolveAvatar(item)"
+              :fallback="avatarFallback"
+              :size="30"
+              :clickable="true"
+              @click="onUserTap(item)"
+            />
           </view>
           <view class="info-name">
             <text>{{ item.text }}</text>
@@ -28,15 +43,15 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue'
 
-import { safeImgSrc } from "@/utils/safeImgSrc.ts";
-import LevelBadge from "@/components/customBadge/LevelBadge.vue";
-import PawAvatar from "@/components/identity/PawAvatar.vue";
+import { safeImgSrc } from '@/utils/safeImgSrc.ts'
+import LevelBadge from '@/components/customBadge/LevelBadge.vue'
+import PawAvatar from '@/components/identity/PawAvatar.vue'
 import {
   isYardRankScrollItem,
   normalizeYardRankScrollItems,
   type YardRankScrollInput,
   type YardRankScrollItem,
-} from "@/utils/yardMock.ts";
+} from '@/utils/yardMock.ts'
 
 interface SeamlessScrollState {
   currentIndex: number
@@ -47,7 +62,7 @@ interface SeamlessScrollState {
 }
 
 export default defineComponent({
-  name: "SeamlessScroll",
+  name: 'SeamlessScroll',
   components: { LevelBadge, PawAvatar },
   props: {
     /** 接收共享小院排行榜项，也兼容历史字符串名称。 */
@@ -57,15 +72,15 @@ export default defineComponent({
     },
     avatarFallback: {
       type: String,
-      default: "/static/avatarlog.png",
+      default: '/static/avatarlog.png',
     },
     rankTitle: {
       type: String,
-      default: "小院投喂第一名",
+      default: '小院投喂第一名',
     },
   },
   emits: {
-    "user-click": (item: YardRankScrollItem) => isYardRankScrollItem(item),
+    'user-click': (item: YardRankScrollItem) => isYardRankScrollItem(item),
   },
   data(): SeamlessScrollState {
     return {
@@ -74,69 +89,69 @@ export default defineComponent({
       translateY: 0,
       enableTransition: true,
       intervalTimer: null,
-    };
+    }
   },
   computed: {
     scrollList(): YardRankScrollItem[] {
-      return normalizeYardRankScrollItems(this.items);
+      return normalizeYardRankScrollItems(this.items)
     },
     renderList(): YardRankScrollItem[] {
-      if (!this.scrollList.length) return [];
-      return [...this.scrollList, this.scrollList[0]];
+      if (!this.scrollList.length) return []
+      return [...this.scrollList, this.scrollList[0]]
     },
   },
   watch: {
     scrollList: {
       deep: true,
       handler() {
-        this.currentIndex = 0;
-        this.translateY = 0;
-        this.enableTransition = false;
+        this.currentIndex = 0
+        this.translateY = 0
+        this.enableTransition = false
         this.$nextTick(() => {
-          this.startAutoScroll();
-        });
+          this.startAutoScroll()
+        })
       },
     },
   },
   mounted() {
-    this.startAutoScroll();
+    this.startAutoScroll()
   },
   beforeUnmount() {
-    this.stopAutoScroll();
+    this.stopAutoScroll()
   },
   methods: {
     resolveAvatar(item: YardRankScrollItem) {
-      return safeImgSrc(item && item.avatar, safeImgSrc(this.avatarFallback));
+      return safeImgSrc(item && item.avatar, safeImgSrc(this.avatarFallback))
     },
     onUserTap(item: YardRankScrollItem) {
-      if (!item) return;
-      this.$emit("user-click", item);
+      if (!item) return
+      this.$emit('user-click', item)
     },
     startAutoScroll() {
-      this.stopAutoScroll();
-      if (this.scrollList.length <= 1) return;
+      this.stopAutoScroll()
+      if (this.scrollList.length <= 1) return
       this.intervalTimer = setInterval(() => {
-        if (this.scrollList.length <= 1) return;
-        this.currentIndex += 1;
-        this.enableTransition = true;
-        this.translateY = -this.currentIndex * this.rowHeight;
+        if (this.scrollList.length <= 1) return
+        this.currentIndex += 1
+        this.enableTransition = true
+        this.translateY = -this.currentIndex * this.rowHeight
         if (this.currentIndex >= this.scrollList.length) {
           setTimeout(() => {
-            this.enableTransition = false;
-            this.currentIndex = 0;
-            this.translateY = 0;
-          }, 380);
+            this.enableTransition = false
+            this.currentIndex = 0
+            this.translateY = 0
+          }, 380)
         }
-      }, 2000);
+      }, 2000)
     },
     stopAutoScroll() {
       if (this.intervalTimer) {
-        clearInterval(this.intervalTimer);
-        this.intervalTimer = null;
+        clearInterval(this.intervalTimer)
+        this.intervalTimer = null
       }
     },
   },
-});
+})
 </script>
 
 <style lang="less" scoped>

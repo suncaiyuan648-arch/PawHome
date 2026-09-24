@@ -1,20 +1,52 @@
 <template>
-  <PawBottomSheet v-model:visible="visibleProxy" variant="composer" :close-on-mask="true" :safe-area="false"
-    :z-index="10030" @after-close="onAfterClose">
-    <textarea class="reply-composer-sheet__textarea" :value="text" :placeholder="placeholderText"
-      placeholder-class="reply-composer-sheet__placeholder" :maxlength="maxlength" :show-confirm-bar="false"
-      :adjust-position="true" auto-height @input="onInput" />
+  <PawBottomSheet
+    v-model:visible="visibleProxy"
+    variant="composer"
+    :close-on-mask="true"
+    :safe-area="false"
+    :z-index="10030"
+    @after-close="onAfterClose"
+  >
+    <textarea
+      class="reply-composer-sheet__textarea"
+      :value="text"
+      :placeholder="placeholderText"
+      placeholder-class="reply-composer-sheet__placeholder"
+      :maxlength="maxlength"
+      :show-confirm-bar="false"
+      :adjust-position="true"
+      auto-height
+      @input="onInput"
+    />
     <view class="reply-composer-sheet__bar">
       <view class="reply-composer-sheet__tools">
-        <view class="reply-composer-sheet__hit" @tap.stop="$emit('voice')">
-          <PawIcon name="actions/composer-voice" :size="28" />
+        <view
+          class="reply-composer-sheet__hit"
+          @tap.stop="$emit('voice')"
+        >
+          <PawIcon
+            name="actions/composer-voice"
+            :size="28"
+          />
         </view>
-        <view class="reply-composer-sheet__hit" @tap.stop="$emit('pick-image')">
-          <PawIcon name="actions/composer-emoji" :size="28" />
+        <view
+          class="reply-composer-sheet__hit"
+          @tap.stop="$emit('pick-image')"
+        >
+          <PawIcon
+            name="actions/composer-emoji"
+            :size="28"
+          />
         </view>
       </view>
-      <PawButton class="reply-composer-sheet__send" tone="brand-soft" size="xs" :disabled="!hasText" text="发送"
-        @click="onSend" />
+      <PawButton
+        class="reply-composer-sheet__send"
+        tone="brand-soft"
+        size="xs"
+        :disabled="!hasText"
+        text="发送"
+        @click="onSend"
+      />
     </view>
   </PawBottomSheet>
 </template>
@@ -29,7 +61,9 @@ import PawButton from '@/components/base/PawButton.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import { readPawEventValue } from '@/utils/pawEventMetadata.ts'
 
-interface ReplyComposerState { text: string }
+interface ReplyComposerState {
+  text: string
+}
 
 export default defineComponent({
   name: 'ReplyComposerSheet',
@@ -37,29 +71,52 @@ export default defineComponent({
   props: {
     visible: { type: Boolean, default: false },
     maxlength: { type: Number, default: 500 },
-    replyToName: { type: String, default: '' }
+    replyToName: { type: String, default: '' },
   },
   emits: {
     'update:visible': eventContract<[value: boolean]>(),
-    'send': eventContract<[text: string]>(),
-    'voice': eventContract<[]>(),
+    send: eventContract<[text: string]>(),
+    voice: eventContract<[]>(),
     'pick-image': eventContract<[]>(),
   },
-  data(): ReplyComposerState { return { text: '' } },
-  computed: {
-    hasText() { return this.text.trim().length > 0 },
-    placeholderText() { return this.replyToName ? `回复 @${this.replyToName}：` : '说点什么' },
-    visibleProxy: {
-      get() { return this.visible },
-      set(value: boolean) { this.$emit('update:visible', value) }
-    }
+  data(): ReplyComposerState {
+    return { text: '' }
   },
-  watch: { visible(value: boolean) { if (value) this.text = '' } },
+  computed: {
+    hasText() {
+      return this.text.trim().length > 0
+    },
+    placeholderText() {
+      return this.replyToName ? `回复 @${this.replyToName}：` : '说点什么'
+    },
+    visibleProxy: {
+      get() {
+        return this.visible
+      },
+      set(value: boolean) {
+        this.$emit('update:visible', value)
+      },
+    },
+  },
+  watch: {
+    visible(value: boolean) {
+      if (value) this.text = ''
+    },
+  },
   methods: {
-    onInput(event: PawEvent) { this.text = readPawEventValue(event) },
-    onSend() { const value = this.text.trim(); if (!value) return; this.$emit('send', value); this.$emit('update:visible', false) },
-    onAfterClose() { this.text = '' }
-  }
+    onInput(event: PawEvent) {
+      this.text = readPawEventValue(event)
+    },
+    onSend() {
+      const value = this.text.trim()
+      if (!value) return
+      this.$emit('send', value)
+      this.$emit('update:visible', false)
+    },
+    onAfterClose() {
+      this.text = ''
+    },
+  },
 })
 </script>
 

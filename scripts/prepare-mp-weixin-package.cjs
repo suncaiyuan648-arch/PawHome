@@ -6,7 +6,9 @@ const sharp = require('sharp')
 
 const projectRoot = path.resolve(__dirname, '..')
 const sourceStaticRoot = path.join(projectRoot, 'static')
-const outputRoot = path.resolve(process.argv[2] || path.join(projectRoot, 'unpackage', 'dist', 'build', 'mp-weixin'))
+const outputRoot = path.resolve(
+  process.argv[2] || path.join(projectRoot, 'unpackage', 'dist', 'build', 'mp-weixin'),
+)
 const outputStaticRoot = path.join(outputRoot, 'static')
 const reportDirectory = path.join(projectRoot, '.artifacts', 'architecture-governance')
 const reportPath = path.join(reportDirectory, 'package-assets.json')
@@ -85,9 +87,13 @@ function loadOutputPackageRoots() {
     : Array.isArray(appConfig.subpackages)
       ? appConfig.subpackages
       : []
-  return [...new Set(subPackages
-    .map((item) => item && item.root)
-    .filter((root) => typeof root === 'string' && root && root !== DEV_PACKAGE_ROOT))]
+  return [
+    ...new Set(
+      subPackages
+        .map((item) => item && item.root)
+        .filter((root) => typeof root === 'string' && root && root !== DEV_PACKAGE_ROOT),
+    ),
+  ]
 }
 
 function sourcePackageStaticAssets(packageRoots) {
@@ -136,7 +142,10 @@ function collectModulePackages(routes) {
 function extractStaticReferences(source, inferDirectoryConstants = false) {
   const references = []
   function addToken(type, token) {
-    token = token.split('?')[0].split('#')[0].replace(/[;,]+$/, '')
+    token = token
+      .split('?')[0]
+      .split('#')[0]
+      .replace(/[;,]+$/, '')
     if (!token || token.includes('..')) return
     if (token.includes('${')) {
       const prefix = token.slice(0, token.indexOf('${'))
@@ -169,13 +178,16 @@ function extractStaticReferences(source, inferDirectoryConstants = false) {
   // interpolation or string concatenation. Treat that directory as a prefix
   // so every runtime-selected asset in the directory is packaged together.
   if (inferDirectoryConstants) {
-    const constantPattern = /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(['"`])\/static\/([^'"`]*?)\2/g
+    const constantPattern =
+      /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(['"`])\/static\/([^'"`]*?)\2/g
     let constantMatch
     while ((constantMatch = constantPattern.exec(source))) {
       const [, name, , value] = constantMatch
       if (!value.endsWith('/')) continue
       const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      const usagePattern = new RegExp(`(?:\\$\\{\\s*${escapedName}\\s*\\}|\\b${escapedName}\\s*\\+|\\+\\s*${escapedName}\\b)`)
+      const usagePattern = new RegExp(
+        `(?:\\$\\{\\s*${escapedName}\\s*\\}|\\b${escapedName}\\s*\\+|\\+\\s*${escapedName}\\b)`,
+      )
       if (usagePattern.test(source)) references.push({ type: 'prefix', value })
     }
   }
@@ -214,9 +226,10 @@ function restoreRelocatedRootReferences(sourceAssets, packageStaticAssets, roots
       source = source.replace(pattern, (whole, relative) => {
         const privateFiles = packageStaticAssets.get(owner)
         const isOwnRelocation = rootAssets.has(relative) && !privateFiles?.has(relative)
-        const isOwnPrefix = relative.endsWith('/')
-          && sourceAssets.some(asset => asset.startsWith(relative))
-          && ![...(privateFiles?.keys() || [])].some(asset => asset.startsWith(relative))
+        const isOwnPrefix =
+          relative.endsWith('/') &&
+          sourceAssets.some((asset) => asset.startsWith(relative)) &&
+          ![...(privateFiles?.keys() || [])].some((asset) => asset.startsWith(relative))
         return isOwnRelocation || isOwnPrefix ? `/static/${relative}` : whole
       })
     }
@@ -224,7 +237,12 @@ function restoreRelocatedRootReferences(sourceAssets, packageStaticAssets, roots
   }
 }
 
-function collectGeneratedStaticReferences(references, sourceAssets, packageStaticAssets, outputPackageRoots) {
+function collectGeneratedStaticReferences(
+  references,
+  sourceAssets,
+  packageStaticAssets,
+  outputPackageRoots,
+) {
   let added = 0
   const generatedFiles = walkFiles(outputRoot).filter((file) => {
     const extension = path.extname(file).toLowerCase()
@@ -232,14 +250,16 @@ function collectGeneratedStaticReferences(references, sourceAssets, packageStati
   })
   for (const file of generatedFiles) {
     const relative = normalizePath(path.relative(outputRoot, file))
-    const packageName = outputPackageRoots.find((root) => relative === root || relative.startsWith(`${root}/`)) || 'main'
+    const packageName =
+      outputPackageRoots.find((root) => relative === root || relative.startsWith(`${root}/`)) ||
+      'main'
     for (const reference of extractStaticReferences(fs.readFileSync(file, 'utf8'))) {
       if (reference.type === 'prefix') continue
       if (!references.exact.has(reference.value)) references.exact.set(reference.value, [])
       references.exact.get(reference.value).push({
         file,
         packages: new Set([packageName]),
-        generatedOutput: true
+        generatedOutput: true,
       })
       const normalized = reference.value.replace(/^\/+/, '')
       const staticMarker = normalized.indexOf('/static/')
@@ -250,14 +270,16 @@ function collectGeneratedStaticReferences(references, sourceAssets, packageStati
         // was prefixed during an earlier run. Reconnect it to the source root
         // so cleanup remains idempotent. Source package static wins when the
         // same path exists there.
-        if (outputPackageRoots.includes(packageRoot)
-          && sourceAssets.includes(relativeAsset)
-          && !packageStaticAssets.get(packageRoot)?.has(relativeAsset)) {
+        if (
+          outputPackageRoots.includes(packageRoot) &&
+          sourceAssets.includes(relativeAsset) &&
+          !packageStaticAssets.get(packageRoot)?.has(relativeAsset)
+        ) {
           if (!references.exact.has(relativeAsset)) references.exact.set(relativeAsset, [])
           references.exact.get(relativeAsset).push({
             file,
             packages: new Set([packageName]),
-            generatedOutput: true
+            generatedOutput: true,
           })
         }
       }
@@ -279,7 +301,8 @@ function isDuplicateAsset(relative) {
 
 function isConservativeMainModule(file, packageRoots) {
   const relative = relativeToRoot(file)
-  if (relative === 'App.vue' || relative === 'main.ts' || relative === 'custom-tab-bar/index.ts') return true
+  if (relative === 'App.vue' || relative === 'main.ts' || relative === 'custom-tab-bar/index.ts')
+    return true
   return !packageRoots.some((root) => relative === root || relative.startsWith(`${root}/`))
 }
 
@@ -298,7 +321,8 @@ function referenceOwners(relative, references, packageRoots) {
     // package owner was resolved from the final app.json above, so applying
     // the source-tree fallback here would incorrectly route every subpackage
     // reference to main.
-    if (!reference.generatedOutput && isConservativeMainModule(reference.file, packageRoots)) rootRequired = true
+    if (!reference.generatedOutput && isConservativeMainModule(reference.file, packageRoots))
+      rootRequired = true
     for (const packageName of reference.packages) packages.add(packageName)
   }
   if (rootRequired || packages.has('main')) return ['main']
@@ -314,7 +338,10 @@ function packageNameForReference(file, modulePackages, fallbackPackages = []) {
 function referenceMatchesPackageAsset(referenceValue, packageName, packageStaticAssets) {
   const relative = referenceValue.replace(/^\/+/, '')
   if (relative.startsWith(`${packageName}/static/`)) {
-    return packageStaticAssets.get(packageName)?.has(relative.slice(`${packageName}/static/`.length)) || false
+    return (
+      packageStaticAssets.get(packageName)?.has(relative.slice(`${packageName}/static/`.length)) ||
+      false
+    )
   }
   return packageStaticAssets.get(packageName)?.has(relative) || false
 }
@@ -328,7 +355,12 @@ function generatedOutputAssetExists(referenceValue) {
   return fs.existsSync(path.join(outputRoot, 'static', relative))
 }
 
-function collectUnknownStaticReferences(references, modulePackages, sourceAssets, packageStaticAssets) {
+function collectUnknownStaticReferences(
+  references,
+  modulePackages,
+  sourceAssets,
+  packageStaticAssets,
+) {
   const rootAssets = new Set(sourceAssets)
   const unknown = []
   for (const [value, usages] of references.exact) {
@@ -344,7 +376,7 @@ function collectUnknownStaticReferences(references, modulePackages, sourceAssets
           value,
           file: relativeToRoot(usage.file),
           packages: [...usage.packages].sort(),
-          reason: `static asset belongs to ${explicitPackage}, but the referencing module belongs to ${modulePackage}`
+          reason: `static asset belongs to ${explicitPackage}, but the referencing module belongs to ${modulePackage}`,
         })
         continue
       }
@@ -360,21 +392,24 @@ function collectUnknownStaticReferences(references, modulePackages, sourceAssets
           value,
           file: relativeToRoot(usage.file),
           packages: [...usage.packages].sort(),
-          reason: 'static reference does not resolve to a source root or package static asset'
+          reason: 'static reference does not resolve to a source root or package static asset',
         })
       }
     }
   }
   for (const prefix of references.prefixes) {
-    const matched = sourceAssets.some((asset) => asset.startsWith(prefix.value))
-      || [...packageStaticAssets.values()].some((files) => [...files.keys()].some((asset) => asset.startsWith(prefix.value)))
+    const matched =
+      sourceAssets.some((asset) => asset.startsWith(prefix.value)) ||
+      [...packageStaticAssets.values()].some((files) =>
+        [...files.keys()].some((asset) => asset.startsWith(prefix.value)),
+      )
     if (!matched) {
       unknown.push({
         type: 'prefix',
         value: prefix.value,
         file: relativeToRoot(prefix.file),
         packages: [...prefix.packages].sort(),
-        reason: 'dynamic static prefix has no matching source asset'
+        reason: 'dynamic static prefix has no matching source asset',
       })
     }
   }
@@ -403,9 +438,10 @@ async function optimizeRaster(file) {
         fit: 'inside',
         withoutEnlargement: true,
       })
-      const buffer = extension === '.png'
-        ? await image.png({ palette: true, quality, compressionLevel: 9, effort: 10 }).toBuffer()
-        : await image.jpeg({ quality, mozjpeg: true }).toBuffer()
+      const buffer =
+        extension === '.png'
+          ? await image.png({ palette: true, quality, compressionLevel: 9, effort: 10 }).toBuffer()
+          : await image.jpeg({ quality, mozjpeg: true }).toBuffer()
       if (buffer.length < originalBytes && (!best || buffer.length < best.length)) best = buffer
       if (buffer.length <= MAX_ASSET_BYTES) {
         if (buffer.length < originalBytes) return { buffer, bytes: buffer.length, optimized: true }
@@ -416,7 +452,9 @@ async function optimizeRaster(file) {
 
   if (!best) return { buffer: null, bytes: originalBytes, optimized: false }
   if (best.length > MAX_ASSET_BYTES) {
-    console.warn(`[PawHome] image remains above 200K after optimization: ${relativeToRoot(file)} (${best.length} bytes)`)
+    console.warn(
+      `[PawHome] image remains above 200K after optimization: ${relativeToRoot(file)} (${best.length} bytes)`,
+    )
   }
   return { buffer: best, bytes: best.length, optimized: true }
 }
@@ -429,7 +467,13 @@ function outputStaticFile(packageName, relative) {
   return path.join(packageDirectory(packageName), 'static', relative)
 }
 
-function cleanKnownAssetCopies(allSourceAssets, retainedSourceAssets, assignments, packageRoots, packageStaticAssets) {
+function cleanKnownAssetCopies(
+  allSourceAssets,
+  retainedSourceAssets,
+  assignments,
+  packageRoots,
+  packageStaticAssets,
+) {
   const retained = new Set(retainedSourceAssets)
   for (const relative of allSourceAssets) {
     const isRetained = retained.has(relative)
@@ -438,7 +482,8 @@ function cleanKnownAssetCopies(allSourceAssets, retainedSourceAssets, assignment
     if (!isRetained || !owners.has('main')) fs.rmSync(mainDestination, { force: true })
     for (const packageName of packageRoots) {
       if (packageStaticAssets.get(packageName)?.has(relative)) continue
-      if (!isRetained || !owners.has(packageName)) fs.rmSync(outputStaticFile(packageName, relative), { force: true })
+      if (!isRetained || !owners.has(packageName))
+        fs.rmSync(outputStaticFile(packageName, relative), { force: true })
     }
   }
 }
@@ -461,7 +506,7 @@ function copyPackageStaticAssets(packageStaticAssets, reportAssets, outputPackag
         relative,
         owners: [packageName],
         destinations: [`${packageName}/static/${relative}`],
-        reason: 'source package static is preserved and copied in place'
+        reason: 'source package static is preserved and copied in place',
       })
     }
   }
@@ -477,19 +522,22 @@ function expandPrefixAssignments(assignments, references, allAssets, packageStat
   for (const prefix of references.prefixes) {
     const packageNames = new Set()
     for (const packageName of prefix.packages) {
-      if (packageName !== 'main'
-        && packageName !== DEV_PACKAGE_ROOT
-        && !packageStaticAssets.get(packageName)?.has(prefix.value)) {
+      if (
+        packageName !== 'main' &&
+        packageName !== DEV_PACKAGE_ROOT &&
+        !packageStaticAssets.get(packageName)?.has(prefix.value)
+      ) {
         packageNames.add(packageName)
       }
     }
     if (!packageNames.size) continue
 
-    for (const relative of allAssets.filter(asset => asset.startsWith(prefix.value))) {
+    for (const relative of allAssets.filter((asset) => asset.startsWith(prefix.value))) {
       const owners = assignments.get(relative)
       if (!owners || owners.includes('main')) continue
-      const packageOwners = [...packageNames]
-        .filter((packageName) => !packageStaticAssets.get(packageName)?.has(relative))
+      const packageOwners = [...packageNames].filter(
+        (packageName) => !packageStaticAssets.get(packageName)?.has(relative),
+      )
       assignments.set(relative, [...new Set([...owners, ...packageOwners])].sort())
     }
   }
@@ -499,7 +547,7 @@ function buildAssetAliases(allAssets, references) {
   const assetsByHash = new Map()
   for (const relative of allAssets) {
     // Computed filenames cannot be rewritten by a literal alias replacement.
-    if (references.prefixes.some(prefix => relative.startsWith(prefix.value))) continue
+    if (references.prefixes.some((prefix) => relative.startsWith(prefix.value))) continue
     const hash = sha256(path.join(sourceStaticRoot, relative))
     if (!assetsByHash.has(hash)) assetsByHash.set(hash, [])
     assetsByHash.get(hash).push(relative)
@@ -541,9 +589,7 @@ function replaceRootStaticReference(source, relative, replacement) {
     const previous = index > 0 ? source[index - 1] : ''
     const next = source[index + needle.length] || ''
     const leftBoundary = !previous || !/[A-Za-z0-9_.:/-]/.test(previous)
-    const rightBoundary = relative.endsWith('/')
-      || !next
-      || /[?#[\]}'"`),;\s]/.test(next)
+    const rightBoundary = relative.endsWith('/') || !next || /[?#[\]}'"`),;\s]/.test(next)
     const isRootReference = leftBoundary && rightBoundary
     result += source.slice(offset, index)
     result += isRootReference ? replacement : needle
@@ -567,12 +613,14 @@ function rewriteAssetAliases(packageRoot, aliases) {
 function buildPrefixRules(assignments, references, packageName, allAssets) {
   const rules = []
   for (const prefix of references.prefixes) {
-    const matches = allAssets.filter(relative => relative.startsWith(prefix.value))
+    const matches = allAssets.filter((relative) => relative.startsWith(prefix.value))
     if (!matches.length) continue
-    if (matches.every(relative => {
-      const owners = assignments.get(relative) || []
-      return owners.includes(packageName)
-    })) {
+    if (
+      matches.every((relative) => {
+        const owners = assignments.get(relative) || []
+        return owners.includes(packageName)
+      })
+    ) {
       rules.push(prefix.value)
     }
   }
@@ -582,29 +630,49 @@ function buildPrefixRules(assignments, references, packageName, allAssets) {
 function packageStaticReferenceRules(packageName, references, packageStaticFiles, rootAssets) {
   if (!packageStaticFiles || !packageStaticFiles.size) return []
   const rules = []
-  for (const reference of [...references.exact.keys(), ...references.prefixes.map((item) => item.value)]) {
+  for (const reference of [
+    ...references.exact.keys(),
+    ...references.prefixes.map((item) => item.value),
+  ]) {
     const relative = reference.replace(/^\/+/, '')
     // When the same relative name exists at the root, /static/foo is a root
     // absolute URL. Keep that meaning; only package-only names are rewritten
     // to the package's private static directory.
     if (rootAssets.includes(relative)) continue
-    if (packageStaticFiles.has(relative) || [...packageStaticFiles.keys()].some((asset) => asset.startsWith(relative))) rules.push(relative)
+    if (
+      packageStaticFiles.has(relative) ||
+      [...packageStaticFiles.keys()].some((asset) => asset.startsWith(relative))
+    )
+      rules.push(relative)
   }
   return [...new Set(rules)]
 }
 
-function rewritePackageReferences(packageName, assignments, references, allAssets, packageStaticFiles) {
+function rewritePackageReferences(
+  packageName,
+  assignments,
+  references,
+  allAssets,
+  packageStaticFiles,
+) {
   if (packageName === 'main') return
   const packageRoot = packageDirectory(packageName)
   const exactRules = allAssets
-    .filter(relative => {
+    .filter((relative) => {
       const owners = assignments.get(relative) || []
       return owners.includes(packageName)
     })
-    .map(relative => relative)
+    .map((relative) => relative)
   const prefixRules = buildPrefixRules(assignments, references, packageName, allAssets)
-  const localRules = packageStaticReferenceRules(packageName, references, packageStaticFiles, allAssets)
-  const rules = [...new Set([...prefixRules, ...exactRules, ...localRules])].sort((a, b) => b.length - a.length)
+  const localRules = packageStaticReferenceRules(
+    packageName,
+    references,
+    packageStaticFiles,
+    allAssets,
+  )
+  const rules = [...new Set([...prefixRules, ...exactRules, ...localRules])].sort(
+    (a, b) => b.length - a.length,
+  )
 
   for (const file of walkFiles(packageRoot)) {
     if (!TEXT_EXTENSIONS.has(path.extname(file).toLowerCase())) continue
@@ -634,10 +702,12 @@ function writeFailureReport(error) {
     schemaVersion: 1,
     status: 'error',
     outputRoot: normalizePath(path.relative(projectRoot, outputRoot)),
-    errors: [{
-      code: 'pipeline-failure',
-      message: error.message || String(error)
-    }]
+    errors: [
+      {
+        code: 'pipeline-failure',
+        message: error.message || String(error),
+      },
+    ],
   })
 }
 
@@ -646,7 +716,11 @@ function sumPackage(packageName, packageRoots) {
   let total = 0
   for (const file of walkFiles(packageRoot)) {
     const relative = normalizePath(path.relative(outputRoot, file))
-    if (packageName === 'main' && packageRoots.some(root => relative === root || relative.startsWith(`${root}/`))) continue
+    if (
+      packageName === 'main' &&
+      packageRoots.some((root) => relative === root || relative.startsWith(`${root}/`))
+    )
+      continue
     total += fs.statSync(file).size
   }
   return total
@@ -661,9 +735,9 @@ function removeDevelopmentArtifacts() {
   if (!fs.existsSync(appConfigPath)) return
   const appConfig = JSON.parse(fs.readFileSync(appConfigPath, 'utf8'))
   if (Array.isArray(appConfig.subPackages)) {
-    appConfig.subPackages = appConfig.subPackages.filter(item => item.root !== DEV_PACKAGE_ROOT)
+    appConfig.subPackages = appConfig.subPackages.filter((item) => item.root !== DEV_PACKAGE_ROOT)
   } else if (Array.isArray(appConfig.subpackages)) {
-    appConfig.subpackages = appConfig.subpackages.filter(item => item.root !== DEV_PACKAGE_ROOT)
+    appConfig.subpackages = appConfig.subpackages.filter((item) => item.root !== DEV_PACKAGE_ROOT)
   }
   fs.writeFileSync(appConfigPath, `${JSON.stringify(appConfig, null, 2)}\n`)
 }
@@ -671,8 +745,10 @@ function removeDevelopmentArtifacts() {
 function removeBuildOnlyOutputAssets() {
   for (const file of walkFiles(outputRoot)) {
     const relative = normalizePath(path.relative(outputRoot, file))
-    if (relative.startsWith(`static/${PAW_ICON_BUILD_ONLY_PREFIX}`)
-      || relative.includes(`/static/${PAW_ICON_BUILD_ONLY_PREFIX}`)) {
+    if (
+      relative.startsWith(`static/${PAW_ICON_BUILD_ONLY_PREFIX}`) ||
+      relative.includes(`/static/${PAW_ICON_BUILD_ONLY_PREFIX}`)
+    ) {
       fs.rmSync(file, { force: true })
     }
   }
@@ -683,17 +759,24 @@ async function main() {
   if (!fs.existsSync(sourceStaticRoot)) fail(`静态资源目录不存在：${sourceStaticRoot}`)
 
   const routes = loadPackageRoutes()
-  const configuredPackageRoots = [...new Set([...routes.values()]
-    .filter((packageName) => packageName !== 'main'))]
-  const sourcePackageRoots = [...new Set([...routes.values()]
-    .filter((packageName) => packageName !== 'main' && packageName !== DEV_PACKAGE_ROOT))]
+  const configuredPackageRoots = [
+    ...new Set([...routes.values()].filter((packageName) => packageName !== 'main')),
+  ]
+  const sourcePackageRoots = [
+    ...new Set(
+      [...routes.values()].filter(
+        (packageName) => packageName !== 'main' && packageName !== DEV_PACKAGE_ROOT,
+      ),
+    ),
+  ]
   const modulePackages = collectModulePackages(routes)
   const references = collectStaticReferences(modulePackages)
-  const allSourceAssets = walkFiles(sourceStaticRoot)
-    .map(file => normalizePath(path.relative(sourceStaticRoot, file)))
+  const allSourceAssets = walkFiles(sourceStaticRoot).map((file) =>
+    normalizePath(path.relative(sourceStaticRoot, file)),
+  )
   const sourceAssets = allSourceAssets
-    .filter(relative => !relative.startsWith(PAW_ICON_BUILD_ONLY_PREFIX))
-    .filter(relative => !isDuplicateAsset(relative))
+    .filter((relative) => !relative.startsWith(PAW_ICON_BUILD_ONLY_PREFIX))
+    .filter((relative) => !isDuplicateAsset(relative))
   const packageStaticAssets = sourcePackageStaticAssets(sourcePackageRoots)
   const outputPackageRoots = loadOutputPackageRoots()
   // Remove dev-only output before scanning generated files so audit-only assets
@@ -705,7 +788,7 @@ async function main() {
     references,
     sourceAssets,
     packageStaticAssets,
-    outputPackageRoots
+    outputPackageRoots,
   )
   const reportAssets = []
   const errors = []
@@ -725,7 +808,8 @@ async function main() {
           code: 'root-package-static-collision',
           relative,
           packageName,
-          reason: 'root and package static assets share a path with different bytes; root absolute URL remains rooted'
+          reason:
+            'root and package static assets share a path with different bytes; root absolute URL remains rooted',
         })
       }
     }
@@ -751,20 +835,34 @@ async function main() {
   for (const owners of assignments.values()) {
     for (const owner of owners) {
       if (!validOwners.has(owner)) {
-        errors.push({ code: 'owner-not-in-output-app', owner, reason: 'asset owner is not registered in final app.json subPackages' })
+        errors.push({
+          code: 'owner-not-in-output-app',
+          owner,
+          reason: 'asset owner is not registered in final app.json subPackages',
+        })
       }
     }
   }
   for (const packageName of sourcePackageRoots) {
     if (!outputPackageRoots.includes(packageName) && packageStaticAssets.has(packageName)) {
-      errors.push({ code: 'source-package-not-in-output-app', packageName, reason: 'source package static exists but final app.json has no matching root' })
+      errors.push({
+        code: 'source-package-not-in-output-app',
+        packageName,
+        reason: 'source package static exists but final app.json has no matching root',
+      })
     }
   }
 
   // Remove only known copies that the source map says are no longer owned by a
   // package. Unknown output assets are deliberately retained and reported by
   // reference validation instead of being deleted to fake a smaller package.
-  cleanKnownAssetCopies(allSourceAssets, sourceAssets, assignments, outputPackageRoots, packageStaticAssets)
+  cleanKnownAssetCopies(
+    allSourceAssets,
+    sourceAssets,
+    assignments,
+    outputPackageRoots,
+    packageStaticAssets,
+  )
   fs.mkdirSync(outputStaticRoot, { recursive: true })
 
   let copied = 0
@@ -802,13 +900,19 @@ async function main() {
       relative,
       owners: owners.filter((owner) => validOwners.has(owner)),
       destinations,
-      reason: references.exact.has(relative) || references.prefixes.some((prefix) => relative.startsWith(prefix.value))
-        ? 'source root static referenced by package dependency owner'
-        : 'source root static retained by assignment'
+      reason:
+        references.exact.has(relative) ||
+        references.prefixes.some((prefix) => relative.startsWith(prefix.value))
+          ? 'source root static referenced by package dependency owner'
+          : 'source root static retained by assignment',
     })
   }
 
-  const packageStaticCopy = copyPackageStaticAssets(packageStaticAssets, reportAssets, outputPackageRoots)
+  const packageStaticCopy = copyPackageStaticAssets(
+    packageStaticAssets,
+    reportAssets,
+    outputPackageRoots,
+  )
 
   // Identical source assets may be referenced under different semantic paths.
   // Keep one canonical copy in the package, then rewrite generated references
@@ -817,17 +921,32 @@ async function main() {
 
   const packageRoots = outputPackageRoots
   for (const packageName of packageRoots) {
-    rewritePackageReferences(packageName, assignments, references, sourceAssets, packageStaticAssets.get(packageName))
+    rewritePackageReferences(
+      packageName,
+      assignments,
+      references,
+      sourceAssets,
+      packageStaticAssets.get(packageName),
+    )
   }
 
-  const unknownReferences = collectUnknownStaticReferences(references, modulePackages, sourceAssets, packageStaticAssets)
-  errors.push(...unknownReferences.map((reference) => ({
-    code: reference.code || 'unknown-static-reference',
-    ...reference
-  })))
+  const unknownReferences = collectUnknownStaticReferences(
+    references,
+    modulePackages,
+    sourceAssets,
+    packageStaticAssets,
+  )
+  errors.push(
+    ...unknownReferences.map((reference) => ({
+      code: reference.code || 'unknown-static-reference',
+      ...reference,
+    })),
+  )
 
   const mainBytes = sumPackage('main', packageRoots)
-  const packageSizes = Object.fromEntries(packageRoots.map(packageName => [packageName, sumPackage(packageName, packageRoots)]))
+  const packageSizes = Object.fromEntries(
+    packageRoots.map((packageName) => [packageName, sumPackage(packageName, packageRoots)]),
+  )
   const report = {
     schemaVersion: 1,
     status: errors.length ? 'error' : 'ok',
@@ -836,7 +955,7 @@ async function main() {
       pagesJson: 'pages.json',
       rootStatic: 'static',
       sourcePackageRoots,
-      outputPackageRoots
+      outputPackageRoots,
     },
     summary: {
       copied,
@@ -848,34 +967,47 @@ async function main() {
       staticBytes: copiedBytes + packageStaticCopy.bytes,
       unknownReferences: unknownReferences.length,
       mainBytes,
-      packageSizes
+      packageSizes,
     },
     assets: reportAssets,
     unknownReferences,
-    errors
+    errors,
   }
   writeAssetReport(report)
 
-  console.log(`[PawHome] prepared upload package: copied=${copied}, packageStatic=${packageStaticCopy.copied}, optimized=${optimized}, deduplicated=${deduplicated}, generatedRefs=${generatedStaticReferences}, omitted=${omitted}, staticBytes=${formatSize(copiedBytes + packageStaticCopy.bytes)}`)
-  console.log(`[PawHome] main package=${formatSize(mainBytes)} (hard limit ${formatSize(MAX_PACKAGE_BYTES)})`)
+  console.log(
+    `[PawHome] prepared upload package: copied=${copied}, packageStatic=${packageStaticCopy.copied}, optimized=${optimized}, deduplicated=${deduplicated}, generatedRefs=${generatedStaticReferences}, omitted=${omitted}, staticBytes=${formatSize(copiedBytes + packageStaticCopy.bytes)}`,
+  )
+  console.log(
+    `[PawHome] main package=${formatSize(mainBytes)} (hard limit ${formatSize(MAX_PACKAGE_BYTES)})`,
+  )
   for (const [packageName, bytes] of Object.entries(packageSizes)) {
-    console.log(`[PawHome] ${packageName}=${formatSize(bytes)} (hard limit ${formatSize(MAX_PACKAGE_BYTES)})`)
+    console.log(
+      `[PawHome] ${packageName}=${formatSize(bytes)} (hard limit ${formatSize(MAX_PACKAGE_BYTES)})`,
+    )
   }
-  if (mainBytes > RECOMMENDED_PACKAGE_BYTES) console.warn(`[PawHome] main package exceeds the 1.5MB quality recommendation`)
+  if (mainBytes > RECOMMENDED_PACKAGE_BYTES)
+    console.warn(`[PawHome] main package exceeds the 1.5MB quality recommendation`)
   for (const [packageName, bytes] of Object.entries(packageSizes)) {
-    if (bytes > RECOMMENDED_PACKAGE_BYTES) console.warn(`[PawHome] ${packageName} exceeds the 1.5MB quality recommendation`)
+    if (bytes > RECOMMENDED_PACKAGE_BYTES)
+      console.warn(`[PawHome] ${packageName} exceeds the 1.5MB quality recommendation`)
   }
-  if (mainBytes > MAX_PACKAGE_BYTES || Object.values(packageSizes).some(bytes => bytes > MAX_PACKAGE_BYTES)) {
+  if (
+    mainBytes > MAX_PACKAGE_BYTES ||
+    Object.values(packageSizes).some((bytes) => bytes > MAX_PACKAGE_BYTES)
+  ) {
     process.exitCode = 1
     console.error('[PawHome] package remains over the WeChat 2MB package limit')
   }
   if (errors.length) {
     process.exitCode = 1
-    console.error(`[PawHome] package asset pipeline found ${errors.length} error(s); see ${normalizePath(path.relative(projectRoot, reportPath))}`)
+    console.error(
+      `[PawHome] package asset pipeline found ${errors.length} error(s); see ${normalizePath(path.relative(projectRoot, reportPath))}`,
+    )
   }
 }
 
-main().catch(error => {
+main().catch((error) => {
   try {
     writeFailureReport(error)
   } catch (reportError) {

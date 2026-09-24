@@ -5,8 +5,23 @@ import { evaluateManagementCapabilities } from '../../../navigation/managementCo
 export const ANIMAL_STORAGE_KEY = 'PAWHOME_ANIMAL_RECORDS'
 export const YARD_STORAGE_KEY = 'PAWHOME_YARD_RECORDS'
 const EDITABLE_FIELDS = Object.freeze([
-  'species', 'name', 'avatar', 'breed', 'tags', 'description', 'desc', 'status', 'state',
-  'petValue', 'value', 'gender', 'neuter', 'vaccine', 'personality', 'birthday', 'birthValue',
+  'species',
+  'name',
+  'avatar',
+  'breed',
+  'tags',
+  'description',
+  'desc',
+  'status',
+  'state',
+  'petValue',
+  'value',
+  'gender',
+  'neuter',
+  'vaccine',
+  'personality',
+  'birthday',
+  'birthValue',
 ])
 const POLICY = Object.freeze({
   yard: Object.freeze({
@@ -129,14 +144,21 @@ function storageError(code: string, message: string): Error & { code: string } {
 }
 
 function isStorageLike(value: unknown): value is StorageLike {
-  return isRecord(value)
-    && typeof value.getStorageSync === 'function'
-    && typeof value.setStorageSync === 'function'
+  return (
+    isRecord(value) &&
+    typeof value.getStorageSync === 'function' &&
+    typeof value.setStorageSync === 'function'
+  )
 }
 
 function storageOf(storage: unknown): StorageLike | null {
   if (isStorageLike(storage)) return storage
-  if (typeof uni !== 'undefined' && uni && typeof uni.getStorageSync === 'function' && typeof uni.setStorageSync === 'function') {
+  if (
+    typeof uni !== 'undefined' &&
+    uni &&
+    typeof uni.getStorageSync === 'function' &&
+    typeof uni.setStorageSync === 'function'
+  ) {
     return {
       getStorageSync: (key: string) => uni.getStorageSync<unknown>(key),
       setStorageSync: (key: string, value: string) => uni.setStorageSync(key, value),
@@ -154,7 +176,10 @@ function actorOf(actorProvider: unknown): { actor: Actor | null; error: LocalErr
   } catch (error) {
     return {
       actor: null,
-      error: { code: errorCode(error, 'ACTOR_RESOLUTION_FAILED'), message: 'trusted actor is unavailable' },
+      error: {
+        code: errorCode(error, 'ACTOR_RESOLUTION_FAILED'),
+        message: 'trusted actor is unavailable',
+      },
     }
   }
 }
@@ -201,7 +226,7 @@ function failure(code: string, message: string, actor: Actor | null = null): Loc
 
 function normalizeStatus(value: unknown, fallback = 'active'): string {
   const text = typeof value === 'string' ? value.trim() : ''
-  return STATUS_LABELS.has(text) ? 'active' : (text || fallback)
+  return STATUS_LABELS.has(text) ? 'active' : text || fallback
 }
 
 function isSpecies(value: unknown): value is AnimalSpecies {
@@ -212,17 +237,28 @@ function normalizeSpecies(patch: JsonRecord = {}): AnimalSpecies {
   if (patch.species === 'dog' || patch.kind === 'dog') return 'dog'
   if (patch.species === 'cat' || patch.kind === 'cat') return 'cat'
   const breed = typeof patch.breed === 'string' ? patch.breed : ''
-  return /金毛|柴犬|拉布拉多|边牧|萨摩耶|哈士奇|贵宾|泰迪|柯基|牧羊犬|雪纳瑞|比熊|狗/.test(breed) ? 'dog' : 'cat'
+  return /金毛|柴犬|拉布拉多|边牧|萨摩耶|哈士奇|贵宾|泰迪|柯基|牧羊犬|雪纳瑞|比熊|狗/.test(breed)
+    ? 'dog'
+    : 'cat'
 }
 
 function isPublicRecord(record: JsonRecord): boolean {
   if (record.visibility === 'private' || record.isPublic === false) return false
   const state = record.status || record.state
-  return !state || state === 'active' || state === 'published' || state === '待领养' || state === '已领养'
+  return (
+    !state ||
+    state === 'active' ||
+    state === 'published' ||
+    state === '待领养' ||
+    state === '已领养'
+  )
 }
 
 /** Public read used by detail/roster pages; it never evaluates management access. */
-export function readPublicAnimal(animalId: string, { yardId, storage }: AnimalManagementOptions = {}): LocalResult {
+export function readPublicAnimal(
+  animalId: string,
+  { yardId, storage }: AnimalManagementOptions = {},
+): LocalResult {
   const id = idOf(animalId)
   if (!id) return failure('INVALID_ID', 'animalId is invalid')
   const requestedYardId = yardId === undefined || yardId === '' ? '' : idOf(yardId)
@@ -234,10 +270,12 @@ export function readPublicAnimal(animalId: string, { yardId, storage }: AnimalMa
     return failure(errorCode(error, 'ANIMAL_READ_FAILED'), 'animal read failed closed')
   }
   const record = rows.find(
-    (item): item is AnimalRecord => isRecord(item) && typeof item.animalId === 'string' && item.animalId === id,
+    (item): item is AnimalRecord =>
+      isRecord(item) && typeof item.animalId === 'string' && item.animalId === id,
   )
   if (!record) return failure('READER_MISSING', 'animal record is unavailable')
-  if (requestedYardId && record.yardId !== requestedYardId) return failure('CROSS_YARD_RELATION', 'animal does not belong to yardId')
+  if (requestedYardId && record.yardId !== requestedYardId)
+    return failure('CROSS_YARD_RELATION', 'animal does not belong to yardId')
   if (!isPublicRecord(record)) return failure('FORBIDDEN', 'animal is not public')
   return result(
     true,
@@ -272,7 +310,8 @@ function authorize(
     yardId,
     policy: POLICY,
   })
-  if (!access.capabilities['animal.edit']) return { access, error: access.reasons['animal.edit'] || 'FORBIDDEN' }
+  if (!access.capabilities['animal.edit'])
+    return { access, error: access.reasons['animal.edit'] || 'FORBIDDEN' }
   return { access, error: null }
 }
 
@@ -287,34 +326,49 @@ function authorizeYard(
     yardId,
     policy: POLICY,
   })
-  if (!access.capabilities['yard.edit']) return { access, error: access.reasons['yard.edit'] || 'FORBIDDEN' }
+  if (!access.capabilities['yard.edit'])
+    return { access, error: access.reasons['yard.edit'] || 'FORBIDDEN' }
   return { access, error: null }
 }
 
-export function readLocalAnimal(animalId: string, { yardId, actorProvider, storage }: AnimalManagementOptions = {}): LocalResult {
+export function readLocalAnimal(
+  animalId: string,
+  { yardId, actorProvider, storage }: AnimalManagementOptions = {},
+): LocalResult {
   const id = idOf(animalId)
   if (!id) return failure('INVALID_ID', 'animalId is invalid')
   const requestedYardId = yardId === undefined || yardId === '' ? '' : idOf(yardId)
   if (yardId !== undefined && !requestedYardId) return failure('INVALID_ID', 'yardId is invalid')
   const resolved = actorOf(actorProvider)
-  if (resolved.error || !resolved.actor) return failure(resolved.error?.code || 'NO_ACTOR', 'trusted actor is unavailable')
+  if (resolved.error || !resolved.actor)
+    return failure(resolved.error?.code || 'NO_ACTOR', 'trusted actor is unavailable')
   let rows: unknown[]
   try {
     rows = readRows(storage, ANIMAL_STORAGE_KEY)
   } catch (error) {
-    return failure(errorCode(error, 'ANIMAL_READ_FAILED'), 'animal read failed closed', resolved.actor)
+    return failure(
+      errorCode(error, 'ANIMAL_READ_FAILED'),
+      'animal read failed closed',
+      resolved.actor,
+    )
   }
   const record = rows.find(
-    (item): item is AnimalRecord => isRecord(item) && typeof item.animalId === 'string' && item.animalId === id,
+    (item): item is AnimalRecord =>
+      isRecord(item) && typeof item.animalId === 'string' && item.animalId === id,
   )
   if (!record) return failure('READER_MISSING', 'animal record is unavailable', resolved.actor)
-  if (requestedYardId && record.yardId !== requestedYardId) return failure('CROSS_YARD_RELATION', 'animal does not belong to yardId', resolved.actor)
+  if (requestedYardId && record.yardId !== requestedYardId)
+    return failure('CROSS_YARD_RELATION', 'animal does not belong to yardId', resolved.actor)
   const parent = readParentYard(record.yardId, storage)
   const auth = authorize(id, record.yardId, record, parent, resolved.actor)
   if (auth.error) return failure('FORBIDDEN', 'animal edit is not allowed', resolved.actor)
   return result(
     true,
-    { record: copyRecord(record), access: { canRead: true, canEdit: true }, capabilities: auth.access.capabilities },
+    {
+      record: copyRecord(record),
+      access: { canRead: true, canEdit: true },
+      capabilities: auth.access.capabilities,
+    },
     null,
     { actor: resolved.actor, source: 'local', readOnly: true, canWrite: false },
   )
@@ -331,7 +385,8 @@ export function updateLocalAnimal(
   }
   const keys = Object.keys(patch)
   if (!keys.length) return failure('EMPTY_PATCH', 'animal patch is empty')
-  if (keys.some((key) => !EDITABLE_FIELDS.includes(key))) return failure('FIELD_NOT_EDITABLE', 'animal field is not editable')
+  if (keys.some((key) => !EDITABLE_FIELDS.includes(key)))
+    return failure('FIELD_NOT_EDITABLE', 'animal field is not editable')
   const current = readLocalAnimal(animalId, { yardId, actorProvider, storage })
   if (!current.success) return current
   const target = storageOf(storage)
@@ -339,10 +394,15 @@ export function updateLocalAnimal(
   try {
     rows = readRows(target, ANIMAL_STORAGE_KEY)
   } catch (error) {
-    return failure(errorCode(error, 'ANIMAL_READ_FAILED'), 'animal read failed closed', current.actor || null)
+    return failure(
+      errorCode(error, 'ANIMAL_READ_FAILED'),
+      'animal read failed closed',
+      current.actor || null,
+    )
   }
   const index = rows.findIndex((item) => isRecord(item) && item.animalId === animalId)
-  if (index < 0) return failure('READER_MISSING', 'animal record is unavailable', current.actor || null)
+  if (index < 0)
+    return failure('READER_MISSING', 'animal record is unavailable', current.actor || null)
   const existing = rows[index]
   if (!isRecord(existing) || typeof animalId !== 'string') {
     return failure('READER_MISSING', 'animal record is unavailable', current.actor || null)
@@ -351,20 +411,39 @@ export function updateLocalAnimal(
   const next: JsonRecord = {
     ...existing,
     ...copyRecord(patch),
-    species: isSpecies(patch.species) ? patch.species : (isSpecies(existing.species) ? existing.species : 'cat'),
+    species: isSpecies(patch.species)
+      ? patch.species
+      : isSpecies(existing.species)
+        ? existing.species
+        : 'cat',
     animalId,
     yardId: existing.yardId,
     updatedAt: now,
   }
   if (statusValue) {
     next.statusLabel = statusValue
-    next.status = normalizeStatus(statusValue, typeof existing.status === 'string' ? existing.status : 'active')
+    next.status = normalizeStatus(
+      statusValue,
+      typeof existing.status === 'string' ? existing.status : 'active',
+    )
   }
   try {
-    if (!target) return failure('STORAGE_WRITE_FAILED', 'animal update was not acknowledged', current.actor || null)
-    target.setStorageSync(ANIMAL_STORAGE_KEY, stringify(rows.map((item, itemIndex) => itemIndex === index ? next : item)))
+    if (!target)
+      return failure(
+        'STORAGE_WRITE_FAILED',
+        'animal update was not acknowledged',
+        current.actor || null,
+      )
+    target.setStorageSync(
+      ANIMAL_STORAGE_KEY,
+      stringify(rows.map((item, itemIndex) => (itemIndex === index ? next : item))),
+    )
   } catch {
-    return failure('STORAGE_WRITE_FAILED', 'animal update was not acknowledged', current.actor || null)
+    return failure(
+      'STORAGE_WRITE_FAILED',
+      'animal update was not acknowledged',
+      current.actor || null,
+    )
   }
   return result(
     true,
@@ -387,12 +466,15 @@ export function createLocalAnimal(
     return failure('INVALID_SPECIES', 'species must be cat or dog')
   }
   const keys = Object.keys(patch)
-  if (keys.some((key) => !EDITABLE_FIELDS.includes(key))) return failure('FIELD_NOT_EDITABLE', 'animal field is not editable')
-  if (patch.species !== undefined && !isSpecies(patch.species)) return failure('INVALID_SPECIES', 'species must be cat or dog')
+  if (keys.some((key) => !EDITABLE_FIELDS.includes(key)))
+    return failure('FIELD_NOT_EDITABLE', 'animal field is not editable')
+  if (patch.species !== undefined && !isSpecies(patch.species))
+    return failure('INVALID_SPECIES', 'species must be cat or dog')
   if (!String(patch.name || '').trim()) return failure('INVALID_NAME', 'animal name is required')
   if (!String(patch.breed || '').trim()) return failure('INVALID_BREED', 'animal breed is required')
   const resolved = actorOf(actorProvider)
-  if (resolved.error || !resolved.actor) return failure(resolved.error?.code || 'NO_ACTOR', 'trusted actor is unavailable')
+  if (resolved.error || !resolved.actor)
+    return failure(resolved.error?.code || 'NO_ACTOR', 'trusted actor is unavailable')
   const yard = readParentYard(requestedYardId, storage)
   if (!yard) return failure('YARD_MISSING', 'yard record is unavailable', resolved.actor)
   const yardAuth = authorizeYard(requestedYardId, yard, resolved.actor)
@@ -402,7 +484,11 @@ export function createLocalAnimal(
   try {
     rows = readRows(target, ANIMAL_STORAGE_KEY)
   } catch (error) {
-    return failure(errorCode(error, 'ANIMAL_READ_FAILED'), 'animal read failed closed', resolved.actor)
+    return failure(
+      errorCode(error, 'ANIMAL_READ_FAILED'),
+      'animal read failed closed',
+      resolved.actor,
+    )
   }
   const animalId = `animal-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
   const statusLabel = patch.status || patch.state || '待领养'
@@ -419,31 +505,44 @@ export function createLocalAnimal(
     updatedAt: now,
   }
   try {
-    if (!target) return failure('STORAGE_WRITE_FAILED', 'animal create was not acknowledged', resolved.actor)
+    if (!target)
+      return failure('STORAGE_WRITE_FAILED', 'animal create was not acknowledged', resolved.actor)
     target.setStorageSync(ANIMAL_STORAGE_KEY, stringify(rows.concat(next)))
   } catch {
     return failure('STORAGE_WRITE_FAILED', 'animal create was not acknowledged', resolved.actor)
   }
   return result(
     true,
-    { record: copyRecord(next), access: { canRead: true, canEdit: true }, capabilities: yardAuth.access.capabilities },
+    {
+      record: copyRecord(next),
+      access: { canRead: true, canEdit: true },
+      capabilities: yardAuth.access.capabilities,
+    },
     null,
     { actor: resolved.actor, source: 'local', wrote: true, readOnly: false, canWrite: true },
   )
 }
 
-export function canCreateLocalAnimal(yardId: string, { actorProvider, storage }: AnimalManagementOptions = {}): LocalResult {
+export function canCreateLocalAnimal(
+  yardId: string,
+  { actorProvider, storage }: AnimalManagementOptions = {},
+): LocalResult {
   const requestedYardId = idOf(yardId)
   if (!requestedYardId) return failure('INVALID_ID', 'yardId is invalid')
   const resolved = actorOf(actorProvider)
-  if (resolved.error || !resolved.actor) return failure(resolved.error?.code || 'NO_ACTOR', 'trusted actor is unavailable')
+  if (resolved.error || !resolved.actor)
+    return failure(resolved.error?.code || 'NO_ACTOR', 'trusted actor is unavailable')
   const yard = readParentYard(requestedYardId, storage)
   if (!yard) return failure('YARD_MISSING', 'yard record is unavailable', resolved.actor)
   const auth = authorizeYard(requestedYardId, yard, resolved.actor)
   if (auth.error) return failure('FORBIDDEN', 'animal create is not allowed', resolved.actor)
   return result(
     true,
-    { yard: copyRecord(yard), access: { canRead: true, canEdit: true }, capabilities: auth.access.capabilities },
+    {
+      yard: copyRecord(yard),
+      access: { canRead: true, canEdit: true },
+      capabilities: auth.access.capabilities,
+    },
     null,
     { actor: resolved.actor, source: 'local', readOnly: true, canWrite: false },
   )

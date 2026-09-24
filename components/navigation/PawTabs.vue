@@ -1,7 +1,15 @@
 <template>
-  <view class="paw-tabs" :class="[`paw-tabs--${variant}`, `paw-tabs--indicator-${indicatorSize}`]">
-    <view v-for="item in normalizedItems" :key="item.key" class="paw-tabs__item"
-      :class="{ 'paw-tabs__item--active': value === item.key }" @tap.stop="select(item.key)">
+  <view
+    class="paw-tabs"
+    :class="[`paw-tabs--${variant}`, `paw-tabs--indicator-${indicatorSize}`]"
+  >
+    <view
+      v-for="item in normalizedItems"
+      :key="item.key"
+      class="paw-tabs__item"
+      :class="{ 'paw-tabs__item--active': value === item.key }"
+      @tap.stop="select(item.key)"
+    >
       <text>{{ item.label }}</text>
     </view>
   </view>
@@ -16,7 +24,10 @@ export type PawTabKey = string | number
 export type PawTabItem = string | { key?: PawTabKey; label: string }
 export type PawTabIndicatorSize = 'none' | 'small' | 'medium' | 'large'
 
-interface NormalizedPawTabItem { key: PawTabKey; label: string }
+interface NormalizedPawTabItem {
+  key: PawTabKey
+  label: string
+}
 
 function isIndicatorSize(value: unknown): value is PawTabIndicatorSize {
   return value === 'none' || value === 'small' || value === 'medium' || value === 'large'
@@ -28,23 +39,35 @@ export default defineComponent({
     modelValue: { type: [String, Number], default: '' },
     items: { type: Array as PropType<PawTabItem[]>, default: () => [] },
     variant: { type: String, default: 'text' },
-    indicatorSize: { type: String as PropType<PawTabIndicatorSize>, default: 'small', validator: isIndicatorSize }
+    indicatorSize: {
+      type: String as PropType<PawTabIndicatorSize>,
+      default: 'small',
+      validator: isIndicatorSize,
+    },
   },
   emits: {
     'update:modelValue': eventContract<[key: PawTabKey]>(),
-    'change': eventContract<[key: PawTabKey]>(),
+    change: eventContract<[key: PawTabKey]>(),
   },
   computed: {
-    value() { return this.modelValue },
+    value() {
+      return this.modelValue
+    },
     normalizedItems(): NormalizedPawTabItem[] {
-      return this.items.map((item, index) => typeof item === 'string'
-        ? { key: item, label: item }
-        : { key: item.key ?? index, label: item.label })
-    }
+      return this.items.map((item, index) =>
+        typeof item === 'string'
+          ? { key: item, label: item }
+          : { key: item.key ?? index, label: item.label },
+      )
+    },
   },
   methods: {
-    select(key: PawTabKey) { if (key === this.value) return; this.$emit('update:modelValue', key); this.$emit('change', key) }
-  }
+    select(key: PawTabKey) {
+      if (key === this.value) return
+      this.$emit('update:modelValue', key)
+      this.$emit('change', key)
+    },
+  },
 })
 </script>
 
@@ -68,7 +91,7 @@ export default defineComponent({
   z-index: 0;
 }
 
-.paw-tabs__item>text {
+.paw-tabs__item > text {
   position: relative;
   z-index: 1;
 }
@@ -163,5 +186,4 @@ export default defineComponent({
   height: 3px;
   border-radius: 5px;
 }
-
 </style>

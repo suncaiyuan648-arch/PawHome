@@ -6,7 +6,7 @@ export const MEMBER_LEVEL_TITLES: Readonly<Record<number, string>> = Object.free
   5: '城区投喂先锋',
   6: '城市投喂能手',
   7: '城市关爱大使',
-  8: '城市投喂首席官'
+  8: '城市投喂首席官',
 })
 
 export function getMemberLevelTitle(level: string | number, fallbackLevel = 8): string {

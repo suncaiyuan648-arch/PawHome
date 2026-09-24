@@ -1,24 +1,70 @@
 <template>
-  <PawOverlay :model-value="openValue" :close-on-mask="canCloseOnMask" :placement="placement" :z-index="zIndex"
-    :mask-color="overlayMaskColor" :exit-duration="160" @update:model-value="setValue" @update:visible="setValue"
-    @after-open="$emit('after-open')" @after-close="$emit('after-close')">
+  <PawOverlay
+    :model-value="openValue"
+    :close-on-mask="canCloseOnMask"
+    :placement="placement"
+    :z-index="zIndex"
+    :mask-color="overlayMaskColor"
+    :exit-duration="160"
+    @update:model-value="setValue"
+    @update:visible="setValue"
+    @after-open="$emit('after-open')"
+    @after-close="$emit('after-close')"
+  >
     <template #default="{ opened, closing }">
-      <view class="paw-dialog__wrap" :class="'paw-dialog__wrap--' + variant">
-        <view class="paw-dialog"
-          :class="[`paw-dialog--${variant}`, { 'paw-dialog--open': opened, 'paw-dialog--closing': closing }]" @tap.stop>
-          <text v-if="title" class="paw-dialog__title">{{ title }}</text>
-          <text v-if="message || body" class="paw-dialog__message">{{ message || body }}</text>
-          <view v-if="$slots.default" class="paw-dialog__slot">
+      <view
+        class="paw-dialog__wrap"
+        :class="'paw-dialog__wrap--' + variant"
+      >
+        <view
+          class="paw-dialog"
+          :class="[
+            `paw-dialog--${variant}`,
+            { 'paw-dialog--open': opened, 'paw-dialog--closing': closing },
+          ]"
+          @tap.stop
+        >
+          <text
+            v-if="title"
+            class="paw-dialog__title"
+            >{{ title }}</text
+          >
+          <text
+            v-if="message || body"
+            class="paw-dialog__message"
+            >{{ message || body }}</text
+          >
+          <view
+            v-if="$slots.default"
+            class="paw-dialog__slot"
+          >
             <slot />
           </view>
-          <view v-if="showActions" class="paw-dialog__actions">
-            <view v-if="showCancel" class="paw-dialog__action paw-dialog__action--cancel" data-qa="paw-dialog-cancel"
-              @tap.stop="onCancel"><text>{{
-                cancelText }}</text></view>
-            <view class="paw-dialog__action paw-dialog__action--confirm"
-              :class="{ 'paw-dialog__action--danger': variant === 'destructive', 'paw-dialog__action--disabled': !confirmEnabled }"
-              data-qa="paw-dialog-confirm" @tap.stop="onConfirm">
-              <view v-if="confirmLoading" class="paw-dialog__spinner"></view><text>{{ confirmText }}</text>
+          <view
+            v-if="showActions"
+            class="paw-dialog__actions"
+          >
+            <view
+              v-if="showCancel"
+              class="paw-dialog__action paw-dialog__action--cancel"
+              data-qa="paw-dialog-cancel"
+              @tap.stop="onCancel"
+              ><text>{{ cancelText }}</text></view
+            >
+            <view
+              class="paw-dialog__action paw-dialog__action--confirm"
+              :class="{
+                'paw-dialog__action--danger': variant === 'destructive',
+                'paw-dialog__action--disabled': !confirmEnabled,
+              }"
+              data-qa="paw-dialog-confirm"
+              @tap.stop="onConfirm"
+            >
+              <view
+                v-if="confirmLoading"
+                class="paw-dialog__spinner"
+              ></view
+              ><text>{{ confirmText }}</text>
             </view>
           </view>
         </view>
@@ -61,35 +107,47 @@ export default defineComponent({
     placement: {
       type: String as PropType<DialogPlacement>,
       default: 'center',
-      validator: isDialogPlacement
+      validator: isDialogPlacement,
     },
-    zIndex: { type: [String, Number], default: 10000 }
+    zIndex: { type: [String, Number], default: 10000 },
   },
   emits: {
     'update:modelValue': eventContract<[value: boolean]>(),
     'update:visible': eventContract<[value: boolean]>(),
-    'confirm': eventContract<[]>(),
-    'cancel': eventContract<[]>(),
+    confirm: eventContract<[]>(),
+    cancel: eventContract<[]>(),
     'after-open': eventContract<[]>(),
     'after-close': eventContract<[]>(),
   },
   computed: {
-    openValue() { return this.modelValue !== undefined ? this.modelValue : !!this.visible },
-    canCloseOnMask() { return this.variant !== 'destructive' && this.closeOnMask },
+    openValue() {
+      return this.modelValue !== undefined ? this.modelValue : !!this.visible
+    },
+    canCloseOnMask() {
+      return this.variant !== 'destructive' && this.closeOnMask
+    },
     overlayMaskColor() {
       return this.maskColor || (this.variant === 'destructive' ? 'rgba(0, 0, 0, .15)' : '')
     },
-    showActions() { return this.showCancel || !!this.confirmText }
+    showActions() {
+      return this.showCancel || !!this.confirmText
+    },
   },
   methods: {
-    setValue(value: boolean) { this.$emit('update:modelValue', value); this.$emit('update:visible', value) },
-    onCancel() { this.$emit('cancel'); this.setValue(false) },
+    setValue(value: boolean) {
+      this.$emit('update:modelValue', value)
+      this.$emit('update:visible', value)
+    },
+    onCancel() {
+      this.$emit('cancel')
+      this.setValue(false)
+    },
     onConfirm() {
       if (this.confirmLoading || !this.confirmEnabled) return
       this.$emit('confirm')
       if (this.autoClose) this.setValue(false)
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -117,8 +175,10 @@ export default defineComponent({
   border-radius: 10px;
   background: #fff;
   opacity: 0;
-  transform: scale(.96);
-  transition: opacity 180ms var(--paw-ease-enter, ease), transform 180ms var(--paw-ease-enter, ease);
+  transform: scale(0.96);
+  transition:
+    opacity 180ms var(--paw-ease-enter, ease),
+    transform 180ms var(--paw-ease-enter, ease);
   pointer-events: auto;
 }
 
@@ -129,7 +189,7 @@ export default defineComponent({
 
 .paw-dialog--closing {
   opacity: 0;
-  transform: scale(.98);
+  transform: scale(0.98);
   transition-duration: 160ms;
 }
 
@@ -179,7 +239,7 @@ export default defineComponent({
   font-weight: 500;
 }
 
-.paw-dialog__action+.paw-dialog__action {
+.paw-dialog__action + .paw-dialog__action {
   border-left: 1px solid #ececec;
 }
 
@@ -239,8 +299,8 @@ export default defineComponent({
   font-weight: 500;
 }
 
-.paw-dialog--adoption-confirm .paw-dialog__action+.paw-dialog__action,
-.paw-dialog--adoption-reject .paw-dialog__action+.paw-dialog__action {
+.paw-dialog--adoption-confirm .paw-dialog__action + .paw-dialog__action,
+.paw-dialog--adoption-reject .paw-dialog__action + .paw-dialog__action {
   border-left: 0;
 }
 
@@ -306,7 +366,7 @@ export default defineComponent({
   font-weight: 400;
 }
 
-.paw-dialog--jury-vote-result .paw-dialog__action+.paw-dialog__action {
+.paw-dialog--jury-vote-result .paw-dialog__action + .paw-dialog__action {
   border-left: 0;
 }
 
@@ -361,8 +421,8 @@ export default defineComponent({
   font-weight: 500;
 }
 
-.paw-dialog--breed-supplement .paw-dialog__action+.paw-dialog__action,
-.paw-dialog--breed-supplement-result .paw-dialog__action+.paw-dialog__action {
+.paw-dialog--breed-supplement .paw-dialog__action + .paw-dialog__action,
+.paw-dialog--breed-supplement-result .paw-dialog__action + .paw-dialog__action {
   border-left: 0.5px solid #f5f5f5;
 }
 
@@ -423,14 +483,14 @@ export default defineComponent({
   height: 38px;
   border: 0;
   border-radius: 20px;
-  background: rgba(233, 233, 233, .5);
+  background: rgba(233, 233, 233, 0.5);
   color: #333;
   font-size: 16px;
   font-weight: 700;
   line-height: 22px;
 }
 
-.paw-dialog--destructive .paw-dialog__action+.paw-dialog__action {
+.paw-dialog--destructive .paw-dialog__action + .paw-dialog__action {
   border-left: 0;
 }
 
@@ -448,10 +508,10 @@ export default defineComponent({
   width: 14px;
   height: 14px;
   margin-right: 6px;
-  border: 2px solid rgba(51, 51, 51, .2);
+  border: 2px solid rgba(51, 51, 51, 0.2);
   border-top-color: currentColor;
   border-radius: 50%;
-  animation: paw-dialog-spin .8s linear infinite;
+  animation: paw-dialog-spin 0.8s linear infinite;
 }
 
 @keyframes paw-dialog-spin {

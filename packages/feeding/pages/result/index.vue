@@ -1,5 +1,11 @@
 <template>
-  <PawFlowResult title="反馈发布成功" :body="body" button-text="查看动态" @back="goBack" @action="viewFeed" />
+  <PawFlowResult
+    title="反馈发布成功"
+    :body="body"
+    button-text="查看动态"
+    @back="goBack"
+    @action="viewFeed"
+  />
 </template>
 
 <script lang="ts">
@@ -10,13 +16,15 @@ import PawFlowResult from '@/components/PawFlowResult.vue'
 import {
   createFeedingPublishResultPageState,
   readFeedingRouteText,
-  type FeedingPublishResultPageState
+  type FeedingPublishResultPageState,
 } from '../../services/orderListMetadata.ts'
 
 export default defineComponent({
   name: 'FeedingPublishResultPage',
   components: { PawFlowResult },
-  data(): FeedingPublishResultPageState { return createFeedingPublishResultPageState() },
+  data(): FeedingPublishResultPageState {
+    return createFeedingPublishResultPageState()
+  },
   onLoad(options: unknown = {}) {
     this.dynamicId = readFeedingRouteText(options, 'dynamicId').trim()
     this.body = '动态已发布，感谢你为小院留下真实反馈。'
@@ -31,9 +39,9 @@ export default defineComponent({
         return
       }
       uni.navigateTo({
-        url: `/packages/dynamic/pages/deep-link/index?dynamicId=${encodeURIComponent(this.dynamicId)}`
+        url: `/packages/dynamic/pages/deep-link/index?dynamicId=${encodeURIComponent(this.dynamicId)}`,
       })
-    }
-  }
+    },
+  },
 })
 </script>

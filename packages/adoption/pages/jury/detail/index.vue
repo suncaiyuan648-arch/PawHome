@@ -1,9 +1,20 @@
 <template>
-  <view class="jury-detail-page jury-detail-page--adoption"
-    data-qa="qa-jury-detail">
-    <view class="jury-detail-hero" :class="{ 'jury-detail-hero--voted': voted }">
-      <PawPageNav :title="juryTitle" :background="juryBackground" :light="true" :title-centered="true"
-        :auto-back="false" @back="goBack" />
+  <view
+    class="jury-detail-page jury-detail-page--adoption"
+    data-qa="qa-jury-detail"
+  >
+    <view
+      class="jury-detail-hero"
+      :class="{ 'jury-detail-hero--voted': voted }"
+    >
+      <PawPageNav
+        :title="juryTitle"
+        :background="juryBackground"
+        :light="true"
+        :title-centered="true"
+        :auto-back="false"
+        @back="goBack"
+      />
       <view class="jury-detail-hero__copy">
         <text class="jury-detail-hero__title">{{ voted ? '感谢您的认真审查' : heroTitle }}</text>
         <text class="jury-detail-hero__subtitle">
@@ -12,11 +23,28 @@
       </view>
     </view>
 
-    <scroll-view class="jury-detail-scroll" scroll-y :show-scrollbar="false" data-qa="qa-jury-detail-scroll">
-      <view v-if="item" class="jury-detail-content">
-        <view v-if="voted" class="jury-detail-card jury-vote-summary" data-qa="qa-jury-detail-vote-summary">
-          <PawVoteRatioBar :real-percent="voteStats.realPercent" :fake-percent="voteStats.fakePercent"
-            :real-label="`${voteStats.realPercent}%`" :fake-label="`${voteStats.fakePercent}%`" :height="30" />
+    <scroll-view
+      class="jury-detail-scroll"
+      scroll-y
+      :show-scrollbar="false"
+      data-qa="qa-jury-detail-scroll"
+    >
+      <view
+        v-if="item"
+        class="jury-detail-content"
+      >
+        <view
+          v-if="voted"
+          class="jury-detail-card jury-vote-summary"
+          data-qa="qa-jury-detail-vote-summary"
+        >
+          <PawVoteRatioBar
+            :real-percent="voteStats.realPercent"
+            :fake-percent="voteStats.fakePercent"
+            :real-label="`${voteStats.realPercent}%`"
+            :fake-label="`${voteStats.fakePercent}%`"
+            :height="30"
+          />
           <view class="jury-vote-summary__legend">
             <view class="jury-vote-summary__side">
               <text>挺真实{{ selectedVote === 'real' ? '(已选)' : '' }}</text>
@@ -29,13 +57,27 @@
           </view>
         </view>
 
-        <view class="jury-detail-card jury-evidence-card" data-qa="qa-jury-detail-evidence">
+        <view
+          class="jury-detail-card jury-evidence-card"
+          data-qa="qa-jury-detail-evidence"
+        >
           <view class="jury-evidence-card__items">
-            <view v-for="evidence in (item.detailEvidence || item.evidence)" :key="evidence.id"
-              class="jury-evidence-card__item">
-              <PawImage class="jury-evidence-card__image" :src="evidence.src" display-mode="fixed" :width="106"
-                :height="106" :radius="3" :preview-urls="detailEvidenceUrls" :preview-index="evidenceIndex(evidence)"
-                data-qa="qa-jury-detail-evidence-image" />
+            <view
+              v-for="evidence in item.detailEvidence || item.evidence"
+              :key="evidence.id"
+              class="jury-evidence-card__item"
+            >
+              <PawImage
+                class="jury-evidence-card__image"
+                :src="evidence.src"
+                display-mode="fixed"
+                :width="106"
+                :height="106"
+                :radius="3"
+                :preview-urls="detailEvidenceUrls"
+                :preview-index="evidenceIndex(evidence)"
+                data-qa="qa-jury-detail-evidence-image"
+              />
               <text class="jury-evidence-card__date">{{ evidence.date }}</text>
               <text class="jury-evidence-card__label">{{ evidence.label }}</text>
             </view>
@@ -43,50 +85,121 @@
           <text class="jury-detail-card__body">{{ item.applyText }}</text>
         </view>
 
-        <view class="jury-detail-card jury-application-card" data-qa="qa-jury-detail-application">
-          <view class="jury-application-card__identity" data-qa="qa-jury-applicant" @tap.stop="openApplicant">
-            <PawAvatar :src="item.applicantAvatar" :size="34" :clickable="true" @click="openApplicant" />
+        <view
+          class="jury-detail-card jury-application-card"
+          data-qa="qa-jury-detail-application"
+        >
+          <view
+            class="jury-application-card__identity"
+            data-qa="qa-jury-applicant"
+            @tap.stop="openApplicant"
+          >
+            <PawAvatar
+              :src="item.applicantAvatar"
+              :size="34"
+              :clickable="true"
+              @click="openApplicant"
+            />
             <text class="jury-application-card__name">{{ item.applicantName }}</text>
             <view class="jury-application-card__tag"><text>申请人</text></view>
           </view>
           <text class="jury-detail-card__body">{{ item.application.text }}</text>
-          <view v-if="item.application.media.length" class="jury-application-card__media">
-            <PawImage v-for="(media, index) in item.application.media" :key="media.id"
-              class="jury-application-card__media-image" :src="media.src" display-mode="fixed" :width="106"
-              :height="106" :radius="3" :preview-urls="applicationMediaUrls" :preview-index="Number(index)"
-              data-qa="qa-jury-application-media-image" />
+          <view
+            v-if="item.application.media.length"
+            class="jury-application-card__media"
+          >
+            <PawImage
+              v-for="(media, index) in item.application.media"
+              :key="media.id"
+              class="jury-application-card__media-image"
+              :src="media.src"
+              display-mode="fixed"
+              :width="106"
+              :height="106"
+              :radius="3"
+              :preview-urls="applicationMediaUrls"
+              :preview-index="Number(index)"
+              data-qa="qa-jury-application-media-image"
+            />
           </view>
         </view>
 
-        <view class="jury-detail-card jury-pets-card" data-qa="qa-jury-detail-pets">
+        <view
+          class="jury-detail-card jury-pets-card"
+          data-qa="qa-jury-detail-pets"
+        >
           <text class="jury-pets-card__title">{{ petSectionTitle }}（{{ item.pets.length }}）</text>
           <view class="jury-pets-card__list">
-            <view v-for="pet in item.pets" :key="pet.id" class="jury-pets-card__pet" :data-qa="`qa-jury-pet-${pet.id}`"
-              @tap.stop="openPet(pet)">
-              <PawAvatar :src="pet.avatar" :size="48" :clickable="true" @click="openPet(pet)" />
+            <view
+              v-for="pet in item.pets"
+              :key="pet.id"
+              class="jury-pets-card__pet"
+              :data-qa="`qa-jury-pet-${pet.id}`"
+              @tap.stop="openPet(pet)"
+            >
+              <PawAvatar
+                :src="pet.avatar"
+                :size="48"
+                :clickable="true"
+                @click="openPet(pet)"
+              />
               <text>{{ pet.name }}</text>
             </view>
           </view>
-          <view class="jury-pets-card__owner" data-qa="qa-jury-yard" @tap.stop="openOwner">
-            <PawAvatar :src="item.yard.avatar || item.ownerAvatar" :size="34" :clickable="true" @click="openOwner" />
+          <view
+            class="jury-pets-card__owner"
+            data-qa="qa-jury-yard"
+            @tap.stop="openOwner"
+          >
+            <PawAvatar
+              :src="item.yard.avatar || item.ownerAvatar"
+              :size="34"
+              :clickable="true"
+              @click="openOwner"
+            />
             <text>{{ item.ownerName }}</text>
             <view class="jury-pets-card__owner-tag"><text>小院</text></view>
           </view>
         </view>
         <view class="jury-detail-scroll__space"></view>
       </view>
-      <view v-else class="jury-detail-empty" data-qa="qa-jury-detail-empty">
+      <view
+        v-else
+        class="jury-detail-empty"
+        data-qa="qa-jury-detail-empty"
+      >
         <text>暂时找不到这条评审内容</text>
       </view>
     </scroll-view>
 
-    <PawJuryActionBar :voted="voted" :next-label="nextLabel" @share="shareItem" @vote="vote" @next="goNext" />
-    <PawNoticeModal v-model:visible="showVoteLimitModal" :message="voteLimitMessage" @confirm="closeVoteLimit" />
-    <PawJuryVoteDialog v-model="showVoteResult" :selected-vote="selectedVote || 'real'"
-      :real-percent="voteStats.realPercent" :fake-percent="voteStats.fakePercent" :real-vote-count="voteStats.realCount"
-      :fake-vote-count="voteStats.fakeCount" @close="onVoteDialogClose" @back="onVoteDialogBack"
-      @next="onVoteDialogNext" />
-    <ShareActionSheet v-model:visible="shareSheetVisible" :share-data="juryShareData" @select="onShareAction" />
+    <PawJuryActionBar
+      :voted="voted"
+      :next-label="nextLabel"
+      @share="shareItem"
+      @vote="vote"
+      @next="goNext"
+    />
+    <PawNoticeModal
+      v-model:visible="showVoteLimitModal"
+      :message="voteLimitMessage"
+      @confirm="closeVoteLimit"
+    />
+    <PawJuryVoteDialog
+      v-model="showVoteResult"
+      :selected-vote="selectedVote || 'real'"
+      :real-percent="voteStats.realPercent"
+      :fake-percent="voteStats.fakePercent"
+      :real-vote-count="voteStats.realCount"
+      :fake-vote-count="voteStats.fakeCount"
+      @close="onVoteDialogClose"
+      @back="onVoteDialogBack"
+      @next="onVoteDialogNext"
+    />
+    <ShareActionSheet
+      v-model:visible="shareSheetVisible"
+      :share-data="juryShareData"
+      @select="onShareAction"
+    />
   </view>
 </template>
 
@@ -112,7 +225,7 @@ import {
   getJuryItemById,
   getJuryItems,
   getJuryVoteLimitState,
-  writeJuryVote
+  writeJuryVote,
 } from '@/utils/juryStorage.ts'
 import type { JuryEvidence, JuryItem, JuryPet, JuryVote } from '@/utils/juryMock.ts'
 
@@ -183,8 +296,8 @@ function reviewActionFailure(error: unknown): JuryReviewActionFailure {
     success: false,
     error: {
       code: errorField(error, 'code', 'REVIEW_ACTION_FAILED'),
-      message: errorField(error, 'message', '审批单状态未更新')
-    }
+      message: errorField(error, 'message', '审批单状态未更新'),
+    },
   }
 }
 
@@ -194,7 +307,16 @@ function isNonEmptyString(value: unknown): value is string {
 
 export default defineComponent({
   name: 'JuryDetailPage',
-  components: { PawPageNav, PawAvatar, PawImage, PawNoticeModal, PawJuryActionBar, PawJuryVoteDialog, PawVoteRatioBar, ShareActionSheet },
+  components: {
+    PawPageNav,
+    PawAvatar,
+    PawImage,
+    PawNoticeModal,
+    PawJuryActionBar,
+    PawJuryVoteDialog,
+    PawVoteRatioBar,
+    ShareActionSheet,
+  },
   data(): JuryDetailPageState {
     return {
       itemId: '',
@@ -209,19 +331,33 @@ export default defineComponent({
     }
   },
   computed: {
-    juryTitle() { return '领养评审' },
-    juryBackground() { return '#1866fc' },
-    heroTitle() { return 'Ta的领养是真的吗？' },
+    juryTitle() {
+      return '领养评审'
+    },
+    juryBackground() {
+      return '#1866fc'
+    },
+    heroTitle() {
+      return 'Ta的领养是真的吗？'
+    },
     heroSubtitle() {
       return '请您审查该申请人是否为虚假领养及虐猫群体的恶意领养'
     },
     votedSubtitle() {
       return '您的宝贵意见是逢猫审查虚假领养的重要参考'
     },
-    petSectionTitle() { return '申请领养的猫咪' },
+    petSectionTitle() {
+      return '申请领养的猫咪'
+    },
     voted() {
       const item = this.item
-      return Boolean(item && (item.hasVoted || item.vote || item.status === JURY_ITEM_STATUS.voted || item.status === JURY_ITEM_STATUS.closed))
+      return Boolean(
+        item &&
+        (item.hasVoted ||
+          item.vote ||
+          item.status === JURY_ITEM_STATUS.voted ||
+          item.status === JURY_ITEM_STATUS.closed),
+      )
     },
     voteStats(): JuryDetailVoteStats {
       const source = this.item && (this.item.voteStats || this.item.voteStatistics)
@@ -230,7 +366,7 @@ export default defineComponent({
           realPercent: 50,
           fakePercent: 50,
           realCount: 32,
-          fakeCount: 32
+          fakeCount: 32,
         }
       }
       const realPercent = Number(source?.realPercent ?? source?.real ?? 0)
@@ -239,7 +375,7 @@ export default defineComponent({
         realPercent: Number.isFinite(realPercent) ? realPercent : 0,
         fakePercent: Number.isFinite(fakePercent) ? fakePercent : 0,
         realCount: source?.realCount ?? 0,
-        fakeCount: source?.fakeCount ?? 0
+        fakeCount: source?.fakeCount ?? 0,
       }
     },
     queueItems() {
@@ -263,7 +399,7 @@ export default defineComponent({
       const title = '逢猫领养评审'
       const query = [
         `reviewItemId=${encodeURIComponent(item?.id || this.itemId)}`,
-        'businessType=adoption'
+        'businessType=adoption',
       ].join('&')
       return {
         type: 'jury-review',
@@ -276,20 +412,24 @@ export default defineComponent({
         petNames: (item?.pets || []).map((pet) => pet.name),
         imageUrl,
         path: `/packages/adoption/pages/jury/detail/index?${query}`,
-        query
+        query,
       }
     },
     nextItem() {
       const currentIndex = this.queueItems.findIndex((entry) => entry.id === this.itemId)
       const startIndex = currentIndex >= 0 ? currentIndex + 1 : 0
-      return this.queueItems.slice(startIndex).find((item) => item.status === JURY_ITEM_STATUS.pending) || null
+      return (
+        this.queueItems
+          .slice(startIndex)
+          .find((item) => item.status === JURY_ITEM_STATUS.pending) || null
+      )
     },
     nextLabel() {
       const nextItem = this.nextItem
       if (!nextItem) return '返回评审团'
       const nextIndex = this.pendingQueueItems.findIndex((entry) => entry.id === nextItem.id)
       return `下一个（${nextIndex + 1}/${this.pendingQueueItems.length}）`
-    }
+    },
   },
   onLoad(options: JuryDetailRouteOptions = {}) {
     this.itemId = String(options.reviewItemId || '')
@@ -312,7 +452,7 @@ export default defineComponent({
     return {
       title: share.title,
       path: share.path,
-      imageUrl: share.imageUrl || undefined
+      imageUrl: share.imageUrl || undefined,
     }
   },
   onShareTimeline() {
@@ -320,7 +460,7 @@ export default defineComponent({
     return {
       title: share.title,
       query: share.query,
-      imageUrl: share.imageUrl || undefined
+      imageUrl: share.imageUrl || undefined,
     }
   },
   methods: {
@@ -328,7 +468,7 @@ export default defineComponent({
       try {
         const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : []
         const previous = pages.length > 1 ? pages[pages.length - 2] : null
-        const route = previous && (previous.route || previous.$page && previous.$page.route)
+        const route = previous && (previous.route || (previous.$page && previous.$page.route))
         return route === 'packages/account/pages/tasks/index'
       } catch {
         return false
@@ -384,7 +524,9 @@ export default defineComponent({
       if (!result.success) {
         // A demo jury card may still record the local vote, but it cannot write
         // an application without a persisted review relation and trusted actor.
-        if (!['NOT_FOUND', 'FORBIDDEN', 'REVIEW_READ_DENIED', 'NO_ACTOR'].includes(result.error.code)) {
+        if (
+          !['NOT_FOUND', 'FORBIDDEN', 'REVIEW_READ_DENIED', 'NO_ACTOR'].includes(result.error.code)
+        ) {
           uni.showToast({ title: result.error.message, icon: 'none' })
         }
         return
@@ -392,21 +534,29 @@ export default defineComponent({
       this.notifyReviewAction(result, item)
     },
     notifyReviewAction(action: JuryReviewActionSuccess, item: JuryItem) {
-      const recipientId = [item.applicantId, item.applicant.id, item.applicant.pawId]
-        .find(isNonEmptyString)
+      const recipientId = [item.applicantId, item.applicant.id, item.applicant.pawId].find(
+        isNonEmptyString,
+      )
       if (!recipientId) return
       produceLocalActionNotification({
         action,
         recipientId,
         businessType: 'adoption',
         businessId: action.applicationId || item.recordId,
-		reviewItemId: action.reviewItemId || (typeof item.reviewItemId === 'string' ? item.reviewItemId : '') || item.id,
+        reviewItemId:
+          action.reviewItemId ||
+          (typeof item.reviewItemId === 'string' ? item.reviewItemId : '') ||
+          item.id,
         category: 'system',
         title: action.toStatus === 'approved' ? '领养评审已通过' : '领养评审未通过',
-        preview: action.toStatus === 'approved' ? '你的领养申请已完成评审。' : '你的领养申请评审未通过，请查看当前进度。',
-        authorize: ({ actor, message }: ReviewNotificationAuthorizationContext) => actor.id === action.actorId
-          && message.businessType === 'adoption'
-          && message.reviewItemId === (action.reviewItemId || item.reviewItemId || item.id),
+        preview:
+          action.toStatus === 'approved'
+            ? '你的领养申请已完成评审。'
+            : '你的领养申请评审未通过，请查看当前进度。',
+        authorize: ({ actor, message }: ReviewNotificationAuthorizationContext) =>
+          actor.id === action.actorId &&
+          message.businessType === 'adoption' &&
+          message.reviewItemId === (action.reviewItemId || item.reviewItemId || item.id),
         actorProvider: this.actorProvider,
       })
     },
@@ -432,26 +582,31 @@ export default defineComponent({
     },
     goNext() {
       if (!this.nextItem) {
-        goBackSmart({ fallbackUrl: this.fromTaskCenter
-          ? '/packages/account/pages/tasks/index'
-          : '/packages/jury/pages/queue/index?tab=finished&businessType=adoption' })
+        goBackSmart({
+          fallbackUrl: this.fromTaskCenter
+            ? '/packages/account/pages/tasks/index'
+            : '/packages/jury/pages/queue/index?tab=finished&businessType=adoption',
+        })
         return
       }
       const id = encodeURIComponent(this.nextItem.id)
-      uni.redirectTo({ url: `/packages/adoption/pages/jury/detail/index?reviewItemId=${id}&businessType=adoption` })
+      uni.redirectTo({
+        url: `/packages/adoption/pages/jury/detail/index?reviewItemId=${id}&businessType=adoption`,
+      })
     },
     shareItem() {
       if (!this.item) return
       this.shareSheetVisible = true
     },
-    onShareAction(key: import('@/components/ShareActionSheet.vue').ShareActionKey, shareData: import('@/components/ShareActionSheet.vue').ShareData) {
-      const path = typeof shareData.path === 'string'
-        ? shareData.path
-        : this.juryShareData.path
+    onShareAction(
+      key: import('@/components/ShareActionSheet.vue').ShareActionKey,
+      shareData: import('@/components/ShareActionSheet.vue').ShareData,
+    ) {
+      const path = typeof shareData.path === 'string' ? shareData.path : this.juryShareData.path
       if (key === 'link') {
         uni.setClipboardData({
           data: path,
-          success: () => uni.showToast({ title: '评审链接已复制', icon: 'none' })
+          success: () => uni.showToast({ title: '评审链接已复制', icon: 'none' }),
         })
         return
       }
@@ -468,32 +623,41 @@ export default defineComponent({
       }
     },
     evidenceIndex(evidence: JuryEvidence) {
-      return (this.item?.detailEvidence || this.item?.evidence || []).findIndex((entry) => entry.id === evidence.id)
+      return (this.item?.detailEvidence || this.item?.evidence || []).findIndex(
+        (entry) => entry.id === evidence.id,
+      )
     },
     openApplicant() {
       if (!this.item || !this.item.applicant) return
       openUserProfile({
         pawId: this.item.applicant.pawId || this.item.applicantId,
         nickname: this.item.applicantName,
-        avatar: this.item.applicantAvatar
+        avatar: this.item.applicantAvatar,
       })
     },
     openOwner() {
       if (!this.item) return
-      openYardDetail({ yardId: this.item.yardId, yardName: this.item.yardName || this.item.ownerName })
-    },
-    openPet(pet: JuryPet) {
-      const petId = String(pet && (pet.yardPetId || pet.sourcePetId || pet.petId || pet.id) || '').trim()
-      if (!petId) return
-      const yardId = encodeURIComponent(this.item && this.item.yardId || '1')
-      const yardName = encodeURIComponent(this.item && this.item.yardName || '')
-      const yardQuery = yardName ? `&yardName=${yardName}` : ''
-      uni.navigateTo({
-        url: `/packages/animal/pages/detail/index?animalId=${encodeURIComponent(petId)}&yardId=${yardId}&state=0${yardQuery}`
+      openYardDetail({
+        yardId: this.item.yardId,
+        yardName: this.item.yardName || this.item.ownerName,
       })
     },
-    normalizeReviewType(value: string) { return value === 'adoption' ? 'adoption' : '' }
-  }
+    openPet(pet: JuryPet) {
+      const petId = String(
+        (pet && (pet.yardPetId || pet.sourcePetId || pet.petId || pet.id)) || '',
+      ).trim()
+      if (!petId) return
+      const yardId = encodeURIComponent((this.item && this.item.yardId) || '1')
+      const yardName = encodeURIComponent((this.item && this.item.yardName) || '')
+      const yardQuery = yardName ? `&yardName=${yardName}` : ''
+      uni.navigateTo({
+        url: `/packages/animal/pages/detail/index?animalId=${encodeURIComponent(petId)}&yardId=${yardId}&state=0${yardQuery}`,
+      })
+    },
+    normalizeReviewType(value: string) {
+      return value === 'adoption' ? 'adoption' : ''
+    },
+  },
 })
 </script>
 
@@ -671,7 +835,7 @@ export default defineComponent({
 .jury-application-card {
   gap: 14px;
   padding: 20px 17px;
-  box-shadow: 0 -1px 4px rgba(0, 0, 0, .05);
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .jury-application-card__identity,
@@ -682,7 +846,7 @@ export default defineComponent({
 }
 
 .jury-application-card__name,
-.jury-pets-card__owner>text {
+.jury-pets-card__owner > text {
   color: #333;
   font-size: 14px;
   font-weight: 500;

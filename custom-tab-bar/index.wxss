@@ -1,99 +1,99 @@
 /* Tab 页面仍由 pages.json 注册；实际底栏与发布抽屉统一由 Vue 共享组件承载。 */
 .custom-tab-bar-root {
-	display: none;
-	position: fixed;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	z-index: 99999;
-	pointer-events: auto;
-	background: #ffffff;
-	box-sizing: border-box;
-	width: 100%;
-	padding-bottom: constant(safe-area-inset-bottom);
-	padding-bottom: env(safe-area-inset-bottom);
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99999;
+  pointer-events: auto;
+  background: #ffffff;
+  box-sizing: border-box;
+  width: 100%;
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .custom-tab-bar-inner {
-	width: 100%;
-	box-sizing: border-box;
-	height: 39px;
-	display: flex;
-	flex-direction: row;
-	justify-content: space-between;
-	align-items: center;
-	padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+  height: 39px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0;
 }
 
 .tab-item {
-	flex: 1;
-	height: 39px;
-	text-align: center;
-	font-family: 'Source Han Sans CN', 'PingFang SC', sans-serif;
-	font-size: 15px;
-	font-weight: 500;
-	line-height: 22px;
-	color: #8c8c8c;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	position: relative;
+  flex: 1;
+  height: 39px;
+  text-align: center;
+  font-family: 'Source Han Sans CN', 'PingFang SC', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 22px;
+  color: #8c8c8c;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
 }
 
 .tab-item.active {
-	color: #333333;
-	font-size: 16px;
-	font-weight: 500;
+  color: #333333;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .tab-label-wrap {
-	position: relative;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	padding: 0 8px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
 }
 
 .msg-dot {
-	position: absolute;
-	left: 100%;
-	top: -4.5px;
-	margin-left: -20px;
-	width: 29px;
-	min-width: 29px;
-	height: 15px;
-	padding: 0 4px;
-	box-sizing: border-box;
-	border-radius: 100px;
-	color: #fff;
-	background: #ff2741;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	font-size: 12px;
-	font-weight: 500;
-	line-height: 1;
+  position: absolute;
+  left: 100%;
+  top: -4.5px;
+  margin-left: -20px;
+  width: 29px;
+  min-width: 29px;
+  height: 15px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 100px;
+  color: #fff;
+  background: #ff2741;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
 }
 
 .tab-fab-slot {
-	flex: 1;
-	display: flex;
-	justify-content: center;
-	align-items: center;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .fab-bg {
-	width: 43px;
-	height: 32px;
-	border-radius: 8px;
-	background: #ffe60d;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	transform: translateY(1.5px);
+  width: 43px;
+  height: 32px;
+  border-radius: 8px;
+  background: #ffe60d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(1.5px);
 }
 
 .fab-img {
-	width: 32px;
-	height: 24px;
+  width: 32px;
+  height: 24px;
 }

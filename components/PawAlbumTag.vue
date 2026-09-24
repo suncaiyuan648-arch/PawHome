@@ -1,8 +1,13 @@
 <template>
-  <view class="paw-album-tag" :class="{ 'paw-album-tag--hidden': tone === 'hidden' }"><text>{{ text }}</text></view>
+  <view
+    class="paw-album-tag"
+    :class="{ 'paw-album-tag--hidden': tone === 'hidden' }"
+    ><text>{{ text }}</text></view
+  >
 </template>
 
-<script lang="ts">import { defineComponent } from 'vue'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'PawAlbumTag',

@@ -29,7 +29,16 @@ const rows = usage.flatMap((item) => {
   const frameId = ownerFrame(item.nodeId)
   if (!frameId) return []
   const asset = assetNames.get(item.hash) || assetNames.get(item.thumbnailHash) || ''
-  return [{ frameId, nodeId: item.nodeId, nodeName: nodeNames.get(item.nodeId) || item.nodeName, imageName: item.imageName, hash: item.hash, asset }]
+  return [
+    {
+      frameId,
+      nodeId: item.nodeId,
+      nodeName: nodeNames.get(item.nodeId) || item.nodeName,
+      imageName: item.imageName,
+      hash: item.hash,
+      asset,
+    },
+  ]
 })
 
 for (const frameId of frameIds) {

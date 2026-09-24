@@ -21,10 +21,16 @@ before(async () => {
     path.join(tempRoot, 'packages/dynamic/services/reader.ts'),
   )
   globalThis.uni = {
-    getStorageSync(key) { return storage.get(key) },
-    setStorageSync() { throw new Error('reader must not write') },
+    getStorageSync(key) {
+      return storage.get(key)
+    },
+    setStorageSync() {
+      throw new Error('reader must not write')
+    },
   }
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/dynamic/services/reader.ts')).href}?test=${Date.now()}`)
+  api = await import(
+    `${pathToFileURL(path.join(tempRoot, 'packages/dynamic/services/reader.ts')).href}?test=${Date.now()}`
+  )
 })
 
 beforeEach(() => storage.clear())
@@ -33,22 +39,29 @@ after(async () => {
   if (tempRoot) await fs.rm(tempRoot, { recursive: true, force: true })
 })
 
-function actor(id) { return { id, roles: ['applicant'] } }
+function actor(id) {
+  return { id, roles: ['applicant'] }
+}
 
 test('dynamic detail reads one persisted record and normalizes every rendered field', () => {
-  storage.set('PAWHOME_DYNAMIC_RECORDS', JSON.stringify([{
-    id: 'dynamic-real-1',
-    authorId: 'actor-a',
-    author: { name: '真实作者', avatar: '/author.png' },
-    yard: { id: 'yard-real', name: '真实小院', avatar: '/yard.png' },
-    body: '来自持久层的正文',
-    media: [{ url: '/media.png' }],
-    comments: [{ id: 'comment-1', copy: '当前评论' }],
-    createdAt: '2026-09-19',
-    location: '江西',
-    likeCount: 7,
-    commentCount: 1,
-  }]))
+  storage.set(
+    'PAWHOME_DYNAMIC_RECORDS',
+    JSON.stringify([
+      {
+        id: 'dynamic-real-1',
+        authorId: 'actor-a',
+        author: { name: '真实作者', avatar: '/author.png' },
+        yard: { id: 'yard-real', name: '真实小院', avatar: '/yard.png' },
+        body: '来自持久层的正文',
+        media: [{ url: '/media.png' }],
+        comments: [{ id: 'comment-1', copy: '当前评论' }],
+        createdAt: '2026-09-19',
+        location: '江西',
+        likeCount: 7,
+        commentCount: 1,
+      },
+    ]),
+  )
   const result = api.readDynamicRecord('dynamic-real-1', { actor: actor('actor-a') })
   assert.equal(result.code, 'OK')
   const model = api.normalizeDynamicRecord(result.record)
@@ -77,25 +90,43 @@ test('dynamic media reader returns only usable string sources from persisted met
 })
 
 test('public records are readable without an actor while private records stay actor scoped', () => {
-  storage.set('PAWHOME_DYNAMIC_RECORDS', JSON.stringify([
-    { id: 'dynamic-public', authorId: 'actor-a', public: true },
-    { id: 'dynamic-private', authorId: 'actor-a', visibility: 'private' },
-  ]))
+  storage.set(
+    'PAWHOME_DYNAMIC_RECORDS',
+    JSON.stringify([
+      { id: 'dynamic-public', authorId: 'actor-a', public: true },
+      { id: 'dynamic-private', authorId: 'actor-a', visibility: 'private' },
+    ]),
+  )
   assert.equal(api.readDynamicRecord('dynamic-public', { requireActor: false }).code, 'OK')
-  assert.equal(api.readDynamicRecord('dynamic-private', { actor: actor('actor-b') }).code, 'FORBIDDEN')
+  assert.equal(
+    api.readDynamicRecord('dynamic-private', { actor: actor('actor-b') }).code,
+    'FORBIDDEN',
+  )
   assert.equal(api.readDynamicRecord('dynamic-private', { actor: actor('actor-a') }).code, 'OK')
 })
 
 test('missing, malformed, and forged IDs fail closed without storage writes', () => {
-  assert.equal(api.readDynamicRecord('dynamic-real-1', { actor: actor('actor-a') }).code, 'READER_MISSING')
+  assert.equal(
+    api.readDynamicRecord('dynamic-real-1', { actor: actor('actor-a') }).code,
+    'READER_MISSING',
+  )
   storage.set('PAWHOME_DYNAMIC_RECORDS', '{broken')
-  assert.equal(api.readDynamicRecord('dynamic-real-1', { actor: actor('actor-a') }).code, 'INVALID_STORAGE')
-  assert.equal(api.readDynamicRecord('dynamic/evil', { actor: actor('actor-a') }).code, 'INVALID_ID')
+  assert.equal(
+    api.readDynamicRecord('dynamic-real-1', { actor: actor('actor-a') }).code,
+    'INVALID_STORAGE',
+  )
+  assert.equal(
+    api.readDynamicRecord('dynamic/evil', { actor: actor('actor-a') }).code,
+    'INVALID_ID',
+  )
 })
 
 test('detail page and deep-link shell share the reader instead of fixture content', async () => {
   const page = await fs.readFile(path.join(ROOT, 'packages/dynamic/pages/detail/index.vue'), 'utf8')
-  const shell = await fs.readFile(path.join(ROOT, 'packages/dynamic/pages/deep-link/index.vue'), 'utf8')
+  const shell = await fs.readFile(
+    path.join(ROOT, 'packages/dynamic/pages/deep-link/index.vue'),
+    'utf8',
+  )
   assert.match(page, /readDynamicRecord/)
   assert.match(page, /normalizeDynamicRecord/)
   assert.match(shell, /readDynamicRecord/)

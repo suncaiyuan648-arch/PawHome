@@ -1,8 +1,16 @@
 <template>
-  <view class="adoption-review-card" :data-qa="qa" @tap="onTap">
+  <view
+    class="adoption-review-card"
+    :data-qa="qa"
+    @tap="onTap"
+  >
     <view class="adoption-review-card__head">
-      <PawAvatar class="adoption-review-card__applicant-avatar" :src="review.applicant.avatar" :size="37"
-        fallback="/static/user.png" />
+      <PawAvatar
+        class="adoption-review-card__applicant-avatar"
+        :src="review.applicant.avatar"
+        :size="37"
+        fallback="/static/user.png"
+      />
       <view class="adoption-review-card__applicant">
         <view class="adoption-review-card__applicant-name-row">
           <text class="adoption-review-card__applicant-name">{{ review.applicant.name }}</text>
@@ -10,25 +18,42 @@
         </view>
         <text class="adoption-review-card__applicant-label">申请人</text>
       </view>
-      <PawStatusPill class="adoption-review-card__status" :text="review.statusText" :tone="review.statusTone"
-        variant="outline" />
+      <PawStatusPill
+        class="adoption-review-card__status"
+        :text="review.statusText"
+        :tone="review.statusTone"
+        variant="outline"
+      />
     </view>
 
     <view class="adoption-review-card__pets-title">申请领养的猫咪（{{ review.pets.length }}）</view>
     <view class="adoption-review-card__pets">
-      <view v-for="(pet, index) in review.pets" :key="pet.id || index" class="adoption-review-card__pet">
-        <PawImage :src="pet.avatar" :size="48" :radius="24" :preview="false" />
+      <view
+        v-for="(pet, index) in review.pets"
+        :key="pet.id || index"
+        class="adoption-review-card__pet"
+      >
+        <PawImage
+          :src="pet.avatar"
+          :size="48"
+          :radius="24"
+          :preview="false"
+        />
         <text class="adoption-review-card__pet-name">{{ pet.name }}</text>
       </view>
     </view>
 
-    <view v-if="review.cloudApproval.required > 1" class="adoption-review-card__approval-note">
+    <view
+      v-if="review.cloudApproval.required > 1"
+      class="adoption-review-card__approval-note"
+    >
       <text>需 {{ review.cloudApproval.required }} 位云家长同意后进入下一步</text>
     </view>
   </view>
 </template>
 
-<script lang="ts">import { defineComponent, type PropType } from 'vue'
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
 
 import PawAvatar from '@/components/identity/PawAvatar.vue'
 import PawImage from '@/components/base/PawImage.vue'
@@ -41,14 +66,16 @@ export default defineComponent({
   components: { PawAvatar, PawImage, PawStatusPill, LevelBadge },
   props: {
     review: { type: Object as PropType<AdoptionReviewQueueCardMetadata>, required: true },
-    qa: { type: String, default: '' }
+    qa: { type: String, default: '' },
   },
   emits: {
     tap: (review: AdoptionReviewQueueCardMetadata) => Boolean(review),
   },
   methods: {
-    onTap() { this.$emit('tap', this.review) }
-  }
+    onTap() {
+      this.$emit('tap', this.review)
+    },
+  },
 })
 </script>
 

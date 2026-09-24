@@ -1,18 +1,49 @@
 <template>
-  <PawBottomSheet v-model="visibleProxy" variant="address-import" :height="sheetHeight" :close-on-mask="true"
-    :safe-area="true" :z-index="10050">
-    <view class="address-import-sheet" :class="`address-import-sheet--${mode}`" data-qa="address-import-sheet">
+  <PawBottomSheet
+    v-model="visibleProxy"
+    variant="address-import"
+    :height="sheetHeight"
+    :close-on-mask="true"
+    :safe-area="true"
+    :z-index="10050"
+  >
+    <view
+      class="address-import-sheet"
+      :class="`address-import-sheet--${mode}`"
+      data-qa="address-import-sheet"
+    >
       <view class="address-import-sheet__header">
-        <text class="address-import-sheet__title">{{ mode === 'service' ? '选择服务地址' : '从微信地址导入' }}</text>
-        <PawIcon class="address-import-sheet__close" name="navigation/close" :size="16" label="关闭" @tap.stop="close" />
+        <text class="address-import-sheet__title">{{
+          mode === 'service' ? '选择服务地址' : '从微信地址导入'
+        }}</text>
+        <PawIcon
+          class="address-import-sheet__close"
+          name="navigation/close"
+          :size="16"
+          label="关闭"
+          @tap.stop="close"
+        />
       </view>
 
-      <scroll-view v-if="mode === 'service'" class="address-import-sheet__list" scroll-y :show-scrollbar="false">
-        <view v-for="(address, index) in normalizedAddresses" :key="address.id || index"
-          class="address-import-sheet__item" :data-qa="`service-address-item-${index}`"
-          @tap.stop="selectServiceAddress(address)">
+      <scroll-view
+        v-if="mode === 'service'"
+        class="address-import-sheet__list"
+        scroll-y
+        :show-scrollbar="false"
+      >
+        <view
+          v-for="(address, index) in normalizedAddresses"
+          :key="address.id || index"
+          class="address-import-sheet__item"
+          :data-qa="`service-address-item-${index}`"
+          @tap.stop="selectServiceAddress(address)"
+        >
           <view class="address-import-sheet__pin">
-            <uni-icons type="location-filled" color="#ff7a33" :size="18" />
+            <uni-icons
+              type="location-filled"
+              color="#ff7a33"
+              :size="18"
+            />
           </view>
           <view class="address-import-sheet__copy">
             <view class="address-import-sheet__identity">
@@ -21,17 +52,33 @@
             </view>
             <text class="address-import-sheet__detail">{{ formatDetail(address) }}</text>
           </view>
-          <PawIcon class="address-import-sheet__arrow" name="navigation/chevron-right" :size="16" flip="horizontal" />
+          <PawIcon
+            class="address-import-sheet__arrow"
+            name="navigation/chevron-right"
+            :size="16"
+            flip="horizontal"
+          />
         </view>
-        <view v-if="!normalizedAddresses.length" class="address-import-sheet__empty">
+        <view
+          v-if="!normalizedAddresses.length"
+          class="address-import-sheet__empty"
+        >
           <text>暂无服务地址，请先添加服务地址</text>
         </view>
       </scroll-view>
 
-      <view v-else class="address-import-sheet__wechat">
-        <text class="address-import-sheet__wechat-copy">将从微信收货地址中读取联系人、手机号和详细地址，确认后自动回填。</text>
-        <view class="address-import-sheet__wechat-button" data-qa="address-wechat-request"
-          @tap.stop="requestWechatAddress">
+      <view
+        v-else
+        class="address-import-sheet__wechat"
+      >
+        <text class="address-import-sheet__wechat-copy"
+          >将从微信收货地址中读取联系人、手机号和详细地址，确认后自动回填。</text
+        >
+        <view
+          class="address-import-sheet__wechat-button"
+          data-qa="address-wechat-request"
+          @tap.stop="requestWechatAddress"
+        >
           <text>从微信地址获取</text>
         </view>
       </view>
@@ -54,24 +101,28 @@ export default defineComponent({
   props: {
     visible: { type: Boolean, default: false },
     mode: { type: String, default: 'service' },
-    addresses: { type: Array as PropType<AddressRecord[]>, default: () => [] }
+    addresses: { type: Array as PropType<AddressRecord[]>, default: () => [] },
   },
   emits: {
     'update:visible': eventContract<[value: boolean]>(),
-    'select': eventContract<[address: AddressRecord]>(),
+    select: eventContract<[address: AddressRecord]>(),
     'request-wechat': eventContract<[]>(),
   },
   computed: {
     visibleProxy: {
-      get() { return this.visible },
-      set(value: boolean) { this.$emit('update:visible', value) }
+      get() {
+        return this.visible
+      },
+      set(value: boolean) {
+        this.$emit('update:visible', value)
+      },
     },
     sheetHeight() {
       return this.mode === 'service' ? '420px' : '260px'
     },
     normalizedAddresses(): AddressRecord[] {
       return Array.isArray(this.addresses) ? this.addresses : []
-    }
+    },
   },
   methods: {
     formatDetail(address: AddressRecord) {
@@ -86,8 +137,8 @@ export default defineComponent({
     },
     requestWechatAddress() {
       this.$emit('request-wechat')
-    }
-  }
+    },
+  },
 })
 </script>
 

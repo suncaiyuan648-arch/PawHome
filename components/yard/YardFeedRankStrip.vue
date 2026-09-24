@@ -1,31 +1,39 @@
 <template>
   <view class="yard-feed-rank-strip">
     <view class="detail-rank__top">
-      <SeamlessScroll class="detail-rank__scroll" :items="seamlessItems.length ? seamlessItems : []"
-        :rank-title="seamlessRankTitle" @user-click="onRankUser" />
+      <SeamlessScroll
+        class="detail-rank__scroll"
+        :items="seamlessItems.length ? seamlessItems : []"
+        :rank-title="seamlessRankTitle"
+        @user-click="onRankUser"
+      />
     </view>
     <view class="detail-rank__bottom">
       <text class="detail-rank__summary">{{ feedSummary }}</text>
-      <view class="detail-rank__leaderboard" @tap.stop="onLeaderboardTap"><text>排行榜</text>
+      <view
+        class="detail-rank__leaderboard"
+        @tap.stop="onLeaderboardTap"
+        ><text>排行榜</text>
         <PawChevron class="detail-rank__chevron" />
       </view>
     </view>
   </view>
 </template>
 
-<script lang="ts">import { defineComponent, type PropType } from 'vue'
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
 
-import SeamlessScroll from "@/components/SeamlessScroll.vue";
-import PawChevron from "@/components/base/PawChevron.vue";
-import { isYardRankItem, type YardRankItem, type YardRankScrollItem } from "@/utils/yardMock.ts";
+import SeamlessScroll from '@/components/SeamlessScroll.vue'
+import PawChevron from '@/components/base/PawChevron.vue'
+import { isYardRankItem, type YardRankItem, type YardRankScrollItem } from '@/utils/yardMock.ts'
 
 export default defineComponent({
-  name: "YardFeedRankStrip",
+  name: 'YardFeedRankStrip',
   components: { SeamlessScroll, PawChevron },
   props: {
     feedSummary: {
       type: String,
-      default: "",
+      default: '',
     },
     /** 传给 SeamlessScroll；空数组时不使用演示数据 */
     seamlessItems: {
@@ -34,22 +42,22 @@ export default defineComponent({
     },
     seamlessRankTitle: {
       type: String,
-      default: "小院投喂第一名",
+      default: '小院投喂第一名',
     },
   },
   emits: {
-    "rank-user": (item: YardRankItem) => isYardRankItem(item),
+    'rank-user': (item: YardRankItem) => isYardRankItem(item),
     leaderboard: () => true,
   },
   methods: {
     onRankUser(item: YardRankScrollItem) {
-      if (isYardRankItem(item)) this.$emit("rank-user", item);
+      if (isYardRankItem(item)) this.$emit('rank-user', item)
     },
     onLeaderboardTap() {
-      this.$emit("leaderboard");
+      this.$emit('leaderboard')
     },
   },
-});
+})
 </script>
 
 <style lang="less" scoped>
@@ -65,7 +73,7 @@ export default defineComponent({
   height: 39px;
   box-sizing: border-box;
   overflow: hidden;
-  border-bottom: .2px solid #ececec;
+  border-bottom: 0.2px solid #ececec;
 }
 
 .detail-rank__scroll :deep(.css-scroll-container) {

@@ -1,41 +1,76 @@
 <template>
-  <view id="qa-publish-sheet" class="publish-sheet-body" data-qa="publish-sheet">
+  <view
+    id="qa-publish-sheet"
+    class="publish-sheet-body"
+    data-qa="publish-sheet"
+  >
     <text class="publish-sheet-title">发布动态</text>
 
-    <view class="publish-action publish-action--primary" @tap="$emit('post')">
+    <view
+      class="publish-action publish-action--primary"
+      @tap="$emit('post')"
+    >
       <view class="publish-action-title-row">
         <text class="publish-action-title">发动态</text>
-        <image class="publish-action-arrow" src="/static/figma/publish/chevron-right-dark.svg" mode="aspectFit" />
+        <image
+          class="publish-action-arrow"
+          src="/static/figma/publish/chevron-right-dark.svg"
+          mode="aspectFit"
+        />
       </view>
       <text class="publish-action-desc">院主院主，快来更新小院的动态吧</text>
     </view>
 
     <view class="publish-option-row">
-      <view class="publish-option-column" @tap="$emit('create-yard')">
+      <view
+        class="publish-option-column"
+        @tap="$emit('create-yard')"
+      >
         <text class="publish-option-label">创建小院</text>
         <view class="publish-option publish-option--cat">
           <view class="publish-option-title-row">
             <text>流浪动物小院</text>
-            <image class="publish-option-arrow" src="/static/figma/publish/chevron-right-dark.svg" mode="aspectFit" />
+            <image
+              class="publish-option-arrow"
+              src="/static/figma/publish/chevron-right-dark.svg"
+              mode="aspectFit"
+            />
           </view>
           <text>为小毛娃攒粮</text>
         </view>
       </view>
 
-      <view class="publish-option-column" data-qa="qa-publish-create-help" @tap="$emit('create-help')">
+      <view
+        class="publish-option-column"
+        data-qa="qa-publish-create-help"
+        @tap="$emit('create-help')"
+      >
         <text class="publish-option-label">发起求助</text>
         <view class="publish-option publish-option--help">
           <view class="publish-option-title-row">
             <text>流浪动物救助</text>
-            <image class="publish-option-arrow" src="/static/figma/publish/chevron-right-light.svg" mode="aspectFit" />
+            <image
+              class="publish-option-arrow"
+              src="/static/figma/publish/chevron-right-light.svg"
+              mode="aspectFit"
+            />
           </view>
           <text>为小毛娃救治绝育</text>
         </view>
       </view>
     </view>
 
-    <view id="qa-publish-sheet-close" class="publish-sheet-close" data-qa="publish-sheet-close" @tap="$emit('close')">
-      <PawIcon name="navigation/close" :size="12" label="关闭发布菜单" />
+    <view
+      id="qa-publish-sheet-close"
+      class="publish-sheet-close"
+      data-qa="publish-sheet-close"
+      @tap="$emit('close')"
+    >
+      <PawIcon
+        name="navigation/close"
+        :size="12"
+        label="关闭发布菜单"
+      />
     </view>
   </view>
 </template>
@@ -50,11 +85,11 @@ export default defineComponent({
   name: 'PawPublishSheetContent',
   components: { PawIcon },
   emits: {
-    'post': eventContract<[]>(),
+    post: eventContract<[]>(),
     'create-yard': eventContract<[]>(),
     'create-help': eventContract<[]>(),
-    'close': eventContract<[]>(),
-  }
+    close: eventContract<[]>(),
+  },
 })
 </script>
 
@@ -177,7 +212,7 @@ export default defineComponent({
   white-space: nowrap;
 }
 
-.publish-option>text:last-child {
+.publish-option > text:last-child {
   display: block;
   margin-top: 2px;
   color: #333;
@@ -187,7 +222,7 @@ export default defineComponent({
 }
 
 .publish-option--help .publish-option-title-row text,
-.publish-option--help>text:last-child {
+.publish-option--help > text:last-child {
   color: #fff;
 }
 

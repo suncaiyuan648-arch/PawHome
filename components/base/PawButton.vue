@@ -1,12 +1,30 @@
 <template>
-  <button class="paw-button" :class="[
-    `paw-button--${tone}`,
-    `paw-button--${size}`,
-    `paw-button--${shape}`,
-    { 'paw-button--block': block, 'paw-button--flush': flush, 'paw-button--nowrap': nowrap, 'paw-button--disabled': disabled, 'paw-button--loading': loading }
-  ]" :disabled="disabled || loading" :loading="loading" :form-type="formType" hover-class="paw-button--pressed"
-    :data-qa="qa || null" @click="onClick">
-    <view v-if="loading" class="paw-button__spinner" aria-hidden="true"></view>
+  <button
+    class="paw-button"
+    :class="[
+      `paw-button--${tone}`,
+      `paw-button--${size}`,
+      `paw-button--${shape}`,
+      {
+        'paw-button--block': block,
+        'paw-button--flush': flush,
+        'paw-button--nowrap': nowrap,
+        'paw-button--disabled': disabled,
+        'paw-button--loading': loading,
+      },
+    ]"
+    :disabled="disabled || loading"
+    :loading="loading"
+    :form-type="formType"
+    hover-class="paw-button--pressed"
+    :data-qa="qa || null"
+    @click="onClick"
+  >
+    <view
+      v-if="loading"
+      class="paw-button__spinner"
+      aria-hidden="true"
+    ></view>
     <slot>{{ text }}</slot>
   </button>
 </template>
@@ -29,17 +47,17 @@ export default defineComponent({
     loading: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
     formType: { type: String, default: '' },
-    qa: { type: String, default: '' }
+    qa: { type: String, default: '' },
   },
   emits: {
-    'click': eventContract<[event: PawEvent]>(),
+    click: eventContract<[event: PawEvent]>(),
   },
   methods: {
     onClick(event: PawEvent) {
       if (this.disabled || this.loading) return
       this.$emit('click', event)
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -54,11 +72,20 @@ export default defineComponent({
   box-sizing: border-box;
   border: 0;
   color: #333;
-  font-family: var(--paw-font-family, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif);
+  font-family: var(
+    --paw-font-family,
+    -apple-system,
+    BlinkMacSystemFont,
+    'PingFang SC',
+    'Microsoft YaHei',
+    sans-serif
+  );
   font-size: 15px;
   font-weight: 500;
   line-height: 1;
-  transition: transform var(--paw-motion-micro, 120ms) var(--paw-ease-standard, ease), opacity var(--paw-motion-instant, 80ms) ease;
+  transition:
+    transform var(--paw-motion-micro, 120ms) var(--paw-ease-standard, ease),
+    opacity var(--paw-motion-instant, 80ms) ease;
 }
 
 .paw-button::after {
@@ -172,8 +199,8 @@ export default defineComponent({
 
 .paw-button--brand.paw-button--disabled,
 .paw-button--brand-soft.paw-button--disabled {
-  background: var(--paw-color-brand-disabled, rgba(255, 244, 99, .5));
-  color: rgba(51, 51, 51, .5);
+  background: var(--paw-color-brand-disabled, rgba(255, 244, 99, 0.5));
+  color: rgba(51, 51, 51, 0.5);
 }
 
 .paw-button--secondary.paw-button--disabled,
@@ -184,18 +211,18 @@ export default defineComponent({
 }
 
 .paw-button--pressed {
-  transform: scale(.98);
-  opacity: .92;
+  transform: scale(0.98);
+  opacity: 0.92;
 }
 
 .paw-button__spinner {
   width: 16px;
   height: 16px;
   margin-right: 7px;
-  border: 2px solid rgba(51, 51, 51, .22);
+  border: 2px solid rgba(51, 51, 51, 0.22);
   border-top-color: currentColor;
   border-radius: 50%;
-  animation: paw-button-spin .8s linear infinite;
+  animation: paw-button-spin 0.8s linear infinite;
 }
 
 @keyframes paw-button-spin {

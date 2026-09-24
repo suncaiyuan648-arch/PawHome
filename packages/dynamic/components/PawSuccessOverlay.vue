@@ -1,19 +1,49 @@
 <template>
   <view>
-    <PawResultSheet v-if="mode === 'feeding'" v-model="visibleProxy" title="投喂成功" :description="body"
-      action-text="查看投喂订单" @action="$emit('action')" />
-    <PawBottomSheet v-else v-model="visibleProxy" variant="result" :safe-area="true" :close-on-mask="true">
+    <PawResultSheet
+      v-if="mode === 'feeding'"
+      v-model="visibleProxy"
+      title="投喂成功"
+      :description="body"
+      action-text="查看投喂订单"
+      @action="$emit('action')"
+    />
+    <PawBottomSheet
+      v-else
+      v-model="visibleProxy"
+      variant="result"
+      :safe-area="true"
+      :close-on-mask="true"
+    >
       <view class="legacy-success">
-        <PawIconButton class="legacy-success__close" icon="navigation/close" :icon-size="18" label="关闭"
-          @click="close" />
-        <view class="legacy-success__icon"><uni-icons type="checkmarkempty" color="#222" :size="34" /></view>
+        <PawIconButton
+          class="legacy-success__close"
+          icon="navigation/close"
+          :icon-size="18"
+          label="关闭"
+          @click="close"
+        />
+        <view class="legacy-success__icon"
+          ><uni-icons
+            type="checkmarkempty"
+            color="#222"
+            :size="34"
+        /></view>
         <text class="legacy-success__title">{{ title }}</text>
         <text class="legacy-success__body">{{ body }}</text>
-        <view v-if="mode === 'created'" class="legacy-success__benefits">
+        <view
+          v-if="mode === 'created'"
+          class="legacy-success__benefits"
+        >
           <view><text>进行组织基地认证</text><text>通过认证后将获得</text></view>
           <view><text>获得更多曝光</text><text>标识</text></view>
         </view>
-        <PawButton class="legacy-success__action" :text="buttonText" size="md" @click="$emit('action')" />
+        <PawButton
+          class="legacy-success__action"
+          :text="buttonText"
+          size="md"
+          @click="$emit('action')"
+        />
       </view>
     </PawBottomSheet>
   </view>
@@ -38,19 +68,27 @@ export default defineComponent({
     mode: { type: String, default: 'default' },
     title: { type: String, default: '' },
     body: { type: String, default: '' },
-    buttonText: { type: String, default: '' }
+    buttonText: { type: String, default: '' },
   },
   emits: {
-    'close': eventContract<[]>(),
-    'action': eventContract<[]>(),
+    close: eventContract<[]>(),
+    action: eventContract<[]>(),
   },
   computed: {
     visibleProxy: {
-      get() { return this.visible },
-      set(value: boolean) { if (!value) this.$emit('close') }
-    }
+      get() {
+        return this.visible
+      },
+      set(value: boolean) {
+        if (!value) this.$emit('close')
+      },
+    },
   },
-  methods: { close() { this.$emit('close') } }
+  methods: {
+    close() {
+      this.$emit('close')
+    },
+  },
 })
 </script>
 

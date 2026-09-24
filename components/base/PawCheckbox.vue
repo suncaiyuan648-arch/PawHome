@@ -1,14 +1,28 @@
 <template>
-  <view class="paw-checkbox" :class="[
-    `paw-checkbox--${size}`,
-    {
-      'paw-checkbox--checked': modelValue,
-      'paw-checkbox--disabled': disabled,
-      'paw-checkbox--inline': inline
-    }
-  ]" role="checkbox" :aria-checked="modelValue" @tap.stop="toggle">
-    <view class="paw-checkbox__control" :class="{ 'paw-checkbox__control--checked': modelValue }" :style="visualStyle">
-      <PawIcon v-if="modelValue" name="actions/selection-check" :size="checkSize" />
+  <view
+    class="paw-checkbox"
+    :class="[
+      `paw-checkbox--${size}`,
+      {
+        'paw-checkbox--checked': modelValue,
+        'paw-checkbox--disabled': disabled,
+        'paw-checkbox--inline': inline,
+      },
+    ]"
+    role="checkbox"
+    :aria-checked="modelValue"
+    @tap.stop="toggle"
+  >
+    <view
+      class="paw-checkbox__control"
+      :class="{ 'paw-checkbox__control--checked': modelValue }"
+      :style="visualStyle"
+    >
+      <PawIcon
+        v-if="modelValue"
+        name="actions/selection-check"
+        :size="checkSize"
+      />
     </view>
   </view>
 </template>
@@ -26,7 +40,11 @@ import PawIcon from '@/components/PawIcon/PawIcon.vue'
 type CheckboxSize = 'small' | 'middle' | 'large'
 
 const SIZE_MAP: Record<CheckboxSize, number> = Object.freeze({ small: 12, middle: 16, large: 22 })
-const CHECK_SIZE_MAP: Record<CheckboxSize, number> = Object.freeze({ small: 6, middle: 9, large: 12 })
+const CHECK_SIZE_MAP: Record<CheckboxSize, number> = Object.freeze({
+  small: 6,
+  middle: 9,
+  large: 12,
+})
 
 function isCheckboxSize(value: unknown): value is CheckboxSize {
   return typeof value === 'string' && Object.prototype.hasOwnProperty.call(SIZE_MAP, value)
@@ -41,13 +59,13 @@ export default defineComponent({
     size: {
       type: String,
       default: 'middle',
-      validator: isCheckboxSize
+      validator: isCheckboxSize,
     },
-    inline: { type: Boolean, default: false }
+    inline: { type: Boolean, default: false },
   },
   emits: {
     'update:modelValue': eventContract<[value: boolean]>(),
-    'change': eventContract<[value: boolean]>(),
+    change: eventContract<[value: boolean]>(),
   },
   computed: {
     visualStyle() {
@@ -58,7 +76,7 @@ export default defineComponent({
     checkSize() {
       const size = isCheckboxSize(this.size) ? this.size : 'middle'
       return CHECK_SIZE_MAP[size]
-    }
+    },
   },
   methods: {
     toggle() {
@@ -66,8 +84,8 @@ export default defineComponent({
       const value = !this.modelValue
       this.$emit('update:modelValue', value)
       this.$emit('change', value)
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -99,7 +117,7 @@ export default defineComponent({
 }
 
 .paw-checkbox--disabled {
-  opacity: .5;
+  opacity: 0.5;
 }
 
 .paw-checkbox--inline {

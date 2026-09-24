@@ -1,13 +1,25 @@
 <template>
-  <view class="paw-address-card" :class="'paw-address-card--' + mode" @tap.stop="onCardTap">
+  <view
+    class="paw-address-card"
+    :class="'paw-address-card--' + mode"
+    @tap.stop="onCardTap"
+  >
     <view class="paw-address-card__main">
-      <image class="paw-address-card__map" src="/static/figma/address/location.svg" mode="aspectFit" />
+      <image
+        class="paw-address-card__map"
+        src="/static/figma/address/location.svg"
+        mode="aspectFit"
+      />
 
       <view class="paw-address-card__body">
         <view class="paw-address-card__top">
           <text class="paw-address-card__name">{{ address.name }}</text>
           <text class="paw-address-card__phone">{{ address.phone }}</text>
-          <view class="paw-address-card__default-slot" :class="{ 'is-hidden': !address.isDefault }" aria-hidden="true">
+          <view
+            class="paw-address-card__default-slot"
+            :class="{ 'is-hidden': !address.isDefault }"
+            aria-hidden="true"
+          >
             <text>默认</text>
           </view>
         </view>
@@ -15,21 +27,47 @@
       </view>
 
       <!-- Keep this column in every state so display/manage transitions do not reflow the address text. -->
-      <view class="paw-address-card__edit" :data-qa="'address-edit-' + (address.id || '')" @tap.stop="onEdit">
-        <uni-icons v-if="mode !== 'manage'" type="compose" color="#999999" :size="20" />
+      <view
+        class="paw-address-card__edit"
+        :data-qa="'address-edit-' + (address.id || '')"
+        @tap.stop="onEdit"
+      >
+        <uni-icons
+          v-if="mode !== 'manage'"
+          type="compose"
+          color="#999999"
+          :size="20"
+        />
       </view>
     </view>
 
-    <view v-if="mode === 'manage'" class="paw-address-card__manage">
+    <view
+      v-if="mode === 'manage'"
+      class="paw-address-card__manage"
+    >
       <view class="paw-address-card__divider"></view>
       <view class="paw-address-card__manage-main">
-        <view class="paw-address-card__default-switch" :data-qa="'address-default-' + (address.id || '')"
-          @tap.stop="onSetDefault">
-          <PawCheckbox :model-value="!!address.isDefault" @change="onSetDefault" />
+        <view
+          class="paw-address-card__default-switch"
+          :data-qa="'address-default-' + (address.id || '')"
+          @tap.stop="onSetDefault"
+        >
+          <PawCheckbox
+            :model-value="!!address.isDefault"
+            @change="onSetDefault"
+          />
           <text class="paw-address-card__default-label">{{ defaultLabel }}</text>
         </view>
-        <view class="paw-address-card__delete" :data-qa="'address-delete-' + (address.id || '')" @tap.stop="onDelete">
-          <uni-icons type="trash" color="#c8c8c8" :size="18" />
+        <view
+          class="paw-address-card__delete"
+          :data-qa="'address-delete-' + (address.id || '')"
+          @tap.stop="onDelete"
+        >
+          <uni-icons
+            type="trash"
+            color="#c8c8c8"
+            :size="18"
+          />
           <text>删除</text>
         </view>
       </view>
@@ -53,21 +91,24 @@ export default defineComponent({
     mode: {
       type: String as PropType<AddressCardMode>,
       default: 'display',
-      validator: (value: unknown): value is AddressCardMode => value === 'display' || value === 'manage' || value === 'select'
+      validator: (value: unknown): value is AddressCardMode =>
+        value === 'display' || value === 'manage' || value === 'select',
     },
-    defaultLabel: { type: String, default: '默认收货地址' }
+    defaultLabel: { type: String, default: '默认收货地址' },
   },
   emits: {
     click: (address: AddressRecord) => typeof address.id === 'string',
     edit: (address: AddressRecord) => typeof address.id === 'string',
     select: (address: AddressRecord) => typeof address.id === 'string',
     'set-default': (id: string) => typeof id === 'string',
-    delete: (id: string) => typeof id === 'string'
+    delete: (id: string) => typeof id === 'string',
   },
   computed: {
     displayDetail(): string {
-      return [...(this.address.regionParts || []), this.address.detail || ''].filter(Boolean).join(' ')
-    }
+      return [...(this.address.regionParts || []), this.address.detail || '']
+        .filter(Boolean)
+        .join(' ')
+    },
   },
   methods: {
     onCardTap() {
@@ -82,8 +123,8 @@ export default defineComponent({
     },
     onDelete() {
       this.$emit('delete', this.address.id)
-    }
-  }
+    },
+  },
 })
 </script>
 

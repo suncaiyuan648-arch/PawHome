@@ -1,7 +1,17 @@
 <template>
-  <view v-if="visible" class="pfs-root" @touchmove.stop.prevent="noop">
-    <view class="pfs-mask" @tap="onConfirm"></view>
-    <view class="pfs-panel" @tap.stop>
+  <view
+    v-if="visible"
+    class="pfs-root"
+    @touchmove.stop.prevent="noop"
+  >
+    <view
+      class="pfs-mask"
+      @tap="onConfirm"
+    ></view>
+    <view
+      class="pfs-panel"
+      @tap.stop
+    >
       <text class="pfs-title">{{ title }}</text>
       <view class="pfs-rows">
         <view class="pfs-row">
@@ -14,7 +24,10 @@
         </view>
       </view>
       <view class="pfs-line"></view>
-      <view class="pfs-btn" @tap="onConfirm">
+      <view
+        class="pfs-btn"
+        @tap="onConfirm"
+      >
         <text class="pfs-btn-txt">{{ confirmText }}</text>
       </view>
     </view>
@@ -27,38 +40,38 @@ import { defineComponent } from 'vue'
 
 /** 已获粮：两行统计 + 「我知道了」 */
 export default defineComponent({
-  name: "PawFoodStatModal",
+  name: 'PawFoodStatModal',
   props: {
     visible: { type: Boolean, default: false },
-    title: { type: String, default: "已获粮" },
-    totalJin: { type: [String, Number], default: "999" },
-    totalTimes: { type: [String, Number], default: "456" },
-    labelJin: { type: String, default: "小院累计获得投粮" },
-    labelTimes: { type: String, default: "小院累计获粮次数" },
-    unitJin: { type: String, default: "斤" },
-    unitTimes: { type: String, default: "次" },
-    confirmText: { type: String, default: "我知道了" },
+    title: { type: String, default: '已获粮' },
+    totalJin: { type: [String, Number], default: '999' },
+    totalTimes: { type: [String, Number], default: '456' },
+    labelJin: { type: String, default: '小院累计获得投粮' },
+    labelTimes: { type: String, default: '小院累计获粮次数' },
+    unitJin: { type: String, default: '斤' },
+    unitTimes: { type: String, default: '次' },
+    confirmText: { type: String, default: '我知道了' },
   },
   emits: {
     'update:visible': eventContract<[value: boolean]>(),
-    'confirm': eventContract<[]>(),
+    confirm: eventContract<[]>(),
   },
   computed: {
     totalJinDisplay() {
-      return `${this.totalJin}${this.unitJin}`;
+      return `${this.totalJin}${this.unitJin}`
     },
     totalTimesDisplay() {
-      return `${this.totalTimes}${this.unitTimes}`;
+      return `${this.totalTimes}${this.unitTimes}`
     },
   },
   methods: {
     noop() {},
     onConfirm() {
-      this.$emit("update:visible", false);
-      this.$emit("confirm");
+      this.$emit('update:visible', false)
+      this.$emit('confirm')
     },
   },
-});
+})
 </script>
 
 <style lang="less" scoped>

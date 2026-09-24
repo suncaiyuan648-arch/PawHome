@@ -44,25 +44,54 @@ before(async () => {
   await fs.mkdir(path.join(tempRoot, 'packages/adoption/services'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'services/domainReads/adoption'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
-  await fs.copyFile(path.join(ROOT, 'utils/adoptionStorage.ts'), path.join(tempRoot, 'utils/adoptionStorage.ts'))
-  await fs.copyFile(path.join(ROOT, 'services/domainReads/adoption/applicationAdapter.ts'), path.join(tempRoot, 'services/domainReads/adoption/applicationAdapter.ts'))
-  await fs.copyFile(path.join(ROOT, 'navigation/actorCapabilities.ts'), path.join(tempRoot, 'navigation/actorCapabilities.ts'))
-  await fs.copyFile(path.join(ROOT, 'navigation/adoptionConditionContract.ts'), path.join(tempRoot, 'navigation/adoptionConditionContract.ts'))
-  await fs.copyFile(path.join(ROOT, 'packages/adoption/services/applicationAdapter.ts'), path.join(tempRoot, 'packages/adoption/services/applicationAdapter.ts'))
-  await fs.copyFile(path.join(ROOT, 'packages/adoption/services/actorCapabilities.ts'), path.join(tempRoot, 'packages/adoption/services/actorCapabilities.ts'))
-  await fs.copyFile(path.join(ROOT, 'packages/adoption/services/adoptionConditionContract.ts'), path.join(tempRoot, 'packages/adoption/services/adoptionConditionContract.ts'))
+  await fs.copyFile(
+    path.join(ROOT, 'utils/adoptionStorage.ts'),
+    path.join(tempRoot, 'utils/adoptionStorage.ts'),
+  )
+  await fs.copyFile(
+    path.join(ROOT, 'services/domainReads/adoption/applicationAdapter.ts'),
+    path.join(tempRoot, 'services/domainReads/adoption/applicationAdapter.ts'),
+  )
+  await fs.copyFile(
+    path.join(ROOT, 'navigation/actorCapabilities.ts'),
+    path.join(tempRoot, 'navigation/actorCapabilities.ts'),
+  )
+  await fs.copyFile(
+    path.join(ROOT, 'navigation/adoptionConditionContract.ts'),
+    path.join(tempRoot, 'navigation/adoptionConditionContract.ts'),
+  )
+  await fs.copyFile(
+    path.join(ROOT, 'packages/adoption/services/applicationAdapter.ts'),
+    path.join(tempRoot, 'packages/adoption/services/applicationAdapter.ts'),
+  )
+  await fs.copyFile(
+    path.join(ROOT, 'packages/adoption/services/actorCapabilities.ts'),
+    path.join(tempRoot, 'packages/adoption/services/actorCapabilities.ts'),
+  )
+  await fs.copyFile(
+    path.join(ROOT, 'packages/adoption/services/adoptionConditionContract.ts'),
+    path.join(tempRoot, 'packages/adoption/services/adoptionConditionContract.ts'),
+  )
   await fs.writeFile(
     path.join(tempRoot, 'packages/adoption/services/progress.ts'),
-    serviceSource.replace("'@/utils/adoptionStorage.ts'", "'../../../utils/adoptionStorage.ts'")
+    serviceSource.replace("'@/utils/adoptionStorage.ts'", "'../../../utils/adoptionStorage.ts'"),
   )
 
   storage = new Map()
   globalThis.uni = {
-    getStorageSync(key) { return storage.get(key) },
-    setStorageSync(key, value) { storage.set(key, value) },
-    removeStorageSync(key) { storage.delete(key) }
+    getStorageSync(key) {
+      return storage.get(key)
+    },
+    setStorageSync(key, value) {
+      storage.set(key, value)
+    },
+    removeStorageSync(key) {
+      storage.delete(key)
+    },
   }
-  service = await import(`${pathToFileURL(path.join(tempRoot, 'packages/adoption/services/progress.ts')).href}?test=${Date.now()}`)
+  service = await import(
+    `${pathToFileURL(path.join(tempRoot, 'packages/adoption/services/progress.ts')).href}?test=${Date.now()}`
+  )
 })
 
 beforeEach(resetStorage)
@@ -83,7 +112,10 @@ test('the page is a persisted, applicant-only boundary with explicit route valid
   assert.match(pageSource, /buildRoute\('adoption\.confirmation'/)
   assert.doesNotMatch(pageSource, /adoptionConfirm\?recordId=/)
   assert.match(pageSource, /adoption\/pages\/reward\/claim\/index\?applicationId=/)
-  assert.doesNotMatch(pageSource, /PawAdoptionFlowFigma|PawRewardOrderSheet|getDemoAdoptions|getLastAdoptionId|rescueStorage|rescueMock|frame\s*=/)
+  assert.doesNotMatch(
+    pageSource,
+    /PawAdoptionFlowFigma|PawRewardOrderSheet|getDemoAdoptions|getLastAdoptionId|rescueStorage|rescueMock|frame\s*=/,
+  )
   assert.doesNotMatch(pageSource, /adoptionAudit|juryDetail|mode\s*===|role\s*===/)
   assert.match(serviceSource, /readAdoptionApplication/)
   assert.doesNotMatch(serviceSource, /getAdoptionById\(/)
@@ -99,13 +131,15 @@ test('missing IDs and demo IDs fail closed while a saved ID is readable', () => 
   setStorage('PAWHOME_ACTOR_SESSION', { actor: { id: 'actor-a', roles: ['applicant'] } })
   const saved = service.readAdoptionProgress('saved-pending')
   assert.equal(saved.success, false)
-  const raw = JSON.stringify([{
-    id: 'saved-pending',
-    applicantId: 'actor-a',
-    status: 'pending',
-    yardName: '真实小院',
-    pets: [{ id: 'saved-cat', name: '真实猫' }]
-  }])
+  const raw = JSON.stringify([
+    {
+      id: 'saved-pending',
+      applicantId: 'actor-a',
+      status: 'pending',
+      yardName: '真实小院',
+      pets: [{ id: 'saved-cat', name: '真实猫' }],
+    },
+  ])
   setStorage(ADOPTION_KEY, raw)
   const loaded = service.readAdoptionProgress('saved-pending')
   assert.equal(loaded.success, true)
@@ -116,12 +150,17 @@ test('missing IDs and demo IDs fail closed while a saved ID is readable', () => 
 
 test('status presentation and reward transition come from the stored record, never the URL view', () => {
   setStorage('PAWHOME_ACTOR_SESSION', { actor: { id: 'actor-a', roles: ['applicant'] } })
-  setStorage(ADOPTION_KEY, JSON.stringify([{
-    id: 'saved-confirmed',
-    applicantId: 'actor-a',
-    status: 'adoption_confirmed',
-    pets: [{ id: 'saved-cat', name: '真实猫' }]
-  }]))
+  setStorage(
+    ADOPTION_KEY,
+    JSON.stringify([
+      {
+        id: 'saved-confirmed',
+        applicantId: 'actor-a',
+        status: 'adoption_confirmed',
+        pets: [{ id: 'saved-cat', name: '真实猫' }],
+      },
+    ]),
+  )
   const current = service.readAdoptionProgress('saved-confirmed')
   const presentation = service.statusPresentation(current.data)
   assert.equal(presentation.status, 'adoption_confirmed')
@@ -136,7 +175,10 @@ test('status presentation and reward transition come from the stored record, nev
 })
 
 test('missing or mismatched applicant sessions cannot read or reward another actor application', () => {
-  setStorage(ADOPTION_KEY, JSON.stringify([{ id: 'saved-private', applicantId: 'actor-a', status: 'pending' }]))
+  setStorage(
+    ADOPTION_KEY,
+    JSON.stringify([{ id: 'saved-private', applicantId: 'actor-a', status: 'pending' }]),
+  )
   assert.equal(service.readAdoptionProgress('saved-private').error.code, 'NO_ACTOR')
 
   setStorage('PAWHOME_ACTOR_SESSION', { actor: { id: 'actor-b', roles: ['applicant'] } })

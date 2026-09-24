@@ -48,9 +48,15 @@ function seed(records) {
 function reset() {
   storage.clear()
   globalThis.uni = {
-    getStorageSync(key) { return storage.get(key) },
-    setStorageSync(key, value) { storage.set(key, value) },
-    removeStorageSync(key) { storage.delete(key) },
+    getStorageSync(key) {
+      return storage.get(key)
+    },
+    setStorageSync(key, value) {
+      storage.set(key, value)
+    },
+    removeStorageSync(key) {
+      storage.delete(key)
+    },
   }
 }
 
@@ -62,16 +68,34 @@ before(async () => {
   await fs.mkdir(path.join(tempRoot, 'services/domainReads/adoption'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'utils'), { recursive: true })
-  await fs.copyFile(path.join(ROOT, 'packages/adoption/services/reviewActionAdapter.ts'), path.join(tempRoot, 'packages/adoption/services/reviewActionAdapter.ts'))
-  await fs.copyFile(path.join(ROOT, 'packages/adoption/services/reviewAdapter.ts'), path.join(tempRoot, 'packages/adoption/services/reviewAdapter.ts'))
-  await fs.copyFile(path.join(ROOT, 'services/domainReads/adoption/reviewAdapter.ts'), path.join(tempRoot, 'services/domainReads/adoption/reviewAdapter.ts'))
-  for (const file of ['actorCapabilities.ts', 'adoptionConditionContract.ts', 'adoptionReviewContract.ts']) {
+  await fs.copyFile(
+    path.join(ROOT, 'packages/adoption/services/reviewActionAdapter.ts'),
+    path.join(tempRoot, 'packages/adoption/services/reviewActionAdapter.ts'),
+  )
+  await fs.copyFile(
+    path.join(ROOT, 'packages/adoption/services/reviewAdapter.ts'),
+    path.join(tempRoot, 'packages/adoption/services/reviewAdapter.ts'),
+  )
+  await fs.copyFile(
+    path.join(ROOT, 'services/domainReads/adoption/reviewAdapter.ts'),
+    path.join(tempRoot, 'services/domainReads/adoption/reviewAdapter.ts'),
+  )
+  for (const file of [
+    'actorCapabilities.ts',
+    'adoptionConditionContract.ts',
+    'adoptionReviewContract.ts',
+  ]) {
     await fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
   }
-  await fs.copyFile(path.join(ROOT, 'utils/adoptionStorage.ts'), path.join(tempRoot, 'utils/adoptionStorage.ts'))
+  await fs.copyFile(
+    path.join(ROOT, 'utils/adoptionStorage.ts'),
+    path.join(tempRoot, 'utils/adoptionStorage.ts'),
+  )
   storage = new Map()
   reset()
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/adoption/services/reviewActionAdapter.ts')).href}?test=${Date.now()}`)
+  api = await import(
+    `${pathToFileURL(path.join(tempRoot, 'packages/adoption/services/reviewActionAdapter.ts')).href}?test=${Date.now()}`
+  )
 })
 
 beforeEach(reset)
@@ -105,14 +129,17 @@ test('adoption review action requires the canonical reviewer relation and update
 
 test('adoption review action rejects demos, forged actors and idempotency conflicts without a write', () => {
   seed([ownerRecord()])
-  const forged = () => api.applyAdoptionReviewAction({
-    actorProvider: actor('owner-b'),
-    applicationId: 'application-a',
-    reviewItemId: 'review-owner-a',
-    outcome: 'approved',
-    idempotencyKey: 'review-forged',
-  })
-  assert.throws(forged, error => ['ACTOR_MISMATCH', 'NOT_FOUND', 'ACTOR_ROLE_REQUIRED'].includes(error.code))
+  const forged = () =>
+    api.applyAdoptionReviewAction({
+      actorProvider: actor('owner-b'),
+      applicationId: 'application-a',
+      reviewItemId: 'review-owner-a',
+      outcome: 'approved',
+      idempotencyKey: 'review-forged',
+    })
+  assert.throws(forged, (error) =>
+    ['ACTOR_MISMATCH', 'NOT_FOUND', 'ACTOR_ROLE_REQUIRED'].includes(error.code),
+  )
   const approved = api.applyAdoptionReviewAction({
     actorProvider: actor(),
     applicationId: 'application-a',
@@ -122,19 +149,27 @@ test('adoption review action rejects demos, forged actors and idempotency confli
   })
   assert.equal(approved.success, true)
   const savedAfterApproval = storage.get(KEY)
-  assert.throws(() => api.applyAdoptionReviewAction({
-    actorProvider: actor(),
-    applicationId: 'application-a',
-    reviewItemId: 'review-owner-a',
-    outcome: 'rejected',
-    idempotencyKey: 'review-conflict',
-  }), error => error.code === 'IDEMPOTENCY_CONFLICT' || error.code === 'INVALID_TRANSITION')
+  assert.throws(
+    () =>
+      api.applyAdoptionReviewAction({
+        actorProvider: actor(),
+        applicationId: 'application-a',
+        reviewItemId: 'review-owner-a',
+        outcome: 'rejected',
+        idempotencyKey: 'review-conflict',
+      }),
+    (error) => error.code === 'IDEMPOTENCY_CONFLICT' || error.code === 'INVALID_TRANSITION',
+  )
   assert.equal(storage.get(KEY), savedAfterApproval)
-  assert.throws(() => api.applyAdoptionReviewAction({
-    actorProvider: actor('yard_card_owner'),
-    applicationId: 'demo-pending',
-    reviewItemId: 'review-owner-a',
-    outcome: 'approved',
-    idempotencyKey: 'demo-action',
-  }), error => ['NOT_FOUND', 'ACTOR_MISMATCH'].includes(error.code))
+  assert.throws(
+    () =>
+      api.applyAdoptionReviewAction({
+        actorProvider: actor('yard_card_owner'),
+        applicationId: 'demo-pending',
+        reviewItemId: 'review-owner-a',
+        outcome: 'approved',
+        idempotencyKey: 'demo-action',
+      }),
+    (error) => ['NOT_FOUND', 'ACTOR_MISMATCH'].includes(error.code),
+  )
 })

@@ -1,8 +1,15 @@
 <template>
-  <PawIcon class="paw-chevron" name="navigation/chevron-right" :size="size" :rotate="rotation" aria-hidden="true" />
+  <PawIcon
+    class="paw-chevron"
+    name="navigation/chevron-right"
+    :size="size"
+    :rotate="rotation"
+    aria-hidden="true"
+  />
 </template>
 
-<script lang="ts">import { defineComponent, type PropType } from 'vue'
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
 
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import type { PawIconSize } from '@/components/PawIcon/PawIcon.types'
@@ -12,21 +19,23 @@ export default defineComponent({
   components: { PawIcon },
   props: {
     direction: { type: String, default: 'right' },
-    size: { type: [Number, String] as unknown as PropType<PawIconSize>, default: 8 }
+    size: { type: [Number, String] as unknown as PropType<PawIconSize>, default: 8 },
   },
   computed: {
     // The canonical chevron asset is left-facing. Apply the direction on
     // PawIcon itself so the transform reaches the SVG image inside the
     // virtual host on WeChat as well as H5.
     rotation() {
-      return {
-        right: 180,
-        left: 0,
-        up: 90,
-        down: -90
-      }[this.direction] ?? 180
-    }
-  }
+      return (
+        {
+          right: 180,
+          left: 0,
+          up: 90,
+          down: -90,
+        }[this.direction] ?? 180
+      )
+    },
+  },
 })
 </script>
 

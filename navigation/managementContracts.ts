@@ -133,7 +133,11 @@ const SAFE_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/
 const URL_MARKERS = /[/?#%]|:\/\//
 const DANGEROUS_KEYS = new Set(['__proto__', 'prototype', 'constructor'])
 
-const MANAGEMENT_RESOURCE_TYPES: readonly ResourceType[] = freezeList<ResourceType>('profile', 'yard', 'animal')
+const MANAGEMENT_RESOURCE_TYPES: readonly ResourceType[] = freezeList<ResourceType>(
+  'profile',
+  'yard',
+  'animal',
+)
 
 const MANAGEMENT_CAPABILITIES: Readonly<{
   PROFILE_READ_PUBLIC: 'profile.readPublic'
@@ -180,35 +184,90 @@ const CAPABILITY_LIST: readonly ManagementCapability[] = freezeList<ManagementCa
   MANAGEMENT_CAPABILITIES.ANIMAL_EDIT,
 )
 
-const CAPABILITY_DEFINITIONS: Readonly<Record<ManagementCapability, { resource: ResourceType; action: string }>> = Object.freeze({
-  [MANAGEMENT_CAPABILITIES.PROFILE_READ_PUBLIC]: Object.freeze({ resource: 'profile', action: 'readPublic' }),
-  [MANAGEMENT_CAPABILITIES.PROFILE_READ_PRIVATE]: Object.freeze({ resource: 'profile', action: 'readPrivate' }),
+const CAPABILITY_DEFINITIONS: Readonly<
+  Record<ManagementCapability, { resource: ResourceType; action: string }>
+> = Object.freeze({
+  [MANAGEMENT_CAPABILITIES.PROFILE_READ_PUBLIC]: Object.freeze({
+    resource: 'profile',
+    action: 'readPublic',
+  }),
+  [MANAGEMENT_CAPABILITIES.PROFILE_READ_PRIVATE]: Object.freeze({
+    resource: 'profile',
+    action: 'readPrivate',
+  }),
   [MANAGEMENT_CAPABILITIES.PROFILE_EDIT]: Object.freeze({ resource: 'profile', action: 'edit' }),
-  [MANAGEMENT_CAPABILITIES.YARD_READ_PUBLIC]: Object.freeze({ resource: 'yard', action: 'readPublic' }),
-  [MANAGEMENT_CAPABILITIES.YARD_MANAGEMENT_READ_PRIVATE]: Object.freeze({ resource: 'yard', action: 'managementRead' }),
+  [MANAGEMENT_CAPABILITIES.YARD_READ_PUBLIC]: Object.freeze({
+    resource: 'yard',
+    action: 'readPublic',
+  }),
+  [MANAGEMENT_CAPABILITIES.YARD_MANAGEMENT_READ_PRIVATE]: Object.freeze({
+    resource: 'yard',
+    action: 'managementRead',
+  }),
   [MANAGEMENT_CAPABILITIES.YARD_EDIT]: Object.freeze({ resource: 'yard', action: 'edit' }),
-  [MANAGEMENT_CAPABILITIES.ANIMAL_READ_PUBLIC]: Object.freeze({ resource: 'animal', action: 'readPublic' }),
-  [MANAGEMENT_CAPABILITIES.ANIMAL_MANAGEMENT_READ_PRIVATE]: Object.freeze({ resource: 'animal', action: 'managementRead' }),
+  [MANAGEMENT_CAPABILITIES.ANIMAL_READ_PUBLIC]: Object.freeze({
+    resource: 'animal',
+    action: 'readPublic',
+  }),
+  [MANAGEMENT_CAPABILITIES.ANIMAL_MANAGEMENT_READ_PRIVATE]: Object.freeze({
+    resource: 'animal',
+    action: 'managementRead',
+  }),
   [MANAGEMENT_CAPABILITIES.ANIMAL_EDIT]: Object.freeze({ resource: 'animal', action: 'edit' }),
 })
 
 const TOP_LEVEL_KEYS = new Set([
-  'actorProvider', 'profile', 'yard', 'animal', 'object', 'resourceType',
-  'userId', 'yardId', 'animalId', 'query', 'policy', 'intent', 'cancelled',
+  'actorProvider',
+  'profile',
+  'yard',
+  'animal',
+  'object',
+  'resourceType',
+  'userId',
+  'yardId',
+  'animalId',
+  'query',
+  'policy',
+  'intent',
+  'cancelled',
 ])
 const QUERY_KEYS = new Set(['userId', 'yardId', 'animalId', 'managed', 'role', 'state'])
 
 const PROFILE_KEYS = new Set(['userId', 'status', 'state', 'visibility', 'isPublic'])
 const YARD_KEYS = new Set([
-  'yardId', 'ownerId', 'ownerIds', 'ownerUserId', 'ownerUserIds',
-  'yardOwnerId', 'yardOwnerIds', 'yardOwnerUserId', 'yardOwnerUserIds',
-  'status', 'state', 'visibility', 'isPublic',
+  'yardId',
+  'ownerId',
+  'ownerIds',
+  'ownerUserId',
+  'ownerUserIds',
+  'yardOwnerId',
+  'yardOwnerIds',
+  'yardOwnerUserId',
+  'yardOwnerUserIds',
+  'status',
+  'state',
+  'visibility',
+  'isPublic',
 ])
 const ANIMAL_KEYS = new Set([
-  'animalId', 'yardId', 'managerId', 'managerIds', 'animalManagerId', 'animalManagerIds',
-  'cloudParentId', 'cloudParentIds', 'cloudParentUserId', 'cloudParentUserIds',
-  'yardOwnerId', 'yardOwnerIds', 'yardOwnerUserId', 'yardOwnerUserIds',
-  'status', 'state', 'visibility', 'isPublic',
+  'animalId',
+  'yardId',
+  'managerId',
+  'managerIds',
+  'animalManagerId',
+  'animalManagerIds',
+  'cloudParentId',
+  'cloudParentIds',
+  'cloudParentUserId',
+  'cloudParentUserIds',
+  'yardOwnerId',
+  'yardOwnerIds',
+  'yardOwnerUserId',
+  'yardOwnerUserIds',
+  'status',
+  'state',
+  'visibility',
+  'isPublic',
 ])
 
 class ManagementContractError extends Error {
@@ -238,11 +297,13 @@ function isPlainRecord(value: unknown): value is JsonRecord {
   // A native WeChat object may cross a JS realm boundary.  Accept the
   // ordinary cross-realm Object while continuing to reject class instances.
   const descriptor = Object.getOwnPropertyDescriptor(prototype, 'constructor')
-  return Object.getPrototypeOf(prototype) === null
-    && Object.prototype.toString.call(value) === '[object Object]'
-    && descriptor !== undefined
-    && typeof descriptor.value === 'function'
-    && descriptor.value.name === 'Object'
+  return (
+    Object.getPrototypeOf(prototype) === null &&
+    Object.prototype.toString.call(value) === '[object Object]' &&
+    descriptor !== undefined &&
+    typeof descriptor.value === 'function' &&
+    descriptor.value.name === 'Object'
+  )
 }
 
 function rejectDangerousKeys(value: JsonRecord, label: string): void {
@@ -259,22 +320,28 @@ function assertRecord(value: unknown, label: string): asserts value is JsonRecor
   rejectDangerousKeys(value, label)
 }
 
-function normalizeId(value: unknown, label: string, { required = false }: { required?: boolean } = {}): string {
+function normalizeId(
+  value: unknown,
+  label: string,
+  { required = false }: { required?: boolean } = {},
+): string {
   let id = ''
   if (typeof value === 'string') {
     // IDs are wire identifiers.  Unlike the legacy actor provider (whose
     // public contract trims actor IDs), an object or locator ID containing
     // padding is malformed and must not alias a different record.
-    if (value !== value.trim()) fail('INVALID_ID', `${label} must not contain surrounding whitespace`, { label })
+    if (value !== value.trim())
+      fail('INVALID_ID', `${label} must not contain surrounding whitespace`, { label })
     id = value
-  }
-  else if (typeof value === 'number' && Number.isSafeInteger(value)) id = String(value)
-  else if (value !== undefined && value !== null) fail('INVALID_ID', `${label} must be an opaque ID`, { label })
+  } else if (typeof value === 'number' && Number.isSafeInteger(value)) id = String(value)
+  else if (value !== undefined && value !== null)
+    fail('INVALID_ID', `${label} must be an opaque ID`, { label })
   if (!id) {
     if (required) fail('MISSING_ID', `${label} is required`, { label })
     return ''
   }
-  if (!SAFE_ID.test(id) || URL_MARKERS.test(id)) fail('INVALID_ID', `${label} must be an opaque ID`, { label })
+  if (!SAFE_ID.test(id) || URL_MARKERS.test(id))
+    fail('INVALID_ID', `${label} must be an opaque ID`, { label })
   return id
 }
 
@@ -305,7 +372,7 @@ function relationIds(record: JsonRecord, fields: readonly string[], label: strin
     // The fields passed here are aliases, not additive relationship buckets.
     // A legacy record may carry the same ID in both singular and plural
     // spellings, but two different sets are ambiguous and fail closed.
-    if (expected.size !== currentSet.size || [...expected].some(id => !currentSet.has(id))) {
+    if (expected.size !== currentSet.size || [...expected].some((id) => !currentSet.has(id))) {
       fail('CONFLICTING_RELATION', `${label} relation aliases disagree`, { label, field })
     }
   }
@@ -334,13 +401,17 @@ function readState(record: JsonRecord, label: string): ObjectState {
 function normalizeVisibility(record: JsonRecord, label: string): Visibility {
   let visibility: Visibility = 'public'
   if (own(record, 'visibility')) {
-    if (typeof record.visibility !== 'string' || !includesValue(['public', 'private'], record.visibility)) {
+    if (
+      typeof record.visibility !== 'string' ||
+      !includesValue(['public', 'private'], record.visibility)
+    ) {
       fail('INVALID_VISIBILITY', `${label}.visibility is invalid`, { label })
     }
     visibility = record.visibility
   }
   if (own(record, 'isPublic')) {
-    if (typeof record.isPublic !== 'boolean') fail('INVALID_VISIBILITY', `${label}.isPublic must be boolean`, { label })
+    if (typeof record.isPublic !== 'boolean')
+      fail('INVALID_VISIBILITY', `${label}.isPublic must be boolean`, { label })
     const fromBoolean = record.isPublic ? 'public' : 'private'
     if (own(record, 'visibility') && visibility !== fromBoolean) {
       fail('CONFLICTING_VISIBILITY', `${label} visibility fields disagree`, { label })
@@ -379,8 +450,16 @@ function normalizeYard(input: unknown): YardRecord {
   assertRecord(input, 'yard')
   assertKnownFields(input, YARD_KEYS, 'yard')
   const yardId = normalizeId(input.yardId, 'yard.yardId', { required: true })
-  const ownerIds = relationIds(input, ['ownerId', 'ownerIds', 'ownerUserId', 'ownerUserIds'], 'yard')
-  const yardOwnerIds = relationIds(input, ['yardOwnerId', 'yardOwnerIds', 'yardOwnerUserId', 'yardOwnerUserIds'], 'yard')
+  const ownerIds = relationIds(
+    input,
+    ['ownerId', 'ownerIds', 'ownerUserId', 'ownerUserIds'],
+    'yard',
+  )
+  const yardOwnerIds = relationIds(
+    input,
+    ['yardOwnerId', 'yardOwnerIds', 'yardOwnerUserId', 'yardOwnerUserIds'],
+    'yard',
+  )
   if (ownerIds.length > 1 || yardOwnerIds.length > 1) {
     fail('CONFLICTING_OWNER_RELATION', 'yard contains multiple conflicting owner IDs', { yardId })
   }
@@ -399,11 +478,25 @@ function normalizeAnimal(input: unknown): AnimalRecord {
   assertKnownFields(input, ANIMAL_KEYS, 'animal')
   const animalId = normalizeId(input.animalId, 'animal.animalId', { required: true })
   const yardId = normalizeId(input.yardId, 'animal.yardId', { required: true })
-  const managerIds = relationIds(input, ['managerId', 'managerIds', 'animalManagerId', 'animalManagerIds'], 'animal')
-  const cloudParentIds = relationIds(input, ['cloudParentId', 'cloudParentIds', 'cloudParentUserId', 'cloudParentUserIds'], 'animal')
-  const yardOwnerIds = relationIds(input, ['yardOwnerId', 'yardOwnerIds', 'yardOwnerUserId', 'yardOwnerUserIds'], 'animal')
+  const managerIds = relationIds(
+    input,
+    ['managerId', 'managerIds', 'animalManagerId', 'animalManagerIds'],
+    'animal',
+  )
+  const cloudParentIds = relationIds(
+    input,
+    ['cloudParentId', 'cloudParentIds', 'cloudParentUserId', 'cloudParentUserIds'],
+    'animal',
+  )
+  const yardOwnerIds = relationIds(
+    input,
+    ['yardOwnerId', 'yardOwnerIds', 'yardOwnerUserId', 'yardOwnerUserIds'],
+    'animal',
+  )
   if (yardOwnerIds.length > 1) {
-    fail('CONFLICTING_OWNER_RELATION', 'animal contains multiple conflicting yard-owner IDs', { animalId })
+    fail('CONFLICTING_OWNER_RELATION', 'animal contains multiple conflicting yard-owner IDs', {
+      animalId,
+    })
   }
   return Object.freeze({
     type: 'animal',
@@ -421,11 +514,13 @@ function normalizeQuery(query: unknown): JsonRecord {
   if (query === undefined || query === null) return Object.freeze({})
   assertRecord(query, 'query')
   for (const key of Object.keys(query)) {
-    if (!QUERY_KEYS.has(key)) fail('UNKNOWN_QUERY_FIELD', `Unknown management query field: ${key}`, { key })
+    if (!QUERY_KEYS.has(key))
+      fail('UNKNOWN_QUERY_FIELD', `Unknown management query field: ${key}`, { key })
   }
   const normalized: JsonRecord = {}
   for (const key of ['userId', 'yardId', 'animalId']) {
-    if (own(query, key)) normalized[key] = normalizeId(query[key], `query.${key}`, { required: true })
+    if (own(query, key))
+      normalized[key] = normalizeId(query[key], `query.${key}`, { required: true })
   }
   // managed, role, and state are explicitly accepted as display/navigation
   // hints only.  None is copied into a capability decision.
@@ -436,20 +531,24 @@ function normalizeLocator(source: JsonRecord, query: JsonRecord): QueryLocators 
   const locator: QueryLocators = {}
   for (const key of ['userId', 'yardId', 'animalId']) {
     const direct = own(source, key) ? normalizeId(source[key], key, { required: true }) : ''
-    const hinted = own(query, key) ? normalizeId(query[key], `query.${key}`, { required: true }) : ''
-    if (direct && hinted && direct !== hinted) fail('LOCATOR_CONFLICT', `${key} locator values disagree`, { key })
+    const hinted = own(query, key)
+      ? normalizeId(query[key], `query.${key}`, { required: true })
+      : ''
+    if (direct && hinted && direct !== hinted)
+      fail('LOCATOR_CONFLICT', `${key} locator values disagree`, { key })
     if (direct || hinted) locator[key] = direct || hinted
   }
   return Object.freeze(locator)
 }
 
 function normalizeStateList(value: unknown, label: string): readonly string[] {
-  if (!Array.isArray(value)) fail('INVALID_POLICY', `${label} must be an array of legal states`, { label })
+  if (!Array.isArray(value))
+    fail('INVALID_POLICY', `${label} must be an array of legal states`, { label })
   const states: string[] = []
   for (const state of value) {
-   if (typeof state !== 'string' || !state.trim() || hasControlCharacter(state)) {
-     fail('INVALID_POLICY', `${label} contains an invalid state`, { label })
-   }
+    if (typeof state !== 'string' || !state.trim() || hasControlCharacter(state)) {
+      fail('INVALID_POLICY', `${label} contains an invalid state`, { label })
+    }
     const normalized = state.trim()
     if (!states.includes(normalized)) states.push(normalized)
   }
@@ -464,27 +563,37 @@ function hasControlCharacter(value: string): boolean {
   return false
 }
 
-function normalizeAliasedStateLists(input: JsonRecord, fields: readonly string[], resource: ResourceType): readonly string[] | null {
-  const supplied = fields.filter(field => own(input, field))
+function normalizeAliasedStateLists(
+  input: JsonRecord,
+  fields: readonly string[],
+  resource: ResourceType,
+): readonly string[] | null {
+  const supplied = fields.filter((field) => own(input, field))
   if (!supplied.length) return null
-  const values = supplied.map(field => {
+  const values = supplied.map((field) => {
     const value = input[field]
     if (value === undefined || value === null) return null
     return normalizeStateList(value, `${resource}.${field}`)
   })
-  const signatures = values.map(value => value === null ? '' : [...value].sort().join('\u0000'))
+  const signatures = values.map((value) => (value === null ? '' : [...value].sort().join('\u0000')))
   if (new Set(signatures).size > 1) {
     fail('CONFLICTING_POLICY_FIELD', `${resource} policy aliases disagree`, { fields: supplied })
   }
   return values[0]
 }
 
-function normalizeRoleList(value: unknown, label: string, fallback: readonly ActorRole[]): readonly ActorRole[] {
+function normalizeRoleList(
+  value: unknown,
+  label: string,
+  fallback: readonly ActorRole[],
+): readonly ActorRole[] {
   if (value === undefined) return Object.freeze(fallback.slice())
-  if (!Array.isArray(value) || !value.length) fail('INVALID_POLICY', `${label} must be a non-empty role list`, { label })
+  if (!Array.isArray(value) || !value.length)
+    fail('INVALID_POLICY', `${label} must be a non-empty role list`, { label })
   const roles: ActorRole[] = []
   for (const role of value) {
-    if (typeof role !== 'string' || !includesValue(ACTOR_ROLES, role)) fail('INVALID_POLICY', `${label} contains an unknown actor role`, { label, role })
+    if (typeof role !== 'string' || !includesValue(ACTOR_ROLES, role))
+      fail('INVALID_POLICY', `${label} contains an unknown actor role`, { label, role })
     if (!roles.includes(role)) roles.push(role)
   }
   return Object.freeze(roles)
@@ -493,7 +602,15 @@ function normalizeRoleList(value: unknown, label: string, fallback: readonly Act
 function normalizeResourcePolicy(input: unknown, resource: ResourceType): ResourcePolicy | null {
   if (input === undefined || input === null) return null
   assertRecord(input, `${resource} policy`)
-  const allowed = new Set(['readStates', 'readableStates', 'manageStates', 'manageableStates', 'managementStates', 'editStates', 'editableStates'])
+  const allowed = new Set([
+    'readStates',
+    'readableStates',
+    'manageStates',
+    'manageableStates',
+    'managementStates',
+    'editStates',
+    'editableStates',
+  ])
   if (resource === 'yard') {
     allowed.add('ownerRoles')
     allowed.add('yardOwnerRoles')
@@ -503,20 +620,37 @@ function normalizeResourcePolicy(input: unknown, resource: ResourceType): Resour
     allowed.add('managerRoles')
   }
   for (const key of Object.keys(input)) {
-    if (!allowed.has(key)) fail('UNKNOWN_POLICY_FIELD', `Unknown ${resource} policy field: ${key}`, { resource, key })
+    if (!allowed.has(key))
+      fail('UNKNOWN_POLICY_FIELD', `Unknown ${resource} policy field: ${key}`, { resource, key })
   }
   const normalized: ResourcePolicy = {
     readStates: normalizeAliasedStateLists(input, ['readStates', 'readableStates'], resource),
-    manageStates: normalizeAliasedStateLists(input, ['manageStates', 'manageableStates', 'managementStates'], resource),
+    manageStates: normalizeAliasedStateLists(
+      input,
+      ['manageStates', 'manageableStates', 'managementStates'],
+      resource,
+    ),
     editStates: normalizeAliasedStateLists(input, ['editStates', 'editableStates'], resource),
   }
   if (resource === 'yard') {
-    normalized.ownerRoles = normalizeRoleList(input.ownerRoles, `${resource}.ownerRoles`, ['yard_owner'])
-    normalized.yardOwnerRoles = normalizeRoleList(input.yardOwnerRoles, `${resource}.yardOwnerRoles`, ['yard_owner'])
+    normalized.ownerRoles = normalizeRoleList(input.ownerRoles, `${resource}.ownerRoles`, [
+      'yard_owner',
+    ])
+    normalized.yardOwnerRoles = normalizeRoleList(
+      input.yardOwnerRoles,
+      `${resource}.yardOwnerRoles`,
+      ['yard_owner'],
+    )
   }
   if (resource === 'animal') {
-    normalized.yardOwnerRoles = normalizeRoleList(input.yardOwnerRoles, `${resource}.yardOwnerRoles`, ['yard_owner'])
-    normalized.managerRoles = normalizeRoleList(input.managerRoles, `${resource}.managerRoles`, ['animal_manager'])
+    normalized.yardOwnerRoles = normalizeRoleList(
+      input.yardOwnerRoles,
+      `${resource}.yardOwnerRoles`,
+      ['yard_owner'],
+    )
+    normalized.managerRoles = normalizeRoleList(input.managerRoles, `${resource}.managerRoles`, [
+      'animal_manager',
+    ])
   }
   return Object.freeze(normalized)
 }
@@ -525,7 +659,8 @@ function normalizePolicy(policy: unknown): ManagementPolicy | null {
   if (policy === undefined || policy === null) return null
   assertRecord(policy, 'management policy')
   for (const key of Object.keys(policy)) {
-    if (!includesValue(MANAGEMENT_RESOURCE_TYPES, key)) fail('UNKNOWN_POLICY_FIELD', `Unknown management policy resource: ${key}`, { key })
+    if (!includesValue(MANAGEMENT_RESOURCE_TYPES, key))
+      fail('UNKNOWN_POLICY_FIELD', `Unknown management policy resource: ${key}`, { key })
   }
   return Object.freeze({
     profile: normalizeResourcePolicy(policy.profile, 'profile'),
@@ -534,33 +669,51 @@ function normalizePolicy(policy: unknown): ManagementPolicy | null {
   })
 }
 
-function stateAllowed(record: { state: ObjectState }, states: readonly string[] | null | undefined, label: string): Decision {
+function stateAllowed(
+  record: { state: ObjectState },
+  states: readonly string[] | null | undefined,
+  label: string,
+): Decision {
   if (!states) return { allowed: false, reason: 'POLICY_MISSING' }
   if (!record.state.valid) return { allowed: false, reason: record.state.reason }
   if (!states.includes(record.state.state)) return { allowed: false, reason: 'STATE_NOT_ALLOWED' }
   return { allowed: true, reason: '', state: record.state.state, label }
 }
 
-function profileDecisions(record: ProfileRecord, actor: TrustedActor | null, policy: ResourcePolicy | null): Decision {
-  const denied: Decision = { readPublic: 'POLICY_MISSING', readPrivate: 'POLICY_MISSING', edit: 'POLICY_MISSING' }
+function profileDecisions(
+  record: ProfileRecord,
+  actor: TrustedActor | null,
+  policy: ResourcePolicy | null,
+): Decision {
+  const denied: Decision = {
+    readPublic: 'POLICY_MISSING',
+    readPrivate: 'POLICY_MISSING',
+    edit: 'POLICY_MISSING',
+  }
   if (!policy) return denied
   const read = stateAllowed(record, policy.readStates, 'profile')
   const edit = stateAllowed(record, policy.editStates, 'profile')
   const publicRead = read.allowed && record.visibility === 'public'
   const ownProfile = Boolean(actor && actor.id === record.userId)
   return {
-    readPublic: publicRead ? '' : (read.allowed ? 'PRIVATE_VISIBILITY' : read.reason),
-    readPrivate: ownProfile && read.allowed ? '' : (ownProfile ? read.reason : 'ACTOR_NOT_PROFILE_OWNER'),
-    edit: ownProfile && edit.allowed ? '' : (ownProfile ? edit.reason : 'ACTOR_NOT_PROFILE_OWNER'),
+    readPublic: publicRead ? '' : read.allowed ? 'PRIVATE_VISIBILITY' : read.reason,
+    readPrivate:
+      ownProfile && read.allowed ? '' : ownProfile ? read.reason : 'ACTOR_NOT_PROFILE_OWNER',
+    edit: ownProfile && edit.allowed ? '' : ownProfile ? edit.reason : 'ACTOR_NOT_PROFILE_OWNER',
   }
 }
 
-function yardOwnerMatches(record: YardRecord, actor: TrustedActor | null, policy: ResourcePolicy | null): { matched: boolean; role: ActorRole | ''; reason: string } {
+function yardOwnerMatches(
+  record: YardRecord,
+  actor: TrustedActor | null,
+  policy: ResourcePolicy | null,
+): { matched: boolean; role: ActorRole | ''; reason: string } {
   if (!actor || !policy) return { matched: false, role: '', reason: 'POLICY_MISSING' }
   for (const role of actor.roles) {
-    const allowed = role === 'yard_owner'
-      ? policy.yardOwnerRoles?.includes(role) === true
-      : policy.ownerRoles?.includes(role) === true
+    const allowed =
+      role === 'yard_owner'
+        ? policy.yardOwnerRoles?.includes(role) === true
+        : policy.ownerRoles?.includes(role) === true
     if (!allowed) continue
     const ids = role === 'yard_owner' ? record.yardOwnerIds : record.ownerIds
     if (relationMatches(actor.id, ids)) return { matched: true, role, reason: '' }
@@ -568,16 +721,31 @@ function yardOwnerMatches(record: YardRecord, actor: TrustedActor | null, policy
   return { matched: false, role: '', reason: 'YARD_OWNER_RELATION_REQUIRED' }
 }
 
-function yardDecisions(record: YardRecord, actor: TrustedActor | null, policy: ResourcePolicy | null): Decision {
-  if (!policy) return { readPublic: 'POLICY_MISSING', managementRead: 'POLICY_MISSING', edit: 'POLICY_MISSING' }
+function yardDecisions(
+  record: YardRecord,
+  actor: TrustedActor | null,
+  policy: ResourcePolicy | null,
+): Decision {
+  if (!policy)
+    return {
+      readPublic: 'POLICY_MISSING',
+      managementRead: 'POLICY_MISSING',
+      edit: 'POLICY_MISSING',
+    }
   const read = stateAllowed(record, policy.readStates, 'yard')
   const manage = stateAllowed(record, policy.manageStates, 'yard')
   const edit = stateAllowed(record, policy.editStates, 'yard')
   const owner = yardOwnerMatches(record, actor, policy)
   return {
-    readPublic: read.allowed && record.visibility === 'public' ? '' : (read.allowed ? 'PRIVATE_VISIBILITY' : read.reason),
-    managementRead: owner.matched && manage.allowed ? '' : (owner.matched ? manage.reason : owner.reason),
-    edit: owner.matched && edit.allowed ? '' : (owner.matched ? edit.reason : owner.reason),
+    readPublic:
+      read.allowed && record.visibility === 'public'
+        ? ''
+        : read.allowed
+          ? 'PRIVATE_VISIBILITY'
+          : read.reason,
+    managementRead:
+      owner.matched && manage.allowed ? '' : owner.matched ? manage.reason : owner.reason,
+    edit: owner.matched && edit.allowed ? '' : owner.matched ? edit.reason : owner.reason,
   }
 }
 
@@ -585,54 +753,90 @@ function yardContextMatches(animal: AnimalRecord, yard: YardRecord | null): bool
   return !yard || animal.yardId === yard.yardId
 }
 
-function animalYardOwnerMatches(record: AnimalRecord, yard: YardRecord | null, actor: TrustedActor | null, policy: ResourcePolicy | null): { matched: boolean; reason: string } {
+function animalYardOwnerMatches(
+  record: AnimalRecord,
+  yard: YardRecord | null,
+  actor: TrustedActor | null,
+  policy: ResourcePolicy | null,
+): { matched: boolean; reason: string } {
   if (!actor || !policy) return { matched: false, reason: 'POLICY_MISSING' }
   if (!yardContextMatches(record, yard)) return { matched: false, reason: 'CROSS_YARD_RELATION' }
 
   // An explicit child owner relation takes precedence.  A parent yard owner
   // may be used only when the animal record has not supplied a child owner.
   if (record.yardOwnerIds.length) {
-    const matched = (policy.yardOwnerRoles || []).some(role => actor.roles.includes(role))
-      && relationMatches(actor.id, record.yardOwnerIds)
+    const matched =
+      (policy.yardOwnerRoles || []).some((role) => actor.roles.includes(role)) &&
+      relationMatches(actor.id, record.yardOwnerIds)
     if (!matched) return { matched: false, reason: 'YARD_OWNER_RELATION_REQUIRED' }
     if (yard) {
-      const parentOwner = yardOwnerMatches(yard, actor, { ...policy, ownerRoles: policy.yardOwnerRoles || [] })
+      const parentOwner = yardOwnerMatches(yard, actor, {
+        ...policy,
+        ownerRoles: policy.yardOwnerRoles || [],
+      })
       if (!parentOwner.matched) return { matched: false, reason: 'CROSS_YARD_RELATION' }
     }
     return { matched: true, reason: '' }
   }
 
   if (!yard) return { matched: false, reason: 'YARD_CONTEXT_REQUIRED' }
-  const parentOwner = yardOwnerMatches(yard, actor, { ...policy, ownerRoles: policy.yardOwnerRoles || [] })
+  const parentOwner = yardOwnerMatches(yard, actor, {
+    ...policy,
+    ownerRoles: policy.yardOwnerRoles || [],
+  })
   return parentOwner.matched
     ? { matched: true, reason: '' }
     : { matched: false, reason: 'YARD_OWNER_RELATION_REQUIRED' }
 }
 
-function animalManagerMatches(record: AnimalRecord, actor: TrustedActor | null, policy: ResourcePolicy | null): { matched: boolean; reason: string } {
+function animalManagerMatches(
+  record: AnimalRecord,
+  actor: TrustedActor | null,
+  policy: ResourcePolicy | null,
+): { matched: boolean; reason: string } {
   if (!actor || !policy) return { matched: false, reason: 'POLICY_MISSING' }
-  const matched = (policy.managerRoles || []).some(role => actor.roles.includes(role))
-    && relationMatches(actor.id, record.managerIds)
+  const matched =
+    (policy.managerRoles || []).some((role) => actor.roles.includes(role)) &&
+    relationMatches(actor.id, record.managerIds)
   return matched
     ? { matched: true, reason: '' }
     : { matched: false, reason: 'ANIMAL_MANAGER_RELATION_REQUIRED' }
 }
 
-function animalDecisions(record: AnimalRecord, yard: YardRecord | null, actor: TrustedActor | null, policy: ResourcePolicy | null): Decision {
-  if (!policy) return { readPublic: 'POLICY_MISSING', managementRead: 'POLICY_MISSING', edit: 'POLICY_MISSING' }
+function animalDecisions(
+  record: AnimalRecord,
+  yard: YardRecord | null,
+  actor: TrustedActor | null,
+  policy: ResourcePolicy | null,
+): Decision {
+  if (!policy)
+    return {
+      readPublic: 'POLICY_MISSING',
+      managementRead: 'POLICY_MISSING',
+      edit: 'POLICY_MISSING',
+    }
   const read = stateAllowed(record, policy.readStates, 'animal')
   const manage = stateAllowed(record, policy.manageStates, 'animal')
   const edit = stateAllowed(record, policy.editStates, 'animal')
   const yardOwner = animalYardOwnerMatches(record, yard, actor, policy)
   const manager = animalManagerMatches(record, actor, policy)
   const canManage = yardOwner.matched || manager.matched
-  const relationshipReason = yardOwner.reason === 'CROSS_YARD_RELATION'
-    ? yardOwner.reason
-    : canManage ? '' : (manager.reason || yardOwner.reason)
+  const relationshipReason =
+    yardOwner.reason === 'CROSS_YARD_RELATION'
+      ? yardOwner.reason
+      : canManage
+        ? ''
+        : manager.reason || yardOwner.reason
   return {
-    readPublic: read.allowed && record.visibility === 'public' ? '' : (read.allowed ? 'PRIVATE_VISIBILITY' : read.reason),
-    managementRead: canManage && manage.allowed ? '' : (canManage ? manage.reason : relationshipReason),
-    edit: canManage && edit.allowed ? '' : (canManage ? edit.reason : relationshipReason),
+    readPublic:
+      read.allowed && record.visibility === 'public'
+        ? ''
+        : read.allowed
+          ? 'PRIVATE_VISIBILITY'
+          : read.reason,
+    managementRead:
+      canManage && manage.allowed ? '' : canManage ? manage.reason : relationshipReason,
+    edit: canManage && edit.allowed ? '' : canManage ? edit.reason : relationshipReason,
   }
 }
 
@@ -657,7 +861,14 @@ interface CapabilityResultArgs {
   cancelled?: boolean
 }
 
-function capabilityResult({ actor, records, locator, decisions, error = null, cancelled = false }: CapabilityResultArgs): CapabilityResult {
+function capabilityResult({
+  actor,
+  records,
+  locator,
+  decisions,
+  error = null,
+  cancelled = false,
+}: CapabilityResultArgs): CapabilityResult {
   const capabilities: Record<string, boolean> = Object.create(null)
   const reasons: Record<string, string> = Object.create(null)
   for (const capability of CAPABILITY_LIST) {
@@ -677,53 +888,97 @@ function capabilityResult({ actor, records, locator, decisions, error = null, ca
     records: {
       profile: records.profile ? { userId: records.profile.userId } : null,
       yard: records.yard ? { yardId: records.yard.yardId } : null,
-      animal: records.animal ? { animalId: records.animal.animalId, yardId: records.animal.yardId } : null,
+      animal: records.animal
+        ? { animalId: records.animal.animalId, yardId: records.animal.yardId }
+        : null,
     },
     capabilities,
     reasons,
     permissions: {
-      profile: { readPublic: capabilities[MANAGEMENT_CAPABILITIES.PROFILE_READ_PUBLIC], readPrivate: capabilities[MANAGEMENT_CAPABILITIES.PROFILE_READ_PRIVATE], edit: capabilities[MANAGEMENT_CAPABILITIES.PROFILE_EDIT] },
-      yard: { readPublic: capabilities[MANAGEMENT_CAPABILITIES.YARD_READ_PUBLIC], managementRead: capabilities[MANAGEMENT_CAPABILITIES.YARD_MANAGEMENT_READ_PRIVATE], edit: capabilities[MANAGEMENT_CAPABILITIES.YARD_EDIT] },
-      animal: { readPublic: capabilities[MANAGEMENT_CAPABILITIES.ANIMAL_READ_PUBLIC], managementRead: capabilities[MANAGEMENT_CAPABILITIES.ANIMAL_MANAGEMENT_READ_PRIVATE], edit: capabilities[MANAGEMENT_CAPABILITIES.ANIMAL_EDIT] },
+      profile: {
+        readPublic: capabilities[MANAGEMENT_CAPABILITIES.PROFILE_READ_PUBLIC],
+        readPrivate: capabilities[MANAGEMENT_CAPABILITIES.PROFILE_READ_PRIVATE],
+        edit: capabilities[MANAGEMENT_CAPABILITIES.PROFILE_EDIT],
+      },
+      yard: {
+        readPublic: capabilities[MANAGEMENT_CAPABILITIES.YARD_READ_PUBLIC],
+        managementRead: capabilities[MANAGEMENT_CAPABILITIES.YARD_MANAGEMENT_READ_PRIVATE],
+        edit: capabilities[MANAGEMENT_CAPABILITIES.YARD_EDIT],
+      },
+      animal: {
+        readPublic: capabilities[MANAGEMENT_CAPABILITIES.ANIMAL_READ_PUBLIC],
+        managementRead: capabilities[MANAGEMENT_CAPABILITIES.ANIMAL_MANAGEMENT_READ_PRIVATE],
+        edit: capabilities[MANAGEMENT_CAPABILITIES.ANIMAL_EDIT],
+      },
     },
     readOnly: true,
     canWrite: false,
     cancelled,
-    error: error ? { code: errorCode(error, 'MANAGEMENT_CONTRACT_FAILED'), message: errorMessage(error, 'Management capability evaluation failed') } : null,
+    error: error
+      ? {
+          code: errorCode(error, 'MANAGEMENT_CONTRACT_FAILED'),
+          message: errorMessage(error, 'Management capability evaluation failed'),
+        }
+      : null,
   })
 }
 
 function errorCode(error: unknown, fallback: string): string {
-  if (error !== null && typeof error === 'object' && 'code' in error && typeof error.code === 'string') return error.code
+  if (
+    error !== null &&
+    typeof error === 'object' &&
+    'code' in error &&
+    typeof error.code === 'string'
+  )
+    return error.code
   return fallback
 }
 
 function errorMessage(error: unknown, fallback: string): string {
-  if (error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string') return error.message
+  if (
+    error !== null &&
+    typeof error === 'object' &&
+    'message' in error &&
+    typeof error.message === 'string'
+  )
+    return error.message
   return fallback
 }
 
 function denied(error: unknown, cancelled = false): CapabilityResult {
-  return capabilityResult({ actor: null, records: {}, locator: {}, decisions: {}, error, cancelled })
+  return capabilityResult({
+    actor: null,
+    records: {},
+    locator: {},
+    decisions: {},
+    error,
+    cancelled,
+  })
 }
 
 function normalizeSource(context: unknown): ManagementSource {
   if (!isPlainRecord(context)) fail('INVALID_CONTEXT', 'management context must be a plain object')
   rejectDangerousKeys(context, 'management context')
   for (const key of Object.keys(context)) {
-    if (!TOP_LEVEL_KEYS.has(key)) fail('UNKNOWN_FIELD', `Unknown management context field: ${key}`, { key })
+    if (!TOP_LEVEL_KEYS.has(key))
+      fail('UNKNOWN_FIELD', `Unknown management context field: ${key}`, { key })
   }
   const query = normalizeQuery(context.query)
   const objectType = context.resourceType
-  if (own(context, 'resourceType') && (typeof objectType !== 'string' || !includesValue(MANAGEMENT_RESOURCE_TYPES, objectType))) {
+  if (
+    own(context, 'resourceType') &&
+    (typeof objectType !== 'string' || !includesValue(MANAGEMENT_RESOURCE_TYPES, objectType))
+  ) {
     fail('INVALID_RESOURCE_TYPE', 'resourceType is not supported', { resourceType: objectType })
   }
   let profile: unknown = context.profile
   let yard: unknown = context.yard
   let animal: unknown = context.animal
   if (context.object !== undefined) {
-    if (typeof objectType !== 'string' || !includesValue(MANAGEMENT_RESOURCE_TYPES, objectType)) fail('RESOURCE_TYPE_REQUIRED', 'resourceType is required with object')
-    if (context[objectType] !== undefined) fail('DUPLICATE_OBJECT', `Both object and ${objectType} were supplied`, { objectType })
+    if (typeof objectType !== 'string' || !includesValue(MANAGEMENT_RESOURCE_TYPES, objectType))
+      fail('RESOURCE_TYPE_REQUIRED', 'resourceType is required with object')
+    if (context[objectType] !== undefined)
+      fail('DUPLICATE_OBJECT', `Both object and ${objectType} were supplied`, { objectType })
     if (objectType === 'profile') profile = context.object
     if (objectType === 'yard') yard = context.object
     if (objectType === 'animal') animal = context.object
@@ -734,10 +989,14 @@ function normalizeSource(context: unknown): ManagementSource {
     animal: animal === undefined || animal === null ? null : normalizeAnimal(animal),
   }
   const locator = normalizeLocator(context, query)
-  if (locator.userId && records.profile && locator.userId !== records.profile.userId) fail('LOCATOR_MISMATCH', 'userId does not match profile.userId')
-  if (locator.yardId && records.yard && locator.yardId !== records.yard.yardId) fail('LOCATOR_MISMATCH', 'yardId does not match yard.yardId')
-  if (locator.animalId && records.animal && locator.animalId !== records.animal.animalId) fail('LOCATOR_MISMATCH', 'animalId does not match animal.animalId')
-  if (records.yard && records.animal && records.yard.yardId !== records.animal.yardId) fail('CROSS_YARD_RELATION', 'animal.yardId does not match yard.yardId')
+  if (locator.userId && records.profile && locator.userId !== records.profile.userId)
+    fail('LOCATOR_MISMATCH', 'userId does not match profile.userId')
+  if (locator.yardId && records.yard && locator.yardId !== records.yard.yardId)
+    fail('LOCATOR_MISMATCH', 'yardId does not match yard.yardId')
+  if (locator.animalId && records.animal && locator.animalId !== records.animal.animalId)
+    fail('LOCATOR_MISMATCH', 'animalId does not match animal.animalId')
+  if (records.yard && records.animal && records.yard.yardId !== records.animal.yardId)
+    fail('CROSS_YARD_RELATION', 'animal.yardId does not match yard.yardId')
   return { records, locator, query }
 }
 
@@ -756,11 +1015,29 @@ function evaluateManagementCapabilities(context: unknown = {}): CapabilityResult
     const actor = resolveTrustedActor(contextRecord.actorProvider)
     const policy = normalizePolicy(contextRecord.policy)
     const cancelled = contextRecord.cancelled === true || contextRecord.intent === 'cancel'
-    if (cancelled) return capabilityResult({ actor, records: source.records, locator: source.locator, decisions: {}, cancelled: true })
+    if (cancelled)
+      return capabilityResult({
+        actor,
+        records: source.records,
+        locator: source.locator,
+        decisions: {},
+        cancelled: true,
+      })
     const decisions: Record<ResourceType, Decision | null> = {
-      profile: source.records.profile ? profileDecisions(source.records.profile, actor, policy && policy.profile) : null,
-      yard: source.records.yard ? yardDecisions(source.records.yard, actor, policy && policy.yard) : null,
-      animal: source.records.animal ? animalDecisions(source.records.animal, source.records.yard, actor, policy && policy.animal) : null,
+      profile: source.records.profile
+        ? profileDecisions(source.records.profile, actor, policy && policy.profile)
+        : null,
+      yard: source.records.yard
+        ? yardDecisions(source.records.yard, actor, policy && policy.yard)
+        : null,
+      animal: source.records.animal
+        ? animalDecisions(
+            source.records.animal,
+            source.records.yard,
+            actor,
+            policy && policy.animal,
+          )
+        : null,
     }
     return capabilityResult({ actor, records: source.records, locator: source.locator, decisions })
   } catch (error) {
@@ -783,7 +1060,10 @@ function canManagementCapability(capability: unknown, context: unknown = {}): bo
 }
 
 function assertManagementCapability(capability: unknown, context: unknown = {}): JsonRecord {
-  if (!isManagementCapability(capability)) fail('UNKNOWN_CAPABILITY', `Unknown management capability: ${String(capability)}`, { capability })
+  if (!isManagementCapability(capability))
+    fail('UNKNOWN_CAPABILITY', `Unknown management capability: ${String(capability)}`, {
+      capability,
+    })
   const result = evaluateManagementCapabilities(context)
   if (!result.capabilities[capability]) {
     fail('CAPABILITY_DENIED', `Management capability denied: ${capability}`, {
@@ -799,9 +1079,24 @@ function createManagementEvaluator({ actorProvider, policy }: ManagementEvaluato
   const fixedPolicy = normalizePolicy(policy)
   return Object.freeze({
     getActor: () => resolveTrustedActor(actorProvider),
-    evaluate: (context: unknown = {}) => evaluateManagementCapabilities({ ...(isPlainRecord(context) ? context : {}), actorProvider, policy: fixedPolicy }),
-    can: (capability: unknown, context: unknown = {}) => canManagementCapability(capability, { ...(isPlainRecord(context) ? context : {}), actorProvider, policy: fixedPolicy }),
-    assert: (capability: unknown, context: unknown = {}) => assertManagementCapability(capability, { ...(isPlainRecord(context) ? context : {}), actorProvider, policy: fixedPolicy }),
+    evaluate: (context: unknown = {}) =>
+      evaluateManagementCapabilities({
+        ...(isPlainRecord(context) ? context : {}),
+        actorProvider,
+        policy: fixedPolicy,
+      }),
+    can: (capability: unknown, context: unknown = {}) =>
+      canManagementCapability(capability, {
+        ...(isPlainRecord(context) ? context : {}),
+        actorProvider,
+        policy: fixedPolicy,
+      }),
+    assert: (capability: unknown, context: unknown = {}) =>
+      assertManagementCapability(capability, {
+        ...(isPlainRecord(context) ? context : {}),
+        actorProvider,
+        policy: fixedPolicy,
+      }),
   })
 }
 

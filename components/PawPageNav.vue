@@ -1,21 +1,58 @@
 <template>
-  <view class="paw-nav-placeholder" :style="placeholderStyle" data-qa="page-nav-placeholder">
-    <view class="paw-nav" :style="navStyle" data-qa="page-nav">
-      <view class="paw-nav__row" :style="rowStyle" data-qa="page-nav-row">
-        <view class="paw-nav__back" :class="{ 'paw-nav__back--hidden': !showBack }" :style="backStyle" role="button"
-          aria-label="返回" data-qa="page-nav-back" @click.stop="onBack">
-          <PawIcon name="navigation/back" size="base" color="#282827" label="返回" />
+  <view
+    class="paw-nav-placeholder"
+    :style="placeholderStyle"
+    data-qa="page-nav-placeholder"
+  >
+    <view
+      class="paw-nav"
+      :style="navStyle"
+      data-qa="page-nav"
+    >
+      <view
+        class="paw-nav__row"
+        :style="rowStyle"
+        data-qa="page-nav-row"
+      >
+        <view
+          class="paw-nav__back"
+          :class="{ 'paw-nav__back--hidden': !showBack }"
+          :style="backStyle"
+          role="button"
+          aria-label="返回"
+          data-qa="page-nav-back"
+          @click.stop="onBack"
+        >
+          <PawIcon
+            name="navigation/back"
+            size="base"
+            color="#282827"
+            label="返回"
+          />
         </view>
 
-        <view v-if="contentSlotEnabled && $slots.content" class="paw-nav__content" :style="contentStyle"
-          data-qa="page-nav-content">
+        <view
+          v-if="contentSlotEnabled && $slots.content"
+          class="paw-nav__content"
+          :style="contentStyle"
+          data-qa="page-nav-content"
+        >
           <slot name="content" />
         </view>
-        <text v-else class="paw-nav__title" :class="{ 'paw-nav__title--light': light }" :style="titleStyle">{{ title
-          }}</text>
+        <text
+          v-else
+          class="paw-nav__title"
+          :class="{ 'paw-nav__title--light': light }"
+          :style="titleStyle"
+          >{{ title }}</text
+        >
 
         <!-- Transparent reserve only. WeChat renders the native capsule itself. -->
-        <view class="paw-nav__native-reserve" :style="reserveStyle" aria-hidden="true" />
+        <view
+          class="paw-nav__native-reserve"
+          :style="reserveStyle"
+          aria-hidden="true"
+        />
       </view>
     </view>
   </view>
@@ -31,7 +68,9 @@ import { goBackSmart } from '@/utils/navBack.ts'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
 type NavSlotPosition = 'left' | 'center' | 'custom'
-interface PawPageNavState { nav: WechatNavLayout }
+interface PawPageNavState {
+  nav: WechatNavLayout
+}
 
 function isNavSlotPosition(value: unknown): value is NavSlotPosition {
   return value === 'left' || value === 'center' || value === 'custom'
@@ -59,9 +98,12 @@ export default defineComponent({
     slotPosition: {
       type: String as PropType<NavSlotPosition>,
       default: 'left',
-      validator: isNavSlotPosition
+      validator: isNavSlotPosition,
     },
-    slotStyle: { type: Object as PropType<Record<string, string | number | undefined>>, default: () => ({}) },
+    slotStyle: {
+      type: Object as PropType<Record<string, string | number | undefined>>,
+      default: () => ({}),
+    },
     contentSlotEnabled: { type: Boolean, default: true },
     background: { type: String, default: 'transparent' },
     light: { type: Boolean, default: false },
@@ -70,11 +112,11 @@ export default defineComponent({
     fallbackUrl: { type: String, default: '/pages/index/index' },
     contentInsetLeft: { type: Number, default: 44 },
     nativeCapsuleGap: { type: Number, default: 8 },
-    backHitWidth: { type: Number, default: 44 }
+    backHitWidth: { type: Number, default: 44 },
   },
   emits: {
-    'back': eventContract<[]>(),
-    'layout': eventContract<[layout: WechatNavLayout]>(),
+    back: eventContract<[]>(),
+    layout: eventContract<[layout: WechatNavLayout]>(),
   },
   data(): PawPageNavState {
     return { nav: getWechatNavLayout() }
@@ -97,7 +139,7 @@ export default defineComponent({
         return {
           left: '0px',
           right: '0px',
-          justifyContent: 'center'
+          justifyContent: 'center',
         }
       }
       if (this.slotPosition === 'custom') {
@@ -105,30 +147,30 @@ export default defineComponent({
           left: '0px',
           right: this.nav.rightReservedWidth + 'px',
           justifyContent: 'flex-start',
-          ...this.slotStyle
+          ...this.slotStyle,
         }
       }
       return {
         left: this.contentInsetLeft + 'px',
         right: this.nav.rightReservedWidth + this.nativeCapsuleGap + 'px',
-        justifyContent: 'flex-start'
+        justifyContent: 'flex-start',
       }
     },
     titleStyle() {
       if (this.titleCentered) {
         return {
           left: '0px',
-          right: '0px'
+          right: '0px',
         }
       }
       return {
         left: '44px',
-        right: this.nav.rightReservedWidth + 'px'
+        right: this.nav.rightReservedWidth + 'px',
       }
     },
     reserveStyle() {
       return { width: this.nav.rightReservedWidth + 'px' }
-    }
+    },
   },
   mounted() {
     this.$emit('layout', { ...this.nav })
@@ -137,8 +179,8 @@ export default defineComponent({
     onBack() {
       this.$emit('back')
       if (this.autoBack) goBackSmart({ fallbackUrl: this.fallbackUrl })
-    }
-  }
+    },
+  },
 })
 </script>
 

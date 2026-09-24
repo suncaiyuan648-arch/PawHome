@@ -1,10 +1,14 @@
 <template>
-  <view class="paw-tag" :class="`paw-tag--${tone}`">
+  <view
+    class="paw-tag"
+    :class="`paw-tag--${tone}`"
+  >
     <text>{{ text }}</text>
   </view>
 </template>
 
-<script lang="ts">import { defineComponent } from 'vue'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'PawTag',
@@ -16,8 +20,8 @@ export default defineComponent({
   },
   props: {
     text: { type: String, default: '' },
-    tone: { type: String, default: 'neutral' }
-  }
+    tone: { type: String, default: 'neutral' },
+  },
 })
 </script>
 

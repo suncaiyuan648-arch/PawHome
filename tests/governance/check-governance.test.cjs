@@ -27,28 +27,33 @@ function baseFixture(options = {}) {
     'pages/index/index',
     'pages/selfRun/index',
     'pages/message/index',
-    'pages/me/index'
+    'pages/me/index',
   ]
   for (const route of tabRoutes) write(root, `${route}.vue`, '<template><view /></template>')
   const extra = options.extra || 'pages/messageDetail/index'
   if (extra) write(root, `${extra}.vue`, '<template><view /></template>')
   const config = {
-    pages: tabRoutes.concat(extra ? [extra] : []).map(path => ({ path })),
+    pages: tabRoutes.concat(extra ? [extra] : []).map((path) => ({ path })),
     subPackages: [],
-    tabBar: { list: tabRoutes.map(pagePath => ({ pagePath })) }
+    tabBar: { list: tabRoutes.map((pagePath) => ({ pagePath })) },
   }
-  write(root, 'pages.json', `{
+  write(
+    root,
+    'pages.json',
+    `{
     // JSON5 comments are part of the supported uni-app config.
     "pages": ${JSON.stringify(config.pages)},
     "subPackages": ${JSON.stringify(config.subPackages)},
     "tabBar": ${JSON.stringify(config.tabBar)}
-  }`)
-  if (options.qa !== false) write(root, 'docs/design/figma-map.yaml', 'pages:\n  home:\n    route: "/pages/index/index"\n')
+  }`,
+  )
+  if (options.qa !== false)
+    write(root, 'docs/design/figma-map.yaml', 'pages:\n  home:\n    route: "/pages/index/index"\n')
   return root
 }
 
 function codes(result) {
-  return result.issues.map(issue => issue.code)
+  return result.issues.map((issue) => issue.code)
 }
 
 test('two subpackage spellings cannot silently define different compiler routes', () => {
@@ -61,29 +66,42 @@ test('two subpackage spellings cannot silently define different compiler routes'
 
 test('icon usage checks both bound quote styles and App.vue', () => {
   const root = fixture()
-  write(root, 'App.vue', `<template><paw-icon :name='"unknown/double"' /><PawIcon v-bind:name="'unknown/single'" /></template>`)
+  write(
+    root,
+    'App.vue',
+    `<template><paw-icon :name='"unknown/double"' /><PawIcon v-bind:name="'unknown/single'" /></template>`,
+  )
   const unknown = scanUnknownIconNames({ root, knownNames: [] })
   assert.equal(unknown.length, 2)
-  assert.ok(unknown.some(item => item.includes('unknown/double')))
-  assert.ok(unknown.some(item => item.includes('unknown/single')))
+  assert.ok(unknown.some((item) => item.includes('unknown/double')))
+  assert.ok(unknown.some((item) => item.includes('unknown/single')))
 })
 
 test('route checker accepts commented JSON5 and a clean packages pages subtree', () => {
   const root = baseFixture()
   write(root, 'packages/rescue/pages/apply/index.vue', '<template><view /></template>')
-  const config = JSON.parse(fs.readFileSync(path.join(root, 'pages.json'), 'utf8').replace(/\/\/.*$/gm, ''))
+  const config = JSON.parse(
+    fs.readFileSync(path.join(root, 'pages.json'), 'utf8').replace(/\/\/.*$/gm, ''),
+  )
   config.subPackages = [{ root: 'packages/rescue', pages: [{ path: 'pages/apply/index' }] }]
-  write(root, 'pages.json', `{
+  write(
+    root,
+    'pages.json',
+    `{
     // keep comments to exercise JSON5 parsing
     "pages": ${JSON.stringify(config.pages)},
     "subPackages": ${JSON.stringify(config.subPackages)},
     "tabBar": ${JSON.stringify(config.tabBar)}
-  }`)
+  }`,
+  )
   write(root, 'packages/rescue/components/NotAPage.vue', '<template><view /></template>')
   write(root, 'pages/legacy/components/NotAPage.vue', '<template><view /></template>')
   const result = checkPageRoutes({ root })
   assert.deepEqual(result.issues, [])
-  assert.equal(result.actual.some(item => item.route.endsWith('/components/NotAPage')), false)
+  assert.equal(
+    result.actual.some((item) => item.route.endsWith('/components/NotAPage')),
+    false,
+  )
 })
 
 test('route checker rejects duplicate routes, nested roots, missing files, and unregistered pages', () => {
@@ -91,12 +109,14 @@ test('route checker rejects duplicate routes, nested roots, missing files, and u
   write(root, 'pages/orphan.vue', '<template><view /></template>')
   write(root, 'packages/a/pages/index.vue', '<template><view /></template>')
   write(root, 'packages/b/pages/index.vue', '<template><view /></template>')
-  const config = JSON.parse(fs.readFileSync(path.join(root, 'pages.json'), 'utf8').replace(/\/\/.*$/gm, ''))
+  const config = JSON.parse(
+    fs.readFileSync(path.join(root, 'pages.json'), 'utf8').replace(/\/\/.*$/gm, ''),
+  )
   config.pages.push({ path: 'pages/index/index' })
   config.pages.push({ path: 'pages/missing/index' })
   config.subPackages = [
     { root: 'packages/a', pages: [{ path: 'pages/index' }] },
-    { root: 'packages/a/detail', pages: [{ path: 'pages/index' }] }
+    { root: 'packages/a/detail', pages: [{ path: 'pages/index' }] },
   ]
   write(root, 'pages.json', JSON.stringify(config))
   const result = checkPageRoutes({ root })
@@ -108,12 +128,18 @@ test('route checker rejects duplicate routes, nested roots, missing files, and u
 
 test('route checker requires all four tabs in the main package and validates active QA routes', () => {
   const root = baseFixture()
-  const config = JSON.parse(fs.readFileSync(path.join(root, 'pages.json'), 'utf8').replace(/\/\/.*$/gm, ''))
-  config.pages = config.pages.filter(page => page.path !== 'pages/message/index')
+  const config = JSON.parse(
+    fs.readFileSync(path.join(root, 'pages.json'), 'utf8').replace(/\/\/.*$/gm, ''),
+  )
+  config.pages = config.pages.filter((page) => page.path !== 'pages/message/index')
   config.subPackages = [{ root: 'packages/notification', pages: [{ path: 'pages/message/index' }] }]
   write(root, 'packages/notification/pages/message/index.vue', '<template><view /></template>')
   write(root, 'pages.json', JSON.stringify(config))
-  write(root, 'docs/design/figma-map.yaml', 'pages:\n  home:\n    route: "/pages/index/index"\n  missing:\n    route: "/pages/does-not-exist/index"\n')
+  write(
+    root,
+    'docs/design/figma-map.yaml',
+    'pages:\n  home:\n    route: "/pages/index/index"\n  missing:\n    route: "/pages/does-not-exist/index"\n',
+  )
   const result = checkPageRoutes({ root })
   assert.ok(codes(result).includes('tab-not-registered'))
   assert.ok(codes(result).includes('qa-route-not-registered'))
@@ -122,7 +148,9 @@ test('route checker requires all four tabs in the main package and validates act
 test('route checker supports uni-app subpackages spelling and rejects malformed paths/main-package nesting', () => {
   const root = baseFixture()
   write(root, 'packages/rescue/pages/apply/index.vue', '<template><view /></template>')
-  const config = JSON.parse(fs.readFileSync(path.join(root, 'pages.json'), 'utf8').replace(/\/\/.*$/gm, ''))
+  const config = JSON.parse(
+    fs.readFileSync(path.join(root, 'pages.json'), 'utf8').replace(/\/\/.*$/gm, ''),
+  )
   config.pages.push({ path: 'packages/rescue/pages/main' })
   config.subPackages = undefined
   config.subpackages = [{ root: 'packages/rescue', pages: [{ path: 'pages/apply/index' }] }]
@@ -134,7 +162,9 @@ test('route checker supports uni-app subpackages spelling and rejects malformed 
 
   const clean = baseFixture()
   write(clean, 'packages/rescue/pages/apply/index.vue', '<template><view /></template>')
-  const cleanConfig = JSON.parse(fs.readFileSync(path.join(clean, 'pages.json'), 'utf8').replace(/\/\/.*$/gm, ''))
+  const cleanConfig = JSON.parse(
+    fs.readFileSync(path.join(clean, 'pages.json'), 'utf8').replace(/\/\/.*$/gm, ''),
+  )
   cleanConfig.subPackages = undefined
   cleanConfig.subpackages = [{ root: 'packages/rescue', pages: [{ path: 'pages/apply/index' }] }]
   write(clean, 'pages.json', JSON.stringify(cleanConfig))
@@ -143,19 +173,29 @@ test('route checker supports uni-app subpackages spelling and rejects malformed 
 
 test('QA route extraction accepts unquoted YAML scalars and reports malformed YAML route values', () => {
   const root = baseFixture()
-  write(root, 'docs/design/figma-map.yaml', [
-    'pages:',
-    '  home: &home {route: /pages/index/index}',
-    '  home_alias: *home',
-    'planned:',
-    '  - route: /pages/does-not-exist/index',
-    'unresolved:',
-    '  - route: /pages/also-not-built/index'
-  ].join('\n'))
+  write(
+    root,
+    'docs/design/figma-map.yaml',
+    [
+      'pages:',
+      '  home: &home {route: /pages/index/index}',
+      '  home_alias: *home',
+      'planned:',
+      '  - route: /pages/does-not-exist/index',
+      'unresolved:',
+      '  - route: /pages/also-not-built/index',
+    ].join('\n'),
+  )
   assert.deepEqual(checkPageRoutes({ root }).issues, [])
   write(root, 'docs/design-audit/figma-state-matrix.md', '`/pages/does-not-exist/index`')
   assert.deepEqual(checkPageRoutes({ root }).issues, [])
-  assert.ok(checkPageRoutes({ root, qaFiles: ['docs/design-audit/figma-state-matrix.md'], requireQaFiles: true }).issues.length)
+  assert.ok(
+    checkPageRoutes({
+      root,
+      qaFiles: ['docs/design-audit/figma-state-matrix.md'],
+      requireQaFiles: true,
+    }).issues.length,
+  )
   write(root, 'docs/design/figma-map.yaml', 'pages: [not: valid\n')
   assert.ok(codes(checkPageRoutes({ root })).includes('invalid-qa-matrix'))
 })
@@ -163,10 +203,14 @@ test('QA route extraction accepts unquoted YAML scalars and reports malformed YA
 test('planning documents do not become active QA routes', () => {
   const root = baseFixture({ qa: false })
   write(root, 'docs/architecture-audit/05-plan.md', '`/packages/planned/pages/not-yet-built`')
-  write(root, '.artifacts/architecture-governance/figma-state-matrix.json', JSON.stringify({
-    active: [{ route: '/pages/index/index' }],
-    planned: [{ route: '/packages/planned/pages/not-yet-built' }]
-  }))
+  write(
+    root,
+    '.artifacts/architecture-governance/figma-state-matrix.json',
+    JSON.stringify({
+      active: [{ route: '/pages/index/index' }],
+      planned: [{ route: '/packages/planned/pages/not-yet-built' }],
+    }),
+  )
   const result = checkPageRoutes({ root })
   assert.deepEqual(result.issues, [])
 })
@@ -176,7 +220,7 @@ function runGuard(script, root) {
     execFileSync(process.execPath, [path.join(repoRoot, 'scripts', script)], {
       cwd: repoRoot,
       env: { ...process.env, PAWHOME_PROJECT_ROOT: root },
-      stdio: 'pipe'
+      stdio: 'pipe',
     })
     return { passed: true, output: '' }
   } catch (error) {
@@ -191,8 +235,16 @@ test('native and typography guards scan package components and tolerate missing 
   assert.equal(cleanNative.passed, true)
   assert.equal(cleanTypography.passed, true)
 
-  write(root, 'packages/rescue/components/FakeNative.vue', '<template><view class="fake-status-bar" /></template>')
-  write(root, 'packages/rescue/components/BadType.vue', '<template><view /></template>\n<style>.x { font-weight: 600; }</style>')
+  write(
+    root,
+    'packages/rescue/components/FakeNative.vue',
+    '<template><view class="fake-status-bar" /></template>',
+  )
+  write(
+    root,
+    'packages/rescue/components/BadType.vue',
+    '<template><view /></template>\n<style>.x { font-weight: 600; }</style>',
+  )
   const native = runGuard('check-native-ui-reimplementation.cjs', root)
   const typography = runGuard('check-typography.cjs', root)
   assert.equal(native.passed, false)
@@ -203,12 +255,20 @@ test('native and typography guards scan package components and tolerate missing 
 
 test('icon guard identifies unknown literal icons in package pages without touching the repository', () => {
   const root = fixture()
-  write(root, 'packages/rescue/pages/detail/index.vue', '<template><PawIcon name="rescue/unknown" /><paw-icon icon="rescue/unknown-kebab" /><PawIconButton :name="\'rescue/bound\'" /><paw-icon-button v-bind:icon="\'rescue/bound-kebab\'" /></template>')
+  write(
+    root,
+    'packages/rescue/pages/detail/index.vue',
+    '<template><PawIcon name="rescue/unknown" /><paw-icon icon="rescue/unknown-kebab" /><PawIconButton :name="\'rescue/bound\'" /><paw-icon-button v-bind:icon="\'rescue/bound-kebab\'" /></template>',
+  )
   assert.deepEqual(scanUnknownIconNames({ root, knownNames: ['navigation/close'] }).length, 4)
   const failedGate = runGuard('check-paw-icon-usage.cjs', root)
   assert.equal(failedGate.passed, false)
   assert.match(failedGate.output, /unknown PawIcon name/)
-  write(root, 'packages/rescue/pages/detail/index.vue', '<template><PawIcon name="navigation/close" /><paw-icon icon="navigation/close" /><PawIconButton :name="\'navigation/close\'" /><paw-icon-button v-bind:icon="\'navigation/close\'" /></template>')
+  write(
+    root,
+    'packages/rescue/pages/detail/index.vue',
+    '<template><PawIcon name="navigation/close" /><paw-icon icon="navigation/close" /><PawIconButton :name="\'navigation/close\'" /><paw-icon-button v-bind:icon="\'navigation/close\'" /></template>',
+  )
   assert.deepEqual(scanUnknownIconNames({ root, knownNames: ['navigation/close'] }), [])
   assert.equal(runGuard('check-paw-icon-usage.cjs', root).passed, true)
 })

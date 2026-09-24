@@ -19,8 +19,16 @@ before(async () => {
   await fs.mkdir(path.join(tempRoot, 'packages/message/services'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'utils'), { recursive: true })
-  await fs.copyFile(path.join(ROOT, 'packages/message/services/messageStore.ts'), path.join(tempRoot, 'packages/message/services/messageStore.ts'))
-  for (const file of ['actorCapabilities.ts', 'deeplinkContracts.ts', 'productionDeepLinkResolver.ts', 'routeContracts.ts']) {
+  await fs.copyFile(
+    path.join(ROOT, 'packages/message/services/messageStore.ts'),
+    path.join(tempRoot, 'packages/message/services/messageStore.ts'),
+  )
+  for (const file of [
+    'actorCapabilities.ts',
+    'deeplinkContracts.ts',
+    'productionDeepLinkResolver.ts',
+    'routeContracts.ts',
+  ]) {
     await fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
   }
   for (const file of ['adoptionStorage.ts', 'rescueStorage.ts', 'rewardOrderStorage.ts']) {
@@ -28,10 +36,16 @@ before(async () => {
   }
   storage = new Map()
   globalThis.uni = {
-    getStorageSync(key) { return storage.get(key) },
-    setStorageSync(key, value) { storage.set(key, value) },
+    getStorageSync(key) {
+      return storage.get(key)
+    },
+    setStorageSync(key, value) {
+      storage.set(key, value)
+    },
   }
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/message/services/messageStore.ts')).href}?test=${Date.now()}`)
+  api = await import(
+    `${pathToFileURL(path.join(tempRoot, 'packages/message/services/messageStore.ts')).href}?test=${Date.now()}`
+  )
 })
 
 beforeEach(() => {
@@ -67,14 +81,21 @@ test('a successful local review action produces one actor-authorized, idempotent
     title: '救助审核已通过',
     preview: '已通过',
     actorProvider: () => storage.get('PAWHOME_ACTOR_SESSION'),
-    authorize: ({ actor, message }) => actor.id === 'reviewer-a' && message.recipientId === 'applicant-a',
+    authorize: ({ actor, message }) =>
+      actor.id === 'reviewer-a' && message.recipientId === 'applicant-a',
   })
   assert.equal(result.success, true)
   assert.equal(result.wrote, true)
   const retry = api.produceLocalActionNotification({
     action: action({ toStatus: 'approved' }),
-    recipientId: 'applicant-a', businessType: 'rescue', businessId: 'rescue-a', reviewItemId: 'review-a',
-    category: 'service', title: '重试不覆盖', preview: 'x', actorProvider: () => storage.get('PAWHOME_ACTOR_SESSION'),
+    recipientId: 'applicant-a',
+    businessType: 'rescue',
+    businessId: 'rescue-a',
+    reviewItemId: 'review-a',
+    category: 'service',
+    title: '重试不覆盖',
+    preview: 'x',
+    actorProvider: () => storage.get('PAWHOME_ACTOR_SESSION'),
     authorize: () => true,
   })
   assert.equal(retry.idempotent, true)
@@ -83,14 +104,28 @@ test('a successful local review action produces one actor-authorized, idempotent
 
 test('stale actors and unauthorized cross-recipient producers fail without a message write', () => {
   const denied = api.produceLocalActionNotification({
-    action: action({ actorId: 'reviewer-b' }), recipientId: 'applicant-a', businessType: 'rescue', businessId: 'rescue-a',
-    reviewItemId: 'review-a', category: 'service', title: 'x', preview: 'x', actorProvider: () => storage.get('PAWHOME_ACTOR_SESSION'),
+    action: action({ actorId: 'reviewer-b' }),
+    recipientId: 'applicant-a',
+    businessType: 'rescue',
+    businessId: 'rescue-a',
+    reviewItemId: 'review-a',
+    category: 'service',
+    title: 'x',
+    preview: 'x',
+    actorProvider: () => storage.get('PAWHOME_ACTOR_SESSION'),
     authorize: () => true,
   })
   assert.equal(denied.error.code, 'ACTOR_MISMATCH')
   const forbidden = api.produceLocalActionNotification({
-    action: action(), recipientId: 'applicant-b', businessType: 'rescue', businessId: 'rescue-a', reviewItemId: 'review-a',
-    category: 'service', title: 'x', preview: 'x', actorProvider: () => storage.get('PAWHOME_ACTOR_SESSION'),
+    action: action(),
+    recipientId: 'applicant-b',
+    businessType: 'rescue',
+    businessId: 'rescue-a',
+    reviewItemId: 'review-a',
+    category: 'service',
+    title: 'x',
+    preview: 'x',
+    actorProvider: () => storage.get('PAWHOME_ACTOR_SESSION'),
     authorize: () => false,
   })
   assert.equal(forbidden.error.code, 'FORBIDDEN')
@@ -100,15 +135,27 @@ test('stale actors and unauthorized cross-recipient producers fail without a mes
 test('a producer cannot bind a successful action to another business or review item', () => {
   const wrongBusiness = api.produceLocalActionNotification({
     action: action({ rescueId: 'rescue-other' }),
-    recipientId: 'applicant-a', businessType: 'rescue', businessId: 'rescue-a', reviewItemId: 'review-a',
-    category: 'service', title: 'x', preview: 'x', actorProvider: () => storage.get('PAWHOME_ACTOR_SESSION'),
+    recipientId: 'applicant-a',
+    businessType: 'rescue',
+    businessId: 'rescue-a',
+    reviewItemId: 'review-a',
+    category: 'service',
+    title: 'x',
+    preview: 'x',
+    actorProvider: () => storage.get('PAWHOME_ACTOR_SESSION'),
     authorize: () => true,
   })
   assert.equal(wrongBusiness.error.code, 'ACTION_TARGET_MISMATCH')
   const wrongReview = api.produceLocalActionNotification({
     action: action({ reviewItemId: 'review-other' }),
-    recipientId: 'applicant-a', businessType: 'rescue', businessId: 'rescue-a', reviewItemId: 'review-a',
-    category: 'service', title: 'x', preview: 'x', actorProvider: () => storage.get('PAWHOME_ACTOR_SESSION'),
+    recipientId: 'applicant-a',
+    businessType: 'rescue',
+    businessId: 'rescue-a',
+    reviewItemId: 'review-a',
+    category: 'service',
+    title: 'x',
+    preview: 'x',
+    actorProvider: () => storage.get('PAWHOME_ACTOR_SESSION'),
     authorize: () => true,
   })
   assert.equal(wrongReview.error.code, 'ACTION_TARGET_MISMATCH')

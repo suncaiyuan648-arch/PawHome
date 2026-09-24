@@ -12,7 +12,9 @@ if (unknown.length) {
   console.error(unknown.join('\n'))
   process.exitCode = 1
 } else {
-  console.log('[PawIcon usage] PASS: static icon names in pages/components/packages/services/navigation are registered')
+  console.log(
+    '[PawIcon usage] PASS: static icon names in pages/components/packages/services/navigation are registered',
+  )
 }
 
 module.exports = { scanUnknownIconNames }

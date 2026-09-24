@@ -11,7 +11,10 @@ const ts = require('typescript')
 
 const projectRoot = path.resolve(__dirname, '..', '..')
 const pageFile = path.join(projectRoot, 'packages/rescue/pages/progress/index.vue')
-const componentFile = path.join(projectRoot, 'packages/rescue/components/RescueApplicantProgress.vue')
+const componentFile = path.join(
+  projectRoot,
+  'packages/rescue/components/RescueApplicantProgress.vue',
+)
 const progressServiceFile = path.join(projectRoot, 'packages/rescue/services/progress.ts')
 const rescueStorageFile = path.join(projectRoot, 'utils/rescueStorage.ts')
 let tempEsmRoot
@@ -22,32 +25,62 @@ let storage
 
 before(async () => {
   tempEsmRoot = await fsp.mkdtemp(path.join(os.tmpdir(), 'pawhome-rescue-progress-'))
-  await fsp.cp(path.join(projectRoot, 'contracts'), path.join(tempEsmRoot, 'contracts'), { recursive: true })
+  await fsp.cp(path.join(projectRoot, 'contracts'), path.join(tempEsmRoot, 'contracts'), {
+    recursive: true,
+  })
   await fsp.writeFile(path.join(tempEsmRoot, 'package.tson'), '{"type":"module"}\n')
   await fsp.mkdir(path.join(tempEsmRoot, 'navigation'), { recursive: true })
   await fsp.mkdir(path.join(tempEsmRoot, 'packages/rescue/services'), { recursive: true })
   await fsp.mkdir(path.join(tempEsmRoot, 'services/domainReads'), { recursive: true })
   await fsp.mkdir(path.join(tempEsmRoot, 'utils'), { recursive: true })
-  await fsp.copyFile(path.join(projectRoot, 'navigation/routeContracts.ts'), path.join(tempEsmRoot, 'navigation/routeContracts.ts'))
-  await fsp.copyFile(path.join(projectRoot, 'navigation/weixinLoadOptions.ts'), path.join(tempEsmRoot, 'navigation/weixinLoadOptions.ts'))
-  await fsp.copyFile(progressServiceFile, path.join(tempEsmRoot, 'packages/rescue/services/progress.ts'))
-  await fsp.copyFile(path.join(projectRoot, 'packages/rescue/services/stateAdapter.ts'), path.join(tempEsmRoot, 'packages/rescue/services/stateAdapter.ts'))
-  await fsp.cp(path.join(projectRoot, 'services/domainReads/rescue'), path.join(tempEsmRoot, 'services/domainReads/rescue'), { recursive: true })
+  await fsp.copyFile(
+    path.join(projectRoot, 'navigation/routeContracts.ts'),
+    path.join(tempEsmRoot, 'navigation/routeContracts.ts'),
+  )
+  await fsp.copyFile(
+    path.join(projectRoot, 'navigation/weixinLoadOptions.ts'),
+    path.join(tempEsmRoot, 'navigation/weixinLoadOptions.ts'),
+  )
+  await fsp.copyFile(
+    progressServiceFile,
+    path.join(tempEsmRoot, 'packages/rescue/services/progress.ts'),
+  )
+  await fsp.copyFile(
+    path.join(projectRoot, 'packages/rescue/services/stateAdapter.ts'),
+    path.join(tempEsmRoot, 'packages/rescue/services/stateAdapter.ts'),
+  )
+  await fsp.cp(
+    path.join(projectRoot, 'services/domainReads/rescue'),
+    path.join(tempEsmRoot, 'services/domainReads/rescue'),
+    { recursive: true },
+  )
   await fsp.copyFile(rescueStorageFile, path.join(tempEsmRoot, 'utils/rescueStorage.ts'))
   storage = new Map()
   globalThis.uni = {
-    getStorageSync(key) { return storage.get(key) },
-    setStorageSync(key, value) { storage.set(key, value) },
-    removeStorageSync(key) { storage.delete(key) }
+    getStorageSync(key) {
+      return storage.get(key)
+    },
+    setStorageSync(key, value) {
+      storage.set(key, value)
+    },
+    removeStorageSync(key) {
+      storage.delete(key)
+    },
   }
   const helperUrl = pathToFileURL(path.join(tempEsmRoot, 'navigation/weixinLoadOptions.ts')).href
   routeApi = {
     ...(await import(`${helperUrl}?test=${Date.now()}-${Math.random()}`)),
-    ...(await import(`${pathToFileURL(path.join(tempEsmRoot, 'navigation/routeContracts.ts')).href}?test=${Date.now()}-${Math.random()}`))
+    ...(await import(
+      `${pathToFileURL(path.join(tempEsmRoot, 'navigation/routeContracts.ts')).href}?test=${Date.now()}-${Math.random()}`
+    )),
   }
-  rescueMetadata = await import(`${pathToFileURL(path.join(projectRoot, 'packages/rescue/services/componentMetadata.ts')).href}?test=${Date.now()}-${Math.random()}`)
+  rescueMetadata = await import(
+    `${pathToFileURL(path.join(projectRoot, 'packages/rescue/services/componentMetadata.ts')).href}?test=${Date.now()}-${Math.random()}`
+  )
   routeApi.resolveRescueRecordLoadRoute = rescueMetadata.resolveRescueRecordLoadRoute
-  progressApi = await import(`${pathToFileURL(path.join(tempEsmRoot, 'packages/rescue/services/progress.ts')).href}?test=${Date.now()}-${Math.random()}`)
+  progressApi = await import(
+    `${pathToFileURL(path.join(tempEsmRoot, 'packages/rescue/services/progress.ts')).href}?test=${Date.now()}-${Math.random()}`
+  )
 })
 
 after(async () => {
@@ -63,39 +96,80 @@ function readScript(file) {
 
 function transpileRuntimeScript(source) {
   return ts.transpileModule(source.replace(/\bdefineComponent\(/g, '('), {
-    compilerOptions: { target: ts.ScriptTarget.ES2019, module: ts.ModuleKind.None }
+    compilerOptions: { target: ts.ScriptTarget.ES2019, module: ts.ModuleKind.None },
   }).outputText
+}
+
+function removeImports(source) {
+  const sourceFile = ts.createSourceFile(
+    'runtime.ts',
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  )
+  const importRanges = sourceFile.statements
+    .filter(ts.isImportDeclaration)
+    .map((declaration) => [declaration.getFullStart(), declaration.end])
+    .reverse()
+
+  return importRanges.reduce(
+    (result, [start, end]) => result.slice(0, start) + result.slice(end),
+    source,
+  )
 }
 
 function loadPage(stub) {
   const { script } = readScript(pageFile)
-  const withoutImports = transpileRuntimeScript(script.replace(/^import[^\n]+\n/gm, '').replace('export default', 'return'))
-  return new Function('readRescueProgress', 'RescueApplicantProgress', 'resolveRescueRecordLoadRoute', 'createRescueProgressPageState', withoutImports)(
-    stub,
-    {},
-    routeApi.resolveRescueRecordLoadRoute,
-    rescueMetadata.createRescueProgressPageState
+  const withoutImports = transpileRuntimeScript(
+    removeImports(script).replace('export default', 'return'),
   )
+  return new Function(
+    'readRescueProgress',
+    'RescueApplicantProgress',
+    'resolveRescueRecordLoadRoute',
+    'createRescueProgressPageState',
+    withoutImports,
+  )(stub, {}, routeApi.resolveRescueRecordLoadRoute, rescueMetadata.createRescueProgressPageState)
 }
 
 function loadComponent() {
   const { script } = readScript(componentFile)
-  const withoutImports = transpileRuntimeScript(script.replace(/^import[^\n]+\n/gm, '').replace('export default', 'return'))
+  const withoutImports = transpileRuntimeScript(
+    removeImports(script).replace('export default', 'return'),
+  )
   const statusMetadata = {
     platform_pending: { text: '平台审核中', tone: 'pending' },
     platform_approved: { text: '平台审核成功', tone: 'success' },
-    platform_rejected: { text: '平台审核未通过', tone: 'danger' }
+    platform_rejected: { text: '平台审核未通过', tone: 'danger' },
   }
-  return new Function('getRescueApplicationStatusPresentation', 'PawPageNav', 'PawIcon', 'PawStatusPill', 'LevelBadge', 'PawAdoptionPetsCard', withoutImports)(
-    status => Object.prototype.hasOwnProperty.call(statusMetadata, status) ? statusMetadata[status] : null,
-    {}, {}, {}, {}, {}
+  return new Function(
+    'getRescueApplicationStatusPresentation',
+    'PawPageNav',
+    'PawIcon',
+    'PawStatusPill',
+    'LevelBadge',
+    'PawAdoptionPetsCard',
+    withoutImports,
+  )(
+    (status) =>
+      Object.prototype.hasOwnProperty.call(statusMetadata, status) ? statusMetadata[status] : null,
+    {},
+    {},
+    {},
+    {},
+    {},
   )
 }
 
 test('rescue progress page requires rescueId, reads the progress service by exact ID, and refreshes onShow', () => {
   const calls = []
-  const record = { id: 'rescue-real-1', rescueId: 'rescue-real-1', applicationStatus: 'platform_pending' }
-  const page = loadPage(id => {
+  const record = {
+    id: 'rescue-real-1',
+    rescueId: 'rescue-real-1',
+    applicationStatus: 'platform_pending',
+  }
+  const page = loadPage((id) => {
     calls.push({ id })
     return id === record.id
       ? { success: true, data: record, error: null }
@@ -120,7 +194,7 @@ test('rescue progress page requires rescueId, reads the progress service by exac
 
 test('rescue progress page keeps not-found and malformed IDs empty instead of showing a demo pending state', () => {
   const calls = []
-  const page = loadPage(id => {
+  const page = loadPage((id) => {
     calls.push({ id })
     return { success: false, data: null, error: { code: 'NOT_FOUND' } }
   })
@@ -141,7 +215,7 @@ test('rescue progress page keeps not-found and malformed IDs empty instead of sh
 
 test('rescue progress rejects invalid IDs and unknown query parameters before reading storage', () => {
   const calls = []
-  const page = loadPage(id => {
+  const page = loadPage((id) => {
     calls.push({ id })
     return { success: false, data: null, error: { code: 'NOT_FOUND' } }
   })
@@ -151,7 +225,7 @@ test('rescue progress rejects invalid IDs and unknown query parameters before re
     { rescueId: 'rescue-real-1', type: 'rescue' },
     { rescueId: 'rescue-real-1', frame: 'legacy' },
     { rescueId: 42 },
-    { rescueId: 'rescue-real-1', extra: 'unexpected' }
+    { rescueId: 'rescue-real-1', extra: 'unexpected' },
   ]) {
     page.onLoad.call(vm, options)
     assert.equal(vm.loadState, 'invalid-params')
@@ -163,19 +237,24 @@ test('rescue progress rejects invalid IDs and unknown query parameters before re
 test('WeChat boundary decoding happens once and preserves literal plus and percent text', () => {
   const decoded = routeApi.decodeWeixinLoadOptions({ state: '%E7%8C%AB%20%252F%20%2B' })
   assert.equal(decoded.state, '猫 %2F +')
-  assert.throws(() => routeApi.decodeWeixinLoadOptions({ rescueId: '%E0%A4%A' }), error => error && error.code === 'MALFORMED_ENCODING')
+  assert.throws(
+    () => routeApi.decodeWeixinLoadOptions({ rescueId: '%E0%A4%A' }),
+    (error) => error && error.code === 'MALFORMED_ENCODING',
+  )
 })
 
 test('rescue progress service projects one saved snapshot through the canonical state contract and remains read-only', () => {
   storage.clear()
-  const saved = [{
-    id: 'rescue-real-1',
-    applicationStatus: 'platform_approved',
-    reviewStatus: 'approved',
-    fundingStatus: 'funding_pending',
-    status: 'approved',
-    applicantName: '真实求助人'
-  }]
+  const saved = [
+    {
+      id: 'rescue-real-1',
+      applicationStatus: 'platform_approved',
+      reviewStatus: 'approved',
+      fundingStatus: 'funding_pending',
+      status: 'approved',
+      applicantName: '真实求助人',
+    },
+  ]
   storage.set('PAWHOME_RESCUES', JSON.stringify(saved))
   const result = progressApi.readRescueProgress('rescue-real-1')
   assert.equal(result.success, true)
@@ -194,12 +273,17 @@ test('rescue progress service projects one saved snapshot through the canonical 
 test('rescue progress service excludes demos and exposes contradictory state without inventing a paid result', () => {
   storage.clear()
   assert.equal(progressApi.readRescueProgress('rescue-demo-001').error.code, 'NOT_FOUND')
-  storage.set('PAWHOME_RESCUES', JSON.stringify([{
-    id: 'rescue-invalid',
-    applicationStatus: 'platform_pending',
-    reviewStatus: 'rejected',
-    fundingStatus: 'funding_paid'
-  }]))
+  storage.set(
+    'PAWHOME_RESCUES',
+    JSON.stringify([
+      {
+        id: 'rescue-invalid',
+        applicationStatus: 'platform_pending',
+        reviewStatus: 'rejected',
+        fundingStatus: 'funding_paid',
+      },
+    ]),
+  )
   const invalid = progressApi.readRescueProgress('rescue-invalid')
   assert.equal(invalid.success, true)
   assert.equal(invalid.data.rescueState.validity, 'invalid')
@@ -213,7 +297,7 @@ test('rescue progress service excludes demos and exposes contradictory state wit
 
 test('rescue progress presentation derives pending, approved, rejected and unknown states from applicationStatus', () => {
   const component = loadComponent()
-  const context = record => {
+  const context = (record) => {
     const value = { record }
     for (const name of ['statusMeta', 'isApproved', 'isRejected']) {
       Object.defineProperty(value, name, { get: () => component.computed[name].call(value) })
@@ -228,7 +312,10 @@ test('rescue progress presentation derives pending, approved, rejected and unkno
   assert.equal(component.computed.statusTitle.call(approved), '平台审核成功')
   assert.equal(component.computed.statusTitle.call(rejected), '平台审核未通过')
   assert.equal(component.computed.statusTitle.call(unknown), '申请状态暂不可识别')
-  assert.equal(component.computed.statusCopy.call(unknown), '当前救助申请状态无法识别，请稍后重试。')
+  assert.equal(
+    component.computed.statusCopy.call(unknown),
+    '当前救助申请状态无法识别，请稍后重试。',
+  )
   assert.equal(component.computed.isApproved.call(rejected), false)
   assert.equal(component.computed.isApproved.call(approved), true)
 })
@@ -236,7 +323,10 @@ test('rescue progress presentation derives pending, approved, rejected and unkno
 test('rescue progress migration does not import the aggregate application API and retains the approved layout/navigation', () => {
   const page = readScript(pageFile).source
   const component = readScript(componentFile).source
-  const metadata = fs.readFileSync(path.join(projectRoot, 'packages/rescue/services/componentMetadata.ts'), 'utf8')
+  const metadata = fs.readFileSync(
+    path.join(projectRoot, 'packages/rescue/services/componentMetadata.ts'),
+    'utf8',
+  )
   assert.match(page, /readRescueProgress\(this\.rescueId,/)
   assert.doesNotMatch(page, /getRescueById/)
   assert.doesNotMatch(page, /includeDemo:\s*false/)
@@ -248,7 +338,15 @@ test('rescue progress migration does not import the aggregate application API an
   assert.doesNotMatch(page, /decodeQueryValue/)
   assert.doesNotMatch(page, /applicationMockApi/)
   assert.doesNotMatch(component, /applicationMockApi/)
-  for (const token of ['PawPageNav', 'PawAdoptionPetsCard', 'PawStatusPill', 'applicationStatus', 'platform_approved', 'platform_rejected', 'qa-rescue-applicant-progress-empty']) {
+  for (const token of [
+    'PawPageNav',
+    'PawAdoptionPetsCard',
+    'PawStatusPill',
+    'applicationStatus',
+    'platform_approved',
+    'platform_rejected',
+    'qa-rescue-applicant-progress-empty',
+  ]) {
     assert.match(component, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
   }
   assert.match(component, /没有审核|审核结果|平台审核未通过/)

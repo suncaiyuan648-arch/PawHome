@@ -1,16 +1,35 @@
 <template>
-  <view class="feed-card" :class="{ 'feed-card--single': item.title && item.title.length < 12 }"
-    @tap.stop="$emit('click', item)">
+  <view
+    class="feed-card"
+    :class="{ 'feed-card--single': item.title && item.title.length < 12 }"
+    @tap.stop="$emit('click', item)"
+  >
     <view class="feed-card__image-wrap">
-      <image class="feed-card__image" :src="item.cover" mode="aspectFill" />
-      <FeedCardLocation :distance="item.distance" :district="item.district" />
+      <image
+        class="feed-card__image"
+        :src="item.cover"
+        mode="aspectFill"
+      />
+      <FeedCardLocation
+        :distance="item.distance"
+        :district="item.district"
+      />
     </view>
     <text class="feed-card__title">{{ item.title }}</text>
     <view class="feed-card__footer">
-      <view class="feed-card__author" @tap.stop="$emit('user-click', item)">
-        <PawAvatar :src="item.userAvatar" :size="17" /><text>{{ item.userName }}</text>
+      <view
+        class="feed-card__author"
+        @tap.stop="$emit('user-click', item)"
+      >
+        <PawAvatar
+          :src="item.userAvatar"
+          :size="17"
+        /><text>{{ item.userName }}</text>
       </view>
-      <view class="feed-card__like" @tap.stop="$emit('like', item)">
+      <view
+        class="feed-card__like"
+        @tap.stop="$emit('like', item)"
+      >
         <PawLikeIcon :liked="item.liked" /><text>{{ item.likes }}</text>
       </view>
     </view>
@@ -27,13 +46,13 @@ import FeedCardLocation from '@/components/dynamic/FeedCardLocation.vue'
 import type { HomeFeedCardMetadata } from '@/utils/homeFeedMockData.ts'
 
 export default defineComponent({
-	name: 'FeedCard',
-	components: { PawAvatar, PawLikeIcon, FeedCardLocation },
-	props: { item: { type: Object as PropType<HomeFeedCardMetadata>, required: true } },
-	emits: {
-    'click': eventContract<[item: HomeFeedCardMetadata]>(),
+  name: 'FeedCard',
+  components: { PawAvatar, PawLikeIcon, FeedCardLocation },
+  props: { item: { type: Object as PropType<HomeFeedCardMetadata>, required: true } },
+  emits: {
+    click: eventContract<[item: HomeFeedCardMetadata]>(),
     'user-click': eventContract<[item: HomeFeedCardMetadata]>(),
-    'like': eventContract<[item: HomeFeedCardMetadata]>(),
+    like: eventContract<[item: HomeFeedCardMetadata]>(),
   },
 })
 </script>

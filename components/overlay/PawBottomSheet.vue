@@ -1,13 +1,37 @@
 <template>
-  <PawOverlay :model-value="openValue" placement="bottom" :close-on-mask="closeOnMask" :show-mask="showMask"
-    :z-index="zIndex" :enter-duration="180" :exit-duration="200" @update:model-value="setValue"
-    @update:visible="setValue" @after-open="$emit('after-open')" @after-close="$emit('after-close')">
+  <PawOverlay
+    :model-value="openValue"
+    placement="bottom"
+    :close-on-mask="closeOnMask"
+    :show-mask="showMask"
+    :z-index="zIndex"
+    :enter-duration="180"
+    :exit-duration="200"
+    @update:model-value="setValue"
+    @update:visible="setValue"
+    @after-open="$emit('after-open')"
+    @after-close="$emit('after-close')"
+  >
     <template #default="{ opened, closing }">
-      <PawSafeArea class="paw-bottom-sheet" :enabled="safeArea" :class="[
-        `paw-bottom-sheet--${variant}`,
-        { 'paw-bottom-sheet--open': opened, 'paw-bottom-sheet--closing': closing, 'paw-bottom-sheet--safe': safeArea, 'paw-bottom-sheet--fixed': !!height }
-      ]" :style="sheetStyle" @tap.stop>
-        <view v-if="showHandle" class="paw-bottom-sheet__handle"></view>
+      <PawSafeArea
+        class="paw-bottom-sheet"
+        :enabled="safeArea"
+        :class="[
+          `paw-bottom-sheet--${variant}`,
+          {
+            'paw-bottom-sheet--open': opened,
+            'paw-bottom-sheet--closing': closing,
+            'paw-bottom-sheet--safe': safeArea,
+            'paw-bottom-sheet--fixed': !!height,
+          },
+        ]"
+        :style="sheetStyle"
+        @tap.stop
+      >
+        <view
+          v-if="showHandle"
+          class="paw-bottom-sheet__handle"
+        ></view>
         <slot name="header" />
         <view class="paw-bottom-sheet__body">
           <slot />
@@ -39,7 +63,7 @@ export default defineComponent({
     lockScroll: { type: Boolean, default: true },
     height: { type: [String, Number], default: '' },
     zIndex: { type: [String, Number], default: 10020 },
-    showHandle: { type: Boolean, default: false }
+    showHandle: { type: Boolean, default: false },
   },
   emits: {
     'update:modelValue': eventContract<[value: boolean]>(),
@@ -48,18 +72,20 @@ export default defineComponent({
     'after-close': eventContract<[]>(),
   },
   computed: {
-    openValue() { return this.modelValue !== undefined ? this.modelValue : !!this.visible },
+    openValue() {
+      return this.modelValue !== undefined ? this.modelValue : !!this.visible
+    },
     sheetStyle() {
       if (!this.height) return {}
       return { height: typeof this.height === 'number' ? `${this.height}px` : this.height }
-    }
+    },
   },
   methods: {
     setValue(value: boolean) {
       this.$emit('update:modelValue', value)
       this.$emit('update:visible', value)
-    }
-  }
+    },
+  },
 })
 </script>
 

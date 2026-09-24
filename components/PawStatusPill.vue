@@ -1,18 +1,22 @@
 <template>
-  <view class="paw-status" :class="[`paw-status--${tone}`, `paw-status--${variant}`]">
+  <view
+    class="paw-status"
+    :class="[`paw-status--${tone}`, `paw-status--${variant}`]"
+  >
     <slot>{{ text }}</slot>
   </view>
 </template>
 
-<script lang="ts">import { defineComponent } from 'vue'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'PawStatusPill',
   props: {
     text: { type: String, default: '' },
     tone: { type: String, default: 'neutral' },
-    variant: { type: String, default: 'solid' }
-  }
+    variant: { type: String, default: 'solid' },
+  },
 })
 </script>
 
@@ -60,7 +64,7 @@ export default defineComponent({
   min-height: 21px;
   height: 21px;
   padding: 0 4px;
-  border: .5px solid currentColor;
+  border: 0.5px solid currentColor;
   border-radius: 5px;
   background: transparent;
   box-sizing: border-box;

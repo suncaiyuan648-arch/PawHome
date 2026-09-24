@@ -1,40 +1,75 @@
 <template>
-	<view class="message-page">
-		<view class="nav-wrap" :style="{ paddingTop: statusBarHeight + 'px' }">
-			<view class="nav-row">
-				<view class="nav-side nav-left" @click="goBack">
-					<image class="nav-back-icon" src="/static/zuojiantou.png" mode="aspectFit"></image>
-				</view>
-				<text class="nav-title">消息</text>
-				<view class="nav-side nav-right" :style="{ width: menuRightWidth + 'px' }"></view>
-			</view>
-		</view>
-		<scroll-view class="main-scroll" scroll-y :show-scrollbar="false" enhanced :bounces="false">
-			<view class="msg-list">
-				<view v-for="(row, idx) in messageRows" :key="idx" class="msg-row"
-					:class="{ 'msg-row--last': idx === messageRows.length - 1 }" @click="onRowTap(row)">
-					<view class="msg-icon-circle">
-						<image class="msg-icon-stack msg-icon-stack--bg" :src="row.iconBackground" mode="aspectFit">
-						</image>
-						<PawIcon class="msg-icon-stack msg-icon-stack--fg" :name="row.iconName" :size="row.iconSize" />
-					</view>
-					<view class="msg-main">
-						<view class="msg-line1">
-							<text class="msg-name">{{ row.title }}</text>
-							<view class="msg-right">
-								<text class="msg-time">{{ row.time }}</text>
-								<view v-if="getUnreadCount(row.type) > 0" class="msg-badge">
-									<text>{{ formatUnreadCount(getUnreadCount(row.type)) }}</text>
-								</view>
-							</view>
-						</view>
-						<text class="msg-preview">{{ row.preview }}</text>
-					</view>
-				</view>
-			</view>
-		</scroll-view>
-		<CustomTabber :tab-index="2" />
-	</view>
+  <view class="message-page">
+    <view
+      class="nav-wrap"
+      :style="{ paddingTop: statusBarHeight + 'px' }"
+    >
+      <view class="nav-row">
+        <view
+          class="nav-side nav-left"
+          @click="goBack"
+        >
+          <image
+            class="nav-back-icon"
+            src="/static/zuojiantou.png"
+            mode="aspectFit"
+          ></image>
+        </view>
+        <text class="nav-title">消息</text>
+        <view
+          class="nav-side nav-right"
+          :style="{ width: menuRightWidth + 'px' }"
+        ></view>
+      </view>
+    </view>
+    <scroll-view
+      class="main-scroll"
+      scroll-y
+      :show-scrollbar="false"
+      enhanced
+      :bounces="false"
+    >
+      <view class="msg-list">
+        <view
+          v-for="(row, idx) in messageRows"
+          :key="idx"
+          class="msg-row"
+          :class="{ 'msg-row--last': idx === messageRows.length - 1 }"
+          @click="onRowTap(row)"
+        >
+          <view class="msg-icon-circle">
+            <image
+              class="msg-icon-stack msg-icon-stack--bg"
+              :src="row.iconBackground"
+              mode="aspectFit"
+            >
+            </image>
+            <PawIcon
+              class="msg-icon-stack msg-icon-stack--fg"
+              :name="row.iconName"
+              :size="row.iconSize"
+            />
+          </view>
+          <view class="msg-main">
+            <view class="msg-line1">
+              <text class="msg-name">{{ row.title }}</text>
+              <view class="msg-right">
+                <text class="msg-time">{{ row.time }}</text>
+                <view
+                  v-if="getUnreadCount(row.type) > 0"
+                  class="msg-badge"
+                >
+                  <text>{{ formatUnreadCount(getUnreadCount(row.type)) }}</text>
+                </view>
+              </view>
+            </view>
+            <text class="msg-preview">{{ row.preview }}</text>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+    <CustomTabber :tab-index="2" />
+  </view>
 </template>
 
 <script lang="ts">
@@ -46,365 +81,367 @@ import { getMessageUnreadCount, type MessageCategory } from '@/utils/messageUnre
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
 interface MessageRow {
-	title: string
-	preview: string
-	time: string
-	iconBackground: string
-	iconName: string
-	iconSize: number
-	type: MessageCategory
+  title: string
+  preview: string
+  time: string
+  iconBackground: string
+  iconName: string
+  iconSize: number
+  type: MessageCategory
 }
 
 interface MessagePageState {
-	statusBarHeight: number
-	menuRightWidth: number
-	messageRows: MessageRow[]
+  statusBarHeight: number
+  menuRightWidth: number
+  messageRows: MessageRow[]
 }
 
 export default defineComponent({
-	components: { CustomTabber, PawIcon },
-	data(): MessagePageState {
-		return {
-			statusBarHeight: 20,
-			menuRightWidth: 87,
-			messageRows: [
-				{
-					title: '互动消息',
-					preview: '家和万事兴点赞了你的动态',
-					time: '11:05',
-					iconBackground: '/static/figma/message/icon-interaction-bg.svg',
-					iconName: 'common/message-interaction',
-					iconSize: 23,
-					type: 'interaction'
-				},
-				{
-					title: '订单消息',
-					preview: '订单已发货',
-					time: '11:05',
-					iconBackground: '/static/figma/message/icon-shopping-bg.svg',
-					iconName: 'common/message-shopping',
-					iconSize: 24,
-					type: 'order'
-				},
-				{
-					title: '服务订单消息',
-					preview: '您的订单已被喂养师xxx接单，喂...',
-					time: '11:05',
-					iconBackground: '/static/figma/message/icon-service-bg.svg',
-					iconName: 'common/message-service',
-					iconSize: 24,
-					type: 'service'
-				},
-				{
-					title: '系统通知',
-					preview: '近期反馈的订单退款未到账问题...',
-					time: '11:05',
-					iconBackground: '/static/figma/message/icon-system-bg.svg',
-					iconName: 'common/message-system',
-					iconSize: 27,
-					type: 'system'
-				},
-				{
-					title: '活动消息',
-					preview: '合肥明珠广场领养活动7月12日开...',
-					time: '4/23',
-					iconBackground: '/static/figma/message/icon-activity-bg.svg',
-					iconName: 'common/message-activity',
-					iconSize: 22,
-					type: 'activity'
-				},
-				{
-					title: '宠物消息',
-					preview: '合肥明珠广场领养活动7月12日开...',
-					time: '4/23',
-					iconBackground: '/static/figma/message/icon-pet-bg.svg',
-					iconName: 'common/message-pet',
-					iconSize: 29,
-					type: 'pet'
-				}
-			]
-		}
-	},
-	onLoad() {
-		const sys = uni.getSystemInfoSync()
-		this.statusBarHeight = sys.statusBarHeight || 20
-		// #ifdef MP-WEIXIN
-		try {
-			const mb = uni.getMenuButtonBoundingClientRect()
-			if (mb && mb.left) {
-				this.menuRightWidth = Math.max(sys.windowWidth - mb.left, 87)
-			}
-		} catch { }
-		// #endif
-	},
-	methods: {
-		getUnreadCount(type: MessageCategory) {
-			return getMessageUnreadCount(type)
-		},
-		formatUnreadCount(count: number) {
-			return count > 99 ? '99+' : count
-		},
-		goBack() {
-			goBackSmart({ fallbackUrl: '/pages/index/index' })
-		},
-		onRowTap(row: MessageRow) {
-			uni.navigateTo({ url: '/packages/message/pages/list/index?category=' + encodeURIComponent(row.type) })
-		}
-	}
+  components: { CustomTabber, PawIcon },
+  data(): MessagePageState {
+    return {
+      statusBarHeight: 20,
+      menuRightWidth: 87,
+      messageRows: [
+        {
+          title: '互动消息',
+          preview: '家和万事兴点赞了你的动态',
+          time: '11:05',
+          iconBackground: '/static/figma/message/icon-interaction-bg.svg',
+          iconName: 'common/message-interaction',
+          iconSize: 23,
+          type: 'interaction',
+        },
+        {
+          title: '订单消息',
+          preview: '订单已发货',
+          time: '11:05',
+          iconBackground: '/static/figma/message/icon-shopping-bg.svg',
+          iconName: 'common/message-shopping',
+          iconSize: 24,
+          type: 'order',
+        },
+        {
+          title: '服务订单消息',
+          preview: '您的订单已被喂养师xxx接单，喂...',
+          time: '11:05',
+          iconBackground: '/static/figma/message/icon-service-bg.svg',
+          iconName: 'common/message-service',
+          iconSize: 24,
+          type: 'service',
+        },
+        {
+          title: '系统通知',
+          preview: '近期反馈的订单退款未到账问题...',
+          time: '11:05',
+          iconBackground: '/static/figma/message/icon-system-bg.svg',
+          iconName: 'common/message-system',
+          iconSize: 27,
+          type: 'system',
+        },
+        {
+          title: '活动消息',
+          preview: '合肥明珠广场领养活动7月12日开...',
+          time: '4/23',
+          iconBackground: '/static/figma/message/icon-activity-bg.svg',
+          iconName: 'common/message-activity',
+          iconSize: 22,
+          type: 'activity',
+        },
+        {
+          title: '宠物消息',
+          preview: '合肥明珠广场领养活动7月12日开...',
+          time: '4/23',
+          iconBackground: '/static/figma/message/icon-pet-bg.svg',
+          iconName: 'common/message-pet',
+          iconSize: 29,
+          type: 'pet',
+        },
+      ],
+    }
+  },
+  onLoad() {
+    const sys = uni.getSystemInfoSync()
+    this.statusBarHeight = sys.statusBarHeight || 20
+    // #ifdef MP-WEIXIN
+    try {
+      const mb = uni.getMenuButtonBoundingClientRect()
+      if (mb && mb.left) {
+        this.menuRightWidth = Math.max(sys.windowWidth - mb.left, 87)
+      }
+    } catch {}
+    // #endif
+  },
+  methods: {
+    getUnreadCount(type: MessageCategory) {
+      return getMessageUnreadCount(type)
+    },
+    formatUnreadCount(count: number) {
+      return count > 99 ? '99+' : count
+    },
+    goBack() {
+      goBackSmart({ fallbackUrl: '/pages/index/index' })
+    },
+    onRowTap(row: MessageRow) {
+      uni.navigateTo({
+        url: '/packages/message/pages/list/index?category=' + encodeURIComponent(row.type),
+      })
+    },
+  },
 })
 </script>
 
 <style scoped>
 .message-page {
-	height: 100vh;
-	display: flex;
-	flex-direction: column;
-	background: #ffffff;
-	box-sizing: border-box;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  box-sizing: border-box;
 }
 
 .nav-wrap {
-	flex-shrink: 0;
-	background: #ffffff;
+  flex-shrink: 0;
+  background: #ffffff;
 }
 
 .nav-row {
-	position: relative;
-	height: 54px;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 0 12rpx;
-	box-sizing: border-box;
+  position: relative;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12rpx;
+  box-sizing: border-box;
 }
 
 .nav-side {
-	flex-shrink: 0;
-	display: flex;
-	align-items: center;
-	justify-content: flex-start;
-	min-width: 80rpx;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 80rpx;
 }
 
 .nav-left {
-	padding: 12rpx 20rpx;
-	min-height: 64rpx;
-	box-sizing: border-box;
-	justify-content: center;
+  padding: 12rpx 20rpx;
+  min-height: 64rpx;
+  box-sizing: border-box;
+  justify-content: center;
 }
 
 .nav-back-icon {
-	width: 20rpx;
-	height: 36rpx;
+  width: 20rpx;
+  height: 36rpx;
 }
 
 .nav-title {
-	position: absolute;
-	left: 50%;
-	transform: translateX(-50%);
-	font-size: 32rpx;
-	font-weight: 500;
-	line-height: 46rpx;
-	color: #000000;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 32rpx;
+  font-weight: 500;
+  line-height: 46rpx;
+  color: #000000;
 }
 
 .nav-right {
-	min-height: 1px;
+  min-height: 1px;
 }
 
 .main-scroll {
-	flex: 1;
-	height: 0;
-	box-sizing: border-box;
-	padding-bottom: calc(248rpx + constant(safe-area-inset-bottom));
-	padding-bottom: calc(248rpx + env(safe-area-inset-bottom));
+  flex: 1;
+  height: 0;
+  box-sizing: border-box;
+  padding-bottom: calc(248rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(248rpx + env(safe-area-inset-bottom));
 }
 
 .push-strip {
-	background: #ffffff;
-	padding: 28rpx 32rpx 32rpx;
-	border-bottom: 1rpx solid #f2f2f2;
+  background: #ffffff;
+  padding: 28rpx 32rpx 32rpx;
+  border-bottom: 1rpx solid #f2f2f2;
 }
 
 .push-row {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	min-height: 78rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 78rpx;
 }
 
 .push-left {
-	display: flex;
-	align-items: center;
-	flex: 1;
-	min-width: 0;
-	padding-right: 16rpx;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  padding-right: 16rpx;
 }
 
 .wechat-icon-wrap {
-	width: 78rpx;
-	height: 78rpx;
-	border-radius: 12rpx;
-	background: #07c160;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
+  width: 78rpx;
+  height: 78rpx;
+  border-radius: 12rpx;
+  background: #07c160;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .wechat-icon-glyph {
-	font-size: 30rpx;
-	font-weight: 500;
-	color: #ffffff;
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #ffffff;
 }
 
 .push-title {
-	margin-left: 22rpx;
-	font-size: 32rpx;
-	font-weight: 500;
-	line-height: 44rpx;
-	color: #333333;
+  margin-left: 22rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  line-height: 44rpx;
+  color: #333333;
 }
 
 .push-btn {
-	flex-shrink: 0;
-	padding: 10rpx 26rpx;
-	border-radius: 200rpx;
-	background: #f7f7f7;
-	border: 1rpx solid #e9e9e9;
+  flex-shrink: 0;
+  padding: 10rpx 26rpx;
+  border-radius: 200rpx;
+  background: #f7f7f7;
+  border: 1rpx solid #e9e9e9;
 }
 
 .push-btn text {
-	font-size: 24rpx;
-	font-weight: 500;
-	line-height: 34rpx;
-	color: #000000;
+  font-size: 24rpx;
+  font-weight: 500;
+  line-height: 34rpx;
+  color: #000000;
 }
 
 .section-title {
-	display: block;
-	margin: 28rpx 32rpx 8rpx;
-	font-size: 36rpx;
-	font-weight: 500;
-	line-height: 52rpx;
-	color: #333333;
+  display: block;
+  margin: 28rpx 32rpx 8rpx;
+  font-size: 36rpx;
+  font-weight: 500;
+  line-height: 52rpx;
+  color: #333333;
 }
 
 .msg-list {
-	background: #ffffff;
+  background: #ffffff;
 }
 
 .msg-row {
-	display: flex;
-	align-items: center;
-	padding: 28rpx 32rpx;
-	min-height: 152rpx;
-	box-sizing: border-box;
-	border-bottom: 1rpx solid #f2f2f2;
+  display: flex;
+  align-items: center;
+  padding: 28rpx 32rpx;
+  min-height: 152rpx;
+  box-sizing: border-box;
+  border-bottom: 1rpx solid #f2f2f2;
 }
 
 .msg-row--last {
-	border-bottom-width: 0;
+  border-bottom-width: 0;
 }
 
 .msg-icon-circle {
-	position: relative;
-	width: 90rpx;
-	height: 90rpx;
-	border-radius: 50%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
+  position: relative;
+  width: 90rpx;
+  height: 90rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .msg-icon-stack {
-	position: absolute;
-	left: 0;
-	top: 0;
+  position: absolute;
+  left: 0;
+  top: 0;
 }
 
 .msg-icon-stack--bg {
-	width: 100%;
-	height: 100%;
-	border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
 }
 
 .msg-icon-stack--fg {
-	left: 50%;
-	top: 50%;
-	transform: translate(-50%, -50%);
-	pointer-events: none;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 
 .msg-main {
-	flex: 1;
-	min-width: 0;
-	margin-left: 22rpx;
+  flex: 1;
+  min-width: 0;
+  margin-left: 22rpx;
 }
 
 .msg-line1 {
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 16rpx;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
 }
 
 .msg-name {
-	flex: 1;
-	min-width: 0;
-	font-size: 30rpx;
-	font-weight: 500;
-	line-height: 44rpx;
-	color: #333333;
+  flex: 1;
+  min-width: 0;
+  font-size: 30rpx;
+  font-weight: 500;
+  line-height: 44rpx;
+  color: #333333;
 }
 
 .msg-right {
-	flex-shrink: 0;
-	display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-	justify-content: flex-start;
-	gap: 10rpx;
-	min-width: 72rpx;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 10rpx;
+  min-width: 72rpx;
 }
 
 .msg-time {
-	font-size: 22rpx;
-	font-weight: 400;
-	line-height: 32rpx;
-	color: #999999;
-	text-align: right;
+  font-size: 22rpx;
+  font-weight: 400;
+  line-height: 32rpx;
+  color: #999999;
+  text-align: right;
 }
 
 .msg-preview {
-	display: block;
-	margin-top: 6rpx;
-	font-size: 28rpx;
-	font-weight: 400;
-	line-height: 40rpx;
-	color: #999999;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+  display: block;
+  margin-top: 6rpx;
+  font-size: 28rpx;
+  font-weight: 400;
+  line-height: 40rpx;
+  color: #999999;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .msg-badge {
-	min-width: 36rpx;
-	height: 34rpx;
-	padding: 0 12rpx;
-	box-sizing: border-box;
-	border-radius: 200rpx;
-	background: #ff2741;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+  min-width: 36rpx;
+  height: 34rpx;
+  padding: 0 12rpx;
+  box-sizing: border-box;
+  border-radius: 200rpx;
+  background: #ff2741;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .msg-badge text {
-	font-size: 24rpx;
-	font-weight: 500;
-	line-height: 34rpx;
-	color: #ffffff;
+  font-size: 24rpx;
+  font-weight: 500;
+  line-height: 34rpx;
+  color: #ffffff;
 }
 </style>

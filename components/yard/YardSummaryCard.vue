@@ -1,27 +1,66 @@
 <template>
-  <view class="yard-summary-card" :class="`yard-summary-card--${variant}`" @tap.stop="$emit('click', yard)">
+  <view
+    class="yard-summary-card"
+    :class="`yard-summary-card--${variant}`"
+    @tap.stop="$emit('click', yard)"
+  >
     <view class="yard-summary-card__top">
-      <PawAvatar :src="yard.avatar" :size="50" :clickable="true" @click="$emit('click', yard)" />
+      <PawAvatar
+        :src="yard.avatar"
+        :size="50"
+        :clickable="true"
+        @click="$emit('click', yard)"
+      />
       <view class="yard-summary-card__main">
         <view class="yard-summary-card__name-row">
           <view class="yard-summary-card__identity">
             <text class="yard-summary-card__name">{{ yard.name }}</text>
             <PawVerifiedBadge v-if="yard.verified !== false" />
           </view>
-          <text v-if="showDistance && distanceLabel" class="yard-summary-card__distance">{{ distanceLabel }}</text>
+          <text
+            v-if="showDistance && distanceLabel"
+            class="yard-summary-card__distance"
+            >{{ distanceLabel }}</text
+          >
         </view>
-        <YardLocationLine v-if="yard.location && variant !== 'detail'" :text="yard.location" />
-        <view v-if="yard.tags && yard.tags.length" class="yard-summary-card__tags"><text
-            v-for="(tag, index) in yard.tags" :key="index" class="yard-summary-card__tag">{{ tag }}</text></view>
+        <YardLocationLine
+          v-if="yard.location && variant !== 'detail'"
+          :text="yard.location"
+        />
+        <view
+          v-if="yard.tags && yard.tags.length"
+          class="yard-summary-card__tags"
+          ><text
+            v-for="(tag, index) in yard.tags"
+            :key="index"
+            class="yard-summary-card__tag"
+            >{{ tag }}</text
+          ></view
+        >
       </view>
     </view>
-    <text v-if="yard.description" class="yard-summary-card__description">{{ yard.description }}</text>
-    <scroll-view v-if="showGallery && gallery.length" class="yard-summary-card__gallery" scroll-x
-      :show-scrollbar="false">
+    <text
+      v-if="yard.description"
+      class="yard-summary-card__description"
+      >{{ yard.description }}</text
+    >
+    <scroll-view
+      v-if="showGallery && gallery.length"
+      class="yard-summary-card__gallery"
+      scroll-x
+      :show-scrollbar="false"
+    >
       <view class="yard-summary-card__gallery-row">
-        <view v-for="(photo, index) in gallery" :key="index" class="yard-summary-card__photo"
-          @tap.stop="$emit('pet-click', photo)">
-          <image :src="photo.src || photo" mode="aspectFill" /><text v-if="photo.title">{{ photo.title }}</text>
+        <view
+          v-for="(photo, index) in gallery"
+          :key="index"
+          class="yard-summary-card__photo"
+          @tap.stop="$emit('pet-click', photo)"
+        >
+          <image
+            :src="photo.src || photo"
+            mode="aspectFill"
+          /><text v-if="photo.title">{{ photo.title }}</text>
         </view>
       </view>
     </scroll-view>
@@ -38,7 +77,8 @@ import PawVerifiedBadge from '@/components/identity/PawVerifiedBadge.vue'
 import YardLocationLine from '@/components/identity/YardLocationLine.vue'
 import { safeImgSrc } from '@/utils/safeImgSrc.ts'
 
-export type YardSummaryGallerySource = string | { id?: string | number; src?: string; url?: string; title?: string }
+export type YardSummaryGallerySource =
+  string | { id?: string | number; src?: string; url?: string; title?: string }
 
 export interface YardSummaryRecord {
   avatar?: string
@@ -52,7 +92,10 @@ export interface YardSummaryRecord {
   thumbUrls?: YardSummaryGallerySource[]
 }
 
-interface YardSummaryGalleryDisplay { src: string; title?: string }
+interface YardSummaryGalleryDisplay {
+  src: string
+  title?: string
+}
 
 export default defineComponent({
   name: 'YardSummaryCard',
@@ -61,10 +104,10 @@ export default defineComponent({
     yard: { type: Object as PropType<YardSummaryRecord>, default: () => ({}) },
     variant: { type: String, default: 'list' },
     showGallery: { type: Boolean, default: true },
-    showDistance: { type: Boolean, default: true }
+    showDistance: { type: Boolean, default: true },
   },
   emits: {
-    'click': eventContract<[yard: YardSummaryRecord]>(),
+    click: eventContract<[yard: YardSummaryRecord]>(),
     'pet-click': eventContract<[photo: { src: string; title?: string }]>(),
     'gallery-scroll-end': eventContract<[]>(),
   },
@@ -76,11 +119,13 @@ export default defineComponent({
         : this.yard.distance
     },
     gallery(): YardSummaryGalleryDisplay[] {
-      return (this.yard.gallery || this.yard.thumbUrls || []).map((item) => typeof item === 'string'
-        ? { src: safeImgSrc(item, '/static/avatarlog.png') }
-        : { ...item, src: safeImgSrc(item.src || item.url, '/static/avatarlog.png') })
-    }
-  }
+      return (this.yard.gallery || this.yard.thumbUrls || []).map((item) =>
+        typeof item === 'string'
+          ? { src: safeImgSrc(item, '/static/avatarlog.png') }
+          : { ...item, src: safeImgSrc(item.src || item.url, '/static/avatarlog.png') },
+      )
+    },
+  },
 })
 </script>
 

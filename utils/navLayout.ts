@@ -53,7 +53,7 @@ export function getWechatNavLayout(options: WechatNavLayoutOptions = {}): Wechat
     defaultRightInset = 8,
     defaultNavBarHeight = 44,
     h5StatusBarHeight = 44,
-    h5NavBarHeight = 54
+    h5NavBarHeight = 54,
   } = options
 
   const sys = (uni.getSystemInfoSync ? uni.getSystemInfoSync() : {}) as NativeSystemInfo
@@ -66,7 +66,10 @@ export function getWechatNavLayout(options: WechatNavLayoutOptions = {}): Wechat
     navBarHeight: defaultNavBarHeight,
     totalHeight: statusBarHeight + defaultNavBarHeight,
     menuTop: statusBarHeight + Math.max(0, (defaultNavBarHeight - defaultCapsuleHeight) / 2),
-    menuBottom: statusBarHeight + Math.max(0, (defaultNavBarHeight - defaultCapsuleHeight) / 2) + defaultCapsuleHeight,
+    menuBottom:
+      statusBarHeight +
+      Math.max(0, (defaultNavBarHeight - defaultCapsuleHeight) / 2) +
+      defaultCapsuleHeight,
     menuLeft: windowWidth - defaultRightInset - defaultCapsuleWidth,
     menuRight: windowWidth - defaultRightInset,
     menuWidth: defaultCapsuleWidth,
@@ -75,7 +78,7 @@ export function getWechatNavLayout(options: WechatNavLayoutOptions = {}): Wechat
     rightReservedWidth: defaultCapsuleWidth + defaultRightInset,
     navCenterY: statusBarHeight + defaultNavBarHeight / 2,
     navRowOffsetTop: 0,
-    navRowHeight: defaultNavBarHeight
+    navRowHeight: defaultNavBarHeight,
   }
 
   // #ifdef H5
@@ -93,7 +96,9 @@ export function getWechatNavLayout(options: WechatNavLayoutOptions = {}): Wechat
 
   // #ifdef MP-WEIXIN
   try {
-    const mb = (uni.getMenuButtonBoundingClientRect ? uni.getMenuButtonBoundingClientRect() : null) as NativeMenuButtonRect | null
+    const mb = (
+      uni.getMenuButtonBoundingClientRect ? uni.getMenuButtonBoundingClientRect() : null
+    ) as NativeMenuButtonRect | null
     if (mb && Number.isFinite(Number(mb.left)) && Number.isFinite(Number(mb.right))) {
       const top = Number(mb.top || statusBarHeight)
       const height = Number(mb.height || defaultCapsuleHeight)

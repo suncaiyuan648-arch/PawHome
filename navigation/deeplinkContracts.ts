@@ -8,10 +8,7 @@
  * storage, navigates, submits, or treats an old status/role as authorization.
  */
 
-import {
-  buildRoute,
-  parseRoute,
-} from './routeContracts.ts'
+import { buildRoute, parseRoute } from './routeContracts.ts'
 import { resolveTrustedActor } from './actorCapabilities.ts'
 
 type JsonRecord = Record<string, unknown>
@@ -27,8 +24,9 @@ interface DeepLinkTargetSpec {
   businessTypeParam?: string
 }
 
-type DeepLinkTargetRegistry = Readonly<Record<BusinessType, Readonly<Record<string, DeepLinkTargetSpec>>>>
-
+type DeepLinkTargetRegistry = Readonly<
+  Record<BusinessType, Readonly<Record<string, DeepLinkTargetSpec>>>
+>
 
 export interface DeepLinkActor {
   id: string
@@ -50,27 +48,27 @@ export interface DeepLinkEnvelope {
   targetKind?: 'progress'
   taskId?: string
   routeName: string
-	url: string
+  url: string
 }
 
 export interface DeepLinkInput {
-	source?: DeepLinkSource
-	businessType: DeepLinkBusinessType
-	businessId?: string | null
-	reviewItemId?: string
-	targetKind?: 'progress'
-	taskId?: string
-	routeName?: string
-	url?: string
-	legacyState?: string
-	actorRole?: string
-	outcome?: string
+  source?: DeepLinkSource
+  businessType: DeepLinkBusinessType
+  businessId?: string | null
+  reviewItemId?: string
+  targetKind?: 'progress'
+  taskId?: string
+  routeName?: string
+  url?: string
+  legacyState?: string
+  actorRole?: string
+  outcome?: string
 }
 
 export interface DeepLinkAuthorizationContext {
-	actor: DeepLinkActor | null
-	target: DeepLinkEnvelope
-	record: Readonly<Record<string, unknown>>
+  actor: DeepLinkActor | null
+  target: DeepLinkEnvelope
+  record: Readonly<Record<string, unknown>>
 }
 
 interface ResolverContext {
@@ -136,8 +134,17 @@ const DOMAIN_PREFIX_ALIASES: Readonly<Record<BusinessType, readonly string[]>> =
   dynamic: Object.freeze(['dynamic']),
 })
 
-export const DEEPLINK_SOURCES: readonly DeepLinkSource[] = Object.freeze(['message', 'task', 'route'])
-export const DEEPLINK_BUSINESS_TYPES: readonly BusinessType[] = Object.freeze(['adoption', 'rescue', 'feeding', 'dynamic'])
+export const DEEPLINK_SOURCES: readonly DeepLinkSource[] = Object.freeze([
+  'message',
+  'task',
+  'route',
+])
+export const DEEPLINK_BUSINESS_TYPES: readonly BusinessType[] = Object.freeze([
+  'adoption',
+  'rescue',
+  'feeding',
+  'dynamic',
+])
 
 // These are the only detail targets that may be reached from a message/task
 // envelope.  A route name is a checked semantic name, never a caller supplied
@@ -146,12 +153,22 @@ export const DEEPLINK_BUSINESS_TYPES: readonly BusinessType[] = Object.freeze(['
 export const DEEPLINK_TARGETS: DeepLinkTargetRegistry = Object.freeze({
   adoption: Object.freeze({
     detail: Object.freeze({ routeName: 'adoption.progress', businessIdParam: 'applicationId' }),
-    review: Object.freeze({ routeName: 'adoption.jury.detail', businessIdParam: null, reviewItemParam: 'reviewItemId', businessTypeParam: 'businessType' }),
+    review: Object.freeze({
+      routeName: 'adoption.jury.detail',
+      businessIdParam: null,
+      reviewItemParam: 'reviewItemId',
+      businessTypeParam: 'businessType',
+    }),
   }),
   rescue: Object.freeze({
     detail: Object.freeze({ routeName: 'rescue.detail', businessIdParam: 'rescueId' }),
     progress: Object.freeze({ routeName: 'rescue.progress', businessIdParam: 'rescueId' }),
-    review: Object.freeze({ routeName: 'rescue.review.detail', businessIdParam: null, reviewItemParam: 'reviewItemId', businessTypeParam: 'businessType' }),
+    review: Object.freeze({
+      routeName: 'rescue.review.detail',
+      businessIdParam: null,
+      reviewItemParam: 'reviewItemId',
+      businessTypeParam: 'businessType',
+    }),
   }),
   feeding: Object.freeze({
     detail: Object.freeze({ routeName: 'feeding.order.detail', businessIdParam: 'orderId' }),
@@ -193,11 +210,13 @@ function isPlainRecord(value: unknown): value is JsonRecord {
   const prototype = Object.getPrototypeOf(value)
   if (prototype === Object.prototype || prototype === null) return true
   const descriptor = Object.getOwnPropertyDescriptor(prototype, 'constructor')
-  return Object.getPrototypeOf(prototype) === null
-    && Object.prototype.toString.call(value) === '[object Object]'
-    && descriptor !== undefined
-    && typeof descriptor.value === 'function'
-    && descriptor.value.name === 'Object'
+  return (
+    Object.getPrototypeOf(prototype) === null &&
+    Object.prototype.toString.call(value) === '[object Object]' &&
+    descriptor !== undefined &&
+    typeof descriptor.value === 'function' &&
+    descriptor.value.name === 'Object'
+  )
 }
 
 function assertRecord(value: unknown, label: string): asserts value is JsonRecord {
@@ -205,7 +224,8 @@ function assertRecord(value: unknown, label: string): asserts value is JsonRecor
   for (const key of Object.getOwnPropertyNames(value)) {
     if (DANGEROUS_KEYS.has(key)) fail('PROTOTYPE_KEY', `${label} contains a prototype key`, { key })
   }
-  if (Object.getOwnPropertySymbols(value).length) fail('UNKNOWN_FIELD', `${label} cannot contain symbols`)
+  if (Object.getOwnPropertySymbols(value).length)
+    fail('UNKNOWN_FIELD', `${label} cannot contain symbols`)
 }
 
 function assertAllowedFields(value: JsonRecord, allowed: ReadonlySet<string>, label: string): void {
@@ -214,21 +234,32 @@ function assertAllowedFields(value: JsonRecord, allowed: ReadonlySet<string>, la
   }
 }
 
-function opaqueId(value: unknown, label: string, { rejectDomainPrefix = true, domain = '' }: { rejectDomainPrefix?: boolean; domain?: BusinessType | '' } = {}): string {
-  if (typeof value !== 'string' || value.length === 0) fail('MISSING_ID', `${label} is required`, { label })
+function opaqueId(
+  value: unknown,
+  label: string,
+  {
+    rejectDomainPrefix = true,
+    domain = '',
+  }: { rejectDomainPrefix?: boolean; domain?: BusinessType | '' } = {},
+): string {
+  if (typeof value !== 'string' || value.length === 0)
+    fail('MISSING_ID', `${label} is required`, { label })
   if (value !== value.trim() || !SAFE_ID.test(value) || URL_MARKERS.test(value)) {
     fail('INVALID_ID', `${label} must be an opaque ID`, { label })
   }
   if (rejectDomainPrefix) {
     const lower = value.toLowerCase()
     const allowed: readonly string[] = domain === '' ? [] : DOMAIN_PREFIX_ALIASES[domain]
-    const prefix = CROSS_DOMAIN_PREFIXES.find(candidate => !allowed.includes(candidate) && (
-      lower === candidate
-      || lower.startsWith(`${candidate}-`)
-      || lower.startsWith(`${candidate}_`)
-      || lower.startsWith(`${candidate}:`)
-    ))
-    if (prefix) fail('CROSS_DOMAIN_ID', `${label} looks like a ${prefix} domain ID`, { label, prefix })
+    const prefix = CROSS_DOMAIN_PREFIXES.find(
+      (candidate) =>
+        !allowed.includes(candidate) &&
+        (lower === candidate ||
+          lower.startsWith(`${candidate}-`) ||
+          lower.startsWith(`${candidate}_`) ||
+          lower.startsWith(`${candidate}:`)),
+    )
+    if (prefix)
+      fail('CROSS_DOMAIN_ID', `${label} looks like a ${prefix} domain ID`, { label, prefix })
   }
   return value
 }
@@ -245,7 +276,13 @@ function includesValue<T extends string>(values: readonly T[], value: string): v
 }
 
 function errorCode(error: unknown, fallback: string): string {
-  if (error !== null && typeof error === 'object' && 'code' in error && typeof error.code === 'string') return error.code
+  if (
+    error !== null &&
+    typeof error === 'object' &&
+    'code' in error &&
+    typeof error.code === 'string'
+  )
+    return error.code
   return fallback
 }
 
@@ -254,61 +291,93 @@ function isThenable(value: unknown): value is ThenableWithCatch {
   return 'then' in value && typeof value.then === 'function'
 }
 
-function targetFor(type: BusinessType, hasReview: boolean, targetKind: TargetKind = ''): DeepLinkTargetSpec {
+function targetFor(
+  type: BusinessType,
+  hasReview: boolean,
+  targetKind: TargetKind = '',
+): DeepLinkTargetSpec {
   const intent = hasReview ? 'review' : targetKind === 'progress' ? 'progress' : 'detail'
   const target = DEEPLINK_TARGETS[type] && DEEPLINK_TARGETS[type][intent]
   if (!target) fail('CROSS_DOMAIN_FIELD', `reviewItemId is not valid for ${type}`, { type })
-  if (targetKind && targetKind !== 'progress') fail('INVALID_ENUM', 'targetKind is not supported', { targetKind })
-  if (targetKind === 'progress' && type !== 'rescue') fail('CROSS_DOMAIN_FIELD', 'progress target is only valid for rescue', { type })
+  if (targetKind && targetKind !== 'progress')
+    fail('INVALID_ENUM', 'targetKind is not supported', { targetKind })
+  if (targetKind === 'progress' && type !== 'rescue')
+    fail('CROSS_DOMAIN_FIELD', 'progress target is only valid for rescue', { type })
   return target
 }
 
-function targetByRoute(routeName: string): { type: BusinessType; intent: string; target: DeepLinkTargetSpec } {
+function targetByRoute(routeName: string): {
+  type: BusinessType
+  intent: string
+  target: DeepLinkTargetSpec
+} {
   for (const type of DEEPLINK_BUSINESS_TYPES) {
     for (const intent of Object.keys(DEEPLINK_TARGETS[type])) {
       const target = DEEPLINK_TARGETS[type][intent]
       if (target.routeName === routeName) return { type, intent, target }
     }
   }
-  fail('UNKNOWN_DEEPLINK_TARGET', `Route is not an approved deep-link target: ${routeName}`, { routeName })
+  fail('UNKNOWN_DEEPLINK_TARGET', `Route is not an approved deep-link target: ${routeName}`, {
+    routeName,
+  })
 }
 
-function normalizedEnvelope(input: unknown, { sourceDefault = 'route' }: { sourceDefault?: DeepLinkSource } = {}): DeepLinkEnvelope {
+function normalizedEnvelope(
+  input: unknown,
+  { sourceDefault = 'route' }: { sourceDefault?: DeepLinkSource } = {},
+): DeepLinkEnvelope {
   assertRecord(input, 'deep-link envelope')
-  assertAllowedFields(input, new Set([
-    'source',
-    'businessType',
-    'businessId',
-    'reviewItemId',
-    'targetKind',
-    'routeName',
-    'url',
-    'taskId',
-    'legacyState',
-    'actorRole',
-    'outcome',
-  ]), 'deep-link envelope')
+  assertAllowedFields(
+    input,
+    new Set([
+      'source',
+      'businessType',
+      'businessId',
+      'reviewItemId',
+      'targetKind',
+      'routeName',
+      'url',
+      'taskId',
+      'legacyState',
+      'actorRole',
+      'outcome',
+    ]),
+    'deep-link envelope',
+  )
 
-  const source = input.source === undefined ? sourceDefault : enumValue(input.source, 'source', DEEPLINK_SOURCES)
+  const source =
+    input.source === undefined ? sourceDefault : enumValue(input.source, 'source', DEEPLINK_SOURCES)
   const businessType = enumValue(input.businessType, 'businessType', DEEPLINK_BUSINESS_TYPES)
-  const businessId = input.businessId === undefined || input.businessId === null
-    ? ''
-    : opaqueId(input.businessId, 'businessId', { domain: businessType })
-  const reviewItemId = input.reviewItemId === undefined ? '' : opaqueId(input.reviewItemId, 'reviewItemId', { domain: businessType })
-  const targetKind: TargetKind = input.targetKind === undefined ? '' : enumValue(input.targetKind, 'targetKind', ['progress'])
+  const businessId =
+    input.businessId === undefined || input.businessId === null
+      ? ''
+      : opaqueId(input.businessId, 'businessId', { domain: businessType })
+  const reviewItemId =
+    input.reviewItemId === undefined
+      ? ''
+      : opaqueId(input.reviewItemId, 'reviewItemId', { domain: businessType })
+  const targetKind: TargetKind =
+    input.targetKind === undefined ? '' : enumValue(input.targetKind, 'targetKind', ['progress'])
   if (!businessId && !reviewItemId) fail('MISSING_ID', 'businessId or reviewItemId is required')
-  if (targetKind && reviewItemId) fail('CROSS_DOMAIN_FIELD', 'progress target cannot carry reviewItemId')
+  if (targetKind && reviewItemId)
+    fail('CROSS_DOMAIN_FIELD', 'progress target cannot carry reviewItemId')
   const target = targetFor(businessType, Boolean(reviewItemId), targetKind)
 
   if (input.routeName !== undefined) {
-    const routeNames = Object.values(DEEPLINK_TARGETS).flatMap(group => Object.values(group).map(item => item.routeName))
+    const routeNames = Object.values(DEEPLINK_TARGETS).flatMap((group) =>
+      Object.values(group).map((item) => item.routeName),
+    )
     enumValue(input.routeName, 'routeName', routeNames)
-    if (input.routeName !== target.routeName) fail('TARGET_MISMATCH', 'routeName does not match businessType and reviewItemId', { expected: target.routeName })
+    if (input.routeName !== target.routeName)
+      fail('TARGET_MISMATCH', 'routeName does not match businessType and reviewItemId', {
+        expected: target.routeName,
+      })
   }
   if (input.url !== undefined) {
     if (typeof input.url !== 'string') fail('INVALID_URL', 'url must be a string')
     const parsed = parseRoute(input.url)
-    if (parsed.routeName !== target.routeName) fail('TARGET_MISMATCH', 'url does not match the deep-link target')
+    if (parsed.routeName !== target.routeName)
+      fail('TARGET_MISMATCH', 'url does not match the deep-link target')
     if (target.businessIdParam && parsed.params[target.businessIdParam] !== businessId) {
       fail('BUSINESS_ID_MISMATCH', 'url business ID does not match envelope')
     }
@@ -330,7 +399,10 @@ function normalizedEnvelope(input: unknown, { sourceDefault = 'route' }: { sourc
     }
   }
 
-  const taskId = input.taskId === undefined ? undefined : opaqueId(input.taskId, 'taskId', { rejectDomainPrefix: false })
+  const taskId =
+    input.taskId === undefined
+      ? undefined
+      : opaqueId(input.taskId, 'taskId', { rejectDomainPrefix: false })
   const envelope: DeepLinkEnvelope = {
     source,
     businessType,
@@ -359,7 +431,7 @@ export function createDeepLink(input: DeepLinkInput): DeepLinkEnvelope {
 
 /** Validate untyped route/storage input before it crosses into a typed target. */
 export function parseDeepLinkInput(input: unknown): DeepLinkEnvelope {
-	return normalizedEnvelope(input, { sourceDefault: 'message' })
+  return normalizedEnvelope(input, { sourceDefault: 'message' })
 }
 
 export const buildDeepLink = createDeepLink
@@ -404,7 +476,8 @@ function cloneFreeze(value: unknown, label: string, seen = new Set<object>()): u
     assertRecord(value, label)
     const record: JsonRecord = {}
     copy = record
-    for (const key of Object.keys(value)) record[key] = cloneFreeze(value[key], `${label}.${key}`, seen)
+    for (const key of Object.keys(value))
+      record[key] = cloneFreeze(value[key], `${label}.${key}`, seen)
   }
   seen.delete(value)
   return Object.freeze(copy)
@@ -419,7 +492,12 @@ interface IdentityTarget {
 
 function identityAliases(type: BusinessType, record: JsonRecord, target: IdentityTarget): void {
   for (const field of ['businessType', 'applicationType']) {
-    if (own(record, field) && record[field] !== undefined && record[field] !== null && record[field] !== type) {
+    if (
+      own(record, field) &&
+      record[field] !== undefined &&
+      record[field] !== null &&
+      record[field] !== type
+    ) {
       fail('CROSS_DOMAIN_RECORD', `Resolver returned a ${record[field]} record for ${type}`)
     }
   }
@@ -429,12 +507,18 @@ function identityAliases(type: BusinessType, record: JsonRecord, target: Identit
       values.push({ field, id: opaqueId(record[field], `record.${field}`, { domain: type }) })
     }
   }
-  if (!values.length) fail('RECORD_ID_MISSING', 'Resolver returned a record without its requested business ID')
-  if (new Set(values.map(item => item.id)).size > 1) fail('CONFLICTING_ID', 'Resolver returned conflicting business ID aliases')
-  if (target.businessId && values[0].id !== target.businessId) fail('BUSINESS_ID_MISMATCH', 'Resolver returned another business record')
+  if (!values.length)
+    fail('RECORD_ID_MISSING', 'Resolver returned a record without its requested business ID')
+  if (new Set(values.map((item) => item.id)).size > 1)
+    fail('CONFLICTING_ID', 'Resolver returned conflicting business ID aliases')
+  if (target.businessId && values[0].id !== target.businessId)
+    fail('BUSINESS_ID_MISMATCH', 'Resolver returned another business record')
   if (target.reviewItemParam) {
-    if (!own(record, 'reviewItemId')) fail('REVIEW_ITEM_ID_MISSING', 'Resolver returned no requested reviewItemId')
-    if (opaqueId(record.reviewItemId, 'record.reviewItemId', { domain: type }) !== target.reviewItemId) {
+    if (!own(record, 'reviewItemId'))
+      fail('REVIEW_ITEM_ID_MISSING', 'Resolver returned no requested reviewItemId')
+    if (
+      opaqueId(record.reviewItemId, 'record.reviewItemId', { domain: type }) !== target.reviewItemId
+    ) {
       fail('REVIEW_ITEM_ID_MISMATCH', 'Resolver returned another review item')
     }
   }
@@ -444,7 +528,10 @@ function isDeepLinkResolver(value: unknown): value is DeepLinkResolver {
   return typeof value === 'function'
 }
 
-function callResolver(resolver: unknown, context: ResolverContext): { record: unknown; error: ErrorInfo | null } {
+function callResolver(
+  resolver: unknown,
+  context: ResolverContext,
+): { record: unknown; error: ErrorInfo | null } {
   if (!isDeepLinkResolver(resolver)) return { record: null, error: { code: 'RESOLVER_REQUIRED' } }
   let result: unknown
   try {
@@ -460,7 +547,11 @@ function callResolver(resolver: unknown, context: ResolverContext): { record: un
   return { record: result, error: null }
 }
 
-function emptyResolution(target: DeepLinkEnvelope, code: string, actor: TrustedActor | null = null): DeepLinkResolution {
+function emptyResolution(
+  target: DeepLinkEnvelope,
+  code: string,
+  actor: TrustedActor | null = null,
+): DeepLinkResolution {
   return Object.freeze({ status: 'empty', code, actor, target, record: null, canWrite: false })
 }
 
@@ -480,10 +571,14 @@ function isDeepLinkAuthorizer(value: unknown): value is DeepLinkAuthorizer {
 }
 
 function isExistingEnvelope(value: unknown): value is DeepLinkEnvelope {
-  return isPlainRecord(value) && typeof value.routeName === 'string' && typeof value.url === 'string'
+  return (
+    isPlainRecord(value) && typeof value.routeName === 'string' && typeof value.url === 'string'
+  )
 }
 
-function isBridge(value: unknown): value is (context: Readonly<{ target: DeepLinkEnvelope }>) => unknown {
+function isBridge(
+  value: unknown,
+): value is (context: Readonly<{ target: DeepLinkEnvelope }>) => unknown {
   return typeof value === 'function'
 }
 
@@ -492,16 +587,22 @@ function isBridge(value: unknown): value is (context: Readonly<{ target: DeepLin
  * stable IDs plus the trusted actor only.  Historical message state and route
  * query fields never reach them.  The function is read-only and synchronous.
  */
-export function resolveDeepLink(input: DeepLinkInput | DeepLinkEnvelope, options: DeepLinkResolveOptions = {}): DeepLinkResolution {
-  const target = isExistingEnvelope(input)
-    ? normalizedEnvelope(input)
-    : createDeepLink(input)
+export function resolveDeepLink(
+  input: DeepLinkInput | DeepLinkEnvelope,
+  options: DeepLinkResolveOptions = {},
+): DeepLinkResolution {
+  const target = isExistingEnvelope(input) ? normalizedEnvelope(input) : createDeepLink(input)
   assertRecord(options, 'deep-link resolver options')
-  assertAllowedFields(options, new Set(['actorProvider', 'resolver', 'readRecord', 'authorize']), 'deep-link resolver options')
+  assertAllowedFields(
+    options,
+    new Set(['actorProvider', 'resolver', 'readRecord', 'authorize']),
+    'deep-link resolver options',
+  )
   const resolver = options.resolver === undefined ? options.readRecord : options.resolver
   let actor: TrustedActor | null = null
   if (options.actorProvider !== undefined) {
-    if (typeof options.actorProvider !== 'function') return emptyResolution(target, 'ACTOR_PROVIDER_REQUIRED')
+    if (typeof options.actorProvider !== 'function')
+      return emptyResolution(target, 'ACTOR_PROVIDER_REQUIRED')
     try {
       actor = normalizeActor(resolveTrustedActor(options.actorProvider))
     } catch (error) {
@@ -520,7 +621,11 @@ export function resolveDeepLink(input: DeepLinkInput | DeepLinkEnvelope, options
   if (response.error) return emptyResolution(target, response.error.code, actor)
   try {
     assertRecord(response.record, 'resolved deep-link record')
-    const targetSpec = targetFor(target.businessType, target.reviewItemId !== undefined, target.targetKind)
+    const targetSpec = targetFor(
+      target.businessType,
+      target.reviewItemId !== undefined,
+      target.targetKind,
+    )
     identityAliases(target.businessType, response.record, { ...target, ...targetSpec })
     if (isDeepLinkAuthorizer(options.authorize)) {
       let allowed: unknown
@@ -547,32 +652,59 @@ export const resolveTaskDeepLink = resolveDeepLink
  * Restore a validated target after auth.  It may return a bridge result, but
  * has no submit callback and never replays the action that created the link.
  */
-export function restoreAfterAuth(input: DeepLinkInput | DeepLinkEnvelope, options: AuthRestoreOptions = {}): AuthRestoreResult {
-  const target = isExistingEnvelope(input)
-    ? normalizedEnvelope(input)
-    : createDeepLink(input)
+export function restoreAfterAuth(
+  input: DeepLinkInput | DeepLinkEnvelope,
+  options: AuthRestoreOptions = {},
+): AuthRestoreResult {
+  const target = isExistingEnvelope(input) ? normalizedEnvelope(input) : createDeepLink(input)
   assertRecord(options, 'auth restore options')
   assertAllowedFields(options, new Set(['authenticated', 'bridge']), 'auth restore options')
   if (options.authenticated !== true) {
-    return Object.freeze({ status: 'auth_required', code: 'AUTH_REQUIRED', target, canSubmit: false })
+    return Object.freeze({
+      status: 'auth_required',
+      code: 'AUTH_REQUIRED',
+      target,
+      canSubmit: false,
+    })
   }
   if (options.bridge === undefined) {
     return Object.freeze({ status: 'ready', code: 'OK', target, canSubmit: false })
   }
   if (!isBridge(options.bridge)) {
-    return Object.freeze({ status: 'bridge_failed', code: 'BRIDGE_REQUIRED', target, canSubmit: false })
+    return Object.freeze({
+      status: 'bridge_failed',
+      code: 'BRIDGE_REQUIRED',
+      target,
+      canSubmit: false,
+    })
   }
   let result: unknown
   try {
     result = options.bridge(Object.freeze({ target }))
   } catch {
-    return Object.freeze({ status: 'bridge_failed', code: 'BRIDGE_FAILED', target, canSubmit: false })
+    return Object.freeze({
+      status: 'bridge_failed',
+      code: 'BRIDGE_FAILED',
+      target,
+      canSubmit: false,
+    })
   }
   if (isThenable(result)) {
     if (typeof result.catch === 'function') result.catch(() => undefined)
-    return Object.freeze({ status: 'bridge_failed', code: 'ASYNC_BRIDGE_UNSUPPORTED', target, canSubmit: false })
+    return Object.freeze({
+      status: 'bridge_failed',
+      code: 'ASYNC_BRIDGE_UNSUPPORTED',
+      target,
+      canSubmit: false,
+    })
   }
-  if (result === false) return Object.freeze({ status: 'bridge_failed', code: 'BRIDGE_REJECTED', target, canSubmit: false })
+  if (result === false)
+    return Object.freeze({
+      status: 'bridge_failed',
+      code: 'BRIDGE_REJECTED',
+      target,
+      canSubmit: false,
+    })
   return Object.freeze({ status: 'ready', code: 'OK', target, canSubmit: false })
 }
 

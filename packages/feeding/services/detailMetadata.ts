@@ -5,8 +5,10 @@ export interface FeedingDetailFigmaState {
   photoImgs: string[]
 }
 
-export interface FeedingTimelineRow extends Pick<FeedingTimelineEntry, 'day' | 'month' | 'indexText'>,
-  Partial<Omit<FeedingTimelineEntry, 'day' | 'month' | 'indexText'>> {}
+export interface FeedingTimelineRow
+  extends
+    Pick<FeedingTimelineEntry, 'day' | 'month' | 'indexText'>,
+    Partial<Omit<FeedingTimelineEntry, 'day' | 'month' | 'indexText'>> {}
 
 export interface FeedingCloudPetSummary {
   id: string

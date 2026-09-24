@@ -70,7 +70,10 @@ function validateQuery(query, context) {
     }
     const validScalar = value === null || ['string', 'number', 'boolean'].includes(typeof value)
     if (!validScalar || (typeof value === 'number' && !Number.isFinite(value))) {
-      errors.push({ code: 'invalid-query', message: `${context}: query value for ${key} must be a scalar` })
+      errors.push({
+        code: 'invalid-query',
+        message: `${context}: query value for ${key} must be a scalar`,
+      })
     }
   }
   return errors
@@ -88,14 +91,30 @@ function validateRoute(route, registeredRoutes, context) {
     errors.push({ code: 'missing-route', message: `${context}: route is required` })
     return errors
   }
-  if (!route.startsWith('/')) errors.push({ code: 'invalid-route', message: `${context}: route must start with /` })
-  if (route.includes('?') || route.includes('#') || route.includes('//') || route.includes('..') || route.includes('\\')) {
-    errors.push({ code: 'invalid-route', message: `${context}: route must be a path without query/hash: ${route}` })
+  if (!route.startsWith('/'))
+    errors.push({ code: 'invalid-route', message: `${context}: route must start with /` })
+  if (
+    route.includes('?') ||
+    route.includes('#') ||
+    route.includes('//') ||
+    route.includes('..') ||
+    route.includes('\\')
+  ) {
+    errors.push({
+      code: 'invalid-route',
+      message: `${context}: route must be a path without query/hash: ${route}`,
+    })
   }
   if (!/^\/(?:pages|packages)\/[A-Za-z0-9._~!$'()*+,;=:@%/-]+$/.test(route)) {
-    errors.push({ code: 'invalid-route', message: `${context}: route is outside pages/packages namespaces: ${route}` })
+    errors.push({
+      code: 'invalid-route',
+      message: `${context}: route is outside pages/packages namespaces: ${route}`,
+    })
   } else if (!registeredRoutes.has(route)) {
-    errors.push({ code: 'invalid-route', message: `${context}: route is not registered by pages.json: ${route}` })
+    errors.push({
+      code: 'invalid-route',
+      message: `${context}: route is not registered by pages.json: ${route}`,
+    })
   }
   return errors
 }
@@ -106,23 +125,44 @@ function validateSource(source, context) {
     errors.push({ code: 'missing-source', message: `${context}: source is required` })
     return errors
   }
-  if (source.startsWith('/') || source.includes('..') || source.includes('\\') || !source.endsWith('.vue')) {
-    errors.push({ code: 'invalid-source', message: `${context}: source must be a repository-relative .vue path: ${source}` })
+  if (
+    source.startsWith('/') ||
+    source.includes('..') ||
+    source.includes('\\') ||
+    !source.endsWith('.vue')
+  ) {
+    errors.push({
+      code: 'invalid-source',
+      message: `${context}: source must be a repository-relative .vue path: ${source}`,
+    })
     return errors
   }
   const absoluteSource = path.resolve(repoRoot, source)
   if (absoluteSource !== path.join(repoRoot, source) || !fs.existsSync(absoluteSource)) {
-    errors.push({ code: 'invalid-source', message: `${context}: source file does not exist: ${source}` })
+    errors.push({
+      code: 'invalid-source',
+      message: `${context}: source file does not exist: ${source}`,
+    })
   }
   return errors
 }
 
 function validateRouteSourcePair(route, source, context) {
   if (typeof route !== 'string' || typeof source !== 'string') return []
-  if (!/^\/(?:pages|packages)\/[A-Za-z0-9._~!$'()*+,;=:@%/-]+$/.test(route) || route.includes('..') || route.includes('\\')) return []
+  if (
+    !/^\/(?:pages|packages)\/[A-Za-z0-9._~!$'()*+,;=:@%/-]+$/.test(route) ||
+    route.includes('..') ||
+    route.includes('\\')
+  )
+    return []
   const expectedSource = `${route.slice(1)}.vue`
   if (source !== expectedSource) {
-    return [{ code: 'source-route-mismatch', message: `${context}: source must match the registered route path (${expectedSource}), got ${source}` }]
+    return [
+      {
+        code: 'source-route-mismatch',
+        message: `${context}: source must match the registered route path (${expectedSource}), got ${source}`,
+      },
+    ]
   }
   return []
 }
@@ -144,7 +184,10 @@ function makeEntry(pageKey, page, stateKey, state, registeredRoutes, figma = {},
     errors.push({ code: 'invalid-state', message: `${context}: state must be a plain object` })
   }
   if (typeof nodeId !== 'string' || !/^\d+:\d+$/.test(nodeId)) {
-    errors.push({ code: 'missing-node', message: `${context}: node_id must be an exact Figma node ID in <page>:<node> form` })
+    errors.push({
+      code: 'missing-node',
+      message: `${context}: node_id must be an exact Figma node ID in <page>:<node> form`,
+    })
   }
   errors.push(...validateRoute(route, registeredRoutes, context))
   errors.push(...validateSource(source, context))
@@ -154,12 +197,20 @@ function makeEntry(pageKey, page, stateKey, state, registeredRoutes, figma = {},
     errors.push({ code: 'invalid-runtime', message: `${context}: runtime must be a plain object` })
   }
   if (migration && stateObject.legacy_node_id) {
-    const reference = migration.entries.find((item) => item.old_node_id === stateObject.legacy_node_id)
+    const reference = migration.entries.find(
+      (item) => item.old_node_id === stateObject.legacy_node_id,
+    )
     const retained = reference && reference.status === 'retained-legacy'
-    if (!reference || nodeId !== (retained ? reference.old_node_id : reference.new_node_id) ||
-        fileKey !== (retained ? migration.old_file_key : migration.new_file_key) ||
-        designStatus !== (retained ? 'retained-legacy' : 'verified-metadata')) {
-      errors.push({ code: 'figma-provenance-mismatch', message: `${context}: file_key/node_id/mapping_status disagree with the reviewed migration manifest` })
+    if (
+      !reference ||
+      nodeId !== (retained ? reference.old_node_id : reference.new_node_id) ||
+      fileKey !== (retained ? migration.old_file_key : migration.new_file_key) ||
+      designStatus !== (retained ? 'retained-legacy' : 'verified-metadata')
+    ) {
+      errors.push({
+        code: 'figma-provenance-mismatch',
+        message: `${context}: file_key/node_id/mapping_status disagree with the reviewed migration manifest`,
+      })
     }
   }
 
@@ -171,19 +222,27 @@ function makeEntry(pageKey, page, stateKey, state, registeredRoutes, figma = {},
     name: typeof stateObject.name === 'string' ? stateObject.name : stateKey,
     nodeId: typeof nodeId === 'string' ? nodeId : null,
     fileKey,
-    figmaUrl: fileKey && typeof nodeId === 'string' ? `https://www.figma.com/design/${encodeURIComponent(fileKey)}?node-id=${nodeId.replace(':', '-')}` : null,
+    figmaUrl:
+      fileKey && typeof nodeId === 'string'
+        ? `https://www.figma.com/design/${encodeURIComponent(fileKey)}?node-id=${nodeId.replace(':', '-')}`
+        : null,
     designStatus,
     designNote: stateObject.mapping_note || 'Live design correspondence has not been recorded.',
     route: typeof route === 'string' ? route : null,
     source: typeof source === 'string' ? source : null,
     query: isPlainObject(query) ? query : null,
-    targetUrl: typeof route === 'string' && isPlainObject(query) ? buildTargetUrl(route, query) : null,
+    targetUrl:
+      typeof route === 'string' && isPlainObject(query) ? buildTargetUrl(route, query) : null,
     routeOrigin: hasOwn(stateObject, 'route') ? 'state' : 'page',
     sourceOrigin: hasOwn(stateObject, 'source') ? 'state' : 'page',
-    runtimeStatus: isPlainObject(runtime) && typeof runtime.status === 'string' ? runtime.status : 'not-checked',
-    runtimeReason: isPlainObject(runtime) && typeof runtime.reason === 'string' ? runtime.reason : 'Route/source mapping only; runtime state was not executed.',
+    runtimeStatus:
+      isPlainObject(runtime) && typeof runtime.status === 'string' ? runtime.status : 'not-checked',
+    runtimeReason:
+      isPlainObject(runtime) && typeof runtime.reason === 'string'
+        ? runtime.reason
+        : 'Route/source mapping only; runtime state was not executed.',
     status,
-    errors
+    errors,
   }
 }
 
@@ -200,11 +259,16 @@ function buildReport() {
   let migration = null
   if (figma.migration_manifest) {
     const manifestPath = figma.migration_manifest
-    if (typeof manifestPath !== 'string' || path.isAbsolute(manifestPath) || manifestPath.split(/[\\/]/).includes('..')) {
+    if (
+      typeof manifestPath !== 'string' ||
+      path.isAbsolute(manifestPath) ||
+      manifestPath.split(/[\\/]/).includes('..')
+    ) {
       throw new Error('migration_manifest must be a repository-relative path')
     }
     migration = JSON.parse(readText(path.join(repoRoot, manifestPath)))
-    if (!Array.isArray(migration.entries) || migration.new_file_key !== figma.file_key) throw new Error('Invalid Figma migration manifest')
+    if (!Array.isArray(migration.entries) || migration.new_file_key !== figma.file_key)
+      throw new Error('Invalid Figma migration manifest')
   }
   const entries = []
   const componentNodes = []
@@ -215,15 +279,21 @@ function buildReport() {
     }
     if (isPlainObject(page.component_nodes)) {
       for (const [key, reference] of Object.entries(page.component_nodes)) {
-        componentNodes.push({ pageKey, key,
+        componentNodes.push({
+          pageKey,
+          key,
           nodeId: isPlainObject(reference) ? reference.node_id || null : reference,
-          fileKey: isPlainObject(reference) ? reference.file_key || figma.file_key || null : figma.file_key || null,
-          reference
+          fileKey: isPlainObject(reference)
+            ? reference.file_key || figma.file_key || null
+            : figma.file_key || null,
+          reference,
         })
       }
     }
     if (!isPlainObject(page.states)) {
-      entries.push(makeEntry(pageKey, page, '<states>', page.states, registeredRoutes, figma, migration))
+      entries.push(
+        makeEntry(pageKey, page, '<states>', page.states, registeredRoutes, figma, migration),
+      )
       continue
     }
     for (const [stateKey, state] of Object.entries(page.states)) {
@@ -233,19 +303,21 @@ function buildReport() {
 
   const unresolvedDesignStates = isPlainObject(map.unresolved_design_states)
     ? Object.entries(map.unresolved_design_states).map(([key, state]) => ({
-      stateKey: key,
-      name: isPlainObject(state) && typeof state.name === 'string' ? state.name : key,
-      nodeId: isPlainObject(state) && typeof state.node_id === 'string' ? state.node_id : null,
-      status: 'unresolved',
-      reason: 'listed outside pages.states; route/source intentionally not assigned'
-    }))
+        stateKey: key,
+        name: isPlainObject(state) && typeof state.name === 'string' ? state.name : key,
+        nodeId: isPlainObject(state) && typeof state.node_id === 'string' ? state.node_id : null,
+        status: 'unresolved',
+        reason: 'listed outside pages.states; route/source intentionally not assigned',
+      }))
     : []
 
-  const errors = entries.flatMap((entry) => entry.errors.map((error) => ({
-    pageKey: entry.pageKey,
-    stateKey: entry.stateKey,
-    ...error
-  })))
+  const errors = entries.flatMap((entry) =>
+    entry.errors.map((error) => ({
+      pageKey: entry.pageKey,
+      stateKey: entry.stateKey,
+      ...error,
+    })),
+  )
   const counts = {
     formalPages: Object.keys(map.pages).length,
     formalStates: entries.length,
@@ -253,7 +325,7 @@ function buildReport() {
     invalid: entries.filter((entry) => entry.status !== 'mapped').length,
     unresolvedDesignStates: unresolvedDesignStates.length,
     componentNodes: componentNodes.length,
-    registeredRoutes: registeredRoutes.size
+    registeredRoutes: registeredRoutes.size,
   }
 
   return {
@@ -262,26 +334,32 @@ function buildReport() {
     sourceOfTruth: {
       map: path.relative(repoRoot, mapPath),
       pages: path.relative(repoRoot, pagesPath),
-      exactNodeSource: path.relative(repoRoot, mapPath)
+      exactNodeSource: path.relative(repoRoot, mapPath),
     },
     scope: {
-      description: 'Only entries under pages.*.states are included. This is a route/node mapping report, not a visual verification report.',
+      description:
+        'Only entries under pages.*.states are included. This is a route/node mapping report, not a visual verification report.',
       excludedUnresolvedDesignStates: unresolvedDesignStates,
-      excludedComponentNodes: componentNodes
+      excludedComponentNodes: componentNodes,
     },
     counts,
     designCounts: {
-      verifiedMetadata: entries.filter((entry) => entry.designStatus === 'verified-metadata').length,
+      verifiedMetadata: entries.filter((entry) => entry.designStatus === 'verified-metadata')
+        .length,
       retainedLegacy: entries.filter((entry) => entry.designStatus === 'retained-legacy').length,
-      notChecked: entries.filter((entry) => !['verified-metadata', 'retained-legacy'].includes(entry.designStatus)).length
+      notChecked: entries.filter(
+        (entry) => !['verified-metadata', 'retained-legacy'].includes(entry.designStatus),
+      ).length,
     },
     errors,
-    entries
+    entries,
   }
 }
 
 function markdownEscape(value) {
-  return String(value === null || value === undefined ? '' : value).replace(/\|/g, '\\|').replace(/\n/g, ' ')
+  return String(value === null || value === undefined ? '' : value)
+    .replace(/\|/g, '\\|')
+    .replace(/\n/g, ' ')
 }
 
 function renderMarkdown(report) {
@@ -301,20 +379,32 @@ function renderMarkdown(report) {
     `设计对应：元数据已核对 ${report.designCounts?.verifiedMetadata || 0}；保留旧稿 ${report.designCounts?.retainedLegacy || 0}；未核对 ${report.designCounts?.notChecked || 0}。mapped 仅表示本地路由/来源有效，不代表新稿全部覆盖。`,
     '',
     '| 页面 | 状态 | Figma node | route | source | query | 映射状态 | 运行前置 | 设计对应 |',
-    '|---|---|---|---|---|---|---|---|---|'
+    '|---|---|---|---|---|---|---|---|---|',
   ]
   for (const entry of report.entries) {
     const query = entry.query === null ? '—' : JSON.stringify(entry.query)
-    const node = entry.figmaUrl ? `[${entry.nodeId}](${entry.figmaUrl})` : entry.nodeId ? `\`${entry.nodeId}\`` : '—'
-    lines.push(`| ${markdownEscape(entry.pageName)} | ${markdownEscape(entry.name)} (${markdownEscape(entry.stateKey)}) | ${node} | ${entry.targetUrl ? `\`${markdownEscape(entry.targetUrl)}\`` : '—'} | ${entry.source ? `\`${markdownEscape(entry.source)}\`` : '—'} | ${markdownEscape(query)} | ${entry.status} | ${markdownEscape(entry.runtimeStatus)}：${markdownEscape(entry.runtimeReason)} | ${markdownEscape(entry.designStatus)} |`)
+    const node = entry.figmaUrl
+      ? `[${entry.nodeId}](${entry.figmaUrl})`
+      : entry.nodeId
+        ? `\`${entry.nodeId}\``
+        : '—'
+    lines.push(
+      `| ${markdownEscape(entry.pageName)} | ${markdownEscape(entry.name)} (${markdownEscape(entry.stateKey)}) | ${node} | ${entry.targetUrl ? `\`${markdownEscape(entry.targetUrl)}\`` : '—'} | ${entry.source ? `\`${markdownEscape(entry.source)}\`` : '—'} | ${markdownEscape(query)} | ${entry.status} | ${markdownEscape(entry.runtimeStatus)}：${markdownEscape(entry.runtimeReason)} | ${markdownEscape(entry.designStatus)} |`,
+    )
   }
   if (report.errors.length) {
     lines.push('', '## Invalid entries', '', '| 页面 | 状态 | code | 说明 |', '|---|---|---|---|')
-    for (const error of report.errors) lines.push(`| ${markdownEscape(error.pageKey)} | ${markdownEscape(error.stateKey)} | ${error.code} | ${markdownEscape(error.message)} |`)
+    for (const error of report.errors)
+      lines.push(
+        `| ${markdownEscape(error.pageKey)} | ${markdownEscape(error.stateKey)} | ${error.code} | ${markdownEscape(error.message)} |`,
+      )
   }
   if (report.scope.excludedUnresolvedDesignStates.length) {
     lines.push('', '## Unresolved design states', '', '| 状态 | node | 处理 |', '|---|---|---|')
-    for (const state of report.scope.excludedUnresolvedDesignStates) lines.push(`| ${markdownEscape(state.name)} (${markdownEscape(state.stateKey)}) | ${state.nodeId ? `\`${state.nodeId}\`` : '—'} | ${markdownEscape(state.reason)} |`)
+    for (const state of report.scope.excludedUnresolvedDesignStates)
+      lines.push(
+        `| ${markdownEscape(state.name)} (${markdownEscape(state.stateKey)}) | ${state.nodeId ? `\`${state.nodeId}\`` : '—'} | ${markdownEscape(state.reason)} |`,
+      )
   }
   lines.push('')
   return lines.join('\n')
@@ -335,12 +425,12 @@ function writeFailureReport(error) {
     sourceOfTruth: {
       map: path.relative(repoRoot, mapPath),
       pages: path.relative(repoRoot, pagesPath),
-      exactNodeSource: path.relative(repoRoot, mapPath)
+      exactNodeSource: path.relative(repoRoot, mapPath),
     },
     scope: {
       description: 'Input parsing failed; no formal state entries are available.',
       excludedUnresolvedDesignStates: [],
-      excludedComponentNodes: []
+      excludedComponentNodes: [],
     },
     counts: {
       formalPages: 0,
@@ -349,10 +439,10 @@ function writeFailureReport(error) {
       invalid: 0,
       unresolvedDesignStates: 0,
       componentNodes: 0,
-      registeredRoutes: 0
+      registeredRoutes: 0,
     },
     errors: [{ code: 'input-error', message }],
-    entries: []
+    entries: [],
   }
   writeReport(report)
 }
@@ -362,16 +452,22 @@ function main() {
     const report = buildReport()
     writeReport(report)
     if (report.errors.length) {
-      console.error(`figma-state-matrix: wrote reports with ${report.errors.length} invalid mapping error(s)`)
+      console.error(
+        `figma-state-matrix: wrote reports with ${report.errors.length} invalid mapping error(s)`,
+      )
       process.exitCode = 1
       return
     }
-    console.log(`figma-state-matrix: wrote ${path.relative(repoRoot, markdownPath)} and ${path.relative(repoRoot, jsonPath)} (${report.entries.length} formal states)`)
+    console.log(
+      `figma-state-matrix: wrote ${path.relative(repoRoot, markdownPath)} and ${path.relative(repoRoot, jsonPath)} (${report.entries.length} formal states)`,
+    )
   } catch (error) {
     try {
       writeFailureReport(error)
     } catch (writeError) {
-      console.error(`figma-state-matrix: unable to write failure report: ${writeError && writeError.message ? writeError.message : writeError}`)
+      console.error(
+        `figma-state-matrix: unable to write failure report: ${writeError && writeError.message ? writeError.message : writeError}`,
+      )
     }
     console.error(`figma-state-matrix: ${error && error.message ? error.message : error}`)
     process.exitCode = 1
@@ -384,5 +480,5 @@ module.exports = {
   buildReport,
   renderMarkdown,
   readRegisteredRoutes,
-  validateQuery
+  validateQuery,
 }

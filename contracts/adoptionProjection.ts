@@ -2,21 +2,42 @@ import type { AdoptionStatus, AdoptionReapproval, StoredTimestamp } from './appl
 import { definedFields, mediaPaths, timestamp } from './applicationParsing.ts'
 
 export type AdoptionProjectionCondition = {
-  count: number; required: boolean
-  decision: 'unknown' | 'approved' | 'rejected' | 'pending' | 'skip' | 'decision_required' | 'bypass_terminal'
-  canProceed: boolean; decisionRequired: boolean; reason: string
+  count: number
+  required: boolean
+  decision:
+    | 'unknown'
+    | 'approved'
+    | 'rejected'
+    | 'pending'
+    | 'skip'
+    | 'decision_required'
+    | 'bypass_terminal'
+  canProceed: boolean
+  decisionRequired: boolean
+  reason: string
   selection?: 'any' | 'all' | 'specific'
   reviews: readonly { id: string; state: string }[]
 }
 export type AdoptionApplicationSnapshot = {
-  id: string; recordId: string; applicationId: string; applicationType: 'adoption'
+  id: string
+  recordId: string
+  applicationId: string
+  applicationType: 'adoption'
   status: AdoptionStatus
   perspective: 'applicant' | 'owner' | 'cloud_parent'
   condition: AdoptionProjectionCondition | null
-  pets?: Array<{ id?: string | number; petId?: string | number; name?: string | number; avatar?: string | number }>
+  pets?: Array<{
+    id?: string | number
+    petId?: string | number
+    name?: string | number
+    avatar?: string | number
+  }>
   applicantLevel?: number
-  mediaPaths?: string[]; proofPhotos?: string[]
-  createdAt?: StoredTimestamp | null; updatedAt?: StoredTimestamp | null; rejectedAt?: StoredTimestamp | null
+  mediaPaths?: string[]
+  proofPhotos?: string[]
+  createdAt?: StoredTimestamp | null
+  updatedAt?: StoredTimestamp | null
+  rejectedAt?: StoredTimestamp | null
   reapproval?: AdoptionReapproval
   applicationStatus?: string
   yardId?: string
@@ -43,7 +64,11 @@ export type AdoptionApplicationSnapshot = {
 }
 
 function text(value: unknown): string | undefined {
-  return typeof value === 'string' ? value : typeof value === 'number' && Number.isFinite(value) ? String(value) : undefined
+  return typeof value === 'string'
+    ? value
+    : typeof value === 'number' && Number.isFinite(value)
+      ? String(value)
+      : undefined
 }
 function scalar(value: unknown): string | number | undefined {
   return typeof value === 'string' || typeof value === 'number' ? value : undefined
@@ -64,9 +89,16 @@ export function projectAdoptionFields(record: Record<string, unknown>, applicant
     summary: text(record.summary),
     createdAt: record.createdAt === undefined ? undefined : timestamp(record.createdAt),
     updatedAt: record.updatedAt === undefined ? undefined : timestamp(record.updatedAt),
-    pets: Array.isArray(record.pets) ? record.pets.filter(isRecord).map(pet => definedFields({
-      id: scalar(pet.id), petId: scalar(pet.petId), name: scalar(pet.name), avatar: scalar(pet.avatar),
-    })) : undefined,
+    pets: Array.isArray(record.pets)
+      ? record.pets.filter(isRecord).map((pet) =>
+          definedFields({
+            id: scalar(pet.id),
+            petId: scalar(pet.petId),
+            name: scalar(pet.name),
+            avatar: scalar(pet.avatar),
+          }),
+        )
+      : undefined,
   })
   if (!applicant) return publicFields
   const reapproval = isRecord(record.reapproval) ? record.reapproval : null
@@ -91,10 +123,12 @@ export function projectAdoptionFields(record: Record<string, unknown>, applicant
     mediaPaths: record.mediaPaths === undefined ? undefined : mediaPaths(record.mediaPaths),
     proofPhotos: record.proofPhotos === undefined ? undefined : mediaPaths(record.proofPhotos),
     rejectedAt: record.rejectedAt === undefined ? undefined : timestamp(record.rejectedAt),
-    reapproval: reapproval ? {
-      available: reapproval.available === true,
-      count: typeof reapproval.count === 'number' ? reapproval.count : 0,
-      lastAt: timestamp(reapproval.lastAt),
-    } : undefined,
+    reapproval: reapproval
+      ? {
+          available: reapproval.available === true,
+          count: typeof reapproval.count === 'number' ? reapproval.count : 0,
+          lastAt: timestamp(reapproval.lastAt),
+        }
+      : undefined,
   })
 }

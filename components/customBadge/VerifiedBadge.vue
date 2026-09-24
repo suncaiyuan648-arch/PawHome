@@ -1,8 +1,14 @@
 <template>
-  <PawBadge text="已实名" color="#fffaf0" text-color="#a9731d" size="middle" />
+  <PawBadge
+    text="已实名"
+    color="#fffaf0"
+    text-color="#a9731d"
+    size="middle"
+  />
 </template>
 
-<script lang="ts">import { defineComponent } from 'vue'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
 import PawBadge from '@/components/base/PawBadge.vue'
 
@@ -14,6 +20,6 @@ export default defineComponent({
     // #ifdef MP-WEIXIN
     virtualHost: true,
     // #endif
-  }
+  },
 })
 </script>

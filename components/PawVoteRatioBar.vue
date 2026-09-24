@@ -1,17 +1,46 @@
 <template>
-  <view class="paw-vote-ratio-bar" data-qa="qa-vote-ratio-bar">
-    <view class="paw-vote-ratio-bar__track" :style="trackStyle" aria-hidden="true">
-      <view class="paw-vote-ratio-bar__segment paw-vote-ratio-bar__segment--real"
-        :class="{ 'paw-vote-ratio-bar__segment--single': !normalizedFakePercent, 'paw-vote-ratio-bar__segment--interactive': interactive, 'paw-vote-ratio-bar__segment--center-labels': centerLabels }"
-        :style="realStyle" data-qa="qa-vote-ratio-real" @tap.stop="emitSegmentClick('real')">
-        <view v-if="showLabels && normalizedRealPercent && (realLabel || $slots['real-label'])" class="paw-vote-ratio-bar__label">
+  <view
+    class="paw-vote-ratio-bar"
+    data-qa="qa-vote-ratio-bar"
+  >
+    <view
+      class="paw-vote-ratio-bar__track"
+      :style="trackStyle"
+      aria-hidden="true"
+    >
+      <view
+        class="paw-vote-ratio-bar__segment paw-vote-ratio-bar__segment--real"
+        :class="{
+          'paw-vote-ratio-bar__segment--single': !normalizedFakePercent,
+          'paw-vote-ratio-bar__segment--interactive': interactive,
+          'paw-vote-ratio-bar__segment--center-labels': centerLabels,
+        }"
+        :style="realStyle"
+        data-qa="qa-vote-ratio-real"
+        @tap.stop="emitSegmentClick('real')"
+      >
+        <view
+          v-if="showLabels && normalizedRealPercent && (realLabel || $slots['real-label'])"
+          class="paw-vote-ratio-bar__label"
+        >
           <slot name="real-label">{{ realLabel }}</slot>
         </view>
       </view>
-      <view class="paw-vote-ratio-bar__segment paw-vote-ratio-bar__segment--fake"
-        :class="{ 'paw-vote-ratio-bar__segment--single': !normalizedRealPercent, 'paw-vote-ratio-bar__segment--interactive': interactive, 'paw-vote-ratio-bar__segment--center-labels': centerLabels }"
-        :style="fakeStyle" data-qa="qa-vote-ratio-fake" @tap.stop="emitSegmentClick('fake')">
-        <view v-if="showLabels && normalizedFakePercent && (fakeLabel || $slots['fake-label'])" class="paw-vote-ratio-bar__label">
+      <view
+        class="paw-vote-ratio-bar__segment paw-vote-ratio-bar__segment--fake"
+        :class="{
+          'paw-vote-ratio-bar__segment--single': !normalizedRealPercent,
+          'paw-vote-ratio-bar__segment--interactive': interactive,
+          'paw-vote-ratio-bar__segment--center-labels': centerLabels,
+        }"
+        :style="fakeStyle"
+        data-qa="qa-vote-ratio-fake"
+        @tap.stop="emitSegmentClick('fake')"
+      >
+        <view
+          v-if="showLabels && normalizedFakePercent && (fakeLabel || $slots['fake-label'])"
+          class="paw-vote-ratio-bar__label"
+        >
           <slot name="fake-label">{{ fakeLabel }}</slot>
         </view>
       </view>
@@ -42,7 +71,7 @@ export default defineComponent({
     centerLabels: { type: Boolean, default: false },
     minFakeWidth: { type: Number, default: 0 },
     height: { type: [Number, String], default: 26 },
-    dividerWidth: { type: Number, default: 8 }
+    dividerWidth: { type: Number, default: 8 },
   },
   computed: {
     normalizedPercentages() {
@@ -50,10 +79,10 @@ export default defineComponent({
       const fake = clampPercent(this.fakePercent, 50)
       const total = real + fake
       if (total <= 0) return { real: 50, fake: 50 }
-      const normalizedReal = Math.round(real / total * 1000) / 10
+      const normalizedReal = Math.round((real / total) * 1000) / 10
       return {
         real: normalizedReal,
-        fake: Math.round((100 - normalizedReal) * 10) / 10
+        fake: Math.round((100 - normalizedReal) * 10) / 10,
       }
     },
     normalizedRealPercent(): number {
@@ -64,23 +93,27 @@ export default defineComponent({
     },
     trackStyle() {
       const numericHeight = Number(this.height)
-      const height = typeof this.height === 'number'
-        ? `${this.height}px`
-        : (Number.isFinite(numericHeight) ? `${numericHeight}px` : String(this.height))
+      const height =
+        typeof this.height === 'number'
+          ? `${this.height}px`
+          : Number.isFinite(numericHeight)
+            ? `${numericHeight}px`
+            : String(this.height)
       const radius = Number.isFinite(numericHeight) ? `${numericHeight / 2}px` : '13px'
       return {
         height,
         borderRadius: radius,
-        '--paw-vote-divider-width': `${Math.max(0, Number(this.dividerWidth) || 0)}px`
+        '--paw-vote-divider-width': `${Math.max(0, Number(this.dividerWidth) || 0)}px`,
       }
     },
     realStyle() {
       return { flexBasis: `${this.normalizedRealPercent}%` }
     },
     fakeStyle() {
-      const minWidth = this.normalizedFakePercent && this.minFakeWidth > 0 ? `${this.minFakeWidth}px` : '0px'
+      const minWidth =
+        this.normalizedFakePercent && this.minFakeWidth > 0 ? `${this.minFakeWidth}px` : '0px'
       return { flexBasis: `${this.normalizedFakePercent}%`, minWidth }
-    }
+    },
   },
   emits: {
     'segment-click': eventContract<[vote: 'real' | 'fake']>(),
@@ -88,8 +121,8 @@ export default defineComponent({
   methods: {
     emitSegmentClick(segment: 'real' | 'fake') {
       if (this.interactive) this.$emit('segment-click', segment)
-    }
-  }
+    },
+  },
 })
 </script>
 

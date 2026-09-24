@@ -29,7 +29,7 @@ function isRecord(value: unknown): value is JsonRecord {
 }
 
 function optionsOf(options: unknown): RescueListReadOptions {
-  return isRecord(options) ? options as RescueListReadOptions : {}
+  return isRecord(options) ? (options as RescueListReadOptions) : {}
 }
 
 function readCurrentRescueRecords(context: unknown): unknown[] {
@@ -51,7 +51,12 @@ function explicitReviewStatuses(record: JsonRecord): string[] {
     [review, 'voteStatus'],
   ]
   for (const [source, field] of sources) {
-    if (!source || !Object.prototype.hasOwnProperty.call(source, field) || source[field] === undefined) continue
+    if (
+      !source ||
+      !Object.prototype.hasOwnProperty.call(source, field) ||
+      source[field] === undefined
+    )
+      continue
     const value = String(source[field]).trim()
     if (!values.includes(value)) values.push(value)
   }
@@ -60,13 +65,18 @@ function explicitReviewStatuses(record: JsonRecord): string[] {
 
 function adaptReviewRecord(record: unknown): unknown {
   if (!isRecord(record) || !Object.prototype.hasOwnProperty.call(record, 'status')) return record
-  const legacyStatus = record.status === undefined || record.status === null ? '' : String(record.status).trim()
+  const legacyStatus =
+    record.status === undefined || record.status === null ? '' : String(record.status).trim()
   const explicit = explicitReviewStatuses(record)
   // rescueStorage keeps a legacy status field on every normalized record. If
   // an explicit review alias repeats that same value, remove only the
   // redundant compatibility alias; disagreement remains in the record so the
   // canonical contract rejects it instead of repairing a conflict.
-  if (explicit.length === 1 && explicit[0] === legacyStatus && REVIEW_STATUS_VALUES.includes(legacyStatus)) {
+  if (
+    explicit.length === 1 &&
+    explicit[0] === legacyStatus &&
+    REVIEW_STATUS_VALUES.includes(legacyStatus)
+  ) {
     const copy = { ...record }
     delete copy.status
     return copy
@@ -87,7 +97,13 @@ function readOnlyModel(model: RescueListContractModel): RescueListResult {
 }
 
 function errorCode(error: unknown): string {
-  if (error !== null && typeof error === 'object' && 'code' in error && typeof error.code === 'string' && error.code) {
+  if (
+    error !== null &&
+    typeof error === 'object' &&
+    'code' in error &&
+    typeof error.code === 'string' &&
+    error.code
+  ) {
     return error.code
   }
   return 'RESCUE_LIST_READ_FAILED'
@@ -124,21 +140,25 @@ function safelyRead(read: () => RescueListContractModel): RescueListResult {
 /** Read the current actor's own rescue applications from real storage. */
 export function readRescueMine(options: RescueListReadOptions = {}): RescueListResult {
   const source = optionsOf(options)
-  return safelyRead(() => readRescueMineContract({
-    actorProvider: source.actorProvider,
-    filter: source.filter,
-    resolver: readCurrentRescueRecords,
-  }))
+  return safelyRead(() =>
+    readRescueMineContract({
+      actorProvider: source.actorProvider,
+      filter: source.filter,
+      resolver: readCurrentRescueRecords,
+    }),
+  )
 }
 
 /** Read rescue review tasks explicitly assigned to the current reviewer. */
 export function readRescueReviewList(options: RescueListReadOptions = {}): RescueListResult {
   const source = optionsOf(options)
-  return safelyRead(() => readRescueReviewListContract({
-    actorProvider: source.actorProvider,
-    filter: source.filter,
-    resolver: readCurrentReviewRecords,
-  }))
+  return safelyRead(() =>
+    readRescueReviewListContract({
+      actorProvider: source.actorProvider,
+      filter: source.filter,
+      resolver: readCurrentReviewRecords,
+    }),
+  )
 }
 
 export const getRescueMine = readRescueMine

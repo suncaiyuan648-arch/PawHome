@@ -1,6 +1,14 @@
 <template>
-  <view class="paw-upload-tile" :style="tileStyle" @tap="$emit('select')">
-    <image v-if="src" :src="src" mode="aspectFill" />
+  <view
+    class="paw-upload-tile"
+    :style="tileStyle"
+    @tap="$emit('select')"
+  >
+    <image
+      v-if="src"
+      :src="src"
+      mode="aspectFill"
+    />
     <slot v-else><text>＋</text></slot>
   </view>
 </template>
@@ -14,18 +22,18 @@ export default defineComponent({
   props: {
     src: { type: String, default: '' },
     size: { type: [Number, String], default: 80 },
-    radius: { type: [Number, String], default: 8 }
+    radius: { type: [Number, String], default: 8 },
   },
   emits: {
-    'select': eventContract<[]>(),
+    select: eventContract<[]>(),
   },
   computed: {
     tileStyle() {
       const size = typeof this.size === 'number' ? `${this.size}px` : this.size
       const radius = typeof this.radius === 'number' ? `${this.radius}px` : this.radius
       return { width: size, height: size, borderRadius: radius }
-    }
-  }
+    },
+  },
 })
 </script>
 

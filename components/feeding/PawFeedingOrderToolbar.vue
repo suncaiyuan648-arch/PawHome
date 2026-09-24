@@ -1,13 +1,28 @@
 <template>
   <view class="feeding-order-toolbar">
     <view class="feeding-order-toolbar__search">
-      <PawSearchBar v-model="inputValue" placeholder="搜索动物名字/品种等" @search="submitSearch" />
+      <PawSearchBar
+        v-model="inputValue"
+        placeholder="搜索动物名字/品种等"
+        @search="submitSearch"
+      />
     </view>
-    <PawPopoverMenu v-model="sortOpen" :items="sortOptions" :active-key="sortKey" @select="selectSort">
+    <PawPopoverMenu
+      v-model="sortOpen"
+      :items="sortOptions"
+      :active-key="sortKey"
+      @select="selectSort"
+    >
       <template #trigger>
-        <view class="feeding-order-toolbar__sort" @tap.stop="toggleSort">
+        <view
+          class="feeding-order-toolbar__sort"
+          @tap.stop="toggleSort"
+        >
           <text>{{ activeSortLabel }}</text>
-          <PawIcon name="navigation/sort-arrow" :size="8" />
+          <PawIcon
+            name="navigation/sort-arrow"
+            :size="8"
+          />
         </view>
       </template>
     </PawPopoverMenu>
@@ -27,7 +42,7 @@ import type { FeedingOrderSort } from '@/utils/feedingOrderContracts.ts'
 import {
   createFeedingOrderToolbarState,
   isFeedingOrderSort,
-  type FeedingOrderToolbarState
+  type FeedingOrderToolbarState,
 } from '@/packages/feeding/services/orderListMetadata.ts'
 
 export default defineComponent({
@@ -35,24 +50,30 @@ export default defineComponent({
   components: { PawIcon, PawPopoverMenu, PawSearchBar },
   props: {
     keyword: { type: String, default: '' },
-    sort: { type: String as PropType<FeedingOrderSort>, default: 'smart' }
+    sort: { type: String as PropType<FeedingOrderSort>, default: 'smart' },
   },
   emits: {
     'update:keyword': eventContract<[value: string]>(),
     'update:sort': eventContract<[sort: FeedingOrderSort]>(),
-    'search': eventContract<[value: string]>(),
-    'sort': eventContract<[sort: FeedingOrderSort]>(),
+    search: eventContract<[value: string]>(),
+    sort: eventContract<[sort: FeedingOrderSort]>(),
   },
-  data(): FeedingOrderToolbarState { return createFeedingOrderToolbarState(this.keyword, this.sort) },
+  data(): FeedingOrderToolbarState {
+    return createFeedingOrderToolbarState(this.keyword, this.sort)
+  },
   computed: {
     activeSortLabel() {
       const option = this.sortOptions.find((item) => item.key === this.sortKey)
       return option ? option.label : '智能排序'
-    }
+    },
   },
   watch: {
-    keyword(value: string) { if (value !== this.inputValue) this.inputValue = value },
-    sort(value: FeedingOrderSort) { if (value !== this.sortKey) this.sortKey = value }
+    keyword(value: string) {
+      if (value !== this.inputValue) this.inputValue = value
+    },
+    sort(value: FeedingOrderSort) {
+      if (value !== this.sortKey) this.sortKey = value
+    },
   },
   methods: {
     toggleSort() {
@@ -72,8 +93,8 @@ export default defineComponent({
       this.sortKey = key
       this.$emit('update:sort', key)
       this.$emit('sort', key)
-    }
-  }
+    },
+  },
 })
 </script>
 

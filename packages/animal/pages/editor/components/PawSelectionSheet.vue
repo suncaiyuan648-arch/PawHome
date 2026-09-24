@@ -1,26 +1,74 @@
 <template>
-  <PawBottomSheet v-model="valueProxy" :variant="variant" :height="sheetHeight" :close-on-mask="true"
-    :safe-area="safeArea">
-    <view class="paw-selection-sheet__header" :class="{ 'paw-selection-sheet__header--list': layout !== 'cards' }">
-      <text v-if="title" class="paw-selection-sheet__title">{{ title }}</text>
-      <view v-if="showClose" class="paw-selection-sheet__close" @tap.stop="close">
-        <PawIcon name="navigation/close" :size="16" label="关闭" />
+  <PawBottomSheet
+    v-model="valueProxy"
+    :variant="variant"
+    :height="sheetHeight"
+    :close-on-mask="true"
+    :safe-area="safeArea"
+  >
+    <view
+      class="paw-selection-sheet__header"
+      :class="{ 'paw-selection-sheet__header--list': layout !== 'cards' }"
+    >
+      <text
+        v-if="title"
+        class="paw-selection-sheet__title"
+        >{{ title }}</text
+      >
+      <view
+        v-if="showClose"
+        class="paw-selection-sheet__close"
+        @tap.stop="close"
+      >
+        <PawIcon
+          name="navigation/close"
+          :size="16"
+          label="关闭"
+        />
       </view>
     </view>
-    <view v-if="layout === 'cards'" class="paw-selection-sheet__cards">
-      <view v-for="item in normalizedItems" :key="item.key" class="paw-selection-sheet__card"
-        :class="{ selected: selected === item.key }" @tap.stop="select(item.key)"><text>{{ item.label }}</text></view>
+    <view
+      v-if="layout === 'cards'"
+      class="paw-selection-sheet__cards"
+    >
+      <view
+        v-for="item in normalizedItems"
+        :key="item.key"
+        class="paw-selection-sheet__card"
+        :class="{ selected: selected === item.key }"
+        @tap.stop="select(item.key)"
+        ><text>{{ item.label }}</text></view
+      >
     </view>
-    <view v-else class="paw-selection-sheet__list">
-      <view v-for="item in normalizedItems" :key="item.key" class="paw-selection-sheet__row"
-        @tap.stop="select(item.key)"><text>{{ item.label }}</text>
-        <PawIcon v-if="selected === item.key" class="paw-selection-sheet__check" name="actions/selection-check"
-          :size="18" />
+    <view
+      v-else
+      class="paw-selection-sheet__list"
+    >
+      <view
+        v-for="item in normalizedItems"
+        :key="item.key"
+        class="paw-selection-sheet__row"
+        @tap.stop="select(item.key)"
+        ><text>{{ item.label }}</text>
+        <PawIcon
+          v-if="selected === item.key"
+          class="paw-selection-sheet__check"
+          name="actions/selection-check"
+          :size="18"
+        />
       </view>
     </view>
-    <view v-if="confirmText" class="paw-selection-sheet__confirm">
-      <PawButton class="paw-selection-sheet__confirm-button" :text="confirmText" size="lg" :block="true"
-        @click="confirm" />
+    <view
+      v-if="confirmText"
+      class="paw-selection-sheet__confirm"
+    >
+      <PawButton
+        class="paw-selection-sheet__confirm-button"
+        :text="confirmText"
+        size="lg"
+        :block="true"
+        @click="confirm"
+      />
     </view>
   </PawBottomSheet>
 </template>
@@ -63,7 +111,7 @@ function normalizeSelectionItem(item: SelectionItem, index: number): NormalizedS
   if (isSelectionValue(item)) return { key: item, label: String(item) }
   return {
     key: isSelectionValue(item.key) ? item.key : index,
-    label: selectionLabel(item.label) || selectionLabel(item.value)
+    label: selectionLabel(item.label) || selectionLabel(item.value),
   }
 }
 
@@ -80,13 +128,13 @@ export default defineComponent({
     confirmText: { type: String, default: '' },
     showClose: { type: Boolean, default: false },
     safeArea: { type: Boolean, default: true },
-    height: { type: [String, Number], default: '' }
+    height: { type: [String, Number], default: '' },
   },
   emits: {
     'update:modelValue': (value: boolean) => typeof value === 'boolean',
     'update:value': (value: SelectionValue) => isSelectionValue(value),
     select: (value: SelectionValue) => isSelectionValue(value),
-    confirm: (value: SelectionValue) => isSelectionValue(value)
+    confirm: (value: SelectionValue) => isSelectionValue(value),
   },
   data(): PawSelectionSheetState {
     return { selected: this.value }
@@ -94,7 +142,7 @@ export default defineComponent({
   watch: {
     value(value: SelectionValue) {
       this.selected = value
-    }
+    },
   },
   computed: {
     normalizedItems(): NormalizedSelectionItem[] {
@@ -110,8 +158,8 @@ export default defineComponent({
       },
       set(value: boolean) {
         this.$emit('update:modelValue', value)
-      }
-    }
+      },
+    },
   },
   methods: {
     select(key: SelectionValue) {
@@ -126,8 +174,8 @@ export default defineComponent({
     },
     close() {
       this.$emit('update:modelValue', false)
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -191,7 +239,7 @@ export default defineComponent({
   border-radius: 10px;
   box-sizing: border-box;
   background: #fff;
-  box-shadow: 0 0 4px rgba(0, 0, 0, .08);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
   color: #999;
   font-size: 20px;
   font-weight: 700;

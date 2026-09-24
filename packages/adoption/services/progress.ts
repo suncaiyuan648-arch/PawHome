@@ -4,13 +4,13 @@ import type { AdoptionRecord } from '../../../contracts/applications.ts'
 import {
   ADOPTION_STATUS_META,
   canTransitionAdoption,
-  transitionAdoption
+  transitionAdoption,
 } from '@/utils/adoptionStorage.ts'
 import { readAdoptionApplication } from './applicationAdapter.ts'
 
 type ActorProvider = () => unknown
 export interface AdoptionProgressStatusSource {
-	status: string
+  status: string
 }
 export type AdoptionProgressOptions = {
   actorProvider?: ActorProvider
@@ -37,7 +37,10 @@ export type AdoptionProgressStatusPresentation = {
   canClaimReward: boolean
 }
 
-export const ADOPTION_PROGRESS_VIEWS: readonly string[] = Object.freeze(['adoption-info', 'application'])
+export const ADOPTION_PROGRESS_VIEWS: readonly string[] = Object.freeze([
+  'adoption-info',
+  'application',
+])
 
 const STATUS_COPY: Readonly<Record<string, string>> = Object.freeze({
   cloud_pending: '等待云家长审核中……',
@@ -52,7 +55,7 @@ const STATUS_COPY: Readonly<Record<string, string>> = Object.freeze({
   adoption_confirmed: '领养确认成功',
   reward: '恭喜您！获得领养礼物！',
   reward_done: '奖励已领取',
-  abandoned: '已放弃领养'
+  abandoned: '已放弃领养',
 })
 
 const PROGRESS_STATUSES: Readonly<Record<string, ProgressMeta>> = Object.freeze({
@@ -62,7 +65,7 @@ const PROGRESS_STATUSES: Readonly<Record<string, ProgressMeta>> = Object.freeze(
   jury_confirm_pending: { step: 3, percent: '66%' },
   adoption_confirmed: { step: 4, percent: '100%' },
   reward: { step: 4, percent: '100%' },
-  reward_done: { step: 4, percent: '100%' }
+  reward_done: { step: 4, percent: '100%' },
 })
 
 function normalizeId(value: unknown): string {
@@ -80,7 +83,11 @@ function failed(code: string, message: string): ProgressReadResult {
 export function createAdoptionSessionProvider(): ActorProvider {
   return (): unknown => {
     if (typeof uni === 'undefined' || !uni || typeof uni.getStorageSync !== 'function') return null
-    try { return uni.getStorageSync('PAWHOME_ACTOR_SESSION') || null } catch { return null }
+    try {
+      return uni.getStorageSync('PAWHOME_ACTOR_SESSION') || null
+    } catch {
+      return null
+    }
   }
 }
 
@@ -105,7 +112,9 @@ export function readAdoptionProgress(
   const result = readAdoptionApplication(id, {
     actorProvider: source.actorProvider || createAdoptionSessionProvider(),
     perspective: source.perspective || 'applicant',
-    ...(source.cloudParentPolicy === undefined ? {} : { cloudParentPolicy: source.cloudParentPolicy }),
+    ...(source.cloudParentPolicy === undefined
+      ? {}
+      : { cloudParentPolicy: source.cloudParentPolicy }),
   })
   return result
 }
@@ -115,7 +124,9 @@ export function normalizeProgressView(view: unknown): string {
   return ADOPTION_PROGRESS_VIEWS.includes(value) ? value : ''
 }
 
-export function statusPresentation(record: AdoptionProgressStatusSource | null | undefined): AdoptionProgressStatusPresentation {
+export function statusPresentation(
+  record: AdoptionProgressStatusSource | null | undefined,
+): AdoptionProgressStatusPresentation {
   const status = normalizeId(record?.status)
   const meta = ADOPTION_STATUS_META[status] || { text: '领养申请处理中', tone: 'grey', dot: false }
   const progress = PROGRESS_STATUSES[status] || null
@@ -125,9 +136,13 @@ export function statusPresentation(record: AdoptionProgressStatusSource | null |
     tone: meta.tone,
     progress,
     isRejected: status === 'rejected' || status === 'cloud_rejected',
-    isTerminal: status === 'rejected' || status === 'cloud_rejected' || status === 'abandoned' || status === 'reward_done',
+    isTerminal:
+      status === 'rejected' ||
+      status === 'cloud_rejected' ||
+      status === 'abandoned' ||
+      status === 'reward_done',
     canConfirm: status === 'pickup',
-    canClaimReward: status === 'adoption_confirmed' || status === 'reward'
+    canClaimReward: status === 'adoption_confirmed' || status === 'reward',
   }
 }
 
@@ -148,11 +163,18 @@ export function beginReward(
     perspective: 'applicant',
   })
   if (!current.success) return current
-  if (!current.data || !('perspective' in current.data) || current.data.perspective !== 'applicant') {
+  if (
+    !current.data ||
+    !('perspective' in current.data) ||
+    current.data.perspective !== 'applicant'
+  ) {
     return failed('FORBIDDEN', '当前账号不是这条领养申请的申请人')
   }
   if (current.data.status === 'reward') return current
-  if (current.data.status !== 'adoption_confirmed' || !canTransitionAdoption(current.data.status, 'reward')) {
+  if (
+    current.data.status !== 'adoption_confirmed' ||
+    !canTransitionAdoption(current.data.status, 'reward')
+  ) {
     return failed('INVALID_STAGE', '当前领养单尚未达到奖励领取阶段')
   }
 

@@ -8,29 +8,29 @@
  */
 
 import {
-	readManagementResourceWithReader,
-	type ManagementActorProvider,
-	type ManagementPolicyInput,
-	type ManagementReaderFor,
-	type ManagementReaderMap,
-	type ManagementResourceType,
+  readManagementResourceWithReader,
+  type ManagementActorProvider,
+  type ManagementPolicyInput,
+  type ManagementReaderFor,
+  type ManagementReaderMap,
+  type ManagementResourceType,
 } from './managementAdapter.ts'
 import {
-	updateManagementResource,
-	type ManagementMutationWriter,
-	type ManagementPatchByResource,
+  updateManagementResource,
+  type ManagementMutationWriter,
+  type ManagementPatchByResource,
 } from './managementMutationAdapter.ts'
 
 type JsonRecord = Record<string, unknown>
 
 export type ManagementEditorOptions<R extends ManagementResourceType = ManagementResourceType> = {
-	actorProvider?: ManagementActorProvider
-	reader?: ManagementReaderFor<R>
-	readers?: ManagementReaderMap
-	policy?: ManagementPolicyInput
-	writer?: ManagementMutationWriter<R>
-	intent?: 'edit' | 'cancel'
-	cancelled?: boolean
+  actorProvider?: ManagementActorProvider
+  reader?: ManagementReaderFor<R>
+  readers?: ManagementReaderMap
+  policy?: ManagementPolicyInput
+  writer?: ManagementMutationWriter<R>
+  intent?: 'edit' | 'cancel'
+  cancelled?: boolean
 }
 
 export interface EditorFailure {
@@ -63,12 +63,14 @@ function failure(code: string): EditorFailure {
 }
 
 export function readEditorResource<R extends ManagementResourceType>(
-	resourceType: R,
-	id: string,
-	options: ManagementEditorOptions<NoInfer<R>> = {},
+  resourceType: R,
+  id: string,
+  options: ManagementEditorOptions<NoInfer<R>> = {},
 ): EditorReadResult {
-	if (!isResourceType(resourceType)) return failure('INVALID_RESOURCE_TYPE')
-	const source = isRecord(options) ? options as unknown as ManagementEditorOptions<NoInfer<R>> : {}
+  if (!isResourceType(resourceType)) return failure('INVALID_RESOURCE_TYPE')
+  const source = isRecord(options)
+    ? (options as unknown as ManagementEditorOptions<NoInfer<R>>)
+    : {}
   if (typeof source.reader === 'function') {
     return readManagementResourceWithReader(resourceType, id, {
       actorProvider: source.actorProvider,
@@ -82,14 +84,16 @@ export function readEditorResource<R extends ManagementResourceType>(
 }
 
 export function saveEditorResource<R extends ManagementResourceType>(
-	resourceType: R,
-	id: string,
-	patch: ManagementPatchByResource[NoInfer<R>],
-	options: ManagementEditorOptions<NoInfer<R>> = {},
+  resourceType: R,
+  id: string,
+  patch: ManagementPatchByResource[NoInfer<R>],
+  options: ManagementEditorOptions<NoInfer<R>> = {},
 ): EditorSaveResult {
-	if (!isResourceType(resourceType)) return failure('INVALID_RESOURCE_TYPE')
-	const source = isRecord(options) ? options as unknown as ManagementEditorOptions<NoInfer<R>> : {}
-	return updateManagementResource(resourceType, id, patch, {
+  if (!isResourceType(resourceType)) return failure('INVALID_RESOURCE_TYPE')
+  const source = isRecord(options)
+    ? (options as unknown as ManagementEditorOptions<NoInfer<R>>)
+    : {}
+  return updateManagementResource(resourceType, id, patch, {
     actorProvider: source.actorProvider,
     reader: source.reader,
     readers: source.readers,

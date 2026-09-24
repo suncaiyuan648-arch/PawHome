@@ -1,6 +1,12 @@
 <template>
-  <PawRegionPicker :initial-parts="initialParts" :max-level="maxLevel" :start-level="startLevel"
-    fallback-url="/packages/address/pages/editor/index?kind=shipping" @complete="onComplete" @cancel="goBack" />
+  <PawRegionPicker
+    :initial-parts="initialParts"
+    :max-level="maxLevel"
+    :start-level="startLevel"
+    fallback-url="/packages/address/pages/editor/index?kind=shipping"
+    @complete="onComplete"
+    @cancel="goBack"
+  />
 </template>
 
 <script lang="ts">
@@ -11,7 +17,7 @@ import { goBackSmart } from '@/utils/navBack.ts'
 import {
   createRegionPickerDemoMetadata,
   normalizeRegionSelectionPayload,
-  type RegionSelectionPayload
+  type RegionSelectionPayload,
 } from '@/utils/regionMock.ts'
 
 interface RegionSelectorPageState {
@@ -38,7 +44,7 @@ function getRegionEventChannel(page: unknown): RegionEventChannel | null {
   if (typeof on !== 'function' || typeof emit !== 'function') return null
   return {
     on: on.bind(channel),
-    emit: emit.bind(channel)
+    emit: emit.bind(channel),
   }
 }
 
@@ -50,7 +56,7 @@ export default defineComponent({
       initialParts: [],
       maxLevel: 2,
       startLevel: -1,
-      cityMode: false
+      cityMode: false,
     }
   },
   onLoad(query: unknown = {}) {
@@ -83,11 +89,17 @@ export default defineComponent({
       if (channel) channel.emit('regionSelected', payload)
       const parts = payload.parts.filter(Boolean)
       if (this.cityMode && parts.length) uni.setStorageSync('selectedCity', parts[parts.length - 1])
-      goBackSmart({ fallbackUrl: '/packages/address/pages/editor/index?kind=shipping', fallbackLaunch: 'redirectTo' })
+      goBackSmart({
+        fallbackUrl: '/packages/address/pages/editor/index?kind=shipping',
+        fallbackLaunch: 'redirectTo',
+      })
     },
     goBack() {
-      goBackSmart({ fallbackUrl: '/packages/address/pages/editor/index?kind=shipping', fallbackLaunch: 'redirectTo' })
-    }
-  }
+      goBackSmart({
+        fallbackUrl: '/packages/address/pages/editor/index?kind=shipping',
+        fallbackLaunch: 'redirectTo',
+      })
+    },
+  },
 })
 </script>

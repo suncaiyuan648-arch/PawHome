@@ -15,8 +15,17 @@
       @pet-click="openPetDetail"
       @feed-click="openFeedPopup"
     />
-    <PawPageNav v-else title="我的小院" background="#f5f5f5" fallback-url="/pages/me/index" />
-    <view v-if="!ready" class="blocked"><text>{{ message }}</text></view>
+    <PawPageNav
+      v-else
+      title="我的小院"
+      background="#f5f5f5"
+      fallback-url="/pages/me/index"
+    />
+    <view
+      v-if="!ready"
+      class="blocked"
+      ><text>{{ message }}</text></view
+    >
     <YardFeedPopup
       v-if="feedPopupVisible"
       v-model:visible="feedPopupVisible"
@@ -88,7 +97,7 @@ export default defineComponent({
       returnHomeOnBack: false,
       message: '缺少小院 ID，无法读取管理名册',
       feedPopupVisible: false,
-      feedPetId: ''
+      feedPetId: '',
     }
   },
   onLoad(options: unknown = {}) {
@@ -108,20 +117,23 @@ export default defineComponent({
   },
   methods: {
     refreshManagement() {
-    const result = readLocalYard(this.yardId, { actorProvider: () => uni.getStorageSync('PAWHOME_ACTOR_SESSION') })
-    if (!result.success) {
-      this.message = result.error && result.error.code === 'NO_ACTOR'
-        ? '请先登录后再管理小院动物'
-        : '当前账号没有该小院的动物管理权限'
-      this.ready = false
-      return
-    }
-    const record = result.data && result.data.record
-    if (record) {
-      this.yardName = readText(record.name) || this.yardName
-      this.yardAvatar = readText(record.avatar) || this.yardAvatar
-    }
-    this.ready = true
+      const result = readLocalYard(this.yardId, {
+        actorProvider: () => uni.getStorageSync('PAWHOME_ACTOR_SESSION'),
+      })
+      if (!result.success) {
+        this.message =
+          result.error && result.error.code === 'NO_ACTOR'
+            ? '请先登录后再管理小院动物'
+            : '当前账号没有该小院的动物管理权限'
+        this.ready = false
+        return
+      }
+      const record = result.data && result.data.record
+      if (record) {
+        this.yardName = readText(record.name) || this.yardName
+        this.yardAvatar = readText(record.avatar) || this.yardAvatar
+      }
+      this.ready = true
       this.$nextTick(() => {
         const roster: unknown = this.$refs.roster
         if (isYardRosterController(roster)) void roster.loadRoster()
@@ -141,17 +153,22 @@ export default defineComponent({
     onAddPet() {
       this.refreshManagement()
       if (!this.ready) return
-      uni.showActionSheet({ itemList: ['添加猫咪', '添加狗狗'], success: ({ tapIndex }: UniNamespace.ShowActionSheetRes) => {
-        const species = tapIndex === 0 ? 'cat' : tapIndex === 1 ? 'dog' : ''
-        if (!species) return
-        uni.navigateTo({ url: `/packages/animal/pages/editor/index?species=${species}&yardId=${encodeURIComponent(this.yardId)}&yardName=${encodeURIComponent(this.yardName)}` })
-      } })
+      uni.showActionSheet({
+        itemList: ['添加猫咪', '添加狗狗'],
+        success: ({ tapIndex }: UniNamespace.ShowActionSheetRes) => {
+          const species = tapIndex === 0 ? 'cat' : tapIndex === 1 ? 'dog' : ''
+          if (!species) return
+          uni.navigateTo({
+            url: `/packages/animal/pages/editor/index?species=${species}&yardId=${encodeURIComponent(this.yardId)}&yardName=${encodeURIComponent(this.yardName)}`,
+          })
+        },
+      })
     },
     openPetDetail(pet: YardPet) {
       const petId = readText(pet.id)
       if (!petId) return
       uni.navigateTo({
-        url: `/packages/animal/pages/detail/index?animalId=${encodeURIComponent(petId)}&yardId=${encodeURIComponent(this.yardId)}&state=36`
+        url: `/packages/animal/pages/detail/index?animalId=${encodeURIComponent(petId)}&yardId=${encodeURIComponent(this.yardId)}&state=36`,
       })
     },
     openFeedPopup(pet: YardPet) {
@@ -162,8 +179,8 @@ export default defineComponent({
     },
     openFeedOrders() {
       uni.navigateTo({ url: buildRoute('feeding.yardOrders', { yardId: this.yardId }) })
-    }
-  }
+    },
+  },
 })
 </script>
 

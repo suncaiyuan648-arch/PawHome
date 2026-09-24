@@ -2,7 +2,7 @@ page {
   /* PawHome semantic tokens: fixed UI follows the 375px Figma baseline. */
   --paw-color-brand: #ffe60f;
   --paw-color-brand-soft: #fff463;
-  --paw-color-brand-disabled: rgba(255, 244, 99, .5);
+  --paw-color-brand-disabled: rgba(255, 244, 99, 0.5);
   --paw-color-rank: #fbc800;
   --paw-color-text-strong: #282827;
   --paw-color-text: #333333;
@@ -51,9 +51,9 @@ page {
   --paw-motion-sheet: 260ms;
   --paw-motion-layout: 280ms;
   --paw-motion-ticker: 350ms;
-  --paw-ease-standard: cubic-bezier(.22, .61, .36, 1);
-  --paw-ease-enter: cubic-bezier(0, 0, .2, 1);
-  --paw-ease-exit: cubic-bezier(.4, 0, 1, 1);
+  --paw-ease-standard: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --paw-ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --paw-ease-exit: cubic-bezier(0.4, 0, 1, 1);
   --paw-z-nav: 200;
   --paw-z-footer: 300;
   --paw-z-popover: 800;
@@ -64,7 +64,14 @@ page {
 
   color: var(--paw-color-text);
   background: var(--paw-color-background);
-  font-family: var(--paw-font-family, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif);
+  font-family: var(
+    --paw-font-family,
+    -apple-system,
+    BlinkMacSystemFont,
+    'PingFang SC',
+    'Microsoft YaHei',
+    sans-serif
+  );
 }
 
 .paw-page {

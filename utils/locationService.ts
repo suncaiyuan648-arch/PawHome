@@ -1,4 +1,8 @@
-import { createLocationFallbackMetadata, type LocationPlace, type LocationPlacesResult } from './locationMetadata.ts'
+import {
+  createLocationFallbackMetadata,
+  type LocationPlace,
+  type LocationPlacesResult,
+} from './locationMetadata.ts'
 
 export type { LocationPlace, LocationPlacesResult } from './locationMetadata.ts'
 
@@ -66,7 +70,9 @@ function getApiBase(): string {
       base = ''
     }
   }
-  return String(base || '').trim().replace(/\/$/, '')
+  return String(base || '')
+    .trim()
+    .replace(/\/$/, '')
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -78,18 +84,23 @@ function asCandidate(value: unknown): LocationCandidate {
 }
 
 function normalizeCoordinate(value: unknown, minimum: number, maximum: number): number | undefined {
-  const coordinate = typeof value === 'number'
-    ? value
-    : typeof value === 'string' && value.trim()
-      ? Number(value)
-      : Number.NaN
-  return Number.isFinite(coordinate) && coordinate >= minimum && coordinate <= maximum ? coordinate : undefined
+  const coordinate =
+    typeof value === 'number'
+      ? value
+      : typeof value === 'string' && value.trim()
+        ? Number(value)
+        : Number.NaN
+  return Number.isFinite(coordinate) && coordinate >= minimum && coordinate <= maximum
+    ? coordinate
+    : undefined
 }
 
 export function normalizeLocationPlace(item: unknown, index: number): LocationPlace | null {
   const candidate = asCandidate(item)
   const name = String(candidate.name || candidate.title || candidate.poiName || '').trim()
-  const address = String(candidate.address || candidate.detail || candidate.formattedAddress || '').trim()
+  const address = String(
+    candidate.address || candidate.detail || candidate.formattedAddress || '',
+  ).trim()
   if (!name && !address) return null
   const distanceValue = Number(candidate.distanceMeters ?? candidate.distance)
   const distance = Number.isFinite(distanceValue)
@@ -101,7 +112,7 @@ export function normalizeLocationPlace(item: unknown, index: number): LocationPl
     address: address || name,
     distance,
     latitude: normalizeCoordinate(candidate.latitude, -90, 90),
-    longitude: normalizeCoordinate(candidate.longitude, -180, 180)
+    longitude: normalizeCoordinate(candidate.longitude, -180, 180),
   }
 }
 
@@ -116,7 +127,10 @@ function getPlaceRows(payload: unknown): unknown[] {
   return []
 }
 
-function fallbackPlaces(city: string | undefined, keyword: string | undefined): LocationPlacesResult {
+function fallbackPlaces(
+  city: string | undefined,
+  keyword: string | undefined,
+): LocationPlacesResult {
   return createLocationFallbackMetadata(city, keyword)
 }
 
@@ -124,11 +138,18 @@ function isLocationApi(value: unknown): value is LocationApi {
   if (!isRecord(value)) return false
   const request = value.request
   const getLocation = value.getLocation
-  return (request === undefined || typeof request === 'function')
-    && (getLocation === undefined || typeof getLocation === 'function')
+  return (
+    (request === undefined || typeof request === 'function') &&
+    (getLocation === undefined || typeof getLocation === 'function')
+  )
 }
 
-function requestPlaces({ city, latitude, longitude, keyword = '' }: LocationPlacesOptions = {}): Promise<LocationPlacesResult> {
+function requestPlaces({
+  city,
+  latitude,
+  longitude,
+  keyword = '',
+}: LocationPlacesOptions = {}): Promise<LocationPlacesResult> {
   const base = getApiBase()
   if (!base || typeof uni === 'undefined') {
     return Promise.resolve(fallbackPlaces(city, keyword))
@@ -145,15 +166,18 @@ function requestPlaces({ city, latitude, longitude, keyword = '' }: LocationPlac
     keyword: String(keyword || '').trim(),
     city: city || '',
     latitude,
-    longitude
+    longitude,
   }
   if (!isSearch) data.radius = 2000
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     request({
       url: `${base}${path}`,
       data,
-      success: response => {
-        if (!response || (response.statusCode && (response.statusCode < 200 || response.statusCode >= 300))) {
+      success: (response) => {
+        if (
+          !response ||
+          (response.statusCode && (response.statusCode < 200 || response.statusCode >= 300))
+        ) {
           resolve(fallbackPlaces(city, keyword))
           return
         }
@@ -164,10 +188,10 @@ function requestPlaces({ city, latitude, longitude, keyword = '' }: LocationPlac
           city: String(payloadRecord.city || city || '长沙市'),
           list: rows
             .map(normalizeLocationPlace)
-            .filter((place): place is LocationPlace => Boolean(place))
+            .filter((place): place is LocationPlace => Boolean(place)),
         })
       },
-      fail: () => resolve(fallbackPlaces(city, keyword))
+      fail: () => resolve(fallbackPlaces(city, keyword)),
     })
   })
 }
@@ -175,18 +199,21 @@ function requestPlaces({ city, latitude, longitude, keyword = '' }: LocationPlac
 export function getPreciseLocation(): Promise<PreciseLocation | null> {
   if (typeof uni === 'undefined') return Promise.resolve(null)
   const locationApi: unknown = uni
-  if (!isLocationApi(locationApi) || typeof locationApi.getLocation !== 'function') return Promise.resolve(null)
+  if (!isLocationApi(locationApi) || typeof locationApi.getLocation !== 'function')
+    return Promise.resolve(null)
   const getLocation = locationApi.getLocation
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     getLocation({
       type: 'gcj02',
       isHighAccuracy: true,
-      success: result => resolve({ latitude: result.latitude, longitude: result.longitude }),
-      fail: () => resolve(null)
+      success: (result) => resolve({ latitude: result.latitude, longitude: result.longitude }),
+      fail: () => resolve(null),
     })
   })
 }
 
-export function fetchLocationPlaces(options: LocationPlacesOptions = {}): Promise<LocationPlacesResult> {
+export function fetchLocationPlaces(
+  options: LocationPlacesOptions = {},
+): Promise<LocationPlacesResult> {
   return requestPlaces(options)
 }

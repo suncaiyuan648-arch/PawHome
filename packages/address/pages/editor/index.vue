@@ -1,9 +1,18 @@
 <template>
   <view class="address-edit-page">
-    <PawAddressForm ref="addressForm" :kind="kind" :typing="typing" :initial-address="initialAddress"
-      @save="onSave" />
+    <PawAddressForm
+      ref="addressForm"
+      :kind="kind"
+      :typing="typing"
+      :initial-address="initialAddress"
+      @save="onSave"
+    />
 
-    <PawFixedActionBar :primary-action="primaryAction" :primary-full-width="true" @primary="submit" />
+    <PawFixedActionBar
+      :primary-action="primaryAction"
+      :primary-full-width="true"
+      @primary="submit"
+    />
   </view>
 </template>
 
@@ -51,7 +60,11 @@ function getAddressEventChannel(page: unknown): AddressSavedEventChannel | null 
   const channel: unknown = getChannel.call(page)
   if (!isRecord(channel) || typeof channel.emit !== 'function') return null
   const emit = channel.emit
-  return { emit: (eventName, payload) => { emit.call(channel, eventName, payload) } }
+  return {
+    emit: (eventName, payload) => {
+      emit.call(channel, eventName, payload)
+    },
+  }
 }
 
 export default defineComponent({
@@ -61,7 +74,7 @@ export default defineComponent({
     return {
       kind: 'shipping',
       typing: false,
-      initialAddress: {}
+      initialAddress: {},
     }
   },
   onLoad(options: unknown = {}) {
@@ -69,15 +82,18 @@ export default defineComponent({
     this.kind = route.kind === 'service' ? 'service' : 'shipping'
     this.typing = route.state === 'typing'
     this.initialAddress = {}
-		const addressId = typeof route.id === 'string'
-			? route.id
-			: typeof route.addressId === 'string' ? route.addressId : ''
+    const addressId =
+      typeof route.id === 'string'
+        ? route.id
+        : typeof route.addressId === 'string'
+          ? route.addressId
+          : ''
     if (addressId) this.initialAddress = getAddressById(addressId, this.kind) || {}
   },
   computed: {
     primaryAction(): AddressPrimaryAction {
       return { key: 'save', qa: 'address-save', label: '保存', size: 'md' }
-    }
+    },
   },
   methods: {
     submit() {
@@ -89,12 +105,16 @@ export default defineComponent({
       const channel = getAddressEventChannel(this)
       if (channel && channel.emit) channel.emit('addressSaved', saved)
       uni.showToast({ title: '已保存', icon: 'none' })
-      setTimeout(() => goBackSmart({
-        fallbackUrl: `/packages/address/pages/list/index?kind=${encodeURIComponent(this.kind)}`,
-        fallbackLaunch: 'redirectTo'
-      }), 120)
-    }
-  }
+      setTimeout(
+        () =>
+          goBackSmart({
+            fallbackUrl: `/packages/address/pages/list/index?kind=${encodeURIComponent(this.kind)}`,
+            fallbackLaunch: 'redirectTo',
+          }),
+        120,
+      )
+    },
+  },
 })
 </script>
 

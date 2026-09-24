@@ -14,24 +14,52 @@ let api
 
 const POLICY = Object.freeze({
   adoptionApplication: Object.freeze({
-    read: Object.freeze({ roles: ['applicant', 'owner', 'reviewer'], states: ['pending', 'pickup', 'adoption_confirmed'], stateFields: ['status'] }),
+    read: Object.freeze({
+      roles: ['applicant', 'owner', 'reviewer'],
+      states: ['pending', 'pickup', 'adoption_confirmed'],
+      stateFields: ['status'],
+    }),
     write: Object.freeze({ roles: ['applicant'], states: ['pickup'], stateFields: ['status'] }),
   }),
   rewardClaim: Object.freeze({
-    read: Object.freeze({ roles: ['applicant'], states: ['adoption_confirmed', 'reward'], stateFields: ['status'] }),
-    write: Object.freeze({ roles: ['applicant'], states: ['adoption_confirmed', 'reward'], stateFields: ['status'] }),
+    read: Object.freeze({
+      roles: ['applicant'],
+      states: ['adoption_confirmed', 'reward'],
+      stateFields: ['status'],
+    }),
+    write: Object.freeze({
+      roles: ['applicant'],
+      states: ['adoption_confirmed', 'reward'],
+      stateFields: ['status'],
+    }),
   }),
   rescueReview: Object.freeze({
-    read: Object.freeze({ roles: ['reviewer'], states: ['pending', 'reviewed'], stateFields: ['reviewStatus'] }),
-    write: Object.freeze({ roles: ['reviewer'], states: ['pending'], stateFields: ['reviewStatus'] }),
+    read: Object.freeze({
+      roles: ['reviewer'],
+      states: ['pending', 'reviewed'],
+      stateFields: ['reviewStatus'],
+    }),
+    write: Object.freeze({
+      roles: ['reviewer'],
+      states: ['pending'],
+      stateFields: ['reviewStatus'],
+    }),
   }),
   yardManagement: Object.freeze({
     read: Object.freeze({ roles: ['yard_owner'], states: ['active'], stateFields: ['status'] }),
     write: Object.freeze({ roles: ['yard_owner'], states: ['active'], stateFields: ['status'] }),
   }),
   animalEdit: Object.freeze({
-    read: Object.freeze({ roles: ['yard_owner', 'animal_manager'], states: ['active', 'draft'], stateFields: ['status'] }),
-    write: Object.freeze({ roles: ['yard_owner', 'animal_manager'], states: ['active', 'draft'], stateFields: ['status'] }),
+    read: Object.freeze({
+      roles: ['yard_owner', 'animal_manager'],
+      states: ['active', 'draft'],
+      stateFields: ['status'],
+    }),
+    write: Object.freeze({
+      roles: ['yard_owner', 'animal_manager'],
+      states: ['active', 'draft'],
+      stateFields: ['status'],
+    }),
   }),
 })
 
@@ -93,7 +121,7 @@ function context(actorProvider, object, query) {
 }
 
 function throwsCode(fn, code) {
-  assert.throws(fn, error => error && error.code === code)
+  assert.throws(fn, (error) => error && error.code === code)
 }
 
 before(async () => {
@@ -102,9 +130,11 @@ before(async () => {
   await fsp.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
   await fsp.copyFile(
     path.join(ROOT, 'navigation/actorCapabilities.ts'),
-    path.join(tempRoot, 'navigation/actorCapabilities.ts')
+    path.join(tempRoot, 'navigation/actorCapabilities.ts'),
   )
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/actorCapabilities.ts')).href}?test=${Date.now()}`)
+  api = await import(
+    `${pathToFileURL(path.join(tempRoot, 'navigation/actorCapabilities.ts')).href}?test=${Date.now()}`
+  )
 })
 
 after(async () => {
@@ -113,7 +143,10 @@ after(async () => {
 
 test('actor contract is pure and exports stable actor roles and capability categories', () => {
   const source = fs.readFileSync(path.join(ROOT, 'navigation/actorCapabilities.ts'), 'utf8')
-  assert.doesNotMatch(source, /(?:import|require\s*\()[^\n]*(?:vue|uni|pages|packages|storage|mock)/i)
+  assert.doesNotMatch(
+    source,
+    /(?:import|require\s*\()[^\n]*(?:vue|uni|pages|packages|storage|mock)/i,
+  )
   assert.deepEqual(api.resolveTrustedActor(provider(' actor-a ', ['applicant', 'applicant'])), {
     id: 'actor-a',
     roles: ['applicant'],
@@ -128,39 +161,79 @@ test('actor contract is pure and exports stable actor roles and capability categ
 
 test('empty session, missing provider, malformed actor, and unknown trusted role fail closed', () => {
   const { CAPABILITIES } = api
-  assert.equal(api.resolveTrustedActor(() => null), null)
-  assert.equal(api.canCapability(CAPABILITIES.REWARD_CLAIM, context(() => null, records.rewardA)), false)
-  throwsCode(() => api.assertCapability(CAPABILITIES.REWARD_CLAIM, context(() => null, records.rewardA)), 'CAPABILITY_DENIED')
-  assert.equal(api.canCapability(CAPABILITIES.REWARD_CLAIM, context(undefined, records.rewardA)), false)
-  throwsCode(() => api.resolveTrustedActor(() => ({ actor: { id: 'actor-a', roles: ['super_admin'] } })), 'UNKNOWN_ACTOR_ROLE')
-  assert.equal(api.canCapability(
-    CAPABILITIES.REWARD_CLAIM,
-    context(() => ({ actor: { id: 'actor-a', roles: ['super_admin'] } }), records.rewardA)
-  ), false)
+  assert.equal(
+    api.resolveTrustedActor(() => null),
+    null,
+  )
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.REWARD_CLAIM,
+      context(() => null, records.rewardA),
+    ),
+    false,
+  )
+  throwsCode(
+    () =>
+      api.assertCapability(
+        CAPABILITIES.REWARD_CLAIM,
+        context(() => null, records.rewardA),
+      ),
+    'CAPABILITY_DENIED',
+  )
+  assert.equal(
+    api.canCapability(CAPABILITIES.REWARD_CLAIM, context(undefined, records.rewardA)),
+    false,
+  )
+  throwsCode(
+    () => api.resolveTrustedActor(() => ({ actor: { id: 'actor-a', roles: ['super_admin'] } })),
+    'UNKNOWN_ACTOR_ROLE',
+  )
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.REWARD_CLAIM,
+      context(() => ({ actor: { id: 'actor-a', roles: ['super_admin'] } }), records.rewardA),
+    ),
+    false,
+  )
 })
 
 test('legal owner, reviewer, yard owner, and animal manager relationships receive only their policy capabilities', () => {
   const { CAPABILITIES } = api
-  assert.equal(api.canCapability(
-    CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE,
-    context(provider('yard-owner-a', ['owner']), records.applicationA)
-  ), true)
-  assert.equal(api.canCapability(
-    CAPABILITIES.RESCUE_REVIEW_WRITE,
-    context(provider('reviewer-a', ['reviewer']), records.rescueReviewA)
-  ), true)
-  assert.equal(api.canCapability(
-    CAPABILITIES.YARD_MANAGEMENT,
-    context(provider('yard-owner-a', ['yard_owner']), records.yardA)
-  ), true)
-  assert.equal(api.canCapability(
-    CAPABILITIES.ANIMAL_EDIT,
-    context(provider('animal-manager-a', ['animal_manager']), records.animalA)
-  ), true)
-  assert.equal(api.canCapability(
-    CAPABILITIES.REWARD_CLAIM,
-    context(provider('actor-a', ['applicant']), records.rewardA)
-  ), true)
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE,
+      context(provider('yard-owner-a', ['owner']), records.applicationA),
+    ),
+    true,
+  )
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.RESCUE_REVIEW_WRITE,
+      context(provider('reviewer-a', ['reviewer']), records.rescueReviewA),
+    ),
+    true,
+  )
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.YARD_MANAGEMENT,
+      context(provider('yard-owner-a', ['yard_owner']), records.yardA),
+    ),
+    true,
+  )
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.ANIMAL_EDIT,
+      context(provider('animal-manager-a', ['animal_manager']), records.animalA),
+    ),
+    true,
+  )
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.REWARD_CLAIM,
+      context(provider('actor-a', ['applicant']), records.rewardA),
+    ),
+    true,
+  )
 })
 
 test('A cannot use B application, order, rescue, yard, or animal IDs to obtain a capability', () => {
@@ -178,45 +251,95 @@ test('A cannot use B application, order, rescue, yard, or animal IDs to obtain a
     state: 'pickup',
     outcome: 'reward-claimed',
   }
-  assert.equal(api.canCapability(
-    CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE,
-    context(provider('actor-a', ['applicant']), records.applicationB, forgedQuery)
-  ), false)
-  assert.equal(api.canCapability(
-    CAPABILITIES.REWARD_CLAIM,
-    context(provider('actor-a', ['applicant']), { ...records.rewardA, applicationId: 'application-b', applicantId: 'actor-b' }, forgedQuery)
-  ), false)
-  assert.equal(api.canCapability(
-    CAPABILITIES.RESCUE_REVIEW_WRITE,
-    context(provider('reviewer-a', ['reviewer']), records.rescueReviewB, forgedQuery)
-  ), false)
-  assert.equal(api.canCapability(
-    CAPABILITIES.YARD_MANAGEMENT,
-    context(provider('yard-owner-a', ['yard_owner']), records.yardB, forgedQuery)
-  ), false)
-  assert.equal(api.canCapability(
-    CAPABILITIES.ANIMAL_EDIT,
-    context(provider('animal-manager-a', ['animal_manager']), { ...records.animalA, yardId: 'yard-b', yardOwnerId: 'yard-owner-b', managerIds: ['animal-manager-b'] }, forgedQuery)
-  ), false)
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE,
+      context(provider('actor-a', ['applicant']), records.applicationB, forgedQuery),
+    ),
+    false,
+  )
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.REWARD_CLAIM,
+      context(
+        provider('actor-a', ['applicant']),
+        { ...records.rewardA, applicationId: 'application-b', applicantId: 'actor-b' },
+        forgedQuery,
+      ),
+    ),
+    false,
+  )
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.RESCUE_REVIEW_WRITE,
+      context(provider('reviewer-a', ['reviewer']), records.rescueReviewB, forgedQuery),
+    ),
+    false,
+  )
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.YARD_MANAGEMENT,
+      context(provider('yard-owner-a', ['yard_owner']), records.yardB, forgedQuery),
+    ),
+    false,
+  )
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.ANIMAL_EDIT,
+      context(
+        provider('animal-manager-a', ['animal_manager']),
+        {
+          ...records.animalA,
+          yardId: 'yard-b',
+          yardOwnerId: 'yard-owner-b',
+          managerIds: ['animal-manager-b'],
+        },
+        forgedQuery,
+      ),
+    ),
+    false,
+  )
 })
 
 test('query managed, role, state, outcome, and reviewerId never replace the trusted actor or record', () => {
   const { CAPABILITIES } = api
-  const query = { managed: true, role: 'reviewer', state: 'pickup', outcome: 'approved', reviewerId: 'reviewer-a' }
-  assert.equal(api.canCapability(
-    CAPABILITIES.RESCUE_REVIEW_WRITE,
-    context(provider('actor-a', ['applicant']), records.rescueReviewA, query)
-  ), false)
-  assert.equal(api.canCapability(
-    CAPABILITIES.ADOPTION_APPLICATION_WRITE,
-    context(provider('actor-a', ['applicant']), records.applicationA, { ...query, state: 'pickup' })
-  ), false)
+  const query = {
+    managed: true,
+    role: 'reviewer',
+    state: 'pickup',
+    outcome: 'approved',
+    reviewerId: 'reviewer-a',
+  }
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.RESCUE_REVIEW_WRITE,
+      context(provider('actor-a', ['applicant']), records.rescueReviewA, query),
+    ),
+    false,
+  )
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.ADOPTION_APPLICATION_WRITE,
+      context(provider('actor-a', ['applicant']), records.applicationA, {
+        ...query,
+        state: 'pickup',
+      }),
+    ),
+    false,
+  )
   // The object state remains authoritative.  A query claiming a legal state
   // cannot upgrade an unknown or otherwise disallowed record.
-  assert.equal(api.canCapability(
-    CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE,
-    context(provider('actor-a', ['applicant']), { ...records.applicationA, status: 'future_status' }, { state: 'pending' })
-  ), false)
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE,
+      context(
+        provider('actor-a', ['applicant']),
+        { ...records.applicationA, status: 'future_status' },
+        { state: 'pending' },
+      ),
+    ),
+    false,
+  )
 })
 
 test('unknown, missing, conflicting, and malformed object states are denied', () => {
@@ -227,19 +350,34 @@ test('unknown, missing, conflicting, and malformed object states are denied', ()
     { ...records.applicationA, status: undefined },
     { ...records.applicationA, status: 42 },
   ]) {
-    assert.equal(api.canCapability(CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE, context(actor, object)), false)
-    assert.equal(api.canCapability(CAPABILITIES.ADOPTION_APPLICATION_WRITE, context(actor, object)), false)
+    assert.equal(
+      api.canCapability(CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE, context(actor, object)),
+      false,
+    )
+    assert.equal(
+      api.canCapability(CAPABILITIES.ADOPTION_APPLICATION_WRITE, context(actor, object)),
+      false,
+    )
   }
   // The policy deliberately selects `status`; an unrelated/legacy axis does
   // not silently become a second state source.
-  assert.equal(api.canCapability(CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE, context(
-    actor,
-    { ...records.applicationA, applicationStatus: 'rejected' }
-  )), true)
-  assert.equal(api.canCapability(CAPABILITIES.YARD_MANAGEMENT, context(
-    provider('yard-owner-a', ['yard_owner']),
-    { ...records.yardA, status: 'unknown-yard-state' }
-  )), false)
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE,
+      context(actor, { ...records.applicationA, applicationStatus: 'rejected' }),
+    ),
+    true,
+  )
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.YARD_MANAGEMENT,
+      context(provider('yard-owner-a', ['yard_owner']), {
+        ...records.yardA,
+        status: 'unknown-yard-state',
+      }),
+    ),
+    false,
+  )
 })
 
 test('rescue review reads its explicit review axis while ignoring the independent application status axis', () => {
@@ -250,18 +388,31 @@ test('rescue review reads its explicit review axis while ignoring the independen
     reviewStatus: 'pending',
     applicationStatus: 'platform_rejected',
   }
-  assert.equal(api.canCapability(
-    CAPABILITIES.RESCUE_REVIEW_READ_PRIVATE,
-    context(provider('reviewer-a', ['reviewer']), reviewRecord)
-  ), true)
-  assert.equal(api.canCapability(
-    CAPABILITIES.RESCUE_REVIEW_WRITE,
-    context(provider('reviewer-a', ['reviewer']), reviewRecord)
-  ), true)
-  assert.equal(api.canCapability(
-    CAPABILITIES.RESCUE_REVIEW_READ_PRIVATE,
-    context(provider('reviewer-a', ['reviewer']), { ...reviewRecord, status: 'pending', reviewStatus: 'future_review_state' })
-  ), false)
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.RESCUE_REVIEW_READ_PRIVATE,
+      context(provider('reviewer-a', ['reviewer']), reviewRecord),
+    ),
+    true,
+  )
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.RESCUE_REVIEW_WRITE,
+      context(provider('reviewer-a', ['reviewer']), reviewRecord),
+    ),
+    true,
+  )
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.RESCUE_REVIEW_READ_PRIVATE,
+      context(provider('reviewer-a', ['reviewer']), {
+        ...reviewRecord,
+        status: 'pending',
+        reviewStatus: 'future_review_state',
+      }),
+    ),
+    false,
+  )
 })
 
 test('private reads and writes are guarded and denied requests perform zero injected operations', () => {
@@ -274,24 +425,34 @@ test('private reads and writes are guarded and denied requests perform zero inje
     managed: true,
     state: 'pickup',
   })
-  throwsCode(() => api.readPrivate(
-    CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE,
-    denied,
-    () => { privateReads += 1 }
-  ), 'CAPABILITY_DENIED')
-  throwsCode(() => api.writeWithCapability(
-    CAPABILITIES.ADOPTION_APPLICATION_WRITE,
-    denied,
-    () => { writes += 1 }
-  ), 'CAPABILITY_DENIED')
+  throwsCode(
+    () =>
+      api.readPrivate(CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE, denied, () => {
+        privateReads += 1
+      }),
+    'CAPABILITY_DENIED',
+  )
+  throwsCode(
+    () =>
+      api.writeWithCapability(CAPABILITIES.ADOPTION_APPLICATION_WRITE, denied, () => {
+        writes += 1
+      }),
+    'CAPABILITY_DENIED',
+  )
   assert.equal(privateReads, 0)
   assert.equal(writes, 0)
 
-  throwsCode(() => api.readPrivate(
-    CAPABILITIES.ADOPTION_APPLICATION_WRITE,
-    context(provider('actor-a', ['applicant']), records.applicationA),
-    () => { privateReads += 1 }
-  ), 'PRIVATE_READ_CAPABILITY_REQUIRED')
+  throwsCode(
+    () =>
+      api.readPrivate(
+        CAPABILITIES.ADOPTION_APPLICATION_WRITE,
+        context(provider('actor-a', ['applicant']), records.applicationA),
+        () => {
+          privateReads += 1
+        },
+      ),
+    'PRIVATE_READ_CAPABILITY_REQUIRED',
+  )
   assert.equal(privateReads, 0)
 })
 
@@ -311,7 +472,7 @@ test('authorized private read and write execute once with fresh record state', (
   const privateValue = api.readPrivate(
     CAPABILITIES.RESCUE_REVIEW_READ_PRIVATE,
     guardedContext,
-    (record, authorization) => ({ id: record.rescueId, actorId: authorization.actorId })
+    (record, authorization) => ({ id: record.rescueId, actorId: authorization.actorId }),
   )
   assert.deepEqual(privateValue, { id: 'rescue-a', actorId: 'reviewer-a' })
   assert.equal(reads, 1)
@@ -321,18 +482,20 @@ test('authorized private read and write execute once with fresh record state', (
     (record, authorization) => {
       writes += 1
       return { recordId: record.reviewItemId, actorId: authorization.actorId }
-    }
+    },
   )
   assert.deepEqual(result, { recordId: 'review-a', actorId: 'reviewer-a' })
   assert.equal(reads, 2)
   assert.equal(writes, 1)
 
   current = { ...records.rescueReviewA, reviewStatus: 'reviewed' }
-  assert.throws(() => api.writeWithCapability(
-    CAPABILITIES.RESCUE_REVIEW_WRITE,
-    guardedContext,
-    () => { writes += 1 }
-  ), error => error && error.code === 'CAPABILITY_DENIED')
+  assert.throws(
+    () =>
+      api.writeWithCapability(CAPABILITIES.RESCUE_REVIEW_WRITE, guardedContext, () => {
+        writes += 1
+      }),
+    (error) => error && error.code === 'CAPABILITY_DENIED',
+  )
   assert.equal(writes, 1)
 })
 
@@ -340,29 +503,60 @@ test('session switching re-reads the provider and isolates capabilities by actor
   const { CAPABILITIES } = api
   let active = session('actor-a', ['applicant'])
   const evaluator = api.createCapabilityEvaluator({ actorProvider: () => active, policy: POLICY })
-  assert.equal(evaluator.can(CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE, records.applicationA), true)
-  assert.equal(evaluator.can(CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE, records.applicationB), false)
+  assert.equal(
+    evaluator.can(CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE, records.applicationA),
+    true,
+  )
+  assert.equal(
+    evaluator.can(CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE, records.applicationB),
+    false,
+  )
   active = session('actor-b', ['applicant'])
-  assert.equal(evaluator.can(CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE, records.applicationA), false)
-  assert.equal(evaluator.can(CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE, records.applicationB), true)
+  assert.equal(
+    evaluator.can(CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE, records.applicationA),
+    false,
+  )
+  assert.equal(
+    evaluator.can(CAPABILITIES.ADOPTION_APPLICATION_READ_PRIVATE, records.applicationB),
+    true,
+  )
   assert.equal(evaluator.evaluate(records.applicationA).actor.id, 'actor-b')
 })
 
 test('missing policy and malformed object ownership stay fail-closed', () => {
   const { CAPABILITIES } = api
-  assert.equal(api.canCapability(CAPABILITIES.YARD_MANAGEMENT, {
-    actorProvider: provider('yard-owner-a', ['yard_owner']),
-    object: records.yardA,
-  }), false)
-  assert.equal(api.canCapability(CAPABILITIES.YARD_MANAGEMENT, context(
-    provider('yard-owner-a', ['yard_owner']),
-    { ...records.yardA, ownerId: { id: 'yard-owner-a' } }
-  )), false)
-  assert.equal(api.canCapability(CAPABILITIES.ANIMAL_EDIT, context(
-    provider('yard-owner-a', ['yard_owner']),
-    { ...records.animalA, yardOwnerId: 'yard-owner-b' }
-  )), false)
-  assert.equal(api.canCapability('animal.delete', context(
-    provider('yard-owner-a', ['yard_owner']), records.animalA
-  )), false)
+  assert.equal(
+    api.canCapability(CAPABILITIES.YARD_MANAGEMENT, {
+      actorProvider: provider('yard-owner-a', ['yard_owner']),
+      object: records.yardA,
+    }),
+    false,
+  )
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.YARD_MANAGEMENT,
+      context(provider('yard-owner-a', ['yard_owner']), {
+        ...records.yardA,
+        ownerId: { id: 'yard-owner-a' },
+      }),
+    ),
+    false,
+  )
+  assert.equal(
+    api.canCapability(
+      CAPABILITIES.ANIMAL_EDIT,
+      context(provider('yard-owner-a', ['yard_owner']), {
+        ...records.animalA,
+        yardOwnerId: 'yard-owner-b',
+      }),
+    ),
+    false,
+  )
+  assert.equal(
+    api.canCapability(
+      'animal.delete',
+      context(provider('yard-owner-a', ['yard_owner']), records.animalA),
+    ),
+    false,
+  )
 })

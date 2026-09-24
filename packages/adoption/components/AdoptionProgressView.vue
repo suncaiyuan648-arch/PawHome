@@ -1,78 +1,180 @@
 <template>
-  <view class="adoption-progress-view" :class="{ 'is-info': view === 'adoption-info', 'is-application': view === 'application' }">
-    <view v-if="view === 'application'" class="adoption-progress-view__heading">
+  <view
+    class="adoption-progress-view"
+    :class="{ 'is-info': view === 'adoption-info', 'is-application': view === 'application' }"
+  >
+    <view
+      v-if="view === 'application'"
+      class="adoption-progress-view__heading"
+    >
       <text>申请内容</text>
     </view>
-    <view v-else-if="view === 'adoption-info'" class="adoption-progress-view__heading">
+    <view
+      v-else-if="view === 'adoption-info'"
+      class="adoption-progress-view__heading"
+    >
       <text>领养信息</text>
     </view>
-    <view v-else class="adoption-progress-view__heading" data-qa="qa-adoption-progress-status">
-      <PawIcon :name="statusIcon" :size="18" :color="statusIconColor" />
+    <view
+      v-else
+      class="adoption-progress-view__heading"
+      data-qa="qa-adoption-progress-status"
+    >
+      <PawIcon
+        :name="statusIcon"
+        :size="18"
+        :color="statusIconColor"
+      />
       <text>{{ presentation.label }}</text>
     </view>
 
-    <AdoptionProgressTimeline v-if="view === 'progress' && presentation.progress"
-      :step="presentation.progress.step" :percent="presentation.progress.percent" />
+    <AdoptionProgressTimeline
+      v-if="view === 'progress' && presentation.progress"
+      :step="presentation.progress.step"
+      :percent="presentation.progress.percent"
+    />
 
-    <view v-if="view !== 'adoption-info'" class="adoption-progress-view__card adoption-progress-view__application"
-      data-qa="qa-adoption-progress-application">
+    <view
+      v-if="view !== 'adoption-info'"
+      class="adoption-progress-view__card adoption-progress-view__application"
+      data-qa="qa-adoption-progress-application"
+    >
       <view class="adoption-progress-view__card-title">
         <text>{{ view === 'application' ? '申请说明' : '申请内容' }}</text>
-        <text v-if="record.applicantName" class="adoption-progress-view__applicant">{{ record.applicantName }}</text>
+        <text
+          v-if="record.applicantName"
+          class="adoption-progress-view__applicant"
+          >{{ record.applicantName }}</text
+        >
       </view>
       <text class="adoption-progress-view__copy">{{ applicationText }}</text>
-      <view v-if="applicationPhotos.length" class="adoption-progress-view__photos">
-        <PawImage v-for="(photo, index) in applicationPhotos" :key="`${photo}-${index}`" :src="photo"
-          display-mode="fixed" :width="106" :height="106" :radius="4" :preview="false" />
+      <view
+        v-if="applicationPhotos.length"
+        class="adoption-progress-view__photos"
+      >
+        <PawImage
+          v-for="(photo, index) in applicationPhotos"
+          :key="`${photo}-${index}`"
+          :src="photo"
+          display-mode="fixed"
+          :width="106"
+          :height="106"
+          :radius="4"
+          :preview="false"
+        />
       </view>
-      <text v-if="!applicationText && !applicationPhotos.length" class="adoption-progress-view__muted">暂无申请内容</text>
+      <text
+        v-if="!applicationText && !applicationPhotos.length"
+        class="adoption-progress-view__muted"
+        >暂无申请内容</text
+      >
     </view>
 
-    <view v-if="view !== 'application'" class="adoption-progress-view__card adoption-progress-view__pets"
-      data-qa="qa-adoption-progress-pets">
+    <view
+      v-if="view !== 'application'"
+      class="adoption-progress-view__card adoption-progress-view__pets"
+      data-qa="qa-adoption-progress-pets"
+    >
       <view class="adoption-progress-view__card-title">
         <text>{{ isCompleted ? '领走的猫咪' : '申请领养的猫咪' }}</text>
         <text class="adoption-progress-view__count">({{ pets.length }})</text>
       </view>
-      <view v-if="pets.length" class="adoption-progress-view__pet-grid">
-        <view v-for="(pet, index) in pets" :key="pet.id || index" class="adoption-progress-view__pet">
-          <PawImage :src="pet.avatar" :size="48" :radius="24" :preview="false" />
+      <view
+        v-if="pets.length"
+        class="adoption-progress-view__pet-grid"
+      >
+        <view
+          v-for="(pet, index) in pets"
+          :key="pet.id || index"
+          class="adoption-progress-view__pet"
+        >
+          <PawImage
+            :src="pet.avatar"
+            :size="48"
+            :radius="24"
+            :preview="false"
+          />
           <text>{{ pet.name || '猫咪' }}</text>
         </view>
       </view>
-      <text v-else class="adoption-progress-view__muted">暂无关联猫咪</text>
-      <view v-if="yardName" class="adoption-progress-view__yard">
-        <PawImage :src="record.ownerAvatar" :size="34" :radius="17" :preview="false" />
+      <text
+        v-else
+        class="adoption-progress-view__muted"
+        >暂无关联猫咪</text
+      >
+      <view
+        v-if="yardName"
+        class="adoption-progress-view__yard"
+      >
+        <PawImage
+          :src="record.ownerAvatar"
+          :size="34"
+          :radius="17"
+          :preview="false"
+        />
         <text>{{ yardName }}</text>
         <text class="adoption-progress-view__yard-tag">{{ record.yardTag || '小院' }}</text>
       </view>
     </view>
 
-    <view v-if="view === 'adoption-info'" class="adoption-progress-view__info" data-qa="qa-adoption-progress-info">
+    <view
+      v-if="view === 'adoption-info'"
+      class="adoption-progress-view__info"
+      data-qa="qa-adoption-progress-info"
+    >
       <view class="adoption-progress-view__card-title"><text>小院位置</text></view>
       <text class="adoption-progress-view__info-title">{{ locationName || '暂无小院位置' }}</text>
       <text class="adoption-progress-view__info-copy">{{ locationAddress || '暂无地址信息' }}</text>
       <view class="adoption-progress-view__owner">
-        <PawImage :src="record.ownerAvatar" :size="34" :radius="17" :preview="false" />
+        <PawImage
+          :src="record.ownerAvatar"
+          :size="34"
+          :radius="17"
+          :preview="false"
+        />
         <text>{{ contactName || yardName || '院主' }}</text>
         <PawOwnerBadge />
       </view>
-      <text class="adoption-progress-view__info-copy">{{ ownerMessage || '暂无联系方式说明' }}</text>
-      <text v-if="distance" class="adoption-progress-view__distance">距离 {{ distance }}</text>
+      <text class="adoption-progress-view__info-copy">{{
+        ownerMessage || '暂无联系方式说明'
+      }}</text>
+      <text
+        v-if="distance"
+        class="adoption-progress-view__distance"
+        >距离 {{ distance }}</text
+      >
     </view>
 
-    <view v-if="view === 'progress' && proofPhotos.length" class="adoption-progress-view__card adoption-progress-view__proof"
-      data-qa="qa-adoption-progress-proof">
+    <view
+      v-if="view === 'progress' && proofPhotos.length"
+      class="adoption-progress-view__card adoption-progress-view__proof"
+      data-qa="qa-adoption-progress-proof"
+    >
       <view class="adoption-progress-view__card-title"><text>领养确认</text></view>
       <view class="adoption-progress-view__photos">
-        <PawImage v-for="(photo, index) in proofPhotos" :key="`${photo}-${index}`" :src="photo"
-          display-mode="fixed" :width="106" :height="106" :radius="4" :preview="false" />
+        <PawImage
+          v-for="(photo, index) in proofPhotos"
+          :key="`${photo}-${index}`"
+          :src="photo"
+          display-mode="fixed"
+          :width="106"
+          :height="106"
+          :radius="4"
+          :preview="false"
+        />
       </view>
-      <text v-if="record.confirmStory" class="adoption-progress-view__copy">{{ record.confirmStory }}</text>
+      <text
+        v-if="record.confirmStory"
+        class="adoption-progress-view__copy"
+        >{{ record.confirmStory }}</text
+      >
     </view>
 
-    <view v-if="presentation.isRejected" class="adoption-progress-view__notice adoption-progress-view__notice--error"
-      data-qa="qa-adoption-progress-rejected">
+    <view
+      v-if="presentation.isRejected"
+      class="adoption-progress-view__notice adoption-progress-view__notice--error"
+      data-qa="qa-adoption-progress-rejected"
+    >
       <text>{{ record.rejectNote || '当前申请暂未通过，请关注其他小院。' }}</text>
     </view>
   </view>
@@ -86,7 +188,7 @@ import PawOwnerBadge from '@/components/identity/PawOwnerBadge.vue'
 import AdoptionProgressTimeline from './AdoptionProgressTimeline.vue'
 import type {
   AdoptionProgressRecordView,
-  AdoptionProgressViewMode
+  AdoptionProgressViewMode,
 } from '../services/progressPageMetadata.ts'
 import type { AdoptionProgressStatusPresentation as StatusPresentation } from '../services/progress.ts'
 
@@ -96,31 +198,56 @@ export default defineComponent({
   props: {
     record: { type: Object as PropType<AdoptionProgressRecordView>, required: true },
     view: { type: String as PropType<AdoptionProgressViewMode>, default: 'progress' },
-    presentation: { type: Object as PropType<StatusPresentation>, required: true }
+    presentation: { type: Object as PropType<StatusPresentation>, required: true },
   },
   computed: {
     statusIcon() {
       if (this.presentation.isRejected) return 'status/rejected'
-      if (this.presentation.status === 'pending' || this.presentation.status === 'cloud_pending') return 'navigation/clock'
+      if (this.presentation.status === 'pending' || this.presentation.status === 'cloud_pending')
+        return 'navigation/clock'
       return 'status/check'
     },
-    statusIconColor() { return this.presentation.isRejected ? '#ff0038' : '#fd6302' },
-    pets() { return Array.isArray(this.record.pets) ? this.record.pets : [] },
+    statusIconColor() {
+      return this.presentation.isRejected ? '#ff0038' : '#fd6302'
+    },
+    pets() {
+      return Array.isArray(this.record.pets) ? this.record.pets : []
+    },
     applicationPhotos() {
-      return Array.isArray(this.record.mediaPaths) ? this.record.mediaPaths.filter(Boolean).slice(0, 2) : []
+      return Array.isArray(this.record.mediaPaths)
+        ? this.record.mediaPaths.filter(Boolean).slice(0, 2)
+        : []
     },
     proofPhotos() {
-      return Array.isArray(this.record.proofPhotos) ? this.record.proofPhotos.filter(Boolean).slice(0, 2) : []
+      return Array.isArray(this.record.proofPhotos)
+        ? this.record.proofPhotos.filter(Boolean).slice(0, 2)
+        : []
     },
-    applicationText() { return String(this.record.applyText || '').trim() },
-    yardName() { return this.record.yardName || this.record.ownerName || '' },
-    locationName() { return typeof this.record.location === 'string' ? this.record.location : '' },
-    locationAddress() { return this.record.locationAddress || this.record.address || '' },
-    distance() { return this.record.distance || '' },
-    contactName() { return this.record.ownerNick || this.record.ownerName || '' },
-    ownerMessage() { return this.record.ownerMessage || '' },
-    isCompleted() { return ['adoption_confirmed', 'reward', 'reward_done'].includes(this.presentation.status) }
-  }
+    applicationText() {
+      return String(this.record.applyText || '').trim()
+    },
+    yardName() {
+      return this.record.yardName || this.record.ownerName || ''
+    },
+    locationName() {
+      return typeof this.record.location === 'string' ? this.record.location : ''
+    },
+    locationAddress() {
+      return this.record.locationAddress || this.record.address || ''
+    },
+    distance() {
+      return this.record.distance || ''
+    },
+    contactName() {
+      return this.record.ownerNick || this.record.ownerName || ''
+    },
+    ownerMessage() {
+      return this.record.ownerMessage || ''
+    },
+    isCompleted() {
+      return ['adoption_confirmed', 'reward', 'reward_done'].includes(this.presentation.status)
+    },
+  },
 })
 </script>
 

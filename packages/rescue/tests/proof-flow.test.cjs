@@ -9,11 +9,12 @@ const ts = require('typescript')
 const packageRoot = path.resolve(__dirname, '..')
 
 function loadPureValidation() {
-  const source = fs.readFileSync(path.join(packageRoot, 'services/proof.ts'), 'utf8')
+  const source = fs
+    .readFileSync(path.join(packageRoot, 'services/proof.ts'), 'utf8')
     .replace(/^import[\s\S]*?from ['"][^'"]+['"]\n/gm, '')
     .replace(/^export /gm, '')
   const runtimeSource = ts.transpileModule(source, {
-    compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.None }
+    compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.None },
   }).outputText
   return new Function(`${runtimeSource}\nreturn { normalizeProofInput, validateProofInput }`)()
 }
@@ -25,11 +26,14 @@ test('proof validation accepts repeatable local fixture input and rejects incomp
     relation: '同学',
     note: '我了解这次救助情况。',
     idNo: '11010119900307001X',
-    agreementChecked: true
+    agreementChecked: true,
   })
   assert.equal(valid.ok, true)
   assert.equal(validateProofInput({ ...valid.value, idNo: 'not-an-id' }).code, 'INVALID_ID_CARD')
-  assert.equal(validateProofInput({ ...valid.value, agreementChecked: false }).code, 'AGREEMENT_REQUIRED')
+  assert.equal(
+    validateProofInput({ ...valid.value, agreementChecked: false }).code,
+    'AGREEMENT_REQUIRED',
+  )
   assert.equal(validateProofInput({ ...valid.value, note: '' }).code, 'MISSING_FIELD')
 })
 
@@ -45,12 +49,15 @@ for (const [relative, routeName] of [
   ['pages/fund/index.vue', 'rescue.detail'],
   ['pages/detail/index.vue', 'rescue.detail'],
   ['pages/proof/list/index.vue', 'rescue.proof.list'],
-  ['pages/proof/create/index.vue', 'rescue.proof.create']
+  ['pages/proof/create/index.vue', 'rescue.proof.create'],
 ]) {
   test(`${relative} accepts only the explicit rescueId route contract`, () => {
     const source = fs.readFileSync(path.join(packageRoot, relative), 'utf8')
     if (relative !== 'pages/fund/index.vue') {
-      assert.match(source, new RegExp(`resolveRescueRecordLoadRoute\\(options, ['"]${routeName}['"]\\)`))
+      assert.match(
+        source,
+        new RegExp(`resolveRescueRecordLoadRoute\\(options, ['"]${routeName}['"]\\)`),
+      )
       assert.doesNotMatch(source, /options\.(?:id|recordId)/)
       assert.doesNotMatch(source, /includeDemo:\s*false/) // public rescue/proof pages read explicit IDs, including local fixtures
       assert.doesNotMatch(source, /sourceType|adoptionStorage|applicationMockApi|source=adoption/)

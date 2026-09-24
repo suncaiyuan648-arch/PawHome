@@ -1,86 +1,224 @@
 <template>
-  <view class="address-form-page" :class="['address-form-page--' + kind, { 'address-form-page--embedded': embedded }]">
+  <view
+    class="address-form-page"
+    :class="['address-form-page--' + kind, { 'address-form-page--embedded': embedded }]"
+  >
     <!-- #ifndef MP-WEIXIN -->
-    <image v-if="kind === 'service'" class="service-address-top-reference" src="/static/figma/service-address-top.png"
-      mode="scaleToFill" />
-    <image v-else class="service-address-top-reference" src="/static/figma/shipping-address-top.png"
-      mode="scaleToFill" />
+    <image
+      v-if="kind === 'service'"
+      class="service-address-top-reference"
+      src="/static/figma/service-address-top.png"
+      mode="scaleToFill"
+    />
+    <image
+      v-else
+      class="service-address-top-reference"
+      src="/static/figma/shipping-address-top.png"
+      mode="scaleToFill"
+    />
     <!-- #endif -->
-    <PawPageNav v-if="!embedded" :title="`${initialAddress && initialAddress.id ? '修改' : '添加'}${kindLabel}地址`"
-      :title-centered="true" background="#f5f5f5" fallback-url="/packages/address/pages/list/index" />
+    <PawPageNav
+      v-if="!embedded"
+      :title="`${initialAddress && initialAddress.id ? '修改' : '添加'}${kindLabel}地址`"
+      :title-centered="true"
+      background="#f5f5f5"
+      fallback-url="/packages/address/pages/list/index"
+    />
 
-    <scroll-view class="main-scroll" scroll-y :show-scrollbar="false">
+    <scroll-view
+      class="main-scroll"
+      scroll-y
+      :show-scrollbar="false"
+    >
       <view class="body">
-        <view v-if="kind === 'shipping'" class="smart-card">
-          <textarea v-model="smartText" class="smart-input" data-qa="address-smart-input" maxlength="180"
-            placeholder="复制地址到此处，智能识别" placeholder-class="placeholder" />
-          <view class="smart-action" data-qa="address-smart-recognize" @click="recognize"><text>粘贴并识别</text></view>
+        <view
+          v-if="kind === 'shipping'"
+          class="smart-card"
+        >
+          <textarea
+            v-model="smartText"
+            class="smart-input"
+            data-qa="address-smart-input"
+            maxlength="180"
+            placeholder="复制地址到此处，智能识别"
+            placeholder-class="placeholder"
+          />
+          <view
+            class="smart-action"
+            data-qa="address-smart-recognize"
+            @click="recognize"
+            ><text>粘贴并识别</text></view
+          >
         </view>
 
         <view class="form-card">
           <view class="form-head">
             <text class="form-title">地址信息</text>
-            <view v-if="kind === 'shipping'" class="import-actions">
-              <view class="import-chip" :class="{ 'import-chip--selected': importSource === 'service' }"
-                data-qa="address-import-service" @tap.stop="openServiceImport"><text>从服务地址导入</text></view>
-              <view class="import-chip" :class="{ 'import-chip--selected': importSource === 'wechat' }"
-                data-qa="address-import-wechat" @tap.stop="openWechatImport"><text>从微信地址导入</text></view>
+            <view
+              v-if="kind === 'shipping'"
+              class="import-actions"
+            >
+              <view
+                class="import-chip"
+                :class="{ 'import-chip--selected': importSource === 'service' }"
+                data-qa="address-import-service"
+                @tap.stop="openServiceImport"
+                ><text>从服务地址导入</text></view
+              >
+              <view
+                class="import-chip"
+                :class="{ 'import-chip--selected': importSource === 'wechat' }"
+                data-qa="address-import-wechat"
+                @tap.stop="openWechatImport"
+                ><text>从微信地址导入</text></view
+              >
             </view>
           </view>
 
           <view class="form-row">
             <text class="form-label">联系人<text class="required">*</text></text>
-            <view class="field" :class="{ focused: focusKey === 'name' || typing }">
-              <input v-model="form.name" class="input" data-qa="address-name" placeholder="你的名字"
-                placeholder-class="placeholder" @focus="focusKey = 'name'" @blur="focusKey = ''" />
-              <text v-if="form.name" class="clear" @click="form.name = ''">×</text>
+            <view
+              class="field"
+              :class="{ focused: focusKey === 'name' || typing }"
+            >
+              <input
+                v-model="form.name"
+                class="input"
+                data-qa="address-name"
+                placeholder="你的名字"
+                placeholder-class="placeholder"
+                @focus="focusKey = 'name'"
+                @blur="focusKey = ''"
+              />
+              <text
+                v-if="form.name"
+                class="clear"
+                @click="form.name = ''"
+                >×</text
+              >
             </view>
           </view>
           <view class="form-row">
             <text class="form-label">手机号<text class="required">*</text></text>
-            <view class="field" :class="{ focused: focusKey === 'phone' }">
-              <text v-if="typing" class="phone-demo">1336666999<br />9</text>
-              <input v-else v-model="form.phone" class="input" data-qa="address-phone" type="number" placeholder="你的手机号"
-                placeholder-class="placeholder" @focus="focusKey = 'phone'" @blur="focusKey = ''" />
-              <text v-if="form.phone" class="clear" @click="form.phone = ''">×</text>
+            <view
+              class="field"
+              :class="{ focused: focusKey === 'phone' }"
+            >
+              <text
+                v-if="typing"
+                class="phone-demo"
+                >1336666999<br />9</text
+              >
+              <input
+                v-else
+                v-model="form.phone"
+                class="input"
+                data-qa="address-phone"
+                type="number"
+                placeholder="你的手机号"
+                placeholder-class="placeholder"
+                @focus="focusKey = 'phone'"
+                @blur="focusKey = ''"
+              />
+              <text
+                v-if="form.phone"
+                class="clear"
+                @click="form.phone = ''"
+                >×</text
+              >
             </view>
           </view>
           <view class="form-row">
             <text class="form-label">所在地区<text class="required">*</text></text>
-            <view class="field field--tap" data-qa="address-region" @click="openRegionPicker">
-              <text class="field-text" :class="{ placeholder: !regionText }">{{ regionText || '省、市、区' }}</text>
-              <image class="chevron" src="/static/me/link-chevron.png" mode="aspectFit" />
+            <view
+              class="field field--tap"
+              data-qa="address-region"
+              @click="openRegionPicker"
+            >
+              <text
+                class="field-text"
+                :class="{ placeholder: !regionText }"
+                >{{ regionText || '省、市、区' }}</text
+              >
+              <image
+                class="chevron"
+                src="/static/me/link-chevron.png"
+                mode="aspectFit"
+              />
             </view>
           </view>
           <view class="form-row form-row--detail">
             <text class="form-label form-label--top">详细地址<text class="required">*</text></text>
-            <view class="field field--detail"
-              :class="{ focused: focusKey === 'detail' || (typing && kind === 'service') }">
-              <textarea v-model="form.detail" class="detail-input" data-qa="address-detail" maxlength="120"
-                placeholder="小区、楼栋单元、门牌号" placeholder-class="placeholder" @focus="focusKey = 'detail'"
-                @blur="focusKey = ''" />
-              <text v-if="form.detail" class="clear clear--detail" @click="form.detail = ''">×</text>
-              <view v-if="kind === 'shipping'" class="locate" @click="openLocation"><uni-icons type="location"
-                  color="#666" :size="18" /><text>定位</text></view>
+            <view
+              class="field field--detail"
+              :class="{ focused: focusKey === 'detail' || (typing && kind === 'service') }"
+            >
+              <textarea
+                v-model="form.detail"
+                class="detail-input"
+                data-qa="address-detail"
+                maxlength="120"
+                placeholder="小区、楼栋单元、门牌号"
+                placeholder-class="placeholder"
+                @focus="focusKey = 'detail'"
+                @blur="focusKey = ''"
+              />
+              <text
+                v-if="form.detail"
+                class="clear clear--detail"
+                @click="form.detail = ''"
+                >×</text
+              >
+              <view
+                v-if="kind === 'shipping'"
+                class="locate"
+                @click="openLocation"
+                ><uni-icons
+                  type="location"
+                  color="#666"
+                  :size="18"
+                /><text>定位</text></view
+              >
             </view>
           </view>
         </view>
 
         <view class="ops-row">
-          <view class="default-action" data-qa="address-default-toggle" @click="toggleDefault">
-            <PawCheckbox :model-value="isDefault" size="middle" @change="onDefaultChange" />
+          <view
+            class="default-action"
+            data-qa="address-default-toggle"
+            @click="toggleDefault"
+          >
+            <PawCheckbox
+              :model-value="isDefault"
+              size="middle"
+              @change="onDefaultChange"
+            />
             <text>默认{{ kindLabel }}地址</text>
           </view>
-          <text class="side-action" @click="kind === 'shipping' ? clearAll() : removeAddress()">{{ kind === 'shipping' ?
-            (typing ? '删除' : '清空') : '删除' }}</text>
+          <text
+            class="side-action"
+            @click="kind === 'shipping' ? clearAll() : removeAddress()"
+            >{{ kind === 'shipping' ? (typing ? '删除' : '清空') : '删除' }}</text
+          >
         </view>
       </view>
     </scroll-view>
-    <PawLocationPickerSheet :visible="showLocationPicker" :city="locationPickerCity"
-      @update:visible="onLocationPickerVisibleChange" @select="onLocationPicked" @city-tap="openLocationCityPicker" />
-    <PawAddressImportSheet :visible="showImportSheet" :mode="importSheetMode" :addresses="serviceAddresses"
-      @update:visible="onImportSheetVisibleChange" @select="onServiceAddressSelected"
-      @request-wechat="requestWechatAddress" />
+    <PawLocationPickerSheet
+      :visible="showLocationPicker"
+      :city="locationPickerCity"
+      @update:visible="onLocationPickerVisibleChange"
+      @select="onLocationPicked"
+      @city-tap="openLocationCityPicker"
+    />
+    <PawAddressImportSheet
+      :visible="showImportSheet"
+      :mode="importSheetMode"
+      :addresses="serviceAddresses"
+      @update:visible="onImportSheetVisibleChange"
+      @select="onServiceAddressSelected"
+      @request-wechat="requestWechatAddress"
+    />
   </view>
 </template>
 
@@ -98,7 +236,7 @@ import {
   normalizeAddressFormDraft,
   normalizeWechatAddressDraft,
   type AddressFormDraft,
-  type AddressFormFields
+  type AddressFormFields,
 } from '@/utils/addressFormMetadata.ts'
 import type { LocationPlace } from '@/utils/locationService.ts'
 
@@ -130,23 +268,39 @@ export default defineComponent({
     kind: { type: String as PropType<AddressKind>, default: 'shipping' },
     typing: { type: Boolean, default: false },
     initialAddress: { type: Object as PropType<Partial<AddressRecord>>, default: () => ({}) },
-    embedded: { type: Boolean, default: false }
+    embedded: { type: Boolean, default: false },
   },
   emits: {
-    save: (draft: AddressFormDraft) => typeof draft.name === 'string'
-      && typeof draft.phone === 'string'
-      && typeof draft.detail === 'string'
-      && Array.isArray(draft.regionParts)
-      && typeof draft.isDefault === 'boolean'
+    save: (draft: AddressFormDraft) =>
+      typeof draft.name === 'string' &&
+      typeof draft.phone === 'string' &&
+      typeof draft.detail === 'string' &&
+      Array.isArray(draft.regionParts) &&
+      typeof draft.isDefault === 'boolean',
   },
   data(): PawAddressFormState {
     return {
-      focusKey: '', smartText: '', isDefault: false, importSource: '', regionParts: [],
-      form: { name: '', phone: '', detail: '' }, showLocationPicker: false, locationPickerCity: '长沙市',
-      showImportSheet: false, importSheetMode: 'service', serviceAddresses: []
+      focusKey: '',
+      smartText: '',
+      isDefault: false,
+      importSource: '',
+      regionParts: [],
+      form: { name: '', phone: '', detail: '' },
+      showLocationPicker: false,
+      locationPickerCity: '长沙市',
+      showImportSheet: false,
+      importSheetMode: 'service',
+      serviceAddresses: [],
     }
   },
-  computed: { kindLabel() { return this.kind === 'service' ? '服务' : '收货' }, regionText() { return this.regionParts.join(' ') } },
+  computed: {
+    kindLabel() {
+      return this.kind === 'service' ? '服务' : '收货'
+    },
+    regionText() {
+      return this.regionParts.join(' ')
+    },
+  },
   created() {
     if (Object.keys(this.initialAddress || {}).length) this.applyAddress(this.initialAddress)
     else if (this.typing) this.fillDemo()
@@ -159,8 +313,8 @@ export default defineComponent({
       deep: true,
       handler(value: Partial<AddressRecord>) {
         if (value && Object.keys(value).length) this.applyAddress(value)
-      }
-    }
+      },
+    },
   },
   methods: {
     applyAddress(address: Partial<AddressRecord> = {}) {
@@ -179,11 +333,12 @@ export default defineComponent({
       this.smartText = mock.smartText
     },
     readClipboard(): Promise<string> {
-      if (typeof uni === 'undefined' || typeof uni.getClipboardData !== 'function') return Promise.resolve('')
-      return new Promise(resolve => {
+      if (typeof uni === 'undefined' || typeof uni.getClipboardData !== 'function')
+        return Promise.resolve('')
+      return new Promise((resolve) => {
         uni.getClipboardData({
-          success: result => resolve(result.data),
-          fail: () => resolve('')
+          success: (result) => resolve(result.data),
+          fail: () => resolve(''),
         })
       })
     },
@@ -217,16 +372,19 @@ export default defineComponent({
       const draft = normalizeAddressFormDraft(address)
       this.form = { name: draft.name, phone: draft.phone, detail: draft.detail }
       this.regionParts = draft.regionParts
-      this.smartText = [...this.regionParts, this.form.detail, this.form.name, this.form.phone].filter(Boolean).join('，')
+      this.smartText = [...this.regionParts, this.form.detail, this.form.name, this.form.phone]
+        .filter(Boolean)
+        .join('，')
       this.isDefault = false
       this.importSource = 'service'
     },
     requestWechatAddress() {
-      const api = typeof wx !== 'undefined' && typeof wx.chooseAddress === 'function'
-        ? wx.chooseAddress
-        : typeof uni !== 'undefined' && typeof uni.chooseAddress === 'function'
-          ? uni.chooseAddress
-          : null
+      const api =
+        typeof wx !== 'undefined' && typeof wx.chooseAddress === 'function'
+          ? wx.chooseAddress
+          : typeof uni !== 'undefined' && typeof uni.chooseAddress === 'function'
+            ? uni.chooseAddress
+            : null
       if (!api) {
         return uni.showToast({ title: '当前环境不支持微信地址，请在真机重试', icon: 'none' })
       }
@@ -236,14 +394,16 @@ export default defineComponent({
           const message = isRecord(error) && typeof error.errMsg === 'string' ? error.errMsg : ''
           if (message.toLowerCase().includes('cancel')) return
           uni.showToast({ title: '未获取到微信地址，请授权后重试', icon: 'none' })
-        }
+        },
       })
     },
     applyWechatAddress(result: UniNamespace.ChooseAddressRes) {
       const draft = normalizeWechatAddressDraft(result)
       this.form = { name: draft.name, phone: draft.phone, detail: draft.detail }
       this.regionParts = draft.regionParts
-      this.smartText = [...this.regionParts, this.form.detail, this.form.name, this.form.phone].filter(Boolean).join('，')
+      this.smartText = [...this.regionParts, this.form.detail, this.form.name, this.form.phone]
+        .filter(Boolean)
+        .join('，')
       this.importSource = 'wechat'
       this.showImportSheet = false
     },
@@ -253,17 +413,19 @@ export default defineComponent({
         events: {
           regionSelected: (value: unknown) => {
             this.regionParts = normalizeAddressFormDraft(value).regionParts
-          }
+          },
         },
         success: (result: UniNamespace.NavigateToSuccessOptions) => {
           result.eventChannel.emit('initRegion', { parts: this.regionParts })
-        }
+        },
       })
     },
     openLocation() {
       const storedCity = uni.getStorageSync('selectedCity')
-      this.locationPickerCity = this.regionParts[1] || this.regionParts[0]
-        || (typeof storedCity === 'string' ? storedCity : '长沙市')
+      this.locationPickerCity =
+        this.regionParts[1] ||
+        this.regionParts[0] ||
+        (typeof storedCity === 'string' ? storedCity : '长沙市')
       this.showLocationPicker = true
     },
     onLocationPickerVisibleChange(value: boolean) {
@@ -275,22 +437,46 @@ export default defineComponent({
     },
     openLocationCityPicker() {
       uni.navigateTo({
-        url: '/packages/discovery/pages/city-picker/index?current=' + encodeURIComponent(this.locationPickerCity),
+        url:
+          '/packages/discovery/pages/city-picker/index?current=' +
+          encodeURIComponent(this.locationPickerCity),
         events: {
           citySelected: (value: unknown) => {
             if (!isRecord(value) || typeof value.city !== 'string') return
             const city = value.city.trim()
             if (city) this.locationPickerCity = city
-          }
-        }
+          },
+        },
       })
     },
-    clearAll() { this.form = { name: '', phone: '', detail: '' }; this.regionParts = []; this.smartText = ''; this.isDefault = false; this.importSource = '' },
-    toggleDefault() { this.isDefault = !this.isDefault },
-    onDefaultChange(value: boolean) { this.isDefault = value },
-    removeAddress() { uni.showToast({ title: '已删除', icon: 'none' }) },
-    save() { if (!this.form.name || !this.form.phone || this.regionParts.length < 3 || !this.form.detail) return uni.showToast({ title: '请完善地址信息', icon: 'none' }); this.$emit('save', { name: this.form.name.trim(), phone: this.form.phone.trim(), regionParts: this.regionParts.filter(Boolean).slice(0, 4), detail: this.form.detail.trim(), isDefault: this.isDefault }) }
-  }
+    clearAll() {
+      this.form = { name: '', phone: '', detail: '' }
+      this.regionParts = []
+      this.smartText = ''
+      this.isDefault = false
+      this.importSource = ''
+    },
+    toggleDefault() {
+      this.isDefault = !this.isDefault
+    },
+    onDefaultChange(value: boolean) {
+      this.isDefault = value
+    },
+    removeAddress() {
+      uni.showToast({ title: '已删除', icon: 'none' })
+    },
+    save() {
+      if (!this.form.name || !this.form.phone || this.regionParts.length < 3 || !this.form.detail)
+        return uni.showToast({ title: '请完善地址信息', icon: 'none' })
+      this.$emit('save', {
+        name: this.form.name.trim(),
+        phone: this.form.phone.trim(),
+        regionParts: this.regionParts.filter(Boolean).slice(0, 4),
+        detail: this.form.detail.trim(),
+        isDefault: this.isDefault,
+      })
+    },
+  },
 })
 </script>
 
@@ -301,7 +487,7 @@ export default defineComponent({
   background: #f5f5f5;
   display: flex;
   flex-direction: column;
-  color: #222
+  color: #222;
 }
 
 .service-address-top-reference {
@@ -311,11 +497,11 @@ export default defineComponent({
   width: 100%;
   height: 100px;
   z-index: 20;
-  pointer-events: none
+  pointer-events: none;
 }
 
 .nav-wrap {
-  flex: none
+  flex: none;
 }
 
 .nav-row {
@@ -324,7 +510,7 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 4px
+  padding: 0 4px;
 }
 
 .nav-side {
@@ -332,16 +518,16 @@ export default defineComponent({
   height: 44px;
   display: flex;
   align-items: center;
-  justify-content: center
+  justify-content: center;
 }
 
 .nav-left {
-  z-index: 1
+  z-index: 1;
 }
 
 .nav-back {
   width: 10px;
-  height: 18px
+  height: 18px;
 }
 
 .nav-title {
@@ -349,29 +535,29 @@ export default defineComponent({
   left: 50%;
   transform: translateX(-50%);
   font-size: 17px;
-  font-weight: 500
+  font-weight: 500;
 }
 
 .main-scroll {
   flex: 1;
-  height: 0
+  height: 0;
 }
 
 .body {
-  padding: 8px 15px 130px
+  padding: 8px 15px 130px;
 }
 
 .smart-card,
 .form-card {
   background: #fff;
   border-radius: 10px;
-  box-sizing: border-box
+  box-sizing: border-box;
 }
 
 .smart-card {
   height: 136px;
   padding: 14px 14px 12px;
-  margin-bottom: 10px
+  margin-bottom: 10px;
 }
 
 .smart-input {
@@ -379,7 +565,7 @@ export default defineComponent({
   height: 76px;
   box-sizing: border-box;
   font-size: 13px;
-  line-height: 18px
+  line-height: 18px;
 }
 
 .smart-action {
@@ -390,32 +576,32 @@ export default defineComponent({
   background: #ffe600;
   display: flex;
   align-items: center;
-  justify-content: center
+  justify-content: center;
 }
 
 .smart-action text {
-  font-size: 11px
+  font-size: 11px;
 }
 
 .form-card {
-  padding: 12px 12px 16px
+  padding: 12px 12px 16px;
 }
 
 .form-head {
   height: 29px;
   display: flex;
   align-items: center;
-  justify-content: space-between
+  justify-content: space-between;
 }
 
 .form-title {
   font-size: 15px;
-  font-weight: 500
+  font-weight: 500;
 }
 
 .import-actions {
   display: flex;
-  gap: 5px
+  gap: 5px;
 }
 
 .import-chip {
@@ -424,38 +610,38 @@ export default defineComponent({
   border: 1px solid #eee;
   border-radius: 13px;
   display: flex;
-  align-items: center
+  align-items: center;
 }
 
 .import-chip text {
   font-size: 10px;
-  color: #777
+  color: #777;
 }
 
 .form-row {
   display: flex;
   align-items: center;
-  margin-top: 8px
+  margin-top: 8px;
 }
 
 .form-row--detail {
-  align-items: flex-start
+  align-items: flex-start;
 }
 
 .form-label {
   width: 79px;
   flex: none;
   font-size: 13px;
-  line-height: 39px
+  line-height: 39px;
 }
 
 .form-label--top {
-  padding-top: 4px
+  padding-top: 4px;
 }
 
 .required {
   margin-left: 2px;
-  color: #ff5b57
+  color: #ff5b57;
 }
 
 .field {
@@ -469,27 +655,27 @@ export default defineComponent({
   background: #fff;
   display: flex;
   align-items: center;
-  box-sizing: border-box
+  box-sizing: border-box;
 }
 
 .field.focused {
-  border-color: #f4d600
+  border-color: #f4d600;
 }
 
 .input {
   width: 100%;
   font-size: 13px;
-  color: #333
+  color: #333;
 }
 
 .phone-demo {
   font-size: 13px;
   line-height: 14px;
-  color: #333
+  color: #333;
 }
 
 .field--tap {
-  justify-content: space-between
+  justify-content: space-between;
 }
 
 .field-text {
@@ -497,32 +683,32 @@ export default defineComponent({
   font-size: 13px;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis
+  text-overflow: ellipsis;
 }
 
 .chevron {
   width: 11px;
   height: 11px;
-  opacity: .5
+  opacity: 0.5;
 }
 
 .field--detail {
   height: 82px;
   align-items: flex-start;
   padding-top: 9px;
-  padding-right: 40px
+  padding-right: 40px;
 }
 
 .detail-input {
   width: 100%;
   height: 60px;
   font-size: 13px;
-  line-height: 18px
+  line-height: 18px;
 }
 
 .placeholder {
   color: #c4c4c4;
-  font-size: 13px
+  font-size: 13px;
 }
 
 .clear {
@@ -537,12 +723,12 @@ export default defineComponent({
   color: #888;
   text-align: center;
   line-height: 17px;
-  font-size: 12px
+  font-size: 12px;
 }
 
 .clear--detail {
   right: 8px;
-  top: 18px
+  top: 18px;
 }
 
 .locate {
@@ -552,11 +738,11 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: #555
+  color: #555;
 }
 
 .locate text {
-  font-size: 9px
+  font-size: 9px;
 }
 
 .ops-row {
@@ -564,43 +750,43 @@ export default defineComponent({
   padding: 0 7px;
   display: flex;
   align-items: center;
-  justify-content: space-between
+  justify-content: space-between;
 }
 
 .default-action {
   display: flex;
   align-items: center;
-  gap: 5px
+  gap: 5px;
 }
 
-.default-action>text,
+.default-action > text,
 .side-action {
   font-size: 12px;
-  color: #777
+  color: #777;
 }
 
 .side-action {
-  color: #ff7800
+  color: #ff7800;
 }
 
 .smart-card {
-  height: 116px
+  height: 116px;
 }
 
 .smart-input {
-  height: 56px
+  height: 56px;
 }
 
 .form-card {
-  min-height: 347px
+  min-height: 347px;
 }
 
 .body {
-  padding-top: 11px
+  padding-top: 11px;
 }
 
 .smart-card {
-  margin-bottom: 16px
+  margin-bottom: 16px;
 }
 
 .address-form-page--embedded {

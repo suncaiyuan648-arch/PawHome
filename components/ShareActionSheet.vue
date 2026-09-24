@@ -1,32 +1,71 @@
 <template>
-  <PawBottomSheet v-model:visible="visibleProxy" variant="share" height="371px" :close-on-mask="true" :safe-area="true"
-    :z-index="10040">
+  <PawBottomSheet
+    v-model:visible="visibleProxy"
+    variant="share"
+    height="371px"
+    :close-on-mask="true"
+    :safe-area="true"
+    :z-index="10040"
+  >
     <view class="share-action-sheet">
       <text class="share-action-sheet__title">分享至</text>
 
       <view class="share-action-sheet__main-row">
-        <view v-for="item in mainActions" :key="item.key" class="share-action-sheet__cell"
-          hover-class="share-action-sheet__cell--pressed" @tap.stop="onPick(item.key)">
-          <view class="share-action-sheet__bubble" :style="bubbleStyle(item.bubble)">
-            <PawIcon class="share-action-sheet__icon" :name="item.iconName" :size="item.iconSize" />
+        <view
+          v-for="item in mainActions"
+          :key="item.key"
+          class="share-action-sheet__cell"
+          hover-class="share-action-sheet__cell--pressed"
+          @tap.stop="onPick(item.key)"
+        >
+          <view
+            class="share-action-sheet__bubble"
+            :style="bubbleStyle(item.bubble)"
+          >
+            <PawIcon
+              class="share-action-sheet__icon"
+              :name="item.iconName"
+              :size="item.iconSize"
+            />
           </view>
           <text class="share-action-sheet__label">{{ item.label }}</text>
         </view>
       </view>
 
-      <image class="share-action-sheet__line" src="/static/figma/share-action-sheet/divider.svg" mode="aspectFit" />
+      <image
+        class="share-action-sheet__line"
+        src="/static/figma/share-action-sheet/divider.svg"
+        mode="aspectFit"
+      />
 
-      <view class="share-action-sheet__report-cell" hover-class="share-action-sheet__cell--pressed"
-        @tap.stop="onPick('report')">
-        <view class="share-action-sheet__bubble"
-          :style="bubbleStyle('/static/figma/share-action-sheet/report-bubble.svg')">
-          <PawIcon class="share-action-sheet__icon" name="brand/share-report" :size="27" />
+      <view
+        class="share-action-sheet__report-cell"
+        hover-class="share-action-sheet__cell--pressed"
+        @tap.stop="onPick('report')"
+      >
+        <view
+          class="share-action-sheet__bubble"
+          :style="bubbleStyle('/static/figma/share-action-sheet/report-bubble.svg')"
+        >
+          <PawIcon
+            class="share-action-sheet__icon"
+            name="brand/share-report"
+            :size="27"
+          />
         </view>
         <text class="share-action-sheet__label">举报</text>
       </view>
 
-      <view class="share-action-sheet__close" hover-class="share-action-sheet__close--pressed" @tap.stop="close">
-        <PawIcon class="share-action-sheet__close-icon" name="navigation/share-close" :size="11" />
+      <view
+        class="share-action-sheet__close"
+        hover-class="share-action-sheet__close--pressed"
+        @tap.stop="close"
+      >
+        <PawIcon
+          class="share-action-sheet__close-icon"
+          name="navigation/share-close"
+          :size="11"
+        />
       </view>
     </view>
   </PawBottomSheet>
@@ -64,7 +103,9 @@ interface ShareActionItem {
   iconSize: number
 }
 
-interface ShareActionSheetState { mainActions: ShareActionItem[] }
+interface ShareActionSheetState {
+  mainActions: ShareActionItem[]
+}
 
 export default defineComponent({
   name: 'ShareActionSheet',
@@ -72,12 +113,12 @@ export default defineComponent({
   props: {
     visible: { type: Boolean, default: false },
     // 页面控制器提供当前业务对象，组件只负责把它原样带回选择事件。
-    shareData: { type: Object as PropType<ShareData>, default: () => ({}) }
+    shareData: { type: Object as PropType<ShareData>, default: () => ({}) },
   },
   emits: {
     'update:visible': eventContract<[value: boolean]>(),
-    'select': eventContract<[key: ShareActionKey, data: ShareData]>(),
-    'close': eventContract<[]>(),
+    select: eventContract<[key: ShareActionKey, data: ShareData]>(),
+    close: eventContract<[]>(),
   },
   data(): ShareActionSheetState {
     return {
@@ -87,37 +128,41 @@ export default defineComponent({
           label: '生成海报',
           bubble: '/static/figma/share-action-sheet/poster-bubble.svg',
           iconName: 'brand/share-poster',
-          iconSize: 27
+          iconSize: 27,
         },
         {
           key: 'link',
           label: '复制链接',
           bubble: '/static/figma/share-action-sheet/link-bubble.svg',
           iconName: 'brand/share-link',
-          iconSize: 29
+          iconSize: 29,
         },
         {
           key: 'wechat',
           label: '微信',
           bubble: '/static/figma/share-action-sheet/wechat-bubble.svg',
           iconName: 'brand/share-wechat',
-          iconSize: 25
+          iconSize: 25,
         },
         {
           key: 'moments',
           label: '朋友圈',
           bubble: '/static/figma/share-action-sheet/moments-bubble.svg',
           iconName: 'brand/share-moments',
-          iconSize: 38
-        }
-      ]
+          iconSize: 38,
+        },
+      ],
     }
   },
   computed: {
     visibleProxy: {
-      get() { return this.visible },
-      set(value: boolean) { this.$emit('update:visible', value) }
-    }
+      get() {
+        return this.visible
+      },
+      set(value: boolean) {
+        this.$emit('update:visible', value)
+      },
+    },
   },
   methods: {
     bubbleStyle(url: string) {
@@ -130,8 +175,8 @@ export default defineComponent({
     onPick(key: ShareActionKey) {
       this.$emit('select', key, this.shareData)
       this.close()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -240,7 +285,7 @@ export default defineComponent({
 
 .share-action-sheet__cell--pressed .share-action-sheet__bubble,
 .share-action-sheet__close--pressed {
-  transform: scale(.94);
+  transform: scale(0.94);
   transition: transform 120ms ease;
 }
 </style>

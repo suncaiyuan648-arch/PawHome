@@ -16,18 +16,42 @@ before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-order-runtime-'))
   await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'packages/feeding/services'), { recursive: true })
-  await fs.copyFile(path.join(ROOT, 'packages/feeding/services/orderRuntime.ts'), path.join(tempRoot, 'packages/feeding/services/orderRuntime.ts'))
-  globalThis.uni = { getStorageSync: key => storage.get(key) }
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/feeding/services/orderRuntime.ts')).href}?test=${Date.now()}`)
+  await fs.copyFile(
+    path.join(ROOT, 'packages/feeding/services/orderRuntime.ts'),
+    path.join(tempRoot, 'packages/feeding/services/orderRuntime.ts'),
+  )
+  globalThis.uni = { getStorageSync: (key) => storage.get(key) }
+  api = await import(
+    `${pathToFileURL(path.join(tempRoot, 'packages/feeding/services/orderRuntime.ts')).href}?test=${Date.now()}`
+  )
 })
 
-after(async () => { delete globalThis.uni; if (tempRoot) await fs.rm(tempRoot, { recursive: true, force: true }) })
+after(async () => {
+  delete globalThis.uni
+  if (tempRoot) await fs.rm(tempRoot, { recursive: true, force: true })
+})
 
-function actor(id) { return () => ({ actor: { id, roles: ['applicant'] } }) }
+function actor(id) {
+  return () => ({ actor: { id, roles: ['applicant'] } })
+}
 
 test('persisted order detail separates gift and normal feeding types and scopes by actor', async () => {
-  storage.set('PAWHOME_REWARD_ORDERS', JSON.stringify([{ id: 'gift-1', applicationId: 'app-1', userId: 'actor-a', status: 'paid' }]))
-  storage.set('PAWHOME_FEEDING_ORDERS', JSON.stringify([{ id: 'feed-1', userPawId: 'actor-a', yardId: 'yard-a', animalId: 'animal-a', stateKey: 'completed' }]))
+  storage.set(
+    'PAWHOME_REWARD_ORDERS',
+    JSON.stringify([{ id: 'gift-1', applicationId: 'app-1', userId: 'actor-a', status: 'paid' }]),
+  )
+  storage.set(
+    'PAWHOME_FEEDING_ORDERS',
+    JSON.stringify([
+      {
+        id: 'feed-1',
+        userPawId: 'actor-a',
+        yardId: 'yard-a',
+        animalId: 'animal-a',
+        stateKey: 'completed',
+      },
+    ]),
+  )
   const gift = await api.readPersistedOrderDetail('gift-1', { actorProvider: actor('actor-a') })
   const feed = await api.readPersistedOrderDetail('feed-1', { actorProvider: actor('actor-a') })
   const other = await api.readPersistedOrderDetail('gift-1', { actorProvider: actor('actor-b') })
@@ -38,7 +62,10 @@ test('persisted order detail separates gift and normal feeding types and scopes 
 })
 
 test('hidden visibility is a per-user read gate and malformed storage fails closed', async () => {
-  const hidden = await api.readPersistedOrderDetail('feed-1', { actorProvider: actor('actor-a'), hiddenEntries: [{ userId: 'actor-a', orderId: 'feed-1', hidden: true }] })
+  const hidden = await api.readPersistedOrderDetail('feed-1', {
+    actorProvider: actor('actor-a'),
+    hiddenEntries: [{ userId: 'actor-a', orderId: 'feed-1', hidden: true }],
+  })
   assert.equal(hidden.error.code, 'HIDDEN')
   storage.set('PAWHOME_FEEDING_ORDERS', '{bad')
   const invalid = await api.readPersistedOrderDetail('feed-1', { actorProvider: actor('actor-a') })

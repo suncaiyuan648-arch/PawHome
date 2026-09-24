@@ -1,48 +1,133 @@
 <template>
-  <view class="aps-host" :data-qa="rescueMode ? 'qa-rescue-apply-pick-sheet' : 'qa-adoption-pick-sheet'">
-    <PawDialog v-if="!rescueMode" v-model="quotaDialogVisible" title="领养额度不足" :message="quotaDialogMessage"
-      confirm-text="我知道了" :close-on-mask="true" :z-index="10080" />
-    <PawBottomSheet v-model="modelValueProxy" variant="adoption-pick" height="495px" :close-on-mask="true"
-      :safe-area="false" :z-index="10060" @after-close="onAfterClose">
-      <view class="aps-sheet-inner" @tap.stop>
+  <view
+    class="aps-host"
+    :data-qa="rescueMode ? 'qa-rescue-apply-pick-sheet' : 'qa-adoption-pick-sheet'"
+  >
+    <PawDialog
+      v-if="!rescueMode"
+      v-model="quotaDialogVisible"
+      title="领养额度不足"
+      :message="quotaDialogMessage"
+      confirm-text="我知道了"
+      :close-on-mask="true"
+      :z-index="10080"
+    />
+    <PawBottomSheet
+      v-model="modelValueProxy"
+      variant="adoption-pick"
+      height="495px"
+      :close-on-mask="true"
+      :safe-area="false"
+      :z-index="10060"
+      @after-close="onAfterClose"
+    >
+      <view
+        class="aps-sheet-inner"
+        @tap.stop
+      >
         <view class="aps-head">
           <view class="aps-head-side"></view>
-          <text class="aps-title">{{ rescueMode ? '选择需要救助的动物' : '唯有以领养终止流浪' }}</text>
-          <view class="aps-close-hit" @tap="close">
-            <PawIcon name="navigation/close" :size="16" label="关闭" />
+          <text class="aps-title">{{
+            rescueMode ? '选择需要救助的动物' : '唯有以领养终止流浪'
+          }}</text>
+          <view
+            class="aps-close-hit"
+            @tap="close"
+          >
+            <PawIcon
+              name="navigation/close"
+              :size="16"
+              label="关闭"
+            />
           </view>
         </view>
-        <text class="aps-sub">{{ rescueMode ? '选择您想要救助的小咪' : '选择您想要领走的小咪' }}</text>
-        <scroll-view class="aps-scroll" scroll-y :show-scrollbar="false" :enable-flex="true">
+        <text class="aps-sub">{{
+          rescueMode ? '选择您想要救助的小咪' : '选择您想要领走的小咪'
+        }}</text>
+        <scroll-view
+          class="aps-scroll"
+          scroll-y
+          :show-scrollbar="false"
+          :enable-flex="true"
+        >
           <view class="aps-grid">
-            <view v-for="(c, i) in catOptions" :key="c.id" class="aps-cell"
-              :class="{ 'aps-cell--disabled': c.disabled }" :data-selected="selectedIds.includes(i)">
-              <view v-if="!c.disabled" class="aps-av-hit">
-                <view class="aps-ring" :class="{
-                  'aps-ring--on': selectedIds.includes(i),
-                  'aps-ring--off': !selectedIds.includes(i),
-                }">
-                  <PawImage class="aps-img" :src="c.avatar" display-mode="fixed" width="100%" height="100%" radius="50%"
-                    :preview="false" @click.stop="toggleSelect(i)" />
+            <view
+              v-for="(c, i) in catOptions"
+              :key="c.id"
+              class="aps-cell"
+              :class="{ 'aps-cell--disabled': c.disabled }"
+              :data-selected="selectedIds.includes(i)"
+            >
+              <view
+                v-if="!c.disabled"
+                class="aps-av-hit"
+              >
+                <view
+                  class="aps-ring"
+                  :class="{
+                    'aps-ring--on': selectedIds.includes(i),
+                    'aps-ring--off': !selectedIds.includes(i),
+                  }"
+                >
+                  <PawImage
+                    class="aps-img"
+                    :src="c.avatar"
+                    display-mode="fixed"
+                    width="100%"
+                    height="100%"
+                    radius="50%"
+                    :preview="false"
+                    @click.stop="toggleSelect(i)"
+                  />
                 </view>
               </view>
-              <view v-else class="aps-av-hit">
+              <view
+                v-else
+                class="aps-av-hit"
+              >
                 <view class="aps-ring aps-ring--dim">
-                  <PawImage class="aps-img" :src="c.avatar" display-mode="fixed" width="100%" height="100%" radius="50%"
-                    :preview="false" @click.stop="onDisabledPetTap" />
+                  <PawImage
+                    class="aps-img"
+                    :src="c.avatar"
+                    display-mode="fixed"
+                    width="100%"
+                    height="100%"
+                    radius="50%"
+                    :preview="false"
+                    @click.stop="onDisabledPetTap"
+                  />
                 </view>
               </view>
-              <view class="aps-name-hit" @tap.stop="toggleSelect(i)">
-                <text class="aps-name" :class="{ 'aps-name--dim': c.disabled }">{{ c.name }}</text>
+              <view
+                class="aps-name-hit"
+                @tap.stop="toggleSelect(i)"
+              >
+                <text
+                  class="aps-name"
+                  :class="{ 'aps-name--dim': c.disabled }"
+                  >{{ c.name }}</text
+                >
               </view>
-              <text v-if="!rescueMode" class="aps-price">￥{{ c.price }}</text>
+              <text
+                v-if="!rescueMode"
+                class="aps-price"
+                >￥{{ c.price }}</text
+              >
             </view>
           </view>
         </scroll-view>
-        <text v-if="!rescueMode" class="aps-balance">我的剩余领养额度：￥{{ availableAdoptionQuota }}</text>
+        <text
+          v-if="!rescueMode"
+          class="aps-balance"
+          >我的剩余领养额度：￥{{ availableAdoptionQuota }}</text
+        >
         <view class="aps-footer">
-          <button class="aps-btn" :data-qa="rescueMode ? 'qa-rescue-apply-pick-confirm' : 'qa-adoption-pick-confirm'"
-            :disabled="selectedIds.length === 0" @tap="onConfirm">
+          <button
+            class="aps-btn"
+            :data-qa="rescueMode ? 'qa-rescue-apply-pick-confirm' : 'qa-adoption-pick-confirm'"
+            :disabled="selectedIds.length === 0"
+            @tap="onConfirm"
+          >
             我选好了
           </button>
         </view>
@@ -60,7 +145,12 @@ import PawDialog from '@/components/overlay/PawDialog.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawImage from '@/components/base/PawImage.vue'
 import { ADOPTION_PICK_PET_MOCKS } from '@/utils/adoptionMockData.ts'
-import type { AdoptionPetMetadata, AdoptionPetMockOption, AdoptionPetSelection, AdoptionPickPayload } from '@/utils/adoptionMockData.ts'
+import type {
+  AdoptionPetMetadata,
+  AdoptionPetMockOption,
+  AdoptionPetSelection,
+  AdoptionPickPayload,
+} from '@/utils/adoptionMockData.ts'
 
 const DEFAULT_IMG = '/static/home-feed-1.png'
 
@@ -124,9 +214,10 @@ export default defineComponent({
   emits: {
     'update:modelValue': (value: boolean) => typeof value === 'boolean',
     close: null,
-    confirmed: (payload: AdoptionPickPayload) => Array.isArray(payload.pets)
-      && Array.isArray(payload.selectedPetIds)
-      && Array.isArray(payload.selectedIndices),
+    confirmed: (payload: AdoptionPickPayload) =>
+      Array.isArray(payload.pets) &&
+      Array.isArray(payload.selectedPetIds) &&
+      Array.isArray(payload.selectedIndices),
   },
   data(): { selectedIds: number[]; quotaDialogVisible: boolean } {
     return {
@@ -144,15 +235,19 @@ export default defineComponent({
       },
     },
     catOptions(): AdoptionPetMockOption[] {
-      const source: readonly AdoptionPetMetadata[] = this.cats?.length ? this.cats : ADOPTION_PICK_PET_MOCKS
+      const source: readonly AdoptionPetMetadata[] = this.cats?.length
+        ? this.cats
+        : ADOPTION_PICK_PET_MOCKS
       return source.map((cat, index) => ({
         ...cat,
         id: String(cat.id || cat.petId || cat.key || 'pet-' + index),
         name: cat.name || '猫咪',
         avatar: cat.avatar || DEFAULT_IMG,
-        price: this.normalizeAdoptionValue(cat.adoptionValue === undefined || cat.adoptionValue === null
-          ? cat.price
-          : cat.adoptionValue),
+        price: this.normalizeAdoptionValue(
+          cat.adoptionValue === undefined || cat.adoptionValue === null
+            ? cat.price
+            : cat.adoptionValue,
+        ),
         disabled: Boolean(cat.disabled),
       }))
     },
@@ -160,7 +255,10 @@ export default defineComponent({
       return this.normalizeAdoptionValue(this.availableQuota)
     },
     selectedValue() {
-      return this.selectedIds.reduce((total, index) => total + this.normalizeAdoptionValue(this.catOptions[index]?.price), 0)
+      return this.selectedIds.reduce(
+        (total, index) => total + this.normalizeAdoptionValue(this.catOptions[index]?.price),
+        0,
+      )
     },
     quotaDialogMessage() {
       return `已选动物价值合计￥${this.selectedValue}，超出当前可领养额度￥${this.availableAdoptionQuota}，请提升可领养额度后再试。`
@@ -189,21 +287,23 @@ export default defineComponent({
           : []
       const picked: number[] = []
       source.forEach((pet) => {
-        const index = typeof pet === 'number'
-          ? pet
-          : this.catOptions.findIndex((cat) => {
-            const petId = pet && (pet.id || pet.petId || pet.key)
-            if (petId && String(petId) === cat.id) return true
-            return pet && pet.name === cat.name && (!pet.avatar || pet.avatar === cat.avatar)
-          })
-        if (index >= 0 && !this.catOptions[index].disabled && !picked.includes(index)) picked.push(index)
+        const index =
+          typeof pet === 'number'
+            ? pet
+            : this.catOptions.findIndex((cat) => {
+                const petId = pet && (pet.id || pet.petId || pet.key)
+                if (petId && String(petId) === cat.id) return true
+                return pet && pet.name === cat.name && (!pet.avatar || pet.avatar === cat.avatar)
+              })
+        if (index >= 0 && !this.catOptions[index].disabled && !picked.includes(index))
+          picked.push(index)
       })
       this.selectedIds = picked.length
         ? picked.slice(0, this.maxSelection)
         : this.catOptions
-          .map((cat, index) => (cat.disabled ? -1 : index))
-          .filter((index) => index >= 0)
-          .slice(0, 2)
+            .map((cat, index) => (cat.disabled ? -1 : index))
+            .filter((index) => index >= 0)
+            .slice(0, 2)
     },
     close() {
       this.$emit('update:modelValue', false)
@@ -229,8 +329,11 @@ export default defineComponent({
           uni.showToast({ title: '最多选择 6 只', icon: 'none' })
           return
         }
-        const nextValue = next.reduce((total, index) => total + this.normalizeAdoptionValue(this.catOptions[index]?.price), 0)
-          + this.normalizeAdoptionValue(c.price)
+        const nextValue =
+          next.reduce(
+            (total, index) => total + this.normalizeAdoptionValue(this.catOptions[index]?.price),
+            0,
+          ) + this.normalizeAdoptionValue(c.price)
         if (!this.rescueMode && nextValue > this.availableAdoptionQuota) {
           this.showQuotaInsufficient()
           return

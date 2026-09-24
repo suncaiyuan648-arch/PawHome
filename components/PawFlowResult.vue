@@ -1,8 +1,19 @@
 <template>
-  <PawResultPage :status="failed ? 'failure' : 'success'" :nav-title="navTitle" :content-top="contentTop" :title="title"
-    :description="body" :description-max-width="descriptionMaxWidth" :action-text="buttonText"
-    :action-width="actionWidth" :action-height="actionHeight" :failure-icon-name="failureIconName"
-    :failure-tone="failureTone" @back="$emit('back')" @action="$emit('action')" />
+  <PawResultPage
+    :status="failed ? 'failure' : 'success'"
+    :nav-title="navTitle"
+    :content-top="contentTop"
+    :title="title"
+    :description="body"
+    :description-max-width="descriptionMaxWidth"
+    :action-text="buttonText"
+    :action-width="actionWidth"
+    :action-height="actionHeight"
+    :failure-icon-name="failureIconName"
+    :failure-tone="failureTone"
+    @back="$emit('back')"
+    @action="$emit('action')"
+  />
 </template>
 
 <script lang="ts">
@@ -24,11 +35,11 @@ export default defineComponent({
     actionWidth: { type: [Number, String], default: 209 },
     actionHeight: { type: [Number, String], default: 45 },
     failureIconName: { type: String, default: '' },
-    failureTone: { type: String, default: 'muted' }
+    failureTone: { type: String, default: 'muted' },
   },
   emits: {
-    'back': eventContract<[]>(),
-    'action': eventContract<[]>(),
-  }
+    back: eventContract<[]>(),
+    action: eventContract<[]>(),
+  },
 })
 </script>

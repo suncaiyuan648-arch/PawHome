@@ -1,60 +1,134 @@
 <template>
-  <view class="feeding-order-page" data-qa="feeding-order-page">
-    <PawPageNav :title="pageTitle" background="#f5f5f5" :auto-back="false" @back="$emit('back')" />
+  <view
+    class="feeding-order-page"
+    data-qa="feeding-order-page"
+  >
+    <PawPageNav
+      :title="pageTitle"
+      background="#f5f5f5"
+      :auto-back="false"
+      @back="$emit('back')"
+    />
 
     <view class="feeding-order-content">
-      <PawFeedingOrderToolbar v-model:keyword="keyword" v-model:sort="sort" @search="onSearch" />
+      <PawFeedingOrderToolbar
+        v-model:keyword="keyword"
+        v-model:sort="sort"
+        @search="onSearch"
+      />
 
-      <scroll-view class="feeding-order-scroll" scroll-y :show-scrollbar="false">
-        <slot name="before-list" :items="items" />
-        <view v-if="loading" class="feeding-order-state">加载中...</view>
-        <view v-else-if="emptyState || !items.length" class="feeding-order-state">
-          <slot name="empty"><text>{{ emptyText }}</text></slot>
+      <scroll-view
+        class="feeding-order-scroll"
+        scroll-y
+        :show-scrollbar="false"
+      >
+        <slot
+          name="before-list"
+          :items="items"
+        />
+        <view
+          v-if="loading"
+          class="feeding-order-state"
+          >加载中...</view
+        >
+        <view
+          v-else-if="emptyState || !items.length"
+          class="feeding-order-state"
+        >
+          <slot name="empty"
+            ><text>{{ emptyText }}</text></slot
+          >
         </view>
-        <view v-else class="feeding-order-list" data-qa="feeding-order-list">
-          <view v-for="item in items" :key="item.id" class="feeding-order-card" data-qa="feeding-order-card"
-            @tap="openDetail(item)">
+        <view
+          v-else
+          class="feeding-order-list"
+          data-qa="feeding-order-list"
+        >
+          <view
+            v-for="item in items"
+            :key="item.id"
+            class="feeding-order-card"
+            data-qa="feeding-order-card"
+            @tap="openDetail(item)"
+          >
             <view class="feeding-order-card__layout">
-              <PawImage class="feeding-order-card__avatar" :src="variant === 'yard' ? item.userAvatar : item.petAvatar"
-                :width="40" :height="40" :radius="20" :preview="false" @click="onAvatarClick(item)" />
+              <PawImage
+                class="feeding-order-card__avatar"
+                :src="variant === 'yard' ? item.userAvatar : item.petAvatar"
+                :width="40"
+                :height="40"
+                :radius="20"
+                :preview="false"
+                @click="onAvatarClick(item)"
+              />
 
               <view class="feeding-order-card__content">
                 <view class="feeding-order-card__top">
-                  <view class="feeding-order-card__identity"
+                  <view
+                    class="feeding-order-card__identity"
                     :class="{ 'feeding-order-card__identity--pet': variant !== 'yard' }"
-                    @tap.stop="variant === 'yard' ? openUser(item) : openDetail(item)">
-                    <text class="feeding-order-card__name">{{ variant === 'yard' ? item.userName : item.petName
+                    @tap.stop="variant === 'yard' ? openUser(item) : openDetail(item)"
+                  >
+                    <text class="feeding-order-card__name">{{
+                      variant === 'yard' ? item.userName : item.petName
                     }}</text>
-                    <LevelBadge v-if="variant === 'yard'" :level="item.level" />
-                    <text v-else class="feeding-order-card__pet-status">{{ item.petStatus }}</text>
+                    <LevelBadge
+                      v-if="variant === 'yard'"
+                      :level="item.level"
+                    />
+                    <text
+                      v-else
+                      class="feeding-order-card__pet-status"
+                      >{{ item.petStatus }}</text
+                    >
                   </view>
                   <PawFeedingFeedbackTag
-                    :text="item.feedbackCountText || item.topText || item.feedbackTag || item.statusText"
-                    :tone="item.feedbackTone || 'progress'">
-                    <PawBadge v-if="variant === 'mine' && item.statusBadge > 0" :count="item.statusBadge"
-                      size="small" />
+                    :text="
+                      item.feedbackCountText || item.topText || item.feedbackTag || item.statusText
+                    "
+                    :tone="item.feedbackTone || 'progress'"
+                  >
+                    <PawBadge
+                      v-if="variant === 'mine' && item.statusBadge > 0"
+                      :count="item.statusBadge"
+                      size="small"
+                    />
                   </PawFeedingFeedbackTag>
                 </view>
 
                 <view class="feeding-order-card__body">
-                  <text class="feeding-order-card__amount">{{ variant === 'yard' ? item.feedingLine : item.cloudSpec
+                  <text class="feeding-order-card__amount">{{
+                    variant === 'yard' ? item.feedingLine : item.cloudSpec
                   }}</text>
                   <text class="feeding-order-card__time">{{ item.time }}</text>
                 </view>
 
-                <view class="feeding-order-card__status"
-                  :class="`feeding-order-card__status--${item.orderTone || item.statusTone || 'green'}`">
-                  <PawFeedingFeedbackTag variant="status" :tone="item.orderTone || item.statusTone || 'green'"
-                    :text="variant === 'yard' ? item.orderState : item.statusText" />
-                  <text class="feeding-order-card__copy"
-                    :class="{ 'feeding-order-card__copy--timeout': variant === 'mine' && item.stateKey === 'cloud-active-timeout' }">{{
-                      item.orderCopy || item.progressText }}</text>
+                <view
+                  class="feeding-order-card__status"
+                  :class="`feeding-order-card__status--${item.orderTone || item.statusTone || 'green'}`"
+                >
+                  <PawFeedingFeedbackTag
+                    variant="status"
+                    :tone="item.orderTone || item.statusTone || 'green'"
+                    :text="variant === 'yard' ? item.orderState : item.statusText"
+                  />
+                  <text
+                    class="feeding-order-card__copy"
+                    :class="{
+                      'feeding-order-card__copy--timeout':
+                        variant === 'mine' && item.stateKey === 'cloud-active-timeout',
+                    }"
+                    >{{ item.orderCopy || item.progressText }}</text
+                  >
                 </view>
               </view>
             </view>
           </view>
         </view>
-        <slot name="after-list" :items="items" />
+        <slot
+          name="after-list"
+          :items="items"
+        />
       </scroll-view>
     </view>
   </view>
@@ -81,18 +155,25 @@ import {
 
 export default defineComponent({
   name: 'PawFeedingOrderList',
-  components: { PawBadge, PawImage, PawFeedingFeedbackTag, LevelBadge, PawPageNav, PawFeedingOrderToolbar },
+  components: {
+    PawBadge,
+    PawImage,
+    PawFeedingFeedbackTag,
+    LevelBadge,
+    PawPageNav,
+    PawFeedingOrderToolbar,
+  },
   props: {
     variant: { type: String as PropType<FeedingOrderVariant>, default: 'mine' },
     userPawId: { type: [String, Number], default: '' },
     yardOwnerId: { type: [String, Number], default: '' },
     yardId: { type: [String, Number], default: '1' },
     emptyState: { type: Boolean, default: false },
-    emptyText: { type: String, default: '暂无投粮订单' }
+    emptyText: { type: String, default: '暂无投粮订单' },
   },
   emits: {
-    'back': eventContract<[]>(),
-    'detail': eventContract<[item: FeedingOrderListItem]>(),
+    back: eventContract<[]>(),
+    detail: eventContract<[item: FeedingOrderListItem]>(),
     'yard-click': eventContract<[item: FeedingOrderListItem]>(),
     'user-click': eventContract<[item: FeedingOrderListItem]>(),
   },
@@ -100,16 +181,20 @@ export default defineComponent({
     return createFeedingOrderListPageState()
   },
   computed: {
-    pageTitle() { return this.variant === 'yard' ? '小院投粮' : '我的投粮' }
+    pageTitle() {
+      return this.variant === 'yard' ? '小院投粮' : '我的投粮'
+    },
   },
   watch: {
     variant: 'loadOrders',
     userPawId: 'loadOrders',
     yardOwnerId: 'loadOrders',
     yardId: 'loadOrders',
-    sort: 'loadOrders'
+    sort: 'loadOrders',
   },
-  created() { this.loadOrders() },
+  created() {
+    this.loadOrders()
+  },
   methods: {
     onSearch(value: string) {
       this.keyword = value
@@ -127,19 +212,29 @@ export default defineComponent({
         yardOwnerId: String(this.yardOwnerId || ''),
         yardId: String(this.yardId || ''),
         keyword: this.keyword,
-        sort: this.sort
-      }).then((result) => {
-        this.items = createFeedingOrderListItems(result.data.items, this.variant)
-      }).finally(() => { this.loading = false })
+        sort: this.sort,
+      })
+        .then((result) => {
+          this.items = createFeedingOrderListItems(result.data.items, this.variant)
+        })
+        .finally(() => {
+          this.loading = false
+        })
     },
-    openDetail(item: FeedingOrderListItem) { this.$emit('detail', item) },
+    openDetail(item: FeedingOrderListItem) {
+      this.$emit('detail', item)
+    },
     onAvatarClick(item: FeedingOrderListItem) {
       if (this.variant === 'yard') this.openUser(item)
       else this.openDetail(item)
     },
-    openYard(item: FeedingOrderListItem) { this.$emit('yard-click', item) },
-    openUser(item: FeedingOrderListItem) { this.$emit('user-click', item) }
-  }
+    openYard(item: FeedingOrderListItem) {
+      this.$emit('yard-click', item)
+    },
+    openUser(item: FeedingOrderListItem) {
+      this.$emit('user-click', item)
+    },
+  },
 })
 </script>
 

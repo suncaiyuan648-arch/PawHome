@@ -1,8 +1,26 @@
 <template>
   <view class="animal-page">
-    <PawPetRoster v-if="ready" :variant="view === 'roster' ? 'yard' : 'status'" :yard-id="yardId" :yard-name="yardName" :yard-avatar="yardAvatar" @back="goBack" @pet-click="openPetDetail" @owner-click="openOwner" />
-    <PawPageNav v-else title="小院宠物" background="#f5f5f5" fallback-url="/pages/me/index" />
-    <view v-if="!ready" class="blocked"><text>{{ message }}</text></view>
+    <PawPetRoster
+      v-if="ready"
+      :variant="view === 'roster' ? 'yard' : 'status'"
+      :yard-id="yardId"
+      :yard-name="yardName"
+      :yard-avatar="yardAvatar"
+      @back="goBack"
+      @pet-click="openPetDetail"
+      @owner-click="openOwner"
+    />
+    <PawPageNav
+      v-else
+      title="小院宠物"
+      background="#f5f5f5"
+      fallback-url="/pages/me/index"
+    />
+    <view
+      v-if="!ready"
+      class="blocked"
+      ><text>{{ message }}</text></view
+    >
   </view>
 </template>
 <script lang="ts">
@@ -52,7 +70,14 @@ export default defineComponent({
   name: 'YardAnimalsPage',
   components: { PawPageNav, PawPetRoster },
   data(): YardAnimalsPageState {
-    return { yardId: '', yardName: '', yardAvatar: '', view: 'roster', ready: false, message: '缺少小院 ID，无法读取小院宠物' }
+    return {
+      yardId: '',
+      yardName: '',
+      yardAvatar: '',
+      view: 'roster',
+      ready: false,
+      message: '缺少小院 ID，无法读取小院宠物',
+    }
   },
   onLoad(options: unknown = {}) {
     const route = isRecord(options) ? options : {}
@@ -66,20 +91,39 @@ export default defineComponent({
     this.ready = true
   },
   methods: {
-    goBack() { goBackSmart({ fallbackUrl: '/pages/me/index' }) },
+    goBack() {
+      goBackSmart({ fallbackUrl: '/pages/me/index' })
+    },
     openPetDetail(pet: YardPet) {
       const petId = routeText(pet.id)
       if (!petId) return
-      uni.navigateTo({ url: `/packages/animal/pages/detail/index?animalId=${encodeURIComponent(petId)}&yardId=${encodeURIComponent(this.yardId)}&state=35` })
+      uni.navigateTo({
+        url: `/packages/animal/pages/detail/index?animalId=${encodeURIComponent(petId)}&yardId=${encodeURIComponent(this.yardId)}&state=35`,
+      })
     },
     openOwner(owner: PetRosterCardOwner) {
       if (!owner.pawId) return
       openUserProfile({ pawId: owner.pawId, nickname: owner.name, avatar: owner.avatar })
-    }
-  }
+    },
+  },
 })
 </script>
 <style scoped>
-.animal-page { width: 100%; height: 100vh; min-height: 0; overflow: hidden; background: #f5f5f5; }
-.blocked { display: flex; min-height: 240px; align-items: center; justify-content: center; padding: 24px; color: #888; font-size: 14px; text-align: center; }
+.animal-page {
+  width: 100%;
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+.blocked {
+  display: flex;
+  min-height: 240px;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: #888;
+  font-size: 14px;
+  text-align: center;
+}
 </style>

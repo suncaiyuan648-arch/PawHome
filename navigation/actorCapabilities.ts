@@ -17,7 +17,8 @@
  */
 
 type JsonRecord = Record<string, unknown>
-export type ActorRole = 'applicant' | 'owner' | 'reviewer' | 'cloud_parent' | 'yard_owner' | 'animal_manager'
+export type ActorRole =
+  'applicant' | 'owner' | 'reviewer' | 'cloud_parent' | 'yard_owner' | 'animal_manager'
 export type Capability =
   | 'adoption.application.readPrivate'
   | 'adoption.application.write'
@@ -29,7 +30,8 @@ export type Capability =
   | 'yard.management'
   | 'animal.edit.readPrivate'
   | 'animal.edit'
-type CapabilityCategory = 'adoptionApplication' | 'rewardClaim' | 'rescueReview' | 'yardManagement' | 'animalEdit'
+type CapabilityCategory =
+  'adoptionApplication' | 'rewardClaim' | 'rescueReview' | 'yardManagement' | 'animalEdit'
 type CapabilityAccess = 'read' | 'write'
 
 interface TrustedActor {
@@ -245,11 +247,13 @@ function isPlainRecord(value: unknown): value is JsonRecord {
   // A native WeChat object may cross a JS realm boundary.  Accept only the
   // ordinary Object shape; class instances remain rejected.
   const constructorDescriptor = Object.getOwnPropertyDescriptor(prototype, 'constructor')
-  return Object.getPrototypeOf(prototype) === null
-    && Object.prototype.toString.call(value) === '[object Object]'
-    && constructorDescriptor !== undefined
-    && typeof constructorDescriptor.value === 'function'
-    && constructorDescriptor.value.name === 'Object'
+  return (
+    Object.getPrototypeOf(prototype) === null &&
+    Object.prototype.toString.call(value) === '[object Object]' &&
+    constructorDescriptor !== undefined &&
+    typeof constructorDescriptor.value === 'function' &&
+    constructorDescriptor.value.name === 'Object'
+  )
 }
 
 function assertPlainRecord(value: unknown, label: string): asserts value is JsonRecord {
@@ -258,11 +262,16 @@ function assertPlainRecord(value: unknown, label: string): asserts value is Json
 
 function rejectDangerousKeys(value: JsonRecord, label: string): void {
   for (const key of Object.keys(value)) {
-    if (DANGEROUS_KEYS.has(key)) fail('PROTOTYPE_KEY', `${label} contains a prototype key`, { label, key })
+    if (DANGEROUS_KEYS.has(key))
+      fail('PROTOTYPE_KEY', `${label} contains a prototype key`, { label, key })
   }
 }
 
-function normalizeId(value: unknown, label: string, { required = false }: { required?: boolean } = {}): string {
+function normalizeId(
+  value: unknown,
+  label: string,
+  { required = false }: { required?: boolean } = {},
+): string {
   let normalized = ''
   if (typeof value === 'string') normalized = value.trim()
   else if (typeof value === 'number' && Number.isSafeInteger(value)) normalized = String(value)
@@ -274,14 +283,13 @@ function normalizeId(value: unknown, label: string, { required = false }: { requ
     if (required) fail('MISSING_ACTOR', `${label} is required`, { label })
     return ''
   }
-  if (!SAFE_ACTOR_ID.test(normalized)) fail('INVALID_ID', `${label} must be a restricted ID`, { label })
+  if (!SAFE_ACTOR_ID.test(normalized))
+    fail('INVALID_ID', `${label} must be a restricted ID`, { label })
   return normalized
 }
 
 function normalizeRoles(value: unknown): readonly ActorRole[] {
-  const values = value === undefined || value === null
-    ? []
-    : Array.isArray(value) ? value : [value]
+  const values = value === undefined || value === null ? [] : Array.isArray(value) ? value : [value]
   const roles: ActorRole[] = []
   for (const role of values) {
     if (typeof role !== 'string' || !includesValue(ACTOR_ROLES, role)) {
@@ -321,7 +329,7 @@ function resolveTrustedActor(actorProvider: unknown): TrustedActor | null {
   const actorId = normalizeId(
     own(candidate, 'id') ? candidate.id : candidate.actorId,
     'trusted actor id',
-    { required: true }
+    { required: true },
   )
   const roles = normalizeRoles(own(candidate, 'roles') ? candidate.roles : candidate.role)
   return Object.freeze({ id: actorId, roles })
@@ -354,7 +362,8 @@ function readObjectState(object: JsonRecord, stateFields: readonly string[]): Ob
   for (const field of fields) {
     if (!own(object, field)) continue
     const value = object[field]
-    if (typeof value !== 'string' || !value.trim()) return { state: '', valid: false, reason: 'INVALID_STATE' }
+    if (typeof value !== 'string' || !value.trim())
+      return { state: '', valid: false, reason: 'INVALID_STATE' }
     const state = value.trim()
     if (!values.includes(state)) values.push(state)
   }
@@ -362,7 +371,11 @@ function readObjectState(object: JsonRecord, stateFields: readonly string[]): Ob
   return { state: values[0] || '', valid: true, reason: values.length ? '' : 'MISSING_STATE' }
 }
 
-function normalizeRule(rule: unknown, label: string, category: CapabilityCategory): CapabilityRule | null {
+function normalizeRule(
+  rule: unknown,
+  label: string,
+  category: CapabilityCategory,
+): CapabilityRule | null {
   if (rule === undefined || rule === null) return null
   assertPlainRecord(rule, label)
   rejectDangerousKeys(rule, label)
@@ -371,24 +384,38 @@ function normalizeRule(rule: unknown, label: string, category: CapabilityCategor
   if (rawStateFields === undefined) {
     fail('INVALID_POLICY', `${label}.stateFields is required`, { label })
   }
-  const stateFields: unknown[] = Array.isArray(rawStateFields) ? rawStateFields.slice() : [rawStateFields]
-  if (!stateFields.length || stateFields.some(field => typeof field !== 'string' || !STATE_FIELDS[category].includes(field))) {
+  const stateFields: unknown[] = Array.isArray(rawStateFields)
+    ? rawStateFields.slice()
+    : [rawStateFields]
+  if (
+    !stateFields.length ||
+    stateFields.some(
+      (field) => typeof field !== 'string' || !STATE_FIELDS[category].includes(field),
+    )
+  ) {
     fail('INVALID_POLICY', `${label}.stateFields contains an invalid field`, { label, category })
   }
-  const states: unknown[] = rule.states === undefined
-    ? []
-    : Array.isArray(rule.states) ? rule.states.slice() : [rule.states]
+  const states: unknown[] =
+    rule.states === undefined
+      ? []
+      : Array.isArray(rule.states)
+        ? rule.states.slice()
+        : [rule.states]
   for (const state of states) {
-    if (typeof state !== 'string' || !state.trim()) fail('INVALID_POLICY', `${label}.states contains an invalid state`, { label })
+    if (typeof state !== 'string' || !state.trim())
+      fail('INVALID_POLICY', `${label}.states contains an invalid state`, { label })
   }
   const uniqueStates: string[] = []
   for (const state of states) {
-    if (typeof state === 'string' && !uniqueStates.includes(state.trim())) uniqueStates.push(state.trim())
+    if (typeof state === 'string' && !uniqueStates.includes(state.trim()))
+      uniqueStates.push(state.trim())
   }
   return Object.freeze({
     roles,
     states: Object.freeze(uniqueStates),
-    stateFields: Object.freeze(stateFields.filter((field): field is string => typeof field === 'string')),
+    stateFields: Object.freeze(
+      stateFields.filter((field): field is string => typeof field === 'string'),
+    ),
   })
 }
 
@@ -422,7 +449,10 @@ function normalizePolicy(policy: unknown = {}): CapabilityPolicy {
   return Object.freeze(normalized)
 }
 
-function allDenied(reason: string, details: JsonRecord = {}): { capabilities: Record<string, boolean>; reasons: Record<string, string>; details: JsonRecord } {
+function allDenied(
+  reason: string,
+  details: JsonRecord = {},
+): { capabilities: Record<string, boolean>; reasons: Record<string, string>; details: JsonRecord } {
   const capabilities: Record<string, boolean> = Object.create(null)
   const reasons: Record<string, string> = Object.create(null)
   for (const capability of CAPABILITY_LIST) {
@@ -432,7 +462,12 @@ function allDenied(reason: string, details: JsonRecord = {}): { capabilities: Re
   return { capabilities, reasons, details }
 }
 
-function evaluateOne(capability: Capability, actor: TrustedActor | null, object: unknown, policy: CapabilityPolicy): CapabilityDecision {
+function evaluateOne(
+  capability: Capability,
+  actor: TrustedActor | null,
+  object: unknown,
+  policy: CapabilityPolicy,
+): CapabilityDecision {
   const definition = CAPABILITY_DEFINITIONS[capability]
   if (!definition) return { allowed: false, reason: 'UNKNOWN_CAPABILITY' }
   if (!actor) return { allowed: false, reason: 'NO_ACTOR' }
@@ -447,7 +482,7 @@ function evaluateOne(capability: Capability, actor: TrustedActor | null, object:
   if (!state.valid || !state.state) return { allowed: false, reason: state.reason }
   if (!rule.states.includes(state.state)) return { allowed: false, reason: 'STATE_NOT_ALLOWED' }
 
-  const role = actor.roles.find(candidate => rule.roles.includes(candidate))
+  const role = actor.roles.find((candidate) => rule.roles.includes(candidate))
   if (!role) return { allowed: false, reason: 'ROLE_NOT_ALLOWED' }
   if (!matchesRelation(actor.id, object, role)) {
     return { allowed: false, reason: 'OBJECT_RELATION_DENIED' }
@@ -456,12 +491,24 @@ function evaluateOne(capability: Capability, actor: TrustedActor | null, object:
 }
 
 function errorCode(error: unknown, fallback: string): string {
-  if (error !== null && typeof error === 'object' && 'code' in error && typeof error.code === 'string') return error.code
+  if (
+    error !== null &&
+    typeof error === 'object' &&
+    'code' in error &&
+    typeof error.code === 'string'
+  )
+    return error.code
   return fallback
 }
 
 function errorMessage(error: unknown, fallback: string): string {
-  if (error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string') return error.message
+  if (
+    error !== null &&
+    typeof error === 'object' &&
+    'message' in error &&
+    typeof error.message === 'string'
+  )
+    return error.message
   return fallback
 }
 
@@ -482,7 +529,10 @@ function safeEvaluate(context: unknown = {}): CapabilityEvaluation {
       actor: null,
       capabilities: Object.freeze(allDenied(code).capabilities),
       reasons: Object.freeze(allDenied(code).reasons),
-      error: Object.freeze({ code: errorCode(error, 'ACTOR_CONTRACT_FAILED'), message: errorMessage(error, 'Actor capability evaluation failed') }),
+      error: Object.freeze({
+        code: errorCode(error, 'ACTOR_CONTRACT_FAILED'),
+        message: errorMessage(error, 'Actor capability evaluation failed'),
+      }),
     })
   }
 
@@ -542,11 +592,15 @@ function assertCapability(capability: unknown, context: unknown = {}): Authoriza
 
 function assertPrivateRead(capability: unknown, context: unknown = {}): Authorization {
   if (!isCapability(capability)) {
-    fail('PRIVATE_READ_CAPABILITY_REQUIRED', 'A private read capability is required', { capability })
+    fail('PRIVATE_READ_CAPABILITY_REQUIRED', 'A private read capability is required', {
+      capability,
+    })
   }
   const definition = CAPABILITY_DEFINITIONS[capability]
   if (!definition || definition.access !== 'read') {
-    fail('PRIVATE_READ_CAPABILITY_REQUIRED', 'A private read capability is required', { capability })
+    fail('PRIVATE_READ_CAPABILITY_REQUIRED', 'A private read capability is required', {
+      capability,
+    })
   }
   return assertCapability(capability, context)
 }
@@ -561,10 +615,8 @@ function resolveCurrentObject(context: unknown = {}): unknown {
   }
 }
 
-export type CapabilityContext<T> = EvaluatorOptions & (
-  | { object: T; readObject?: () => T }
-  | { object?: T; readObject: () => T }
-)
+export type CapabilityContext<T> = EvaluatorOptions &
+  ({ object: T; readObject?: () => T } | { object?: T; readObject: () => T })
 export type CapabilityCallback<T, R> = (object: T, authorization: Authorization) => R
 
 function isCapabilityCallback(value: unknown): value is CapabilityCallback<unknown, unknown> {
@@ -575,9 +627,14 @@ function isCapabilityCallback(value: unknown): value is CapabilityCallback<unkno
  * Run a private reader only after the current object and actor have been
  * checked.  The reader is never called on a denied or stale request.
  */
-function readPrivate<T, R>(capability: Capability, context: CapabilityContext<T>, reader: CapabilityCallback<NoInfer<T>, R>): R
+function readPrivate<T, R>(
+  capability: Capability,
+  context: CapabilityContext<T>,
+  reader: CapabilityCallback<NoInfer<T>, R>,
+): R
 function readPrivate(capability: unknown, context: unknown = {}, reader: unknown): unknown {
-  if (!isCapabilityCallback(reader)) fail('READER_REQUIRED', 'A private reader function is required')
+  if (!isCapabilityCallback(reader))
+    fail('READER_REQUIRED', 'A private reader function is required')
   const object = resolveCurrentObject(context)
   const source = isPlainRecord(context) ? context : {}
   const authorization = assertPrivateRead(capability, { ...source, object })
@@ -589,9 +646,14 @@ function readPrivate(capability: unknown, context: unknown = {}, reader: unknown
  * check.  This module performs no write itself; a denied request cannot reach
  * the injected writer, which makes zero-write testing explicit.
  */
-function writeWithCapability<T, R>(capability: Capability, context: CapabilityContext<T>, writer: CapabilityCallback<NoInfer<T>, R>): R
+function writeWithCapability<T, R>(
+  capability: Capability,
+  context: CapabilityContext<T>,
+  writer: CapabilityCallback<NoInfer<T>, R>,
+): R
 function writeWithCapability(capability: unknown, context: unknown = {}, writer: unknown): unknown {
-  if (!isCapabilityCallback(writer)) fail('WRITER_REQUIRED', 'A capability writer function is required')
+  if (!isCapabilityCallback(writer))
+    fail('WRITER_REQUIRED', 'A capability writer function is required')
   const object = resolveCurrentObject(context)
   const source = isPlainRecord(context) ? context : {}
   const authorization = assertCapability(capability, { ...source, object })
@@ -602,11 +664,19 @@ function createCapabilityEvaluator({ actorProvider, policy = {} }: EvaluatorOpti
   const fixedPolicy = normalizePolicy(policy)
   return Object.freeze({
     getActor: () => resolveTrustedActor(actorProvider),
-    evaluate: (object: unknown) => evaluateCapabilities({ actorProvider, policy: fixedPolicy, object }),
-    can: (capability: unknown, object: unknown) => canCapability(capability, { actorProvider, policy: fixedPolicy, object }),
-    assert: (capability: unknown, object: unknown) => assertCapability(capability, { actorProvider, policy: fixedPolicy, object }),
-    readPrivate: <T, R>(capability: Capability, object: T, reader: CapabilityCallback<NoInfer<T>, R>) => readPrivate(capability, { actorProvider, policy: fixedPolicy, object }, reader),
-    write: <T, R>(capability: Capability, object: T, writer: CapabilityCallback<NoInfer<T>, R>) => writeWithCapability(capability, { actorProvider, policy: fixedPolicy, object }, writer),
+    evaluate: (object: unknown) =>
+      evaluateCapabilities({ actorProvider, policy: fixedPolicy, object }),
+    can: (capability: unknown, object: unknown) =>
+      canCapability(capability, { actorProvider, policy: fixedPolicy, object }),
+    assert: (capability: unknown, object: unknown) =>
+      assertCapability(capability, { actorProvider, policy: fixedPolicy, object }),
+    readPrivate: <T, R>(
+      capability: Capability,
+      object: T,
+      reader: CapabilityCallback<NoInfer<T>, R>,
+    ) => readPrivate(capability, { actorProvider, policy: fixedPolicy, object }, reader),
+    write: <T, R>(capability: Capability, object: T, writer: CapabilityCallback<NoInfer<T>, R>) =>
+      writeWithCapability(capability, { actorProvider, policy: fixedPolicy, object }, writer),
   })
 }
 

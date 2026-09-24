@@ -8,8 +8,18 @@ function formatNumber(value) {
 
 function readViewBox(source, relativePath = 'SVG') {
   const match = source.match(/\bviewBox\s*=\s*["']([^"']+)["']/i)
-  const values = match ? match[1].trim().split(/[\s,]+/).map(Number) : []
-  if (values.length !== 4 || values.some(value => !Number.isFinite(value)) || values[2] <= 0 || values[3] <= 0) {
+  const values = match
+    ? match[1]
+        .trim()
+        .split(/[\s,]+/)
+        .map(Number)
+    : []
+  if (
+    values.length !== 4 ||
+    values.some((value) => !Number.isFinite(value)) ||
+    values[2] <= 0 ||
+    values[3] <= 0
+  ) {
     throw new Error(`[PawIcon] source must have a valid positive viewBox: ${relativePath}`)
   }
   return { x: values[0], y: values[1], width: values[2], height: values[3] }
@@ -29,7 +39,12 @@ function recommendedSlotForFrame(width, height) {
 function isExplicitFrameSlot(slot, width, height) {
   const numericSlot = Number(slot)
   const maxEdge = Math.max(Number(width), Number(height))
-  return maxEdge > 25 && Number.isFinite(numericSlot) && numericSlot >= maxEdge - 0.01 && numericSlot <= 96
+  return (
+    maxEdge > 25 &&
+    Number.isFinite(numericSlot) &&
+    numericSlot >= maxEdge - 0.01 &&
+    numericSlot <= 96
+  )
 }
 
 function rootParts(source) {
@@ -66,14 +81,18 @@ function normalizeSvg(source, sourceViewBox, optical = {}, slot = DESIGN_CANVAS,
   const hasOpticalCorrection = opticalScale !== 1 || offsetX !== 0 || offsetY !== 0
   const opticalTransform = `translate(${formatNumber(DESIGN_CENTER + offsetX)} ${formatNumber(DESIGN_CENTER + offsetY)}) scale(${formatNumber(opticalScale)}) translate(${formatNumber(-DESIGN_CENTER)} ${formatNumber(-DESIGN_CENTER)})`
   const opening = originalOpening
-    .replace(/(\bviewBox\s*=\s*["'])[^"']+(["'])/i, (_, prefix, suffix) => `${prefix}0 0 ${DESIGN_CANVAS} ${DESIGN_CANVAS}${suffix}`)
+    .replace(
+      /(\bviewBox\s*=\s*["'])[^"']+(["'])/i,
+      (_, prefix, suffix) => `${prefix}0 0 ${DESIGN_CANVAS} ${DESIGN_CANVAS}${suffix}`,
+    )
     // Only normalize root SVG attributes. Nested frame/clip dimensions are
     // part of the Figma glyph and must remain intact.
     .replace(/\s(width|height|style|overflow|preserveAspectRatio)\s*=\s*["'][^"']*["']/gi, '')
   const cleanedContent = stripFigmaExportChrome(content, metadata.preserveRects === true)
-  const sourceContent = scale === 1 && translateX === 0 && translateY === 0
-    ? cleanedContent
-    : `<g transform="${sourceMatrix}">${cleanedContent}</g>`
+  const sourceContent =
+    scale === 1 && translateX === 0 && translateY === 0
+      ? cleanedContent
+      : `<g transform="${sourceMatrix}">${cleanedContent}</g>`
   const opticalContent = hasOpticalCorrection
     ? `<g transform="${opticalTransform}">${sourceContent}</g>`
     : sourceContent
@@ -97,5 +116,5 @@ module.exports = {
   readViewBox,
   isExplicitFrameSlot,
   recommendedSlotForFrame,
-  stripFigmaExportChrome
+  stripFigmaExportChrome,
 }

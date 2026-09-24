@@ -53,7 +53,9 @@ function inspect(file) {
 
   const identityLiteral = identityLiteralPattern.exec(content)
   if (identityLiteral) {
-    violations.push(`${relative}:${lineAt(content, identityLiteral.index)} use PawOwnerBadge or PawVerifiedBadge`)
+    violations.push(
+      `${relative}:${lineAt(content, identityLiteral.index)} use PawOwnerBadge or PawVerifiedBadge`,
+    )
   }
 
   const levelLiteral = levelLiteralPattern.exec(content)
@@ -69,5 +71,7 @@ if (violations.length) {
   console.error(violations.join('\n'))
   process.exitCode = 1
 } else {
-  console.log(`UI governance check passed: pages/ and packages/ scanned; no new custom navigation or handwritten identity badges; ${legacyCustomNavPages.size} legacy navigation pages remain allowlisted.`)
+  console.log(
+    `UI governance check passed: pages/ and packages/ scanned; no new custom navigation or handwritten identity badges; ${legacyCustomNavPages.size} legacy navigation pages remain allowlisted.`,
+  )
 }

@@ -1,8 +1,13 @@
 <template>
-  <view class="yard-feed-lab" data-qa="yard-feed-icon-lab">
+  <view
+    class="yard-feed-lab"
+    data-qa="yard-feed-icon-lab"
+  >
     <view class="lab-header">
       <text class="lab-title">yard-feed 图标素材对比</text>
-      <text class="lab-description">干净布局：不接入业务卡片、徽标或外层横向居中，仅观察图标自身画布与绘制边界。</text>
+      <text class="lab-description"
+        >干净布局：不接入业务卡片、徽标或外层横向居中，仅观察图标自身画布与绘制边界。</text
+      >
     </view>
 
     <view class="lab-section">
@@ -10,14 +15,27 @@
         <text class="section-title">PawIcon 多尺寸</text>
         <text class="section-meta">24×24 design canvas</text>
       </view>
-      <view v-for="size in sizes" :key="size" class="icon-row" :data-qa="`yard-feed-size-${size}`">
-        <view class="icon-frame" :style="frameStyle(size)">
-          <PawIcon name="actions/yard-feed" :size="size" />
+      <view
+        v-for="size in sizes"
+        :key="size"
+        class="icon-row"
+        :data-qa="`yard-feed-size-${size}`"
+      >
+        <view
+          class="icon-frame"
+          :style="frameStyle(size)"
+        >
+          <PawIcon
+            name="actions/yard-feed"
+            :size="size"
+          />
         </view>
         <view class="icon-copy">
           <text class="icon-size">{{ size }}px</text>
-          <text class="icon-detail">layout {{ size }} × {{ size }}px · source
-            /static/paw-icons/color/actions/yard-feed.svg</text>
+          <text class="icon-detail"
+            >layout {{ size }} × {{ size }}px · source
+            /static/paw-icons/color/actions/yard-feed.svg</text
+          >
         </view>
       </view>
     </view>
@@ -28,7 +46,11 @@
         <text class="section-meta">同一运行时 SVG</text>
       </view>
       <view class="raw-frame">
-        <image class="raw-image" src="/static/paw-icons/color/actions/yard-feed.svg" mode="aspectFit" />
+        <image
+          class="raw-image"
+          src="/static/paw-icons/color/actions/yard-feed.svg"
+          mode="aspectFit"
+        />
       </view>
       <text class="raw-detail">viewBox 0 0 24 24 · image layout 150 × 150px</text>
     </view>
@@ -40,24 +62,26 @@ import { defineComponent } from 'vue'
 
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
-interface YardFeedIconLabState { sizes: number[] }
+interface YardFeedIconLabState {
+  sizes: number[]
+}
 
 export default defineComponent({
   name: 'YardFeedIconLab',
   components: { PawIcon },
   data(): YardFeedIconLabState {
     return {
-      sizes: [16, 19, 22, 24, 28, 32, 48, 64, 96]
+      sizes: [16, 19, 22, 24, 28, 32, 48, 64, 96],
     }
   },
   methods: {
     frameStyle(size: number) {
       return {
         width: `${size}px`,
-        height: `${size}px`
+        height: `${size}px`,
       }
-    }
-  }
+    },
+  },
 })
 </script>
 

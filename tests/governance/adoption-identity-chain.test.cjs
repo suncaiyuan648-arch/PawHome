@@ -40,16 +40,30 @@ before(async () => {
   await fs.cp(path.join(ROOT, 'contracts'), path.join(tempRoot, 'contracts'), { recursive: true })
   await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'utils'), { recursive: true })
-  for (const file of ['applicationMockApi.ts', 'adoptionStorage.ts', 'rescueStorage.ts', 'rewardOrderStorage.ts']) {
+  for (const file of [
+    'applicationMockApi.ts',
+    'adoptionStorage.ts',
+    'rescueStorage.ts',
+    'rewardOrderStorage.ts',
+  ]) {
     await fs.copyFile(path.join(ROOT, 'utils', file), path.join(tempRoot, 'utils', file))
   }
   storage = new Map()
   globalThis.uni = {
-    getStorageSync(key) { return storage.get(key) },
-    setStorageSync(key, value) { writes.push({ key, value }); storage.set(key, value) },
-    removeStorageSync(key) { storage.delete(key) },
+    getStorageSync(key) {
+      return storage.get(key)
+    },
+    setStorageSync(key, value) {
+      writes.push({ key, value })
+      storage.set(key, value)
+    },
+    removeStorageSync(key) {
+      storage.delete(key)
+    },
   }
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'utils/applicationMockApi.ts')).href}?test=${Date.now()}`)
+  api = await import(
+    `${pathToFileURL(path.join(tempRoot, 'utils/applicationMockApi.ts')).href}?test=${Date.now()}`
+  )
 })
 
 beforeEach(reset)
@@ -96,7 +110,10 @@ test('confirmation material is applicant-owned and writes the full evidence payl
   assert.equal(writes.length, before)
 
   useActor('applicant-a')
-  const accepted = api.submitAdoptionEvidence(id, { photos: ['a.png', 'b.png'], story: '我已经把小猫带回家了' })
+  const accepted = api.submitAdoptionEvidence(id, {
+    photos: ['a.png', 'b.png'],
+    story: '我已经把小猫带回家了',
+  })
   assert.equal(accepted.success, true, accepted.error && accepted.error.message)
   const saved = JSON.parse(storage.get(ADOPTION_KEY))[0]
   assert.equal(saved.status, 'owner_confirm_pending')
@@ -131,4 +148,3 @@ test('reward order creation and exact detail are bound to applicationId plus app
   assert.equal(exact.data.applicationId, id)
   assert.equal(api.getRewardOrderById('missing-order').error.code, 'NOT_FOUND')
 })
-

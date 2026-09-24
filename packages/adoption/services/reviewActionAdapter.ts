@@ -15,7 +15,13 @@ import { readAdoptionReviewDetail, createReviewSessionProvider } from './reviewA
 type JsonRecord = Record<string, unknown>
 type ReviewOutcome = 'approved' | 'rejected'
 type ReviewStatus = 'pending' | ReviewOutcome
-type ApplicationStatus = 'cloud_pending' | 'pending' | 'pickup' | 'jury_confirm_pending' | 'adoption_confirmed' | 'rejected'
+type ApplicationStatus =
+  | 'cloud_pending'
+  | 'pending'
+  | 'pickup'
+  | 'jury_confirm_pending'
+  | 'adoption_confirmed'
+  | 'rejected'
 type ReviewItem = NonNullable<ReturnType<typeof readAdoptionReviewDetail>['item']>
 type ActionOptions = {
   actorProvider?: () => unknown
@@ -53,7 +59,14 @@ const REVIEW_TRANSITIONS: Readonly<Record<ReviewStatus, readonly ReviewOutcome[]
   rejected: NO_REVIEW_TRANSITIONS,
 })
 const SAFE_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/
-const CROSS_DOMAIN_PREFIXES = Object.freeze(['rescue', 'feeding', 'order', 'dynamic', 'yard', 'animal'])
+const CROSS_DOMAIN_PREFIXES = Object.freeze([
+  'rescue',
+  'feeding',
+  'order',
+  'dynamic',
+  'yard',
+  'animal',
+])
 
 export class AdoptionReviewActionError extends Error {
   readonly code: string
@@ -83,7 +96,11 @@ function text(value: unknown): string {
   return value === undefined || value === null ? '' : String(value).trim()
 }
 
-function opaqueId(value: unknown, label: string, { required = true }: { required?: boolean } = {}): string {
+function opaqueId(
+  value: unknown,
+  label: string,
+  { required = true }: { required?: boolean } = {},
+): string {
   const result = text(value)
   if (!result) {
     if (!required) return ''
@@ -91,7 +108,15 @@ function opaqueId(value: unknown, label: string, { required = true }: { required
   }
   if (result !== value || !SAFE_ID.test(result)) fail('INVALID_ID', `${label} must be an opaque ID`)
   const lower = result.toLowerCase()
-  if (CROSS_DOMAIN_PREFIXES.some(prefix => lower === prefix || lower.startsWith(`${prefix}-`) || lower.startsWith(`${prefix}_`) || lower.startsWith(`${prefix}:`))) {
+  if (
+    CROSS_DOMAIN_PREFIXES.some(
+      (prefix) =>
+        lower === prefix ||
+        lower.startsWith(`${prefix}-`) ||
+        lower.startsWith(`${prefix}_`) ||
+        lower.startsWith(`${prefix}:`),
+    )
+  ) {
     fail('CROSS_DOMAIN_ID', `${label} belongs to another domain`)
   }
   return result
@@ -109,7 +134,8 @@ function isReviewOutcome(value: string): value is ReviewOutcome {
 
 function actionOutcome(value: unknown): ReviewOutcome {
   const outcome = text(value)
-  if (!isReviewOutcome(outcome)) fail('INVALID_REVIEW_ACTION', 'Review action must approve or reject')
+  if (!isReviewOutcome(outcome))
+    fail('INVALID_REVIEW_ACTION', 'Review action must approve or reject')
   return outcome
 }
 
@@ -141,23 +167,39 @@ function relationIds(record: JsonRecord, names: readonly string[]): string[] {
     for (const name of names) {
       if (!own(source, name) || source[name] === undefined || source[name] === null) continue
       const raw = Array.isArray(source[name]) ? source[name] : [source[name]]
-      values.push(...raw.map(value => opaqueId(value, `${name} relation`)))
+      values.push(...raw.map((value) => opaqueId(value, `${name} relation`)))
     }
   }
   return Array.from(new Set(values))
 }
 
-function nextStatus(item: ReviewItem, record: JsonRecord, outcome: ReviewOutcome, actorId: string): ApplicationStatus {
+function nextStatus(
+  item: ReviewItem,
+  record: JsonRecord,
+  outcome: ReviewOutcome,
+  actorId: string,
+): ApplicationStatus {
   if (outcome === 'rejected') return 'rejected'
   if (item.phase === 'cloud_parent') {
-    const parentIds = relationIds(record, ['cloudParentIds', 'cloudParentId', 'cloudParentPawId', 'cloudOwnerId'])
+    const parentIds = relationIds(record, [
+      'cloudParentIds',
+      'cloudParentId',
+      'cloudParentPawId',
+      'cloudOwnerId',
+    ])
     const approvals = relationIds(record, ['cloudParentApprovals'])
     const nextApprovals = Array.from(new Set([...approvals, actorId]))
     // The canonical reader only exposes an unambiguous single-parent review
     // without an explicit product policy. Preserve cloud_pending for any
     // multi-parent record rather than silently choosing a policy here.
-    if (parentIds.length > 1) fail('CLOUD_PARENT_POLICY_REQUIRED', 'Multiple cloud parents require an explicit approval policy')
-    return parentIds.length === 1 && nextApprovals.includes(parentIds[0]) ? 'pending' : 'cloud_pending'
+    if (parentIds.length > 1)
+      fail(
+        'CLOUD_PARENT_POLICY_REQUIRED',
+        'Multiple cloud parents require an explicit approval policy',
+      )
+    return parentIds.length === 1 && nextApprovals.includes(parentIds[0])
+      ? 'pending'
+      : 'cloud_pending'
   }
   if (item.phase === 'owner') return 'pickup'
   if (item.phase === 'owner_confirmation') return 'jury_confirm_pending'
@@ -176,18 +218,23 @@ function failureStageFor(item: ReviewItem): string {
 }
 
 function readCurrentRecord(applicationId: string, reviewItemId: string): JsonRecord {
-  const record: JsonRecord | undefined = getAdoptionRecords({ includeDemo: false }).find((candidate) => {
-    if (!isRecord(candidate)) return false
-    const candidateApplicationId = text(candidate.applicationId || candidate.id || candidate.recordId)
-    const review = isRecord(candidate.review) ? candidate.review : null
-    const candidateReviewItemId = text(review && (review.reviewItemId || candidate.reviewItemId))
-    return candidateApplicationId === applicationId && candidateReviewItemId === reviewItemId
-  })
+  const record: JsonRecord | undefined = getAdoptionRecords({ includeDemo: false }).find(
+    (candidate) => {
+      if (!isRecord(candidate)) return false
+      const candidateApplicationId = text(
+        candidate.applicationId || candidate.id || candidate.recordId,
+      )
+      const review = isRecord(candidate.review) ? candidate.review : null
+      const candidateReviewItemId = text(review && (review.reviewItemId || candidate.reviewItemId))
+      return candidateApplicationId === applicationId && candidateReviewItemId === reviewItemId
+    },
+  )
   if (!record) fail('NOT_FOUND', '领养审核记录不存在')
   const review = isRecord(record.review) ? record.review : null
   const actualApplicationId = text(record.applicationId || record.id || record.recordId)
   const actualReviewItemId = text(review && (review.reviewItemId || record.reviewItemId))
-  if (actualApplicationId !== applicationId || actualReviewItemId !== reviewItemId) fail('NOT_FOUND', '领养审核项不存在')
+  if (actualApplicationId !== applicationId || actualReviewItemId !== reviewItemId)
+    fail('NOT_FOUND', '领养审核项不存在')
   return record
 }
 
@@ -205,7 +252,8 @@ export function applyAdoptionReviewAction(options: ActionOptions = {}): ReviewAc
     reviewItemId,
     perspective: 'reviewer',
   })
-  if (!access.canRead || !access.item) fail(access.reason || 'FORBIDDEN', '当前账号无权处理该审核项')
+  if (!access.canRead || !access.item)
+    fail(access.reason || 'FORBIDDEN', '当前账号无权处理该审核项')
   const item = access.item
   const actorId = access.actor ? access.actor.id : fail('FORBIDDEN', '当前账号无权处理该审核项')
   const record = readCurrentRecord(applicationId, reviewItemId)
@@ -224,7 +272,8 @@ export function applyAdoptionReviewAction(options: ActionOptions = {}): ReviewAc
       idempotencyKey,
     })
   }
-  if (!(REVIEW_TRANSITIONS[item.reviewStatus] || []).includes(outcome)) fail('INVALID_TRANSITION', '只有待审核项可以处理')
+  if (!(REVIEW_TRANSITIONS[item.reviewStatus] || []).includes(outcome))
+    fail('INVALID_TRANSITION', '只有待审核项可以处理')
 
   const nextApplicationStatus = nextStatus(item, record, outcome, actorId)
   const at = options.now === undefined ? new Date().toISOString() : text(options.now)
@@ -239,12 +288,18 @@ export function applyAdoptionReviewAction(options: ActionOptions = {}): ReviewAc
     review: nextReview,
     status: nextApplicationStatus,
     ...(item.phase === 'cloud_parent' && outcome === 'approved'
-      ? { cloudParentApprovals: Array.from(new Set([...relationIds(record, ['cloudParentApprovals']), actorId])) }
+      ? {
+          cloudParentApprovals: Array.from(
+            new Set([...relationIds(record, ['cloudParentApprovals']), actorId]),
+          ),
+        }
       : {}),
-    ...(outcome === 'rejected' ? { failureStage: failureStageFor(item), rejectNote: text(options.reason) || '审核未通过' } : {}),
+    ...(outcome === 'rejected'
+      ? { failureStage: failureStageFor(item), rejectNote: text(options.reason) || '审核未通过' }
+      : {}),
   }
-	const recordId = typeof record.id === 'string' && record.id ? record.id : applicationId
-	const updated = updateAdoption(recordId, patch)
+  const recordId = typeof record.id === 'string' && record.id ? record.id : applicationId
+  const updated = updateAdoption(recordId, patch)
   if (!updated) fail('STORAGE_WRITE_FAILED', '审核状态保存失败')
   return freeze({
     success: true,

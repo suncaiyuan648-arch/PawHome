@@ -26,9 +26,13 @@ function visit(dir) {
 for (const dir of sourceDirs) visit(path.join(root, dir))
 
 if (violations.length) {
-  console.error('Typography check failed: use the 400 / 500 / 700 tokens instead of font-weight:600.')
+  console.error(
+    'Typography check failed: use the 400 / 500 / 700 tokens instead of font-weight:600.',
+  )
   console.error(violations.join('\n'))
   process.exitCode = 1
 } else {
-  console.log('Typography check passed: no font-weight:600 in pages/components/styles/packages/services/navigation.')
+  console.log(
+    'Typography check passed: no font-weight:600 in pages/components/styles/packages/services/navigation.',
+  )
 }

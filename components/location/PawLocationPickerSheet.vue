@@ -1,31 +1,85 @@
 <template>
-  <PawBottomSheet v-model="visibleProxy" variant="location-picker" :height="sheetHeight" :safe-area="true"
-    :close-on-mask="true" :z-index="10040">
-    <view class="location-picker" data-qa="location-picker-sheet">
+  <PawBottomSheet
+    v-model="visibleProxy"
+    variant="location-picker"
+    :height="sheetHeight"
+    :safe-area="true"
+    :close-on-mask="true"
+    :z-index="10040"
+  >
+    <view
+      class="location-picker"
+      data-qa="location-picker-sheet"
+    >
       <view class="location-picker__search-row">
         <view class="location-picker__search-box">
-          <uni-icons type="search" color="#bfbfbf" :size="18" />
-          <input class="location-picker__search-input" data-qa="location-picker-search" type="text" :value="keyword"
-            placeholder="搜索城市/小区/居住楼等" placeholder-class="location-picker__placeholder" confirm-type="search"
-            @input="onKeywordInput" @confirm="loadLocations" />
+          <uni-icons
+            type="search"
+            color="#bfbfbf"
+            :size="18"
+          />
+          <input
+            class="location-picker__search-input"
+            data-qa="location-picker-search"
+            type="text"
+            :value="keyword"
+            placeholder="搜索城市/小区/居住楼等"
+            placeholder-class="location-picker__placeholder"
+            confirm-type="search"
+            @input="onKeywordInput"
+            @confirm="loadLocations"
+          />
         </view>
-        <view class="location-picker__city" data-qa="location-picker-city" @tap="onCityTap">
-          <uni-icons type="paperplane-filled" color="#2f8bff" :size="15" />
+        <view
+          class="location-picker__city"
+          data-qa="location-picker-city"
+          @tap="onCityTap"
+        >
+          <uni-icons
+            type="paperplane-filled"
+            color="#2f8bff"
+            :size="15"
+          />
           <text>{{ currentCity }}</text>
         </view>
       </view>
 
-      <scroll-view class="location-picker__scroll" scroll-y :show-scrollbar="false" :bounces="false">
-        <view v-if="loading" class="location-picker__state">
+      <scroll-view
+        class="location-picker__scroll"
+        scroll-y
+        :show-scrollbar="false"
+        :bounces="false"
+      >
+        <view
+          v-if="loading"
+          class="location-picker__state"
+        >
           <text>正在获取附近地点...</text>
         </view>
-        <view v-else-if="!places.length" class="location-picker__state">
+        <view
+          v-else-if="!places.length"
+          class="location-picker__state"
+        >
           <text>暂无匹配地点，请尝试搜索其他关键词</text>
         </view>
-        <view v-else class="location-picker__list">
-          <view v-for="(item, index) in places" :key="item.id || index" class="location-picker__item"
-            :data-index="index" :data-qa="`location-picker-item-${index}`" @tap="selectPlace(item)">
-            <uni-icons class="location-picker__pin" type="location-filled" color="#e9e9e9" :size="21" />
+        <view
+          v-else
+          class="location-picker__list"
+        >
+          <view
+            v-for="(item, index) in places"
+            :key="item.id || index"
+            class="location-picker__item"
+            :data-index="index"
+            :data-qa="`location-picker-item-${index}`"
+            @tap="selectPlace(item)"
+          >
+            <uni-icons
+              class="location-picker__pin"
+              type="location-filled"
+              color="#e9e9e9"
+              :size="21"
+            />
             <view class="location-picker__item-copy">
               <text class="location-picker__item-name">{{ item.name }}</text>
               <text class="location-picker__item-address">{{ item.address }}</text>
@@ -46,7 +100,7 @@ import {
   fetchLocationPlaces,
   getPreciseLocation,
   type LocationPlace,
-  type PreciseLocation
+  type PreciseLocation,
 } from '@/utils/locationService.ts'
 
 interface LocationPickerState {
@@ -65,12 +119,13 @@ export default defineComponent({
   props: {
     visible: { type: Boolean, default: false },
     city: { type: String, default: '长沙市' },
-    sheetHeight: { type: String, default: '70vh' }
+    sheetHeight: { type: String, default: '70vh' },
   },
   emits: {
     'update:visible': (value: boolean) => typeof value === 'boolean',
-    select: (place: LocationPlace) => typeof place.id === 'string' && typeof place.name === 'string',
-    'city-tap': (city: string) => typeof city === 'string'
+    select: (place: LocationPlace) =>
+      typeof place.id === 'string' && typeof place.name === 'string',
+    'city-tap': (city: string) => typeof city === 'string',
   },
   data(): LocationPickerState {
     return {
@@ -80,14 +135,18 @@ export default defineComponent({
       loading: false,
       location: null,
       requestId: 0,
-      searchTimer: null
+      searchTimer: null,
     }
   },
   computed: {
     visibleProxy: {
-      get(): boolean { return this.visible },
-      set(value: boolean) { this.$emit('update:visible', value) }
-    }
+      get(): boolean {
+        return this.visible
+      },
+      set(value: boolean) {
+        this.$emit('update:visible', value)
+      },
+    },
   },
   watch: {
     visible(value: boolean) {
@@ -97,7 +156,7 @@ export default defineComponent({
     city(value: string) {
       this.currentCity = value || '长沙市'
       if (this.visible) this.loadNearby()
-    }
+    },
   },
   beforeUnmount() {
     this.clearSearchTimer()
@@ -122,12 +181,12 @@ export default defineComponent({
       this.clearSearchTimer()
       const requestId = ++this.requestId
       this.loading = true
-      const location = this.location || await getPreciseLocation()
+      const location = this.location || (await getPreciseLocation())
       const result = await fetchLocationPlaces({
         city: this.currentCity,
         latitude: location?.latitude,
         longitude: location?.longitude,
-        keyword: this.keyword
+        keyword: this.keyword,
       })
       if (requestId !== this.requestId) return
       this.location = location
@@ -141,8 +200,8 @@ export default defineComponent({
     },
     onCityTap() {
       this.$emit('city-tap', this.currentCity)
-    }
-  }
+    },
+  },
 })
 </script>
 

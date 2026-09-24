@@ -34,7 +34,8 @@ export interface AdoptionEvidencePageState {
   examples: string[]
 }
 
-export const ADOPTION_EVIDENCE_EXAMPLE_IMAGE = '/static/figma/certify/ca69b21b61516589aa506613e5d3c587881cb57d.png'
+export const ADOPTION_EVIDENCE_EXAMPLE_IMAGE =
+  '/static/figma/certify/ca69b21b61516589aa506613e5d3c587881cb57d.png'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -49,7 +50,11 @@ function photoPath(value: unknown): string {
   return typeof value === 'string' ? value : ''
 }
 
-function firstText(source: Record<string, unknown>, keys: readonly string[], fallback: string): string {
+function firstText(
+  source: Record<string, unknown>,
+  keys: readonly string[],
+  fallback: string,
+): string {
   for (const key of keys) {
     const value = source[key]
     if (value !== undefined && value !== null && String(value)) return text(value, fallback)
@@ -70,18 +75,27 @@ export function readAdoptionEvidenceProofEntries(value: unknown): AdoptionEviden
   if (!isRecord(value)) return []
   const source = Array.isArray(value.proofList)
     ? value.proofList
-    : Array.isArray(value.evidenceList) ? value.evidenceList : []
+    : Array.isArray(value.evidenceList)
+      ? value.evidenceList
+      : []
 
   return source.map((entry, index) => normalizeAdoptionEvidenceProof(entry, index))
 }
 
-export function normalizeAdoptionEvidenceProof(value: unknown, index = 0): AdoptionEvidenceProofComment {
+export function normalizeAdoptionEvidenceProof(
+  value: unknown,
+  index = 0,
+): AdoptionEvidenceProofComment {
   const item = isRecord(value) ? value : {}
-  const meta = firstText(item, ['meta'], '')
-    || [firstText(item, ['createdAtText', 'time', 'createdAt'], ''), firstText(item, ['city', 'location'], '')]
+  const meta =
+    firstText(item, ['meta'], '') ||
+    [
+      firstText(item, ['createdAtText', 'time', 'createdAt'], ''),
+      firstText(item, ['city', 'location'], ''),
+    ]
       .filter(Boolean)
-      .join('　')
-    || '刚刚'
+      .join('　') ||
+    '刚刚'
   const rawLikes = Number(item.likes ?? item.likeCount ?? 0)
 
   return {

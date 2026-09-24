@@ -12,14 +12,22 @@ let tempRoot
 let api
 
 const pending = {
-  id: 'rescue-review-a', rescueId: 'rescue-review-a', applicationType: 'rescue',
-  reviewItemId: 'review-a', reviewerId: 'reviewer-a', status: 'pending',
-  summary: '待审核救助', applicant: { id: 'applicant-a' },
+  id: 'rescue-review-a',
+  rescueId: 'rescue-review-a',
+  applicationType: 'rescue',
+  reviewItemId: 'review-a',
+  reviewerId: 'reviewer-a',
+  status: 'pending',
+  summary: '待审核救助',
+  applicant: { id: 'applicant-a' },
 }
 
-const actor = (id = 'reviewer-a', roles = ['reviewer']) => () => ({
-  sessionId: `session-${id}`, actor: { id, roles },
-})
+const actor =
+  (id = 'reviewer-a', roles = ['reviewer']) =>
+  () => ({
+    sessionId: `session-${id}`,
+    actor: { id, roles },
+  })
 
 before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-rescue-review-action-governance-'))
@@ -39,7 +47,8 @@ test('rescue review read model requires a fresh trusted reviewer session and exp
   assert.equal(denied.diagnostics.actorError.code, 'NO_SESSION')
 
   const applicantOnly = api.readRescueReviewList({
-    actorProvider: actor('applicant-a', ['applicant']), reader: () => [pending],
+    actorProvider: actor('applicant-a', ['applicant']),
+    reader: () => [pending],
   })
   assert.deepEqual(applicantOnly.items, [])
   assert.equal(applicantOnly.diagnostics.actorError.code, 'REVIEWER_ROLE_REQUIRED')
@@ -47,13 +56,22 @@ test('rescue review read model requires a fresh trusted reviewer session and exp
   const forged = { ...pending, reviewerId: undefined, applicant: { id: 'reviewer-a' } }
   const noRelation = api.readRescueReviewList({ actorProvider: actor(), reader: () => [forged] })
   assert.deepEqual(noRelation.items, [])
-  assert.ok(noRelation.diagnostics.skipped.some(item => item.code === 'MISSING_REVIEWER_RELATION'))
+  assert.ok(
+    noRelation.diagnostics.skipped.some((item) => item.code === 'MISSING_REVIEWER_RELATION'),
+  )
 })
 
 test('rescue review detail projects display metadata and filters media to strings', () => {
   const detail = api.readRescueReviewDetail({
     actorProvider: actor(),
-    reader: () => [{ ...pending, detail: '需要进一步核实', amount: 120, media: ['/evidence-a.png', 17, '/evidence-b.png'] }],
+    reader: () => [
+      {
+        ...pending,
+        detail: '需要进一步核实',
+        amount: 120,
+        media: ['/evidence-a.png', 17, '/evidence-b.png'],
+      },
+    ],
     reviewItemId: 'review-a',
   })
   assert.equal(detail.canRead, true)
@@ -66,30 +84,61 @@ test('rescue review action is idempotent, permits only pending terminal decision
   let records = [{ ...pending }]
   let writes = 0
   const reader = () => records
-  const writer = ({ next }) => { writes += 1; records = [next] }
+  const writer = ({ next }) => {
+    writes += 1
+    records = [next]
+  }
   const base = { actorProvider: actor(), reader, writer, reviewItemId: 'review-a' }
 
-  const approved = api.applyRescueReviewAction({ ...base, outcome: 'approved', idempotencyKey: 'review-a-1' })
+  const approved = api.applyRescueReviewAction({
+    ...base,
+    outcome: 'approved',
+    idempotencyKey: 'review-a-1',
+  })
   assert.equal(approved.toStatus, 'approved')
   assert.equal(approved.fundingChanged, false)
   assert.equal(writes, 1)
-  assert.equal(api.applyRescueReviewAction({ ...base, outcome: 'approved', idempotencyKey: 'review-a-1' }).duplicate, true)
+  assert.equal(
+    api.applyRescueReviewAction({ ...base, outcome: 'approved', idempotencyKey: 'review-a-1' })
+      .duplicate,
+    true,
+  )
   assert.equal(writes, 1)
-  assert.throws(() => api.applyRescueReviewAction({ ...base, outcome: 'rejected', idempotencyKey: 'review-a-2' }), error => error.code === 'INVALID_TRANSITION')
-  assert.throws(() => api.applyRescueReviewAction({ ...base, outcome: 'paid', idempotencyKey: 'review-a-paid' }), error => error.code === 'PAYMENT_ACTION_FORBIDDEN')
+  assert.throws(
+    () =>
+      api.applyRescueReviewAction({ ...base, outcome: 'rejected', idempotencyKey: 'review-a-2' }),
+    (error) => error.code === 'INVALID_TRANSITION',
+  )
+  assert.throws(
+    () =>
+      api.applyRescueReviewAction({ ...base, outcome: 'paid', idempotencyKey: 'review-a-paid' }),
+    (error) => error.code === 'PAYMENT_ACTION_FORBIDDEN',
+  )
   assert.equal(writes, 1)
 })
 
 test('review action source has no root navigation/storage import or payment writer', async () => {
-  const source = await fs.readFile(path.join(ROOT, 'packages/rescue/services/reviewActionAdapter.ts'), 'utf8')
-  assert.doesNotMatch(source, /(?:from\s+['"][^'"]*(?:navigation|utils\/rescueStorage)|require\s*\()/)
+  const source = await fs.readFile(
+    path.join(ROOT, 'packages/rescue/services/reviewActionAdapter.ts'),
+    'utf8',
+  )
+  assert.doesNotMatch(
+    source,
+    /(?:from\s+['"][^'"]*(?:navigation|utils\/rescueStorage)|require\s*\()/,
+  )
   assert.doesNotMatch(source, /(?:transitionRescueFunding|createPayment|pay\s*\()/i)
   assert.match(source, /pending: Object\.freeze\(\['approved', 'rejected'\]\)/)
 })
 
 test('rescue review pages use the adapter contracts and contain no explicit any types', async () => {
-  const detailPage = await fs.readFile(path.join(ROOT, 'packages/rescue/pages/review/detail/index.vue'), 'utf8')
-  const listPage = await fs.readFile(path.join(ROOT, 'packages/rescue/pages/review/list/index.vue'), 'utf8')
+  const detailPage = await fs.readFile(
+    path.join(ROOT, 'packages/rescue/pages/review/detail/index.vue'),
+    'utf8',
+  )
+  const listPage = await fs.readFile(
+    path.join(ROOT, 'packages/rescue/pages/review/list/index.vue'),
+    'utf8',
+  )
   for (const source of [detailPage, listPage]) {
     assert.doesNotMatch(source, /\bany\b/)
     assert.doesNotMatch(source, /as\s+any/)

@@ -1,74 +1,180 @@
 <template>
-  <view class="dynamic-page" :class="{ 'comments-empty-state': commentsEmpty }">
-    <PawPageNav background="#ffffff" :content-inset-left="37" fallback-url="/pages/index/index" @layout="onNavLayout">
+  <view
+    class="dynamic-page"
+    :class="{ 'comments-empty-state': commentsEmpty }"
+  >
+    <PawPageNav
+      background="#ffffff"
+      :content-inset-left="37"
+      fallback-url="/pages/index/index"
+      @layout="onNavLayout"
+    >
       <!-- 作者信息与返回按钮共用原生导航行，右侧胶囊由微信原生渲染。 -->
       <template #content>
-        <view id="qa-dynamic-detail-nav-author" class="author-row" @tap.stop="openProfile">
-          <PawAvatar :src="author.avatar" :size="34" :clickable="true" @click="openProfile" />
+        <view
+          id="qa-dynamic-detail-nav-author"
+          class="author-row"
+          @tap.stop="openProfile"
+        >
+          <PawAvatar
+            :src="author.avatar"
+            :size="34"
+            :clickable="true"
+            @click="openProfile"
+          />
           <text class="author-name">{{ author.name }}</text>
-          <PawOwnerBadge v-if="!commentsEmpty" class="author-owner-badge" />
+          <PawOwnerBadge
+            v-if="!commentsEmpty"
+            class="author-owner-badge"
+          />
         </view>
       </template>
     </PawPageNav>
 
-    <view v-if="recordStatus !== 'ready'" class="dynamic-detail-state" :class="{ 'dynamic-detail-state--error': recordStatus === 'error' }"
-      data-qa="qa-dynamic-detail-state">
-      <text class="dynamic-detail-state__title">{{ recordStatus === 'loading' ? '正在读取动态' : '动态暂不可用' }}</text>
-      <text class="dynamic-detail-state__copy">{{ recordStatus === 'loading' ? '正在读取当前动态内容' : '请从有效的动态消息或任务入口重新进入。' }}</text>
+    <view
+      v-if="recordStatus !== 'ready'"
+      class="dynamic-detail-state"
+      :class="{ 'dynamic-detail-state--error': recordStatus === 'error' }"
+      data-qa="qa-dynamic-detail-state"
+    >
+      <text class="dynamic-detail-state__title">{{
+        recordStatus === 'loading' ? '正在读取动态' : '动态暂不可用'
+      }}</text>
+      <text class="dynamic-detail-state__copy">{{
+        recordStatus === 'loading'
+          ? '正在读取当前动态内容'
+          : '请从有效的动态消息或任务入口重新进入。'
+      }}</text>
     </view>
 
     <template v-else>
-      <view class="notice-line" :style="{ top: contentTop + 'px' }">
-        <PawAnnouncementMarquee :items="announcementItems" :height="20" :speed="82" :gap="1000" color="#333333" />
+      <view
+        class="notice-line"
+        :style="{ top: contentTop + 'px' }"
+      >
+        <PawAnnouncementMarquee
+          :items="announcementItems"
+          :height="20"
+          :speed="82"
+          :gap="1000"
+          color="#333333"
+        />
       </view>
 
-      <scroll-view class="dynamic-scroll" :style="scrollStyle" scroll-y :show-scrollbar="false">
+      <scroll-view
+        class="dynamic-scroll"
+        :style="scrollStyle"
+        scroll-y
+        :show-scrollbar="false"
+      >
         <view class="post-section">
           <view data-qa="qa-dynamic-detail-media"><DynamicMediaViewer :items="mediaItems" /></view>
-          <view class="post-card" data-qa="qa-dynamic-detail-post">
-            <FeedingSourceRow :feeders="feeders" :text="feedingSourceText" @click="openFeeders" />
-            <text class="post-copy" data-qa="qa-dynamic-detail-post-copy">{{ postCopy }}</text>
-          <view class="post-meta">
-            <text>{{ postMeta }}</text>
-            <view class="like-action" @tap.stop="toggleLike">
-              <PawLikeIcon :liked="liked" />
-              <text :class="{ liked: liked }">{{ likes }}</text>
+          <view
+            class="post-card"
+            data-qa="qa-dynamic-detail-post"
+          >
+            <FeedingSourceRow
+              :feeders="feeders"
+              :text="feedingSourceText"
+              @click="openFeeders"
+            />
+            <text
+              class="post-copy"
+              data-qa="qa-dynamic-detail-post-copy"
+              >{{ postCopy }}</text
+            >
+            <view class="post-meta">
+              <text>{{ postMeta }}</text>
+              <view
+                class="like-action"
+                @tap.stop="toggleLike"
+              >
+                <PawLikeIcon :liked="liked" />
+                <text :class="{ liked: liked }">{{ likes }}</text>
+              </view>
             </view>
-          </view>
           </view>
 
           <view class="comments-section">
-            <CommentThread :comments="comments" :empty="commentsEmpty" :total="commentTotal" :comment-preview-count="3"
-              @user-click="openCommentUser" @reply="openReplySheet" @like="toggleCommentLike" @voice-play="onVoicePlay"
-              @empty-action="openReplySheet">
+            <CommentThread
+              :comments="comments"
+              :empty="commentsEmpty"
+              :total="commentTotal"
+              :comment-preview-count="3"
+              @user-click="openCommentUser"
+              @reply="openReplySheet"
+              @like="toggleCommentLike"
+              @voice-play="onVoicePlay"
+              @empty-action="openReplySheet"
+            >
               <template #before>
-                <CommentComposer :avatar="currentUser.avatar" readonly @click="openReplySheet()" @voice="onComposerVoice"
-                  @pick-image="onComposerPickImage" />
+                <CommentComposer
+                  :avatar="currentUser.avatar"
+                  readonly
+                  @click="openReplySheet()"
+                  @voice="onComposerVoice"
+                  @pick-image="onComposerPickImage"
+                />
               </template>
             </CommentThread>
           </view>
         </view>
 
-        <view v-if="rankItems.length" class="rank-section">
-          <YardFeedRankStrip :feed-summary="feedSummary" :seamless-items="rankItems" @leaderboard="openLeaderboard"
-            @rank-user="openRankUser" />
+        <view
+          v-if="rankItems.length"
+          class="rank-section"
+        >
+          <YardFeedRankStrip
+            :feed-summary="feedSummary"
+            :seamless-items="rankItems"
+            @leaderboard="openLeaderboard"
+            @rank-user="openRankUser"
+          />
         </view>
 
-        <view class="yard-section" data-qa="qa-dynamic-detail-yard-summary">
-          <YardSummaryCard :yard="yard" variant="detail" :show-gallery="true" @click="openYard" />
+        <view
+          class="yard-section"
+          data-qa="qa-dynamic-detail-yard-summary"
+        >
+          <YardSummaryCard
+            :yard="yard"
+            variant="detail"
+            :show-gallery="true"
+            @click="openYard"
+          />
         </view>
         <view class="scroll-spacer"></view>
       </scroll-view>
 
-      <PawFixedActionBar :actions="footerActions" :primary-action="primaryAction" @action="onFooterAction"
-        @primary="onPrimaryAction" />
-      <ReplyComposerSheet v-model:visible="replySheetVisible" :reply-to-name="replyTargetName" @send="onReplySend"
-        @voice="onComposerVoice" @pick-image="onComposerPickImage" />
+      <PawFixedActionBar
+        :actions="footerActions"
+        :primary-action="primaryAction"
+        @action="onFooterAction"
+        @primary="onPrimaryAction"
+      />
+      <ReplyComposerSheet
+        v-model:visible="replySheetVisible"
+        :reply-to-name="replyTargetName"
+        @send="onReplySend"
+        @voice="onComposerVoice"
+        @pick-image="onComposerPickImage"
+      />
       <ShareActionSheet v-model:visible="shareSheetVisible" />
-      <AdoptPickCatsSheet v-model="adoptPickSheetVisible" :yard-name="yard.name" :yard-id="yardId" :cats="adoptionPets"
-        :owner-avatar="yard.avatar" :owner-paw-id="yard.owner ? yard.owner.pawId : undefined" />
-      <YardFeedPopup v-if="commentsEmpty" v-model="feedPopupVisible" @learn-food="onLearnFood"
-        @agreement="onAgreement" @feed-order="onFeedOrder" />
+      <AdoptPickCatsSheet
+        v-model="adoptPickSheetVisible"
+        :yard-name="yard.name"
+        :yard-id="yardId"
+        :cats="adoptionPets"
+        :owner-avatar="yard.avatar"
+        :owner-paw-id="yard.owner ? yard.owner.pawId : undefined"
+      />
+      <YardFeedPopup
+        v-if="commentsEmpty"
+        v-model="feedPopupVisible"
+        @learn-food="onLearnFood"
+        @agreement="onAgreement"
+        @feed-order="onFeedOrder"
+      />
     </template>
   </view>
 </template>
@@ -110,7 +216,24 @@ import type { YardRankItem } from '@/utils/yardMock.ts'
 
 export default defineComponent({
   name: 'DynamicDetailPage',
-  components: { PawAnnouncementMarquee, PawPageNav, PawAvatar, PawOwnerBadge, PawFixedActionBar, DynamicMediaViewer, FeedingSourceRow, CommentComposer, CommentThread, ReplyComposerSheet, ShareActionSheet, AdoptPickCatsSheet, YardFeedRankStrip, YardSummaryCard, YardFeedPopup, PawLikeIcon },
+  components: {
+    PawAnnouncementMarquee,
+    PawPageNav,
+    PawAvatar,
+    PawOwnerBadge,
+    PawFixedActionBar,
+    DynamicMediaViewer,
+    FeedingSourceRow,
+    CommentComposer,
+    CommentThread,
+    ReplyComposerSheet,
+    ShareActionSheet,
+    AdoptPickCatsSheet,
+    YardFeedRankStrip,
+    YardSummaryCard,
+    YardFeedPopup,
+    PawLikeIcon,
+  },
   emits: {
     'reply-send': (text: string) => typeof text === 'string',
   },
@@ -120,30 +243,49 @@ export default defineComponent({
   computed: {
     contentTop() {
       const nav = this.navLayout
-      const measuredTop = Number(nav.totalHeight || (Number(nav.statusBarHeight || 44) + Number(nav.navBarHeight || 54)))
+      const measuredTop = Number(
+        nav.totalHeight || Number(nav.statusBarHeight || 44) + Number(nav.navBarHeight || 54),
+      )
       // 动态区域紧跟 PawPageNav；公告只在动态内容顶部悬浮，不参与内容排版。
       return measuredTop
     },
     scrollStyle() {
       return {
         top: `${this.contentTop}px`,
-        height: `calc(100vh - ${this.contentTop}px)`
+        height: `calc(100vh - ${this.contentTop}px)`,
       }
     },
     footerActions(): DynamicDetailFooterAction[] {
       return [
         { key: 'share', label: '分享', iconName: 'actions/dynamic-share' },
-        { key: 'yard', label: this.commentsEmpty ? '入驻' : '去看看', iconName: 'actions/dynamic-join' },
-        { key: 'adopt', label: '领养', iconName: 'actions/dynamic-adopt', qa: 'qa-dynamic-detail-adopt' }
+        {
+          key: 'yard',
+          label: this.commentsEmpty ? '入驻' : '去看看',
+          iconName: 'actions/dynamic-join',
+        },
+        {
+          key: 'adopt',
+          label: '领养',
+          iconName: 'actions/dynamic-adopt',
+          qa: 'qa-dynamic-detail-adopt',
+        },
       ]
     },
     primaryAction(): DynamicDetailPrimaryAction {
-      return { key: 'feed', label: this.commentsEmpty ? '投点猫粮' : '云养一只', iconName: 'actions/feed', iconSize: 32, size: 'md' }
+      return {
+        key: 'feed',
+        label: this.commentsEmpty ? '投点猫粮' : '云养一只',
+        iconName: 'actions/feed',
+        iconSize: 32,
+        size: 'md',
+      }
     },
     recordActor(): unknown {
       try {
-        const session = typeof uni !== 'undefined' && uni && typeof uni.getStorageSync === 'function'
-          ? uni.getStorageSync('PAWHOME_ACTOR_SESSION') : null
+        const session =
+          typeof uni !== 'undefined' && uni && typeof uni.getStorageSync === 'function'
+            ? uni.getStorageSync('PAWHOME_ACTOR_SESSION')
+            : null
         return session && session.actor ? session.actor : session
       } catch {
         return null
@@ -155,8 +297,8 @@ export default defineComponent({
       return author && typeof author.name === 'string' ? author.name : ''
     },
     adoptionPets() {
-      return this.yard.pets.filter(pet => pet.state === 'pending' || pet.state === 'cloud')
-    }
+      return this.yard.pets.filter((pet) => pet.state === 'pending' || pet.state === 'cloud')
+    },
   },
   onLoad(query: unknown = {}) {
     this.navLayout = getWechatNavLayout()
@@ -175,7 +317,7 @@ export default defineComponent({
     return {
       title: `${this.yard.name}动态`,
       path: `/packages/dynamic/pages/detail/index?yardId=${encodeURIComponent(this.yardId)}&dynamicId=${encodeURIComponent(this.dynamicId)}${state}`,
-      imageUrl: this.mediaItems[0]
+      imageUrl: this.mediaItems[0],
     }
   },
   onShareTimeline() {
@@ -183,7 +325,7 @@ export default defineComponent({
     return {
       title: `${this.yard.name}动态`,
       query: `yardId=${encodeURIComponent(this.yardId)}&dynamicId=${encodeURIComponent(this.dynamicId)}${state}`,
-      imageUrl: this.mediaItems[0]
+      imageUrl: this.mediaItems[0],
     }
   },
   methods: {
@@ -222,17 +364,34 @@ export default defineComponent({
       this.commentsEmpty = this.commentsEmptyForced || model.commentsTotal === 0
       if (this.commentsEmpty) this.comments = []
     },
-    onNavLayout(layout: WechatNavLayout) { this.navLayout = layout },
-    toggleLike() { this.liked = !this.liked; this.likes = Math.max(0, this.likes + (this.liked ? 1 : -1)) },
-    openProfile() { openUserProfile({ pawId: 'owner-1', nickname: this.author.name, avatar: this.author.avatar }) },
-    openYard() { uni.navigateTo({ url: `/packages/yard/pages/detail/index?yardId=${encodeURIComponent(this.yardId)}` }) },
-    openLeaderboard() { uni.navigateTo({ url: '/packages/discovery/pages/ranking/index' }) },
+    onNavLayout(layout: WechatNavLayout) {
+      this.navLayout = layout
+    },
+    toggleLike() {
+      this.liked = !this.liked
+      this.likes = Math.max(0, this.likes + (this.liked ? 1 : -1))
+    },
+    openProfile() {
+      openUserProfile({ pawId: 'owner-1', nickname: this.author.name, avatar: this.author.avatar })
+    },
+    openYard() {
+      uni.navigateTo({
+        url: `/packages/yard/pages/detail/index?yardId=${encodeURIComponent(this.yardId)}`,
+      })
+    },
+    openLeaderboard() {
+      uni.navigateTo({ url: '/packages/discovery/pages/ranking/index' })
+    },
     openRankUser(item: YardRankItem) {
       openUserProfile({ pawId: item.pawId || item.id, nickname: item.text, avatar: item.avatar })
     },
-    openFeeders() { uni.showToast({ title: '查看投喂记录', icon: 'none' }) },
+    openFeeders() {
+      uni.showToast({ title: '查看投喂记录', icon: 'none' })
+    },
     onFooterAction(action: import('@/components/layout/PawFixedActionBar.vue').PawFixedAction) {
-      if (action.key === 'share') { this.shareSheetVisible = true }
+      if (action.key === 'share') {
+        this.shareSheetVisible = true
+      }
       if (action.key === 'yard') this.openYard()
       if (action.key === 'adopt') this.adoptPickSheetVisible = true
     },
@@ -245,31 +404,49 @@ export default defineComponent({
     },
     openPetList() {
       uni.navigateTo({
-        url: `/packages/yard/pages/animals/index?state=roster&name=${encodeURIComponent(this.yard.name)}&yardId=${encodeURIComponent(this.yardId)}`
+        url: `/packages/yard/pages/animals/index?state=roster&name=${encodeURIComponent(this.yard.name)}&yardId=${encodeURIComponent(this.yardId)}`,
       })
     },
-    onLearnFood() { uni.showToast({ title: '了解猫粮功能暂未开放', icon: 'none' }) },
-    onAgreement(which: YardFeedAgreement) {
-      uni.showToast({ title: which === 'required' ? '请先阅读并同意投喂协议' : '阅读弹窗暂未开放', icon: 'none' })
+    onLearnFood() {
+      uni.showToast({ title: '了解猫粮功能暂未开放', icon: 'none' })
     },
-    onFeedOrder() { uni.navigateTo({ url: '/packages/feeding/pages/yard-orders/index?yardId=1' }) },
+    onAgreement(which: YardFeedAgreement) {
+      uni.showToast({
+        title: which === 'required' ? '请先阅读并同意投喂协议' : '阅读弹窗暂未开放',
+        icon: 'none',
+      })
+    },
+    onFeedOrder() {
+      uni.navigateTo({ url: '/packages/feeding/pages/yard-orders/index?yardId=1' })
+    },
     openReplySheet(comment?: CommentItemRecord) {
       this.replySheetTarget = comment ? findCommentById(this.comments, comment.id) : null
       this.replySheetVisible = true
     },
-    onReplySend(text: string) { uni.showToast({ title: '已发送', icon: 'none' }); this.$emit('reply-send', text) },
-    onComposerVoice() { uni.showToast({ title: '语音输入敬请期待', icon: 'none' }) },
-    onComposerPickImage() { uni.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] }) },
+    onReplySend(text: string) {
+      uni.showToast({ title: '已发送', icon: 'none' })
+      this.$emit('reply-send', text)
+    },
+    onComposerVoice() {
+      uni.showToast({ title: '语音输入敬请期待', icon: 'none' })
+    },
+    onComposerPickImage() {
+      uni.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] })
+    },
     openCommentUser(comment: CommentItemRecord) {
       const author = comment.author || {}
-      openUserProfile({ pawId: author.pawId || comment.id, nickname: author.name, avatar: author.avatar })
+      openUserProfile({
+        pawId: author.pawId || comment.id,
+        nickname: author.name,
+        avatar: author.avatar,
+      })
     },
     toggleCommentLike(comment: CommentItemRecord) {
       comment.liked = !comment.liked
       comment.likes = Math.max(0, Number(comment.likes || 0) + (comment.liked ? 1 : -1))
     },
-    onVoicePlay() { }
-  }
+    onVoicePlay() {},
+  },
 })
 </script>
 
@@ -281,7 +458,7 @@ export default defineComponent({
   overflow: hidden;
   background: #fff;
   color: #252525;
-  font-family: var(--paw-font-family, -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif);
+  font-family: var(--paw-font-family, -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif);
 }
 
 .dynamic-detail-state {

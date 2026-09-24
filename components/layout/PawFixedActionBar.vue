@@ -1,46 +1,118 @@
 <template>
-  <view class="paw-fixed-action-bar" :class="{
-    'paw-fixed-action-bar--safe': safeArea,
-    'paw-fixed-action-bar--primary-full': primaryFullWidth,
-    'paw-fixed-action-bar--primary-end': primaryEnd,
-    'paw-fixed-action-bar--stacked': stacked,
-    'paw-fixed-action-bar--dual': secondaryAction
-  }">
-    <view v-if="stacked" class="paw-fixed-action-bar__top">
+  <view
+    class="paw-fixed-action-bar"
+    :class="{
+      'paw-fixed-action-bar--safe': safeArea,
+      'paw-fixed-action-bar--primary-full': primaryFullWidth,
+      'paw-fixed-action-bar--primary-end': primaryEnd,
+      'paw-fixed-action-bar--stacked': stacked,
+      'paw-fixed-action-bar--dual': secondaryAction,
+    }"
+  >
+    <view
+      v-if="stacked"
+      class="paw-fixed-action-bar__top"
+    >
       <slot name="top"></slot>
     </view>
     <view class="paw-fixed-action-bar__content">
-      <button v-for="action in actions" :key="action.key" class="paw-fixed-action-bar__action"
-        :class="{ 'paw-fixed-action-bar__action--disabled': action.disabled }" :data-qa="action.qa || null"
-        hover-class="paw-fixed-action-bar__action--pressed" @tap="onAction(action)">
-        <PawIcon v-if="action.iconName" class="paw-fixed-action-bar__paw-icon" :name="action.iconName"
-          :size="action.iconSize || 21" :color="action.iconColor || '#222222'" :label="action.label" />
-        <image v-else-if="action.image" class="paw-fixed-action-bar__icon" :src="action.image" mode="aspectFit" />
-        <uni-icons v-else-if="action.icon" class="paw-fixed-action-bar__uni-icon" :type="action.icon"
-          :size="action.iconSize || 21" :color="action.iconColor || '#222'" />
+      <button
+        v-for="action in actions"
+        :key="action.key"
+        class="paw-fixed-action-bar__action"
+        :class="{ 'paw-fixed-action-bar__action--disabled': action.disabled }"
+        :data-qa="action.qa || null"
+        hover-class="paw-fixed-action-bar__action--pressed"
+        @tap="onAction(action)"
+      >
+        <PawIcon
+          v-if="action.iconName"
+          class="paw-fixed-action-bar__paw-icon"
+          :name="action.iconName"
+          :size="action.iconSize || 21"
+          :color="action.iconColor || '#222222'"
+          :label="action.label"
+        />
+        <image
+          v-else-if="action.image"
+          class="paw-fixed-action-bar__icon"
+          :src="action.image"
+          mode="aspectFit"
+        />
+        <uni-icons
+          v-else-if="action.icon"
+          class="paw-fixed-action-bar__uni-icon"
+          :type="action.icon"
+          :size="action.iconSize || 21"
+          :color="action.iconColor || '#222'"
+        />
         <text>{{ action.label }}</text>
       </button>
-      <PawButton v-if="secondaryAction" class="paw-fixed-action-bar__secondary" :qa="secondaryAction.qa || ''"
-        :text="secondaryAction.label" :tone="secondaryAction.tone || 'ghost'" :size="secondaryAction.size || 'md'"
-        :shape="secondaryAction.shape || 'rounded'" block flush nowrap :loading="!!secondaryAction.loading"
-        :disabled="!!secondaryAction.disabled" :style="secondaryStyle" @click="$emit('secondary', secondaryAction)">
-        <PawIcon v-if="secondaryAction.iconName" class="paw-fixed-action-bar__secondary-paw-icon"
-          :name="secondaryAction.iconName" :size="secondaryAction.iconSize || 32"
-          :color="secondaryAction.iconColor || '#282827'" />
-        <image v-else-if="secondaryAction.image" class="paw-fixed-action-bar__secondary-icon"
-          :src="secondaryAction.image" mode="aspectFit" />
-        <text v-else class="paw-fixed-action-bar__secondary-label">{{ secondaryAction.label }}</text>
+      <PawButton
+        v-if="secondaryAction"
+        class="paw-fixed-action-bar__secondary"
+        :qa="secondaryAction.qa || ''"
+        :text="secondaryAction.label"
+        :tone="secondaryAction.tone || 'ghost'"
+        :size="secondaryAction.size || 'md'"
+        :shape="secondaryAction.shape || 'rounded'"
+        block
+        flush
+        nowrap
+        :loading="!!secondaryAction.loading"
+        :disabled="!!secondaryAction.disabled"
+        :style="secondaryStyle"
+        @click="$emit('secondary', secondaryAction)"
+      >
+        <PawIcon
+          v-if="secondaryAction.iconName"
+          class="paw-fixed-action-bar__secondary-paw-icon"
+          :name="secondaryAction.iconName"
+          :size="secondaryAction.iconSize || 32"
+          :color="secondaryAction.iconColor || '#282827'"
+        />
+        <image
+          v-else-if="secondaryAction.image"
+          class="paw-fixed-action-bar__secondary-icon"
+          :src="secondaryAction.image"
+          mode="aspectFit"
+        />
+        <text
+          v-else
+          class="paw-fixed-action-bar__secondary-label"
+          >{{ secondaryAction.label }}</text
+        >
       </PawButton>
-      <PawButton v-if="primaryAction" class="paw-fixed-action-bar__primary"
-        :class="{ 'paw-fixed-action-bar__primary--full': primaryFullWidth }" :qa="primaryAction.qa || ''"
-        :text="primaryAction.label" :tone="primaryAction.tone || 'brand'" :size="primaryAction.size || 'md'" block flush
-        :shape="primaryAction.shape || (secondaryAction ? 'rounded' : 'pill')" nowrap :loading="!!primaryAction.loading"
-        :disabled="!!primaryAction.disabled" :style="primaryStyle" @click="$emit('primary', primaryAction)">
-        <PawIcon v-if="primaryAction.iconName" class="paw-fixed-action-bar__primary-paw-icon"
-          :name="primaryAction.iconName" :size="primaryAction.iconSize || 32"
-          :color="primaryAction.iconColor || '#282827'" />
-        <image v-else-if="primaryAction.image" class="paw-fixed-action-bar__primary-icon" :src="primaryAction.image"
-          mode="aspectFit" />
+      <PawButton
+        v-if="primaryAction"
+        class="paw-fixed-action-bar__primary"
+        :class="{ 'paw-fixed-action-bar__primary--full': primaryFullWidth }"
+        :qa="primaryAction.qa || ''"
+        :text="primaryAction.label"
+        :tone="primaryAction.tone || 'brand'"
+        :size="primaryAction.size || 'md'"
+        block
+        flush
+        :shape="primaryAction.shape || (secondaryAction ? 'rounded' : 'pill')"
+        nowrap
+        :loading="!!primaryAction.loading"
+        :disabled="!!primaryAction.disabled"
+        :style="primaryStyle"
+        @click="$emit('primary', primaryAction)"
+      >
+        <PawIcon
+          v-if="primaryAction.iconName"
+          class="paw-fixed-action-bar__primary-paw-icon"
+          :name="primaryAction.iconName"
+          :size="primaryAction.iconSize || 32"
+          :color="primaryAction.iconColor || '#282827'"
+        />
+        <image
+          v-else-if="primaryAction.image"
+          class="paw-fixed-action-bar__primary-icon"
+          :src="primaryAction.image"
+          mode="aspectFit"
+        />
         <text class="paw-fixed-action-bar__primary-label">{{ primaryAction.label }}</text>
       </PawButton>
     </view>
@@ -82,12 +154,12 @@ export default defineComponent({
     primaryEnd: { type: Boolean, default: false },
     safeArea: { type: Boolean, default: true },
     primaryFullWidth: { type: Boolean, default: false },
-    stacked: { type: Boolean, default: false }
+    stacked: { type: Boolean, default: false },
   },
   emits: {
-    'action': eventContract<[action: PawFixedAction]>(),
-    'primary': eventContract<[action: PawFixedAction]>(),
-    'secondary': eventContract<[action: PawFixedAction]>(),
+    action: eventContract<[action: PawFixedAction]>(),
+    primary: eventContract<[action: PawFixedAction]>(),
+    secondary: eventContract<[action: PawFixedAction]>(),
   },
   computed: {
     secondaryStyle() {
@@ -108,13 +180,13 @@ export default defineComponent({
       const shape = this.primaryAction.shape || (this.secondaryAction ? 'rounded' : 'pill')
       if (shape === 'rounded') style.borderRadius = '8px'
       return style
-    }
+    },
   },
   methods: {
     onAction(action: PawFixedAction) {
       if (!action.disabled) this.$emit('action', action)
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -130,7 +202,7 @@ export default defineComponent({
   min-height: 88px;
   padding: 7px 18px 0 20px;
   box-sizing: border-box;
-  border-top: .5px solid rgba(0, 0, 0, .05);
+  border-top: 0.5px solid rgba(0, 0, 0, 0.05);
   background: #fff;
 }
 
@@ -199,12 +271,12 @@ export default defineComponent({
 }
 
 .paw-fixed-action-bar__action--disabled {
-  opacity: .45;
+  opacity: 0.45;
 }
 
 .paw-fixed-action-bar__action--pressed {
-  opacity: .7;
-  transform: scale(.98);
+  opacity: 0.7;
+  transform: scale(0.98);
 }
 
 .paw-fixed-action-bar__icon {

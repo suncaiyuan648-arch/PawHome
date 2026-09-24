@@ -16,9 +16,11 @@ before(async () => {
   await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fs.copyFile(
     path.join(ROOT, 'navigation/taskContracts.ts'),
-    path.join(tempRoot, 'taskContracts.ts')
+    path.join(tempRoot, 'taskContracts.ts'),
   )
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'taskContracts.ts')).href}?test=${Date.now()}`)
+  api = await import(
+    `${pathToFileURL(path.join(tempRoot, 'taskContracts.ts')).href}?test=${Date.now()}`
+  )
 })
 
 after(async () => {
@@ -39,20 +41,41 @@ function summary(overrides = {}) {
 }
 
 function errorCode(callback, code) {
-  assert.throws(callback, error => error && error.code === code)
+  assert.throws(callback, (error) => error && error.code === code)
 }
 
 test('multi-role actor keeps every object/phase task and task identity ignores display role', () => {
   const items = [
     summary({ actorRole: 'applicant', actionType: 'confirm' }),
     summary({ actorRole: 'owner', actionType: 'review', reviewItemId: 'review-002' }),
-    summary({ businessType: 'rescue', businessId: 'rescue-001', actorRole: 'reviewer', actionType: 'review', reviewItemId: 'review-003' }),
-    summary({ businessType: 'feeding', businessId: 'order-001', actorRole: 'donor', actionType: 'feedback', reviewItemId: undefined }),
-    summary({ businessType: 'dynamic', businessId: 'dynamic-001', actorRole: 'author', actionType: 'publish', reviewItemId: undefined }),
+    summary({
+      businessType: 'rescue',
+      businessId: 'rescue-001',
+      actorRole: 'reviewer',
+      actionType: 'review',
+      reviewItemId: 'review-003',
+    }),
+    summary({
+      businessType: 'feeding',
+      businessId: 'order-001',
+      actorRole: 'donor',
+      actionType: 'feedback',
+      reviewItemId: undefined,
+    }),
+    summary({
+      businessType: 'dynamic',
+      businessId: 'dynamic-001',
+      actorRole: 'author',
+      actionType: 'publish',
+      reviewItemId: undefined,
+    }),
   ]
   const result = api.dedupeTaskSummaries(items)
   assert.equal(result.length, items.length)
-  assert.deepEqual(result.map(item => item.businessType), ['adoption', 'adoption', 'rescue', 'feeding', 'dynamic'])
+  assert.deepEqual(
+    result.map((item) => item.businessType),
+    ['adoption', 'adoption', 'rescue', 'feeding', 'dynamic'],
+  )
 
   const applicant = api.normalizeTaskSummary(summary({ actorRole: 'applicant' }))
   const owner = api.normalizeTaskSummary(summary({ actorRole: 'owner' }))
@@ -96,20 +119,70 @@ test('task identity is deterministic and isolates actor, object, phase, and busi
   assert.notEqual(api.taskIdFor(first), api.taskIdFor({ ...first, actorId: 'actor-002' }))
   assert.notEqual(api.taskIdFor(first), api.taskIdFor({ ...first, businessId: 'adopt-002' }))
   assert.notEqual(api.taskIdFor(first), api.taskIdFor({ ...first, actionType: 'apply' }))
-  assert.notEqual(api.taskIdFor(first), api.taskIdFor({ ...first, businessType: 'rescue', businessId: 'rescue-001', actorRole: 'reviewer', actionType: 'review', reviewItemId: 'review-002' }))
+  assert.notEqual(
+    api.taskIdFor(first),
+    api.taskIdFor({
+      ...first,
+      businessType: 'rescue',
+      businessId: 'rescue-001',
+      actorRole: 'reviewer',
+      actionType: 'review',
+      reviewItemId: 'review-002',
+    }),
+  )
   assert.equal(api.taskIdFor(first).startsWith('task:'), true)
 })
 
 test('unknown, empty, URL, prototype, and cross-domain inputs fail closed', () => {
   errorCode(() => api.normalizeTaskSummary(summary({ businessType: 'order' })), 'INVALID_ENUM')
   errorCode(() => api.normalizeTaskSummary(summary({ businessId: '' })), 'MISSING_VALUE')
-  errorCode(() => api.normalizeTaskSummary(summary({ businessId: 'https://example.test/adopt-001' })), 'INVALID_ID')
+  errorCode(
+    () => api.normalizeTaskSummary(summary({ businessId: 'https://example.test/adopt-001' })),
+    'INVALID_ID',
+  )
   errorCode(() => api.normalizeTaskSummary(summary({ status: 'approved' })), 'INVALID_ENUM')
-  errorCode(() => api.normalizeTaskSummary(summary({ actionType: 'review', businessType: 'feeding', businessId: 'order-001', actorRole: 'donor', reviewItemId: undefined })), 'INVALID_ENUM')
-  errorCode(() => api.normalizeTaskSummary(summary({ businessType: 'adoption', businessId: 'rescue-001' })), 'CROSS_DOMAIN_ID')
-  errorCode(() => api.normalizeTaskSummary(summary({ businessType: 'adoption', reviewItemId: 'rescue-review-001' })), 'CROSS_DOMAIN_ID')
-  errorCode(() => api.normalizeTaskSummary(summary({ businessType: 'feeding', businessId: 'order-001', actorRole: 'donor', actionType: 'feedback', reviewItemId: 'review-001' })), 'CROSS_DOMAIN_FIELD')
-  errorCode(() => api.normalizeTaskSummary(summary({ url: '/packages/adoption/pages/review/detail/index' })), 'UNKNOWN_FIELD')
+  errorCode(
+    () =>
+      api.normalizeTaskSummary(
+        summary({
+          actionType: 'review',
+          businessType: 'feeding',
+          businessId: 'order-001',
+          actorRole: 'donor',
+          reviewItemId: undefined,
+        }),
+      ),
+    'INVALID_ENUM',
+  )
+  errorCode(
+    () => api.normalizeTaskSummary(summary({ businessType: 'adoption', businessId: 'rescue-001' })),
+    'CROSS_DOMAIN_ID',
+  )
+  errorCode(
+    () =>
+      api.normalizeTaskSummary(
+        summary({ businessType: 'adoption', reviewItemId: 'rescue-review-001' }),
+      ),
+    'CROSS_DOMAIN_ID',
+  )
+  errorCode(
+    () =>
+      api.normalizeTaskSummary(
+        summary({
+          businessType: 'feeding',
+          businessId: 'order-001',
+          actorRole: 'donor',
+          actionType: 'feedback',
+          reviewItemId: 'review-001',
+        }),
+      ),
+    'CROSS_DOMAIN_FIELD',
+  )
+  errorCode(
+    () =>
+      api.normalizeTaskSummary(summary({ url: '/packages/adoption/pages/review/detail/index' })),
+    'UNKNOWN_FIELD',
+  )
 
   const polluted = Object.create(null)
   Object.assign(polluted, summary())
@@ -127,16 +200,23 @@ test('domain fields stay explicit and do not accept aliases or arbitrary URLs', 
     summary({ dynamicId: 'dynamic-001' }),
     summary({ reviewItemId: 'https://example.test/review-001' }),
   ]) {
-    errorCode(() => api.normalizeTaskSummary(item), item.reviewItemId && item.reviewItemId.startsWith('http') ? 'INVALID_ID' : 'UNKNOWN_FIELD')
+    errorCode(
+      () => api.normalizeTaskSummary(item),
+      item.reviewItemId && item.reviewItemId.startsWith('http') ? 'INVALID_ID' : 'UNKNOWN_FIELD',
+    )
   }
 })
 
 test('normalization and de-duplication are read-only and expose no write callback path', () => {
   let writes = 0
-  const callback = () => { writes += 1 }
+  const callback = () => {
+    writes += 1
+  }
   const normalized = api.normalizeTaskSummary(summary())
   assert.equal(Object.isFrozen(normalized), true)
-  assert.throws(() => { normalized.status = 'completed' }, TypeError)
+  assert.throws(() => {
+    normalized.status = 'completed'
+  }, TypeError)
   assert.equal(normalized.status, 'pending')
   errorCode(() => api.normalizeTaskSummary(summary({ write: callback })), 'UNKNOWN_FIELD')
   assert.equal(writes, 0)

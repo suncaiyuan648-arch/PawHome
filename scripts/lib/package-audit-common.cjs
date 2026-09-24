@@ -5,16 +5,36 @@ const path = require('path')
 const crypto = require('crypto')
 const JSON5 = require('json5')
 
-const PROJECT_ROOT = path.resolve(process.env.PAWHOME_PROJECT_ROOT || path.resolve(__dirname, '..', '..'))
+const PROJECT_ROOT = path.resolve(
+  process.env.PAWHOME_PROJECT_ROOT || path.resolve(__dirname, '..', '..'),
+)
 const DEFAULT_OUTPUT = path.join(PROJECT_ROOT, 'unpackage', 'dist', 'build', 'mp-weixin')
 const DEFAULT_REPORT_DIR = path.join(PROJECT_ROOT, '.artifacts', 'package-audit')
 const DEFAULT_BUDGETS = path.join(PROJECT_ROOT, 'config', 'package-budgets.json')
 const SOURCE_EXTENSIONS = new Set(['.js', '.wxml', '.wxss', '.json', '.wxs', '.css'])
 const CODE_EXTENSIONS = new Set(['.js', '.wxs', '.json', '.wxml', '.wxss', '.css'])
 const ASSET_EXTENSIONS = new Set([
-  '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.avif', '.bmp', '.ico',
-  '.mp3', '.wav', '.m4a', '.aac', '.mp4', '.mov', '.webm', '.woff', '.woff2',
-  '.ttf', '.otf', '.eot'
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.webp',
+  '.svg',
+  '.avif',
+  '.bmp',
+  '.ico',
+  '.mp3',
+  '.wav',
+  '.m4a',
+  '.aac',
+  '.mp4',
+  '.mov',
+  '.webm',
+  '.woff',
+  '.woff2',
+  '.ttf',
+  '.otf',
+  '.eot',
 ])
 const COMPONENT_EXTENSIONS = ['.js', '.json', '.wxml', '.wxss', '.wxs']
 
@@ -62,15 +82,23 @@ function loadManifest(output) {
 }
 
 function normalizeRoot(value, label) {
-  if (typeof value !== 'string' || !value.trim()) throw new Error(`${label} must be a non-empty relative path`)
+  if (typeof value !== 'string' || !value.trim())
+    throw new Error(`${label} must be a non-empty relative path`)
   const raw = value.trim()
   if (raw.startsWith('/') || raw.startsWith('\\') || raw.includes('\\')) {
-    throw new Error(`${label} must be a relative path without a leading slash or backslash: ${value}`)
+    throw new Error(
+      `${label} must be a relative path without a leading slash or backslash: ${value}`,
+    )
   }
   const root = normalizePath(raw).replace(/\/+$/g, '')
   const rawSegments = raw.split('/')
   const segments = root.split('/')
-  if (!root || root.startsWith('../') || rawSegments.some(segment => !segment || segment === '.' || segment === '..') || segments.some(segment => !segment || segment === '.' || segment === '..')) {
+  if (
+    !root ||
+    root.startsWith('../') ||
+    rawSegments.some((segment) => !segment || segment === '.' || segment === '..') ||
+    segments.some((segment) => !segment || segment === '.' || segment === '..')
+  ) {
     throw new Error(`${label} is not a safe relative path: ${value}`)
   }
   return root
@@ -85,10 +113,13 @@ function packageRoots(manifest) {
   const roots = [{ name: 'main', root: '' }]
   for (const [index, entry] of entries.entries()) {
     const root = normalizeRoot(entry && entry.root, `subPackages[${index}].root`)
-    if (roots.some(item => item.root === root)) throw new Error(`duplicate processed sub-package root: ${root}`)
+    if (roots.some((item) => item.root === root))
+      throw new Error(`duplicate processed sub-package root: ${root}`)
     for (const existing of roots.slice(1)) {
       if (root.startsWith(`${existing.root}/`) || existing.root.startsWith(`${root}/`)) {
-        throw new Error(`nested processed sub-package roots are not allowed: ${existing.root} and ${root}`)
+        throw new Error(
+          `nested processed sub-package roots are not allowed: ${existing.root} and ${root}`,
+        )
       }
     }
     roots.push({ name: root, root })
@@ -98,7 +129,9 @@ function packageRoots(manifest) {
 
 function packageForRelative(relative, roots) {
   const file = normalizePath(relative).replace(/^\/+/, '')
-  const candidates = roots.filter(item => item.root && (file === item.root || file.startsWith(`${item.root}/`)))
+  const candidates = roots.filter(
+    (item) => item.root && (file === item.root || file.startsWith(`${item.root}/`)),
+  )
   if (!candidates.length) return 'main'
   candidates.sort((left, right) => right.root.length - left.root.length)
   return candidates[0].name
@@ -106,21 +139,21 @@ function packageForRelative(relative, roots) {
 
 function inventoryOutput(output, roots) {
   return walkFiles(output)
-    .map(file => {
+    .map((file) => {
       const relative = relPath(output, file)
       return {
         file,
         path: relative,
         bytes: fs.statSync(file).size,
         package: packageForRelative(relative, roots),
-        hash: crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex')
+        hash: crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'),
       }
     })
     .sort((left, right) => left.path.localeCompare(right.path))
 }
 
 function packageTotals(files, roots) {
-  const totals = Object.fromEntries(roots.map(item => [item.name, 0]))
+  const totals = Object.fromEntries(roots.map((item) => [item.name, 0]))
   for (const file of files) totals[file.package] = (totals[file.package] || 0) + file.bytes
   return totals
 }
@@ -136,7 +169,7 @@ function duplicateGroups(files) {
     .map(([hash, entries]) => ({
       hash,
       bytes: entries[0].bytes,
-      files: entries.map(entry => entry.path).sort()
+      files: entries.map((entry) => entry.path).sort(),
     }))
     .sort((left, right) => right.bytes - left.bytes || left.hash.localeCompare(right.hash))
 }
@@ -162,7 +195,7 @@ function writeFailureReport(file, output, error, extra = {}) {
     output,
     ...extra,
     errors: [error instanceof Error ? error.message : String(error)],
-    pass: false
+    pass: false,
   })
 }
 
@@ -192,7 +225,7 @@ function parseArgs(argv, options = {}) {
       args.final = true
       continue
     }
-    const key = Object.keys(aliases).find(name => token === name || token.startsWith(`${name}=`))
+    const key = Object.keys(aliases).find((name) => token === name || token.startsWith(`${name}=`))
     if (!key) throw new Error(`unknown argument: ${token}`)
     const value = token.includes('=') ? token.slice(token.indexOf('=') + 1) : argv[++index]
     if (!value) throw new Error(`${token} requires a value`)
@@ -213,8 +246,12 @@ function resolveAssetTarget(fromFile, ref, output, kind = 'asset') {
 
 function candidateFiles(target, kind) {
   if (fs.existsSync(target) && fs.statSync(target).isFile()) return [target]
-  if (kind === 'usingComponents') return COMPONENT_EXTENSIONS.map(ext => `${target}${ext}`).filter(file => fs.existsSync(file))
-  if (kind === 'style-import') return ['.wxss', '.css'].map(ext => `${target}${ext}`).filter(file => fs.existsSync(file))
+  if (kind === 'usingComponents')
+    return COMPONENT_EXTENSIONS.map((ext) => `${target}${ext}`).filter((file) =>
+      fs.existsSync(file),
+    )
+  if (kind === 'style-import')
+    return ['.wxss', '.css'].map((ext) => `${target}${ext}`).filter((file) => fs.existsSync(file))
   return []
 }
 
@@ -246,5 +283,5 @@ module.exports = {
   stripQueryHash,
   walkFiles,
   writeFailureReport,
-  writeReport
+  writeReport,
 }

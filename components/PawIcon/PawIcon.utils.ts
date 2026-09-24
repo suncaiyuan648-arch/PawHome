@@ -8,11 +8,14 @@ export const PAW_ICON_MAX_SIZE = 96
 const warnedSizes = new Set<string>()
 
 function warnSizeBoundary(size: number, reason: string): void {
-  if (typeof process === 'undefined' || !process.env || process.env.NODE_ENV !== 'development') return
+  if (typeof process === 'undefined' || !process.env || process.env.NODE_ENV !== 'development')
+    return
   const key = `${reason}:${size}`
   if (warnedSizes.has(key)) return
   warnedSizes.add(key)
-	console.warn(`[PawIcon] size ${size}px ${reason}; recommended range is ${PAW_ICON_MIN_RECOMMENDED_SIZE}–${PAW_ICON_MAX_SIZE}px`)
+  console.warn(
+    `[PawIcon] size ${size}px ${reason}; recommended range is ${PAW_ICON_MIN_RECOMMENDED_SIZE}–${PAW_ICON_MAX_SIZE}px`,
+  )
 }
 
 export function resolvePawIconSize(size: PawIconSize = PAW_ICON_DEFAULT_SIZE): number {
@@ -31,7 +34,8 @@ export function resolvePawIconSize(size: PawIconSize = PAW_ICON_DEFAULT_SIZE): n
       warnSizeBoundary(numeric, `exceeds the maximum and will be clamped to ${PAW_ICON_MAX_SIZE}`)
       return PAW_ICON_MAX_SIZE
     }
-    if (numeric < PAW_ICON_MIN_RECOMMENDED_SIZE) warnSizeBoundary(numeric, 'is below the recommended minimum')
+    if (numeric < PAW_ICON_MIN_RECOMMENDED_SIZE)
+      warnSizeBoundary(numeric, 'is below the recommended minimum')
     // Keep decimals intact. Browser/WeChat performs final DPR rasterization.
     return numeric
   }
@@ -63,14 +67,13 @@ export function normalizePawIconRotate(value: number | string | null | undefined
 }
 
 export function resolvePawIconTransform(
-	rotate: number | string | null | undefined,
-	flip: PawIconFlip | string | null | undefined
+  rotate: number | string | null | undefined,
+  flip: PawIconFlip | string | null | undefined,
 ) {
   const normalizedRotate = normalizePawIconRotate(rotate)
-	const normalizedFlip: PawIconFlip = typeof flip === 'string' && PAW_ICON_FLIPS.has(flip)
-		? (flip as PawIconFlip)
-		: 'none'
-	const transforms: string[] = []
+  const normalizedFlip: PawIconFlip =
+    typeof flip === 'string' && PAW_ICON_FLIPS.has(flip) ? (flip as PawIconFlip) : 'none'
+  const transforms: string[] = []
 
   // CSS applies the rightmost transform first, so this emits flip before
   // rotate as required by the public PawIcon transform contract.
@@ -80,30 +83,33 @@ export function resolvePawIconTransform(
 
   return {
     transform: transforms.length ? transforms.join(' ') : 'none',
-    transformOrigin: 'center center'
+    transformOrigin: 'center center',
   }
 }
 
-export function resolveMonoIconUri(template: string | null | undefined, color: string | null | undefined): string {
+export function resolveMonoIconUri(
+  template: string | null | undefined,
+  color: string | null | undefined,
+): string {
   if (!template) return ''
   const cacheKey = `${template}\u0000${color}`
   if (!monoUriCache.has(cacheKey)) {
-		monoUriCache.set(
-			cacheKey,
-			`data:image/svg+xml;charset=utf-8,${template.replace(/__PAW_ICON_COLOR__/g, encodeURIComponent(color ?? ''))}`
-		)
-	}
-	return monoUriCache.get(cacheKey) ?? ''
+    monoUriCache.set(
+      cacheKey,
+      `data:image/svg+xml;charset=utf-8,${template.replace(/__PAW_ICON_COLOR__/g, encodeURIComponent(color ?? ''))}`,
+    )
+  }
+  return monoUriCache.get(cacheKey) ?? ''
 }
 
 export function warnColorOverride(name: string): void {
   if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development') {
-		console.warn(`[PawIcon] color is ignored for color icon "${name}"; use the Figma asset color.`)
+    console.warn(`[PawIcon] color is ignored for color icon "${name}"; use the Figma asset color.`)
   }
 }
 
 export function warnUnknownIcon(name: string): void {
   if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development') {
-		console.warn(`[PawIcon] Unknown icon: ${name}`)
+    console.warn(`[PawIcon] Unknown icon: ${name}`)
   }
 }

@@ -1,21 +1,38 @@
 <template>
-  <view class="paw-address-picker" :class="{ 'is-picked': Boolean(selectedAddress) }"
-    :style="{ backgroundColor: backgroundColor }" @tap="openAddressList">
+  <view
+    class="paw-address-picker"
+    :class="{ 'is-picked': Boolean(selectedAddress) }"
+    :style="{ backgroundColor: backgroundColor }"
+    @tap="openAddressList"
+  >
     <view class="paw-address-picker__icon">
-      <image class="paw-address-picker__icon-circle" src="/static/figma/create-yard/address-pin-circle.svg"
-        mode="aspectFit" />
-      <image class="paw-address-picker__icon-pin" src="/static/figma/create-yard/address-pin.png" mode="aspectFit" />
+      <image
+        class="paw-address-picker__icon-circle"
+        src="/static/figma/create-yard/address-pin-circle.svg"
+        mode="aspectFit"
+      />
+      <image
+        class="paw-address-picker__icon-pin"
+        src="/static/figma/create-yard/address-pin.png"
+        mode="aspectFit"
+      />
     </view>
     <view class="paw-address-picker__main">
       <view class="paw-address-picker__line">
-        <text class="paw-address-picker__title">{{ selectedAddress ? addressDetail : emptyTitle }}</text>
+        <text class="paw-address-picker__title">{{
+          selectedAddress ? addressDetail : emptyTitle
+        }}</text>
         <view class="paw-address-picker__action">
           <text>{{ selectedAddress ? '修改' : '添加' }}</text>
-          <image src="/static/figma/create-yard/arrow-right.svg" mode="aspectFit" />
+          <image
+            src="/static/figma/create-yard/arrow-right.svg"
+            mode="aspectFit"
+          />
         </view>
       </view>
-      <text class="paw-address-picker__sub">{{ selectedAddress ? selectedAddress.name + ' ' + selectedAddress.phone :
-        emptySubtitle }}</text>
+      <text class="paw-address-picker__sub">{{
+        selectedAddress ? selectedAddress.name + ' ' + selectedAddress.phone : emptySubtitle
+      }}</text>
     </view>
   </view>
 </template>
@@ -38,7 +55,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function normalizeAddress(value: unknown): AddressRecord | null {
-  if (!isRecord(value) || value.id === undefined || value.id === null || String(value.id).trim() === '') return null
+  if (
+    !isRecord(value) ||
+    value.id === undefined ||
+    value.id === null ||
+    String(value.id).trim() === ''
+  )
+    return null
   return {
     ...value,
     id: String(value.id),
@@ -48,7 +71,7 @@ function normalizeAddress(value: unknown): AddressRecord | null {
       ? value.regionParts.filter((part): part is string => typeof part === 'string')
       : [],
     detail: typeof value.detail === 'string' ? value.detail : '',
-    isDefault: value.isDefault === true
+    isDefault: value.isDefault === true,
   }
 }
 
@@ -56,42 +79,59 @@ export default defineComponent({
   name: 'PawAddressPickerCard',
   props: {
     kind: { type: String, default: 'shipping' },
-		address: { type: Object as PropType<AddressRecord | null>, default: null },
+    address: { type: Object as PropType<AddressRecord | null>, default: null },
     returnUrl: { type: String, default: '' },
     title: { type: String, default: '' },
     subtitle: { type: String, default: '不对外展示，可放心填写' },
     backgroundColor: { type: String, default: '#fff' },
     useDefaultAddress: { type: Boolean, default: true },
-    requestId: { type: String, default: 'address-picker' }
+    requestId: { type: String, default: 'address-picker' },
   },
   emits: {
-    'select': eventContract<[address: AddressRecord]>(),
+    select: eventContract<[address: AddressRecord]>(),
   },
-	data(): PawAddressPickerCardState {
+  data(): PawAddressPickerCardState {
     return { selectedAddress: null }
   },
   computed: {
-		normalizedKind(): AddressKind { return this.kind === 'service' ? 'service' : 'shipping' },
+    normalizedKind(): AddressKind {
+      return this.kind === 'service' ? 'service' : 'shipping'
+    },
     emptyTitle() {
       if (this.title) return this.title
       return this.normalizedKind === 'service' ? '请填写服务地址' : '请填写收货地址，用于接收猫粮'
     },
-    emptySubtitle() { return this.subtitle },
+    emptySubtitle() {
+      return this.subtitle
+    },
     addressDetail() {
       if (!this.selectedAddress) return ''
-      return [...(this.selectedAddress.regionParts || []), this.selectedAddress.detail || ''].filter(Boolean).join(' ')
-    }
+      return [...(this.selectedAddress.regionParts || []), this.selectedAddress.detail || '']
+        .filter(Boolean)
+        .join(' ')
+    },
   },
   watch: {
-    address: { deep: true, handler() { this.syncAddress() } },
-    kind() { this.syncAddress() }
+    address: {
+      deep: true,
+      handler() {
+        this.syncAddress()
+      },
+    },
+    kind() {
+      this.syncAddress()
+    },
   },
-	created() { this.syncAddress() },
+  created() {
+    this.syncAddress()
+  },
   methods: {
     syncAddress() {
-      this.selectedAddress = this.address || (this.useDefaultAddress
-        ? getAddressList(this.normalizedKind).find((item) => item.isDefault) || null
-        : null)
+      this.selectedAddress =
+        this.address ||
+        (this.useDefaultAddress
+          ? getAddressList(this.normalizedKind).find((item) => item.isDefault) || null
+          : null)
     },
     openAddressList() {
       const returnUrl = this.returnUrl || ''
@@ -100,7 +140,8 @@ export default defineComponent({
         intent: 'select',
         requestId: this.requestId,
       }
-      if (this.selectedAddress && this.selectedAddress.id) params.addressId = String(this.selectedAddress.id)
+      if (this.selectedAddress && this.selectedAddress.id)
+        params.addressId = String(this.selectedAddress.id)
       const route = buildRoute('address.list', params)
       const query = `${returnUrl ? `&returnUrl=${encodeURIComponent(returnUrl)}` : ''}`
       uni.navigateTo({
@@ -111,11 +152,11 @@ export default defineComponent({
             if (!address) return
             this.selectedAddress = address
             this.$emit('select', this.selectedAddress)
-          }
-        }
+          },
+        },
       })
-    }
-  }
+    },
+  },
 })
 </script>
 

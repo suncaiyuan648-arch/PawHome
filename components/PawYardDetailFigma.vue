@@ -1,114 +1,268 @@
 <template>
-  <view class="yard-detail-figma" :class="'state-' + activeState">
+  <view
+    class="yard-detail-figma"
+    :class="'state-' + activeState"
+  >
     <!-- #ifndef MP-WEIXIN -->
-    <image class="h5-status-bar" src="/static/figma/yard-detail-top.png" mode="scaleToFill" />
+    <image
+      class="h5-status-bar"
+      src="/static/figma/yard-detail-top.png"
+      mode="scaleToFill"
+    />
     <!-- #endif -->
-    <PawPageNav background="#ffffff" :content-inset-left="37" fallback-url="/pages/index/index" :auto-back="false"
-      @back="goBack">
+    <PawPageNav
+      background="#ffffff"
+      :content-inset-left="37"
+      fallback-url="/pages/index/index"
+      :auto-back="false"
+      @back="goBack"
+    >
       <template #content>
         <view class="yard-owner-nav">
-          <PawAvatar :src="owner.avatar" :size="32" :clickable="true" @click="openOwnerProfile" />
-          <text class="owner-name" @tap.stop="openOwnerProfile">{{ owner.name }}</text>
+          <PawAvatar
+            :src="owner.avatar"
+            :size="32"
+            :clickable="true"
+            @click="openOwnerProfile"
+          />
+          <text
+            class="owner-name"
+            @tap.stop="openOwnerProfile"
+            >{{ owner.name }}</text
+          >
           <PawOwnerBadge class="yard-owner-badge" />
         </view>
       </template>
     </PawPageNav>
     <view class="notice-line">
-      <PawAnnouncementMarquee :items="announcementItems" :height="20" :speed="82" :gap="1000" color="#333333" />
+      <PawAnnouncementMarquee
+        :items="announcementItems"
+        :height="20"
+        :speed="82"
+        :gap="1000"
+        color="#333333"
+      />
     </view>
 
-    <view class="yard-summary" @tap.stop="$emit('yard-click', yard)">
+    <view
+      class="yard-summary"
+      @tap.stop="$emit('yard-click', yard)"
+    >
       <view class="yard-summary__info-row">
-        <PawAvatar class="yard-summary__cover" :src="yard.avatar" :size="92" shape="rounded" />
+        <PawAvatar
+          class="yard-summary__cover"
+          :src="yard.avatar"
+          :size="92"
+          shape="rounded"
+        />
         <view class="yard-summary__details">
           <view class="yard-summary__identity">
-            <view class="yard-summary__name-row"><text class="yard-summary__name">{{ yard.name }}</text>
+            <view class="yard-summary__name-row"
+              ><text class="yard-summary__name">{{ yard.name }}</text>
               <PawVerifiedBadge v-if="yard.verified !== false" />
             </view>
             <YardLocationLine :text="yard.location" />
           </view>
           <view class="yard-summary__metrics">
-            <view class="yard-summary__tags"><text v-for="(tag, index) in yard.tags" :key="index"
-                class="yard-summary__tag">{{ tag }}</text></view>
+            <view class="yard-summary__tags"
+              ><text
+                v-for="(tag, index) in yard.tags"
+                :key="index"
+                class="yard-summary__tag"
+                >{{ tag }}</text
+              ></view
+            >
             <view class="yard-summary__stats">
-              <view class="yard-summary__stat"><text class="yard-summary__stat-value">999斤</text><text
-                  class="yard-summary__stat-label">已获粮</text></view>
-              <view class="yard-summary__stat"><text class="yard-summary__stat-value">13只</text><text
-                  class="yard-summary__stat-label">帮助领养</text></view>
-              <view class="yard-summary__stat"><text class="yard-summary__stat-value">3天2小时</text><text
-                  class="yard-summary__stat-label">平均反馈时长</text></view>
+              <view class="yard-summary__stat"
+                ><text class="yard-summary__stat-value">999斤</text
+                ><text class="yard-summary__stat-label">已获粮</text></view
+              >
+              <view class="yard-summary__stat"
+                ><text class="yard-summary__stat-value">13只</text
+                ><text class="yard-summary__stat-label">帮助领养</text></view
+              >
+              <view class="yard-summary__stat"
+                ><text class="yard-summary__stat-value">3天2小时</text
+                ><text class="yard-summary__stat-label">平均反馈时长</text></view
+              >
             </view>
           </view>
         </view>
-        <image class="yard-summary__sound" src="/static/laba.png" mode="aspectFit" />
+        <image
+          class="yard-summary__sound"
+          src="/static/laba.png"
+          mode="aspectFit"
+        />
       </view>
-      <scroll-view class="pet-strip" scroll-x :show-scrollbar="false">
+      <scroll-view
+        class="pet-strip"
+        scroll-x
+        :show-scrollbar="false"
+      >
         <view class="pet-strip-row">
-          <view class="pet-item" v-for="pet in petItems" :key="pet.id" @tap.stop="openPetDetail(pet)">
-            <image :src="pet.avatar" mode="aspectFill" /><text>{{ pet.name }}</text>
-          </view><uni-icons class="pet-next" type="right" :size="19" color="#c8c8c8" @tap.stop="openPetList" />
+          <view
+            class="pet-item"
+            v-for="pet in petItems"
+            :key="pet.id"
+            @tap.stop="openPetDetail(pet)"
+          >
+            <image
+              :src="pet.avatar"
+              mode="aspectFill"
+            /><text>{{ pet.name }}</text> </view
+          ><uni-icons
+            class="pet-next"
+            type="right"
+            :size="19"
+            color="#c8c8c8"
+            @tap.stop="openPetList"
+          />
         </view>
       </scroll-view>
-      <view class="yard-intro"><text>{{ introCopy }}</text><text v-if="!expandedIntro" class="more-word"
-          @tap.stop="expandedIntro = true">... 全文</text><text v-else class="more-word"
-          @tap.stop="expandedIntro = false">
-          收起</text></view>
-      <view class="yard-meta"><text>{{ yard.district }}</text>
-        <view><text>点赞{{ yard.stats.likes }}</text><text>入驻{{ yard.stats.members }}人</text><text>分享{{ yard.stats.shares
-        }}</text></view>
+      <view class="yard-intro"
+        ><text>{{ introCopy }}</text
+        ><text
+          v-if="!expandedIntro"
+          class="more-word"
+          @tap.stop="expandedIntro = true"
+          >... 全文</text
+        ><text
+          v-else
+          class="more-word"
+          @tap.stop="expandedIntro = false"
+        >
+          收起</text
+        ></view
+      >
+      <view class="yard-meta"
+        ><text>{{ yard.district }}</text>
+        <view
+          ><text>点赞{{ yard.stats.likes }}</text
+          ><text>入驻{{ yard.stats.members }}人</text><text>分享{{ yard.stats.shares }}</text></view
+        >
       </view>
     </view>
 
-    <view v-if="activeState !== 'dynamic-empty'" class="yard-rank-section">
-      <YardFeedRankStrip :feed-summary="yard.stats.feedSummary" :seamless-items="rankItems"
-        @leaderboard="$emit('leaderboard')" @rank-user="$emit('rank-user', $event)" />
+    <view
+      v-if="activeState !== 'dynamic-empty'"
+      class="yard-rank-section"
+    >
+      <YardFeedRankStrip
+        :feed-summary="yard.stats.feedSummary"
+        :seamless-items="rankItems"
+        @leaderboard="$emit('leaderboard')"
+        @rank-user="$emit('rank-user', $event)"
+      />
     </view>
 
     <view class="yard-tabs-section">
-      <PawTabs class="detail-tabs" :model-value="activeState === 'feeding' ? 'feeding' : 'dynamic'" :items="detailTabs"
-        variant="yard-detail" indicator-size="medium" @change="switchState" />
+      <PawTabs
+        class="detail-tabs"
+        :model-value="activeState === 'feeding' ? 'feeding' : 'dynamic'"
+        :items="detailTabs"
+        variant="yard-detail"
+        indicator-size="medium"
+        @change="switchState"
+      />
 
-      <view class="yard-tabs-content" :style="tabContentStyle">
-        <view v-if="activeState === 'dynamic-empty'" class="dynamic-empty">
-          <image class="yard-empty-art" src="/static/figma/yard-detail/empty-dynamic.svg" mode="aspectFit" />
+      <view
+        class="yard-tabs-content"
+        :style="tabContentStyle"
+      >
+        <view
+          v-if="activeState === 'dynamic-empty'"
+          class="dynamic-empty"
+        >
+          <image
+            class="yard-empty-art"
+            src="/static/figma/yard-detail/empty-dynamic.svg"
+            mode="aspectFit"
+          />
           <text class="empty-title">院主佛系，还没发过动态</text>
-          <view class="remind-btn" @click="showRemind">催一下</view>
+          <view
+            class="remind-btn"
+            @click="showRemind"
+            >催一下</view
+          >
         </view>
 
-        <view v-else-if="activeState === 'feeding'" class="feeding-list">
-          <view class="feeding-row" v-for="n in 4" :key="n">
-            <image src="/static/figma/yard-feeding-avatar.png?v=2" mode="aspectFill" /><text
-              class="feeding-name">平安是福</text>
-            <LevelBadge :level="1" /><text class="feeding-copy">投粮200克 已反馈2/5次</text>
+        <view
+          v-else-if="activeState === 'feeding'"
+          class="feeding-list"
+        >
+          <view
+            class="feeding-row"
+            v-for="n in 4"
+            :key="n"
+          >
+            <image
+              src="/static/figma/yard-feeding-avatar.png?v=2"
+              mode="aspectFill"
+            /><text class="feeding-name">平安是福</text> <LevelBadge :level="1" /><text
+              class="feeding-copy"
+              >投粮200克 已反馈2/5次</text
+            >
           </view>
         </view>
 
-        <view v-else class="dynamic-feed">
-          <view class="post-card" v-for="post in postCount" :key="post">
+        <view
+          v-else
+          class="dynamic-feed"
+        >
+          <view
+            class="post-card"
+            v-for="post in postCount"
+            :key="post"
+          >
             <view class="post-layout">
-              <PawAvatar class="post-avatar" :src="'/static/figma/yard-post-owner-original.png'" :size="34" />
+              <PawAvatar
+                class="post-avatar"
+                :src="'/static/figma/yard-post-owner-original.png'"
+                :size="34"
+              />
               <view class="post-content">
-                <view class="post-head"><text class="post-name">姜栋</text>
+                <view class="post-head"
+                  ><text class="post-name">姜栋</text>
                   <PawOwnerBadge />
                 </view>
-                <FeedingSourceRow class="post-source" :feeders="postFeeders" text="来自花开富贵投喂的4斤猫粮" />
+                <FeedingSourceRow
+                  class="post-source"
+                  :feeders="postFeeders"
+                  text="来自花开富贵投喂的4斤猫粮"
+                />
                 <text class="post-copy">{{ postCopy }}</text>
                 <text class="post-full">全文</text>
-                <image v-if="post === 1" class="post-single" src="/static/figma/yard-post-single-exact.png"
-                  mode="aspectFill" />
-                <view v-else class="post-grid">
-                  <image v-for="n in gridCount" :key="n" src="/static/figma/yard-post-grid-exact.png"
-                    mode="aspectFill" />
+                <image
+                  v-if="post === 1"
+                  class="post-single"
+                  src="/static/figma/yard-post-single-exact.png"
+                  mode="aspectFill"
+                />
+                <view
+                  v-else
+                  class="post-grid"
+                >
+                  <image
+                    v-for="n in gridCount"
+                    :key="n"
+                    src="/static/figma/yard-post-grid-exact.png"
+                    mode="aspectFill"
+                  />
                 </view>
                 <view class="post-time">
-                  <view class="post-time-info"><text>昨天 20:45&#12288;江西</text><text class="post-reply">回复</text></view>
-                  <view class="post-like">
-                    <PawLikeIcon :liked="false" /><text>32</text>
-                  </view>
+                  <view class="post-time-info"
+                    ><text>昨天 20:45&#12288;江西</text><text class="post-reply">回复</text></view
+                  >
+                  <view class="post-like"> <PawLikeIcon :liked="false" /><text>32</text> </view>
                 </view>
-                <CommentThread class="yard-comment-thread" :comments="yardComments.slice(0, commentCount)"
-                  :comment-preview-count="3" @user-click="openCommentUser" @reply="openReplySheet"
-                  @like="$emit('comment-like', $event)" />
+                <CommentThread
+                  class="yard-comment-thread"
+                  :comments="yardComments.slice(0, commentCount)"
+                  :comment-preview-count="3"
+                  @user-click="openCommentUser"
+                  @reply="openReplySheet"
+                  @like="$emit('comment-like', $event)"
+                />
               </view>
             </view>
           </view>
@@ -116,16 +270,29 @@
       </view>
     </view>
 
-    <PawFixedActionBar :actions="footerActions" :primary-action="primaryAction" @action="onFooterAction"
-      @primary="openPetList" />
+    <PawFixedActionBar
+      :actions="footerActions"
+      :primary-action="primaryAction"
+      @action="onFooterAction"
+      @primary="openPetList"
+    />
     <ShareActionSheet v-model:visible="shareSheetVisible" />
-    <ReplyComposerSheet v-model:visible="replySheetVisible" :reply-to-name="replyTargetName" @send="onReplySend"
-      @voice="onComposerVoice" @pick-image="onComposerPickImage" />
+    <ReplyComposerSheet
+      v-model:visible="replySheetVisible"
+      :reply-to-name="replyTargetName"
+      @send="onReplySend"
+      @voice="onComposerVoice"
+      @pick-image="onComposerPickImage"
+    />
   </view>
 </template>
 
 <script lang="ts">
-import { commentProfileIdentity, findCommentById, type CommentItemRecord } from '@/components/dynamic/commentMetadata.ts'
+import {
+  commentProfileIdentity,
+  findCommentById,
+  type CommentItemRecord,
+} from '@/components/dynamic/commentMetadata.ts'
 
 import { eventContract } from '@/utils/componentEvents.ts'
 
@@ -197,18 +364,34 @@ interface YardDetailData {
 
 export default defineComponent({
   name: 'PawYardDetailFigma',
-  components: { PawPageNav, PawAnnouncementMarquee, PawAvatar, PawOwnerBadge, PawVerifiedBadge, YardLocationLine, LevelBadge, FeedingSourceRow, YardFeedRankStrip, PawFixedActionBar, CommentThread, PawTabs, ReplyComposerSheet, ShareActionSheet, PawLikeIcon },
+  components: {
+    PawPageNav,
+    PawAnnouncementMarquee,
+    PawAvatar,
+    PawOwnerBadge,
+    PawVerifiedBadge,
+    YardLocationLine,
+    LevelBadge,
+    FeedingSourceRow,
+    YardFeedRankStrip,
+    PawFixedActionBar,
+    CommentThread,
+    PawTabs,
+    ReplyComposerSheet,
+    ShareActionSheet,
+    PawLikeIcon,
+  },
   props: {
     state: { type: String as PropType<YardDetailState>, default: 'dynamic' },
-    yardData: { type: Object as PropType<YardMock>, default: () => getPawHomeYardMock() }
+    yardData: { type: Object as PropType<YardMock>, default: () => getPawHomeYardMock() },
   },
   emits: {
     'yard-click': eventContract<[yard: YardMock]>(),
-    'leaderboard': eventContract<[]>(),
+    leaderboard: eventContract<[]>(),
     'rank-user': eventContract<[user: import('@/utils/yardMock.ts').YardRankItem]>(),
     'pet-click': eventContract<[pet: YardDetailPetPreview]>(),
     'pet-list-click': eventContract<[]>(),
-    'adopt': eventContract<[]>(),
+    adopt: eventContract<[]>(),
     'comment-user': eventContract<[comment: CommentItemRecord]>(),
     'comment-reply': eventContract<[comment: CommentItemRecord]>(),
     'comment-like': eventContract<[comment: CommentItemRecord]>(),
@@ -224,12 +407,17 @@ export default defineComponent({
       replySheetVisible: false,
       replySheetTarget: null,
       announcementItems: yardMock.announcementItems,
-      detailTabs: [{ key: 'dynamic', label: '动态' }, { key: 'feeding', label: '投粮记录' }],
+      detailTabs: [
+        { key: 'dynamic', label: '动态' },
+        { key: 'feeding', label: '投粮记录' },
+      ],
       owner: yardMock.owner,
       yard: yardMock,
-      petItems: yardMock.pets.slice(0, 6).map((pet: YardPet) => ({ id: pet.id, name: pet.name, avatar: pet.avatar })),
+      petItems: yardMock.pets
+        .slice(0, 6)
+        .map((pet: YardPet) => ({ id: pet.id, name: pet.name, avatar: pet.avatar })),
       postFeeders: yardMock.postFeeders,
-      rankItems: yardMock.rankItems
+      rankItems: yardMock.rankItems,
     }
   },
   computed: {
@@ -237,75 +425,134 @@ export default defineComponent({
       return this.tabContentMinHeight ? { minHeight: `${this.tabContentMinHeight}px` } : {}
     },
     introCopy() {
-      const short = '小灰灰是去年冬天快过年的时候发现的流浪猫，一开始胆子很小，后来熟了之后才愿意跟我接触，希望多多投喂，谢谢，感谢大家的帮助和支持，我...'
-      const long = '小灰灰是去年冬天快过年的时候发现的流浪猫，一开始胆子很小，后来熟了之后才愿意跟我接触，希望多多投喂，谢谢，感谢大家的帮助和支持。我一定会好好照顾这些可爱的小生命，让它们健康成长。小灰灰平时很亲人，也喜欢安静地晒太阳，希望大家持续关注它。'
+      const short =
+        '小灰灰是去年冬天快过年的时候发现的流浪猫，一开始胆子很小，后来熟了之后才愿意跟我接触，希望多多投喂，谢谢，感谢大家的帮助和支持，我...'
+      const long =
+        '小灰灰是去年冬天快过年的时候发现的流浪猫，一开始胆子很小，后来熟了之后才愿意跟我接触，希望多多投喂，谢谢，感谢大家的帮助和支持。我一定会好好照顾这些可爱的小生命，让它们健康成长。小灰灰平时很亲人，也喜欢安静地晒太阳，希望大家持续关注它。'
       return this.expandedIntro ? long : short
     },
-    postCount() { return this.activeState === 'dynamic-expanded' ? 2 : 2 }
-    , postCopy() {
-      const base = '哎 又忍不住开始书写小作文\u3000\u3000此时的弟弟应该刚下自习不到20分钟 又忍不住开始书写小作文\u3000\u3000此时的弟弟应该刚下自习不到20分钟 又忍不住开始书写小作文...'
+    postCount() {
+      return this.activeState === 'dynamic-expanded' ? 2 : 2
+    },
+    postCopy() {
+      const base =
+        '哎 又忍不住开始书写小作文\u3000\u3000此时的弟弟应该刚下自习不到20分钟 又忍不住开始书写小作文\u3000\u3000此时的弟弟应该刚下自习不到20分钟 又忍不住开始书写小作文...'
       return this.activeState === 'dynamic-expanded' ? base + base : base
-    }
-    , commentCount() { return this.activeState === 'dynamic-expanded' ? 4 : 3 }
-    , yardComments() { return this.yard.comments || [] }
-    , gridCount() { return this.activeState === 'dynamic-expanded' ? 3 : 9 }
-    , footerActions(): YardDetailFooterAction[] { return [{ key: 'share', label: '分享', image: '/static/fenxiang.png' }, { key: 'join', label: this.joined ? '已入驻' : '入驻', image: this.joined ? '/static/yard-joined-checked.png' : '/static/ruzhu.png' }, { key: 'adopt', label: '领养', image: '/static/lingyang.png', qa: 'qa-yard-detail-adopt' }] }
-    , primaryAction() { return { key: 'feed', label: '云养一只', iconName: 'actions/feed', iconSize: 32, size: 'md' } }
-    , replyTargetName() {
+    },
+    commentCount() {
+      return this.activeState === 'dynamic-expanded' ? 4 : 3
+    },
+    yardComments() {
+      return this.yard.comments || []
+    },
+    gridCount() {
+      return this.activeState === 'dynamic-expanded' ? 3 : 9
+    },
+    footerActions(): YardDetailFooterAction[] {
+      return [
+        { key: 'share', label: '分享', image: '/static/fenxiang.png' },
+        {
+          key: 'join',
+          label: this.joined ? '已入驻' : '入驻',
+          image: this.joined ? '/static/yard-joined-checked.png' : '/static/ruzhu.png',
+        },
+        { key: 'adopt', label: '领养', image: '/static/lingyang.png', qa: 'qa-yard-detail-adopt' },
+      ]
+    },
+    primaryAction() {
+      return { key: 'feed', label: '云养一只', iconName: 'actions/feed', iconSize: 32, size: 'md' }
+    },
+    replyTargetName() {
       const target = this.replySheetTarget
       const author = target && target.author
       return author && typeof author.name === 'string' ? author.name : ''
-    }
+    },
   },
   watch: {
-    state(next: YardDetailState) { this.activeState = next; this.expandedIntro = next === 'dynamic-expanded' }
+    state(next: YardDetailState) {
+      this.activeState = next
+      this.expandedIntro = next === 'dynamic-expanded'
+    },
   },
   mounted() {
     this.$nextTick(() => this.captureTabContentHeight())
   },
   methods: {
-    goBack() { goBackSmart({ fallbackUrl: '/pages/index/index' }) },
+    goBack() {
+      goBackSmart({ fallbackUrl: '/pages/index/index' })
+    },
     openOwnerProfile() {
       openUserProfile({ pawId: 'owner-1', nickname: this.owner.name, avatar: this.owner.avatar })
     },
     captureTabContentHeight() {
-      uni.createSelectorQuery().in(this).select('.yard-tabs-content').boundingClientRect(rect => {
-        if (!rect || Array.isArray(rect)) return
-        if (typeof rect.height === 'number' && rect.height > this.tabContentMinHeight) {
-          this.tabContentMinHeight = rect.height
-        }
-      }).exec()
+      uni
+        .createSelectorQuery()
+        .in(this)
+        .select('.yard-tabs-content')
+        .boundingClientRect((rect) => {
+          if (!rect || Array.isArray(rect)) return
+          if (typeof rect.height === 'number' && rect.height > this.tabContentMinHeight) {
+            this.tabContentMinHeight = rect.height
+          }
+        })
+        .exec()
     },
     switchState(next: import('@/components/navigation/PawTabs.vue').PawTabKey) {
-      if (next !== 'dynamic' && next !== 'dynamic-empty' && next !== 'feeding' && next !== 'dynamic-expanded') return
+      if (
+        next !== 'dynamic' &&
+        next !== 'dynamic-empty' &&
+        next !== 'feeding' &&
+        next !== 'dynamic-expanded'
+      )
+        return
       this.activeState = next
       this.expandedIntro = false
       this.$nextTick(() => this.captureTabContentHeight())
     },
-    toggleJoin() { this.joined = !this.joined },
-    share() { this.shareSheetVisible = true },
-    showRemind() { uni.showToast({ title: '已提醒院主', icon: 'none' }) },
-    openPetDetail(pet: YardDetailPetPreview) { this.$emit('pet-click', pet) },
-    openPetList() { this.$emit('pet-list-click') },
+    toggleJoin() {
+      this.joined = !this.joined
+    },
+    share() {
+      this.shareSheetVisible = true
+    },
+    showRemind() {
+      uni.showToast({ title: '已提醒院主', icon: 'none' })
+    },
+    openPetDetail(pet: YardDetailPetPreview) {
+      this.$emit('pet-click', pet)
+    },
+    openPetList() {
+      this.$emit('pet-list-click')
+    },
     openReplySheet(comment: CommentItemRecord) {
       this.replySheetTarget = findCommentById(this.yard.comments, comment.id)
       this.replySheetVisible = true
       this.$emit('comment-reply', comment)
     },
-    onReplySend() { uni.showToast({ title: '已发送', icon: 'none' }) },
-    onComposerVoice() { uni.showToast({ title: '语音输入敬请期待', icon: 'none' }) },
-    onComposerPickImage() { uni.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] }) },
+    onReplySend() {
+      uni.showToast({ title: '已发送', icon: 'none' })
+    },
+    onComposerVoice() {
+      uni.showToast({ title: '语音输入敬请期待', icon: 'none' })
+    },
+    onComposerPickImage() {
+      uni.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] })
+    },
     openCommentUser(comment: CommentItemRecord) {
       this.$emit('comment-user', comment)
       const author = commentProfileIdentity(comment)
       openUserProfile({
         pawId: author.pawId,
         nickname: author.name,
-        avatar: author.avatar
+        avatar: author.avatar,
       })
     },
-    onFooterAction(action: import('@/components/layout/PawFixedActionBar.vue').PawFixedAction) { if (action.key === 'share') this.share(); if (action.key === 'join') this.toggleJoin(); if (action.key === 'adopt') this.$emit('adopt') }
-  }
+    onFooterAction(action: import('@/components/layout/PawFixedActionBar.vue').PawFixedAction) {
+      if (action.key === 'share') this.share()
+      if (action.key === 'join') this.toggleJoin()
+      if (action.key === 'adopt') this.$emit('adopt')
+    },
+  },
 })
 </script>
 
@@ -317,7 +564,7 @@ export default defineComponent({
   background: #fff;
   color: #222;
   box-sizing: border-box;
-  font-family: "Source Han Sans CN", "PingFang SC", sans-serif
+  font-family: 'Source Han Sans CN', 'PingFang SC', sans-serif;
 }
 
 .h5-status-bar {
@@ -327,11 +574,11 @@ export default defineComponent({
   width: 100%;
   height: 108px;
   z-index: 100;
-  pointer-events: none
+  pointer-events: none;
 }
 
 .status-space {
-  height: 44px
+  height: 44px;
 }
 
 .yd-nav {
@@ -339,31 +586,31 @@ export default defineComponent({
   display: flex;
   align-items: center;
   padding: 0 13px;
-  box-sizing: border-box
+  box-sizing: border-box;
 }
 
 .yd-back {
   width: 24px;
   height: 34px;
   display: flex;
-  align-items: center
+  align-items: center;
 }
 
 .yd-back image {
   width: 9px;
-  height: 18px
+  height: 18px;
 }
 
 .owner-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  margin-left: 4px
+  margin-left: 4px;
 }
 
 .owner-name {
   margin-left: 9px;
-  font-size: 14px
+  font-size: 14px;
 }
 
 .owner-tag,
@@ -373,11 +620,11 @@ export default defineComponent({
   border-radius: 4px;
   background: #fff1f3;
   color: #ff2950;
-  font-size: 9px
+  font-size: 9px;
 }
 
 .nav-spacer {
-  flex: 1
+  flex: 1;
 }
 
 .mini-capsule {
@@ -387,20 +634,20 @@ export default defineComponent({
   border-radius: 16px;
   display: flex;
   align-items: center;
-  justify-content: space-evenly
+  justify-content: space-evenly;
 }
 
 .capsule-line {
   width: 1px;
   height: 18px;
-  background: #e5e5e5
+  background: #e5e5e5;
 }
 
 .capsule-ring {
   width: 13px;
   height: 13px;
   border: 2px solid #222;
-  border-radius: 50%
+  border-radius: 50%;
 }
 
 .notice-line {
@@ -410,14 +657,14 @@ export default defineComponent({
   color: inherit;
   font-size: inherit;
   line-height: normal;
-  white-space: normal
+  white-space: normal;
 }
 
 .yard-summary {
   padding: 10px 15px 0;
   box-sizing: border-box;
   background: #fff;
-  border-bottom: 6px solid #f5f5f5
+  border-bottom: 6px solid #f5f5f5;
 }
 
 .yard-summary__info-row {
@@ -425,12 +672,12 @@ export default defineComponent({
   display: flex;
   align-items: flex-start;
   width: 100%;
-  height: 102.5px
+  height: 102.5px;
 }
 
 .yard-summary__cover {
   width: 92px;
-  height: 92px
+  height: 92px;
 }
 
 .yard-summary__details {
@@ -438,21 +685,21 @@ export default defineComponent({
   flex: 0 0 183px;
   flex-direction: column;
   width: 183px;
-  margin: 2px 0 0 18px
+  margin: 2px 0 0 18px;
 }
 
 .yard-summary__identity {
   display: flex;
   height: 37.5px;
   flex-direction: column;
-  gap: 5.5px
+  gap: 5.5px;
 }
 
 .yard-summary__name-row {
   display: flex;
   align-items: center;
   height: 16px;
-  gap: 3px
+  gap: 3px;
 }
 
 .yard-summary__name {
@@ -462,19 +709,19 @@ export default defineComponent({
   font-weight: 500;
   line-height: 16px;
   text-overflow: ellipsis;
-  white-space: nowrap
+  white-space: nowrap;
 }
 
 .yard-summary__identity :deep(.yard-location-line) {
   height: 16px;
-  box-sizing: border-box
+  box-sizing: border-box;
 }
 
 .yard-summary__metrics {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-top: 7px
+  margin-top: 7px;
 }
 
 .yard-summary__tags {
@@ -482,7 +729,7 @@ export default defineComponent({
   align-items: center;
   gap: 7px;
   height: 16px;
-  white-space: nowrap
+  white-space: nowrap;
 }
 
 .yard-summary__tag {
@@ -497,11 +744,11 @@ export default defineComponent({
   font-size: 11px;
   font-weight: 500;
   line-height: 12px;
-  white-space: nowrap
+  white-space: nowrap;
 }
 
 .yard-summary__tag:nth-child(2) {
-  font-size: 12px
+  font-size: 12px;
 }
 
 .yard-summary__stats {
@@ -510,7 +757,7 @@ export default defineComponent({
   gap: 20px;
   width: 183px;
   height: 36px;
-  margin-left: 1px
+  margin-left: 1px;
 }
 
 .yard-summary__stat {
@@ -519,19 +766,19 @@ export default defineComponent({
   flex: 0 0 auto;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start
+  justify-content: flex-start;
 }
 
 .yard-summary__stat:nth-child(1) {
-  width: 43px
+  width: 43px;
 }
 
 .yard-summary__stat:nth-child(2) {
-  width: 33px
+  width: 33px;
 }
 
 .yard-summary__stat:nth-child(3) {
-  width: 66px
+  width: 66px;
 }
 
 .yard-summary__stat-value {
@@ -540,7 +787,7 @@ export default defineComponent({
   font-size: 15px;
   font-weight: 700;
   line-height: 22px;
-  white-space: nowrap
+  white-space: nowrap;
 }
 
 .yard-summary__stat-label {
@@ -550,7 +797,7 @@ export default defineComponent({
   font-size: 11px;
   font-weight: 400;
   line-height: 16px;
-  white-space: nowrap
+  white-space: nowrap;
 }
 
 .yard-summary__sound {
@@ -558,20 +805,20 @@ export default defineComponent({
   top: 4px;
   right: 0;
   width: 32px;
-  height: 32px
+  height: 32px;
 }
 
 .pet-strip {
   width: 100%;
   height: 58px;
   margin-top: 13px;
-  white-space: nowrap
+  white-space: nowrap;
 }
 
 .pet-strip-row {
   display: inline-flex;
   align-items: flex-start;
-  height: 58px
+  height: 58px;
 }
 
 .pet-item {
@@ -581,14 +828,14 @@ export default defineComponent({
   height: 58px;
   margin-right: 5px;
   flex-direction: column;
-  align-items: center
+  align-items: center;
 }
 
 .pet-item image {
   display: block;
   width: 40px;
   height: 40px;
-  border-radius: 50%
+  border-radius: 50%;
 }
 
 .pet-item text {
@@ -597,13 +844,13 @@ export default defineComponent({
   color: #686868;
   font-size: 13px;
   line-height: 16px;
-  white-space: nowrap
+  white-space: nowrap;
 }
 
 .pet-next {
   width: 15px;
   flex: 0 0 15px;
-  margin-top: 19px
+  margin-top: 19px;
 }
 
 .yard-intro {
@@ -613,12 +860,12 @@ export default defineComponent({
   font-size: 15px;
   font-weight: 500;
   line-height: 22.5px;
-  color: #282827
+  color: #282827;
 }
 
 .more-word {
   font-weight: 400;
-  color: #576b95
+  color: #576b95;
 }
 
 .yard-meta {
@@ -630,31 +877,31 @@ export default defineComponent({
   border-bottom: 1px solid #ececec;
   color: #b8b7b3;
   font-size: 11px;
-  line-height: 16px
+  line-height: 16px;
 }
 
-.yard-meta>text,
-.yard-meta>view {
-  padding-top: 8px
+.yard-meta > text,
+.yard-meta > view {
+  padding-top: 8px;
 }
 
 .yard-meta view {
   display: flex;
-  gap: 8px
+  gap: 8px;
 }
 
 .state-dynamic-empty .yard-summary {
-  padding-bottom: 29px
+  padding-bottom: 29px;
 }
 
 .state-dynamic-expanded .yard-intro {
-  min-height: 110px
+  min-height: 110px;
 }
 
 .rank-area {
   height: 92px;
   overflow: hidden;
-  border-bottom: 1px solid #eee
+  border-bottom: 1px solid #eee;
 }
 
 .rank-title {
@@ -663,11 +910,11 @@ export default defineComponent({
   align-items: center;
   justify-content: space-between;
   padding: 0 13px;
-  font-size: 13px
+  font-size: 13px;
 }
 
 .rank-title text:last-child {
-  color: #aaa
+  color: #aaa;
 }
 
 .rank-row {
@@ -675,18 +922,18 @@ export default defineComponent({
   display: flex;
   align-items: center;
   padding: 0 13px;
-  font-size: 13px
+  font-size: 13px;
 }
 
 .rank-row--second {
-  opacity: .6
+  opacity: 0.6;
 }
 
 .rank-row image {
   width: 27px;
   height: 27px;
   border-radius: 50%;
-  margin-right: 7px
+  margin-right: 7px;
 }
 
 .rank-level,
@@ -696,19 +943,19 @@ export default defineComponent({
   border-radius: 6px;
   background: #493100;
   color: #fff;
-  font-size: 9px
+  font-size: 9px;
 }
 
 .rank-right {
   margin-left: auto;
   color: #edbf00;
-  font-size: 12px
+  font-size: 12px;
 }
 
 .detail-tabs {
   display: flex;
   align-items: center;
-  justify-content: center
+  justify-content: center;
 }
 
 .yard-rank-section,
@@ -716,11 +963,11 @@ export default defineComponent({
   box-sizing: border-box;
   padding-right: 15px;
   padding-left: 15px;
-  background: #fff
+  background: #fff;
 }
 
 .yard-rank-section {
-  border-bottom: 6px solid #f5f5f5
+  border-bottom: 6px solid #f5f5f5;
 }
 
 .dynamic-empty {
@@ -729,7 +976,7 @@ export default defineComponent({
   flex-direction: column;
   align-items: center;
   padding-top: 38px;
-  box-sizing: border-box
+  box-sizing: border-box;
 }
 
 .yard-empty-art {
@@ -740,7 +987,7 @@ export default defineComponent({
 .empty-title {
   margin-top: 14px;
   color: #888;
-  font-size: 13px
+  font-size: 13px;
 }
 
 .remind-btn {
@@ -752,51 +999,51 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px
+  font-size: 13px;
 }
 
 .feeding-list {
-  padding: 0
+  padding: 0;
 }
 
 .feeding-row {
   height: 52px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #fafafa
+  border-bottom: 1px solid #fafafa;
 }
 
 .feeding-row image {
   width: 34px;
   height: 34px;
-  border-radius: 50%
+  border-radius: 50%;
 }
 
 .feeding-name {
   margin-left: 8px;
   color: #999;
-  font-size: 14px
+  font-size: 14px;
 }
 
 .feeding-copy {
   margin-left: auto;
-  font-size: 13px
+  font-size: 13px;
 }
 
 .dynamic-feed {
-  background: #f6f6f6
+  background: #f6f6f6;
 }
 
 .post-card {
   padding: 18px 0;
   margin-bottom: 0;
   background: #fff;
-  border-bottom: 1px solid #eee
+  border-bottom: 1px solid #eee;
 }
 
 .post-card:last-child {
   margin-bottom: 0;
-  border-bottom: 0
+  border-bottom: 0;
 }
 
 .post-layout {
@@ -805,7 +1052,7 @@ export default defineComponent({
   column-gap: 8px;
   padding: 0;
   width: 100%;
-  box-sizing: border-box
+  box-sizing: border-box;
 }
 
 .post-avatar {
@@ -813,7 +1060,7 @@ export default defineComponent({
   width: 34px;
   height: 34px;
   padding: 0;
-  margin: 0
+  margin: 0;
 }
 
 .post-content {
@@ -821,17 +1068,17 @@ export default defineComponent({
   flex: 1 1 0%;
   min-width: 0;
   flex-direction: column;
-  align-items: flex-start
+  align-items: flex-start;
 }
 
 .post-head {
   display: flex;
   align-items: center;
-  width: 100%
+  width: 100%;
 }
 
 .post-name {
-  font-size: 14px
+  font-size: 14px;
 }
 
 .post-source {
@@ -839,11 +1086,11 @@ export default defineComponent({
   align-items: center;
   width: 100%;
   margin-left: 0;
-  margin-top: 8px
+  margin-top: 8px;
 }
 
 .tiny-pets {
-  display: flex
+  display: flex;
 }
 
 .tiny-pets image {
@@ -851,16 +1098,16 @@ export default defineComponent({
   height: 22px;
   border-radius: 50%;
   margin-right: -4px;
-  border: 1px solid #fff
+  border: 1px solid #fff;
 }
 
-.post-source>text {
+.post-source > text {
   margin-left: 8px;
   padding: 3px 5px;
   border-radius: 4px;
   background: #edf4ff;
   color: #58759b;
-  font-size: 10px
+  font-size: 10px;
 }
 
 .post-copy {
@@ -868,21 +1115,21 @@ export default defineComponent({
   width: 100%;
   margin: 8px 0 0;
   font-size: 14px;
-  line-height: 21px
+  line-height: 21px;
 }
 
 .post-full {
   display: block;
   margin: 8px 0 0;
   color: #5c7197;
-  font-size: 13px
+  font-size: 13px;
 }
 
 .post-single {
   display: block;
   width: 144px;
   height: 297px;
-  margin: 8px 0 0
+  margin: 8px 0 0;
 }
 
 .post-grid {
@@ -890,12 +1137,12 @@ export default defineComponent({
   grid-template-columns: repeat(3, 85px);
   width: 263px;
   gap: 4px;
-  margin: 8px 0 0
+  margin: 8px 0 0;
 }
 
 .post-grid image {
   width: 85px;
-  height: 95px
+  height: 95px;
 }
 
 .post-time {
@@ -907,25 +1154,25 @@ export default defineComponent({
   margin-top: 8px;
   color: #8c8c8c;
   font-size: 12px;
-  line-height: 19px
+  line-height: 19px;
 }
 
 .yard-comment-thread {
   width: 100%;
   padding: 0 !important;
   margin-top: 8px;
-  box-sizing: border-box
+  box-sizing: border-box;
 }
 
 .post-time-info {
   display: flex;
   align-items: center;
-  min-width: 0
+  min-width: 0;
 }
 
 .post-reply {
   margin-left: 10px;
-  color: #616161
+  color: #616161;
 }
 
 .post-like {
@@ -935,7 +1182,7 @@ export default defineComponent({
   color: #686868;
   font-size: 13px;
   font-weight: 500;
-  line-height: 18px
+  line-height: 18px;
 }
 
 .comment {
@@ -944,7 +1191,7 @@ export default defineComponent({
   margin: 2px 0 0 38px;
   min-height: 86px;
   color: #999;
-  font-size: 11px
+  font-size: 11px;
 }
 
 .comment-avatar {
@@ -952,7 +1199,7 @@ export default defineComponent({
   height: 22px;
   border-radius: 50%;
   background: #ddd;
-  flex-shrink: 0
+  flex-shrink: 0;
 }
 
 .comment-main {
@@ -960,7 +1207,7 @@ export default defineComponent({
   flex: 1;
   flex-direction: column;
   margin-left: 7px;
-  color: #666
+  color: #666;
 }
 
 .comment-main i {
@@ -969,19 +1216,19 @@ export default defineComponent({
   background: #fff1f3;
   color: #ff2950;
   font-style: normal;
-  font-size: 8px
+  font-size: 8px;
 }
 
 .comment-main small {
   margin-top: 5px;
-  color: #aaa
+  color: #aaa;
 }
 
 .expand-comments {
   display: block;
   margin-left: 70px;
   font-size: 11px;
-  color: #555
+  color: #555;
 }
 
 .bottom-actions {
@@ -996,7 +1243,7 @@ export default defineComponent({
   background: #fff;
   border-top: 1px solid #eee;
   box-sizing: border-box;
-  z-index: 50
+  z-index: 50;
 }
 
 .bottom-small {
@@ -1005,11 +1252,11 @@ export default defineComponent({
   flex-direction: column;
   align-items: center;
   color: #888;
-  font-size: 10px
+  font-size: 10px;
 }
 
 .bottom-small text {
-  margin-top: 2px
+  margin-top: 2px;
 }
 
 .bottom-main {
@@ -1023,36 +1270,36 @@ export default defineComponent({
   justify-content: center;
   gap: 9px;
   font-size: 16px;
-  font-weight: 700
+  font-weight: 700;
 }
 
 .yard-owner-nav {
   display: flex;
   align-items: center;
   height: 32px;
-  box-sizing: border-box
+  box-sizing: border-box;
 }
 
 .yard-owner-nav .owner-name {
-  margin-left: 9px
+  margin-left: 9px;
 }
 
 .yard-owner-nav .yard-owner-badge {
-  margin-left: 6px
+  margin-left: 6px;
 }
 
 .state-dynamic-expanded .yard-intro {
-  min-height: 147px
+  min-height: 147px;
 }
 
 .state-dynamic-expanded .post-single {
-  height: 330px
+  height: 330px;
 }
 
 /* #ifdef H5 */
 .state-dynamic .bottom-actions,
 .state-dynamic-expanded .bottom-actions {
-  position: absolute
+  position: absolute;
 }
 
 /* #endif */

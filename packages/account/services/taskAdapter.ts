@@ -19,7 +19,11 @@
  */
 
 import { resolveTrustedActor } from '../../../navigation/actorCapabilities.ts'
-import { TASK_BUSINESS_TYPES, type TaskBusinessType, type TaskSummary } from '../../../navigation/taskContracts.ts'
+import {
+  TASK_BUSINESS_TYPES,
+  type TaskBusinessType,
+  type TaskSummary,
+} from '../../../navigation/taskContracts.ts'
 import { readTaskSummaries } from '../../../navigation/taskReadModel.ts'
 
 type JsonRecord = Record<string, unknown>
@@ -54,8 +58,8 @@ export interface TaskReadModel {
 }
 
 export interface TaskAdapterOptions {
-	readonly actorProvider?: () => unknown
-	readonly readers?: TaskReaders
+  readonly actorProvider?: () => unknown
+  readonly readers?: TaskReaders
 }
 
 const DANGEROUS_KEYS = new Set(['__proto__', 'prototype', 'constructor'])
@@ -82,11 +86,13 @@ function isPlainRecord(value: unknown): value is JsonRecord {
   const prototype = Object.getPrototypeOf(value)
   if (prototype === Object.prototype || prototype === null) return true
   const constructorDescriptor = Object.getOwnPropertyDescriptor(prototype, 'constructor')
-  return Object.getPrototypeOf(prototype) === null
-    && Object.prototype.toString.call(value) === '[object Object]'
-    && constructorDescriptor !== undefined
-    && typeof constructorDescriptor.value === 'function'
-    && constructorDescriptor.value.name === 'Object'
+  return (
+    Object.getPrototypeOf(prototype) === null &&
+    Object.prototype.toString.call(value) === '[object Object]' &&
+    constructorDescriptor !== undefined &&
+    typeof constructorDescriptor.value === 'function' &&
+    constructorDescriptor.value.name === 'Object'
+  )
 }
 
 function rejectDangerousKeys(value: object, label: string): void {
@@ -103,9 +109,11 @@ function own(value: object, key: string): boolean {
 }
 
 function isThenable(value: unknown): boolean {
-  return value !== null
-    && (typeof value === 'object' || typeof value === 'function')
-    && typeof Reflect.get(value, 'then') === 'function'
+  return (
+    value !== null &&
+    (typeof value === 'object' || typeof value === 'function') &&
+    typeof Reflect.get(value, 'then') === 'function'
+  )
 }
 
 function diagnostic(domain: TaskDiagnosticDomain, index: number, code: unknown): TaskSkip {
@@ -122,37 +130,52 @@ function diagnosticCode(value: unknown, fallback: string): string {
   return typeof code === 'string' && code ? code : fallback
 }
 
-function captureSourceDiagnostics(domain: TaskBusinessType, result: unknown, sourceDiagnostics: TaskSkip[]): void {
+function captureSourceDiagnostics(
+  domain: TaskBusinessType,
+  result: unknown,
+  sourceDiagnostics: TaskSkip[],
+): void {
   if (!isPlainRecord(result)) return
 
   if (isPlainRecord(result.error) && result.success === false) {
-    sourceDiagnostics.push(diagnostic(domain, -1, diagnosticCode(result.error, 'SOURCE_READ_FAILED')))
+    sourceDiagnostics.push(
+      diagnostic(domain, -1, diagnosticCode(result.error, 'SOURCE_READ_FAILED')),
+    )
   }
 
   const diagnostics = result.diagnostics
   if (!isPlainRecord(diagnostics)) return
 
   if (isPlainRecord(diagnostics.actorError)) {
-    sourceDiagnostics.push(diagnostic(domain, -1, diagnosticCode(diagnostics.actorError, 'SOURCE_ACTOR_FAILED')))
+    sourceDiagnostics.push(
+      diagnostic(domain, -1, diagnosticCode(diagnostics.actorError, 'SOURCE_ACTOR_FAILED')),
+    )
   }
   if (!Array.isArray(diagnostics.skipped)) return
   for (const item of diagnostics.skipped) {
     if (!isPlainRecord(item)) continue
-    sourceDiagnostics.push(diagnostic(
-      domain,
-      typeof item.index === 'number' && Number.isSafeInteger(item.index) ? item.index : -1,
-      diagnosticCode(item, 'SOURCE_ITEM_SKIPPED'),
-    ))
+    sourceDiagnostics.push(
+      diagnostic(
+        domain,
+        typeof item.index === 'number' && Number.isSafeInteger(item.index) ? item.index : -1,
+        diagnosticCode(item, 'SOURCE_ITEM_SKIPPED'),
+      ),
+    )
   }
 }
 
-function extractReaderItems(domain: TaskBusinessType, result: unknown, sourceDiagnostics: TaskSkip[]): unknown {
+function extractReaderItems(
+  domain: TaskBusinessType,
+  result: unknown,
+  sourceDiagnostics: TaskSkip[],
+): unknown {
   // Let taskReadModel classify promises as ASYNC_RESOLVER_UNSUPPORTED.  The
   // rejection handler there also prevents a rejected injected promise from
   // becoming an unhandled rejection.
   if (isThenable(result)) return result
   if (Array.isArray(result)) return result
-  if (!isPlainRecord(result)) fail('INVALID_READER_RESULT', `${domain} reader must return task summaries`)
+  if (!isPlainRecord(result))
+    fail('INVALID_READER_RESULT', `${domain} reader must return task summaries`)
 
   rejectDangerousKeys(result, `${domain} reader result`)
   captureSourceDiagnostics(domain, result, sourceDiagnostics)
@@ -171,7 +194,8 @@ function extractReaderItems(domain: TaskBusinessType, result: unknown, sourceDia
 
   let container = result
   if (own(result, 'data')) {
-    if (!isPlainRecord(result.data)) fail('INVALID_READER_RESULT', `${domain} reader data must be an object`)
+    if (!isPlainRecord(result.data))
+      fail('INVALID_READER_RESULT', `${domain} reader data must be an object`)
     rejectDangerousKeys(result.data, `${domain} reader data`)
     container = result.data
   }
@@ -194,16 +218,29 @@ function assertReaderConfig(readers: unknown): Readonly<TaskReaders> {
   return Object.freeze({ ...readers })
 }
 
-function emptyDiagnostics({ skipped = [], actorError = null }: { skipped?: readonly TaskSkip[]; actorError?: unknown } = {}): TaskDiagnostics {
+function emptyDiagnostics({
+  skipped = [],
+  actorError = null,
+}: { skipped?: readonly TaskSkip[]; actorError?: unknown } = {}): TaskDiagnostics {
   return Object.freeze({
     scanned: 0,
     accepted: 0,
     skipped: Object.freeze(skipped.slice()),
-    actorError: actorError ? Object.freeze({ code: diagnosticCode(actorError, 'ACTOR_CONTRACT_FAILED') }) : null,
+    actorError: actorError
+      ? Object.freeze({ code: diagnosticCode(actorError, 'ACTOR_CONTRACT_FAILED') })
+      : null,
   })
 }
 
-function emptyModel({ actor = null, skipped = [], actorError = null }: { actor?: TaskActor | null; skipped?: readonly TaskSkip[]; actorError?: unknown } = {}): TaskReadModel {
+function emptyModel({
+  actor = null,
+  skipped = [],
+  actorError = null,
+}: {
+  actor?: TaskActor | null
+  skipped?: readonly TaskSkip[]
+  actorError?: unknown
+} = {}): TaskReadModel {
   const items = Object.freeze([])
   return Object.freeze({
     actor,
@@ -229,7 +266,10 @@ function deepFreeze<T>(value: T, seen = new WeakSet<object>()): T {
  * adapter.  That makes missing persistence evidence an explicit empty state,
  * rather than an invented demo or first-item fallback.
  */
-function buildResolvers(readers: Readonly<TaskReaders>, sourceDiagnostics: TaskSkip[]): Readonly<TaskResolverMap> {
+function buildResolvers(
+  readers: Readonly<TaskReaders>,
+  sourceDiagnostics: TaskSkip[],
+): Readonly<TaskResolverMap> {
   const resolvers: TaskResolverMap = {}
   for (const domain of TASK_DOMAINS) {
     const reader = readers[domain]
@@ -304,12 +344,14 @@ function withReadOnlyEnvelope(
 
 function failedRead(error: unknown): TaskReadModel {
   const code = diagnosticCode(error, 'TASK_ADAPTER_FAILED')
-  if (code === 'ACTOR_PROVIDER_REQUIRED'
-    || code === 'ACTOR_PROVIDER_FAILED'
-    || code === 'INVALID_RECORD'
-    || code === 'MISSING_ACTOR'
-    || code === 'INVALID_ID'
-    || code === 'UNKNOWN_ACTOR_ROLE') {
+  if (
+    code === 'ACTOR_PROVIDER_REQUIRED' ||
+    code === 'ACTOR_PROVIDER_FAILED' ||
+    code === 'INVALID_RECORD' ||
+    code === 'MISSING_ACTOR' ||
+    code === 'INVALID_ID' ||
+    code === 'UNKNOWN_ACTOR_ROLE'
+  ) {
     return emptyModel({ actorError: { code } })
   }
   return emptyModel({ skipped: [diagnostic('adapter', -1, code)] })
@@ -380,7 +422,4 @@ export function createTaskAdapter(options: TaskAdapterOptions = {}) {
 
 export const createAccountTaskAdapter = createTaskAdapter
 
-export {
-  TaskAdapterError,
-  TASK_DOMAINS,
-}
+export { TaskAdapterError, TASK_DOMAINS }

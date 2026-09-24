@@ -1,26 +1,50 @@
 <template>
   <view class="guide-page">
-    <PawPageNav background="#f5f5f5" fallback-url="/pages/index/index" />
+    <PawPageNav
+      background="#f5f5f5"
+      fallback-url="/pages/index/index"
+    />
 
-    <scroll-view class="main-scroll" scroll-y :show-scrollbar="false" :bounces="false" :enable-flex="true">
+    <scroll-view
+      class="main-scroll"
+      scroll-y
+      :show-scrollbar="false"
+      :bounces="false"
+      :enable-flex="true"
+    >
       <view class="page-body">
         <view class="intro-card">
           <text class="intro-text">
             逢猫小院旨在让流浪猫获得生存的猫粮，并帮助它们找到铁饭碗（领养），
             <text class="intro-text-link">唯有以领养终止流浪</text>
           </text>
-          <view class="intro-btn" data-qa="cat-guide-create" @tap="onGoCreate">
+          <view
+            class="intro-btn"
+            data-qa="cat-guide-create"
+            @tap="onGoCreate"
+          >
             <text>前往创建</text>
-            <PawIcon name="navigation/action-arrow" :size="14" label="前往创建" />
+            <PawIcon
+              name="navigation/action-arrow"
+              :size="14"
+              label="前往创建"
+            />
           </view>
         </view>
 
         <view class="rule-section">
           <text class="sec-title">院主需要做的</text>
           <view class="rule-card rule-card--duties">
-            <view v-for="rule in dutiesRules" :key="rule.lead" class="rule-row">
+            <view
+              v-for="rule in dutiesRules"
+              :key="rule.lead"
+              class="rule-row"
+            >
               <view class="dot dot--green" />
-              <text class="rule-txt"><text class="rule-lead">{{ rule.lead }}</text>{{ rule.text }}</text>
+              <text class="rule-txt"
+                ><text class="rule-lead">{{ rule.lead }}</text
+                >{{ rule.text }}</text
+              >
             </view>
           </view>
         </view>
@@ -28,11 +52,19 @@
         <view class="rule-section">
           <text class="sec-title">院主不能做的</text>
           <view class="rule-card rule-card--forbidden">
-            <view v-for="(rule, index) in forbiddenRules" :key="index" class="rule-row">
+            <view
+              v-for="(rule, index) in forbiddenRules"
+              :key="index"
+              class="rule-row"
+            >
               <view class="dot dot--red" />
               <text class="rule-txt">
-                <text v-for="(part, partIndex) in rule" :key="partIndex" :class="{ 'danger-link': part.danger }">{{
-                  part.text }}</text>
+                <text
+                  v-for="(part, partIndex) in rule"
+                  :key="partIndex"
+                  :class="{ 'danger-link': part.danger }"
+                  >{{ part.text }}</text
+                >
               </text>
             </view>
             <text class="warn-text">以上违规一经发现将永久封禁并追责</text>
@@ -41,8 +73,12 @@
       </view>
     </scroll-view>
 
-    <PawRealNamePrompt :visible="showAuthDialog" type="real-name" @update:visible="showAuthDialog = $event"
-      @confirm="startAuth" />
+    <PawRealNamePrompt
+      :visible="showAuthDialog"
+      type="real-name"
+      @update:visible="showAuthDialog = $event"
+      @confirm="startAuth"
+    />
   </view>
 </template>
 
@@ -53,7 +89,10 @@ import PawPageNav from '@/components/PawPageNav.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawRealNamePrompt from '@/components/auth/PawRealNamePrompt.vue'
 import { isRealNameVerified } from '@/utils/realNameMock.ts'
-import { createYardOnboardingMetadata, type YardOnboardingMetadata } from '../../services/yardOnboardingMetadata.ts'
+import {
+  createYardOnboardingMetadata,
+  type YardOnboardingMetadata,
+} from '../../services/yardOnboardingMetadata.ts'
 
 interface CatGuidePageState extends YardOnboardingMetadata {
   showAuthDialog: boolean

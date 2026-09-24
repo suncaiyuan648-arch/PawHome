@@ -1,51 +1,126 @@
 <template>
-  <view class="pet-detail-figma" :class="'pet-detail-figma--' + variant">
-    <PawPageNav background="transparent" :auto-back="false" @back="$emit('back')" @layout="onNavLayout" />
-    <view class="detail-scroll-stage" :style="{ marginTop: `-${navOverlayOffset}px` }">
-      <scroll-view class="detail-scroll" scroll-y :show-scrollbar="false" :bounces="false" :enable-flex="true">
+  <view
+    class="pet-detail-figma"
+    :class="'pet-detail-figma--' + variant"
+  >
+    <PawPageNav
+      background="transparent"
+      :auto-back="false"
+      @back="$emit('back')"
+      @layout="onNavLayout"
+    />
+    <view
+      class="detail-scroll-stage"
+      :style="{ marginTop: `-${navOverlayOffset}px` }"
+    >
+      <scroll-view
+        class="detail-scroll"
+        scroll-y
+        :show-scrollbar="false"
+        :bounces="false"
+        :enable-flex="true"
+      >
         <view class="hero-wrap">
-          <swiper class="hero-swiper" :current="heroIndex" :duration="250" :circular="false" :indicator-dots="false"
-            @change="onHeroChange">
-            <swiper-item v-for="(src, index) in heroGallery" :key="`${displayPet.id || 'pet'}-hero-${index}`"
-              class="hero-swiper-item">
-              <image class="hero-exact" :src="src" mode="aspectFill" @tap.stop="onHeroTap(index)" />
+          <swiper
+            class="hero-swiper"
+            :current="heroIndex"
+            :duration="250"
+            :circular="false"
+            :indicator-dots="false"
+            @change="onHeroChange"
+          >
+            <swiper-item
+              v-for="(src, index) in heroGallery"
+              :key="`${displayPet.id || 'pet'}-hero-${index}`"
+              class="hero-swiper-item"
+            >
+              <image
+                class="hero-exact"
+                :src="src"
+                mode="aspectFill"
+                @tap.stop="onHeroTap(index)"
+              />
             </swiper-item>
           </swiper>
-          <PawCarouselDots data-qa="pet-detail-hero-dots" :count="heroGallery.length" :current="heroIndex" />
-          <view class="hero-album" :class="{ 'hero-album--readonly': !canManage }" @tap="onAlbumTap">
-            <image class="hero-album__icon" src="/static/figma/pet-detail/icon-album-figma.svg" mode="aspectFit" />
+          <PawCarouselDots
+            data-qa="pet-detail-hero-dots"
+            :count="heroGallery.length"
+            :current="heroIndex"
+          />
+          <view
+            class="hero-album"
+            :class="{ 'hero-album--readonly': !canManage }"
+            @tap="onAlbumTap"
+          >
+            <image
+              class="hero-album__icon"
+              src="/static/figma/pet-detail/icon-album-figma.svg"
+              mode="aspectFit"
+            />
             <text>相册</text>
-            <image v-if="canManage" class="hero-album__chevron"
-              src="/static/figma/pet-detail/icon-chevron-right-figma.svg" mode="aspectFit" />
+            <image
+              v-if="canManage"
+              class="hero-album__chevron"
+              src="/static/figma/pet-detail/icon-chevron-right-figma.svg"
+              mode="aspectFit"
+            />
           </view>
         </view>
 
-        <scroll-view class="pet-strip" scroll-x :show-scrollbar="false" :enable-flex="true">
+        <scroll-view
+          class="pet-strip"
+          scroll-x
+          :show-scrollbar="false"
+          :enable-flex="true"
+        >
           <view class="strip-inner">
-            <view v-for="(item, i) in stripItems" :key="item.id || i" class="strip-item"
-              :class="{ active: i === petIndex }" @tap.stop="onStripTap(i)">
-              <image class="strip-avatar" :src="item.avatar || '/static/figma/pet-detail/strip-orange.png'"
-                mode="aspectFill" />
-              <view v-if="i === petIndex" class="strip-triangle" />
+            <view
+              v-for="(item, i) in stripItems"
+              :key="item.id || i"
+              class="strip-item"
+              :class="{ active: i === petIndex }"
+              @tap.stop="onStripTap(i)"
+            >
+              <image
+                class="strip-avatar"
+                :src="item.avatar || '/static/figma/pet-detail/strip-orange.png'"
+                mode="aspectFill"
+              />
+              <view
+                v-if="i === petIndex"
+                class="strip-triangle"
+              />
             </view>
           </view>
         </scroll-view>
 
         <view class="pet-card">
           <view class="pet-heading">
-            <view class="pet-title-row"><text class="pet-name">{{ displayPet.name }}</text><text class="cloud-tag">{{
-              displayPet.statusLabel }}</text></view>
+            <view class="pet-title-row"
+              ><text class="pet-name">{{ displayPet.name }}</text
+              ><text class="cloud-tag">{{ displayPet.statusLabel }}</text></view
+            >
             <text class="pet-order">{{ petIndex + 1 }}/{{ petTotal }}</text>
           </view>
           <view class="pet-tags">
-            <text v-for="(tag, index) in displayPet.tags" :key="index">{{ tag }}</text>
+            <text
+              v-for="(tag, index) in displayPet.tags"
+              :key="index"
+              >{{ tag }}</text
+            >
           </view>
           <text class="pet-copy">{{ displayPet.desc }}</text>
           <view class="yard-row">
-            <image class="yard-avatar" :src="displayYard.avatar" mode="aspectFill" />
+            <image
+              class="yard-avatar"
+              :src="displayYard.avatar"
+              mode="aspectFill"
+            />
             <text class="yard-name">{{ displayYard.name }}</text>
             <text class="yard-tag">小院</text>
-            <text class="yard-stat">来到小院已经<text class="yard-stat-emphasis">32天</text>了</text>
+            <text class="yard-stat"
+              >来到小院已经<text class="yard-stat-emphasis">32天</text>了</text
+            >
           </view>
         </view>
 
@@ -55,37 +130,91 @@
           <view class="info-row"><text>云家长</text><text>姜栋</text></view>
           <view class="info-row"><text>剩余云养天数</text><text>16/30天</text></view>
           <view class="info-row"><text>剩余粮食</text><text class="link">点击查看图片</text></view>
-          <view v-if="variant === 37" class="info-row"><text>投粮详情</text><text class="link">点击查看</text></view>
+          <view
+            v-if="variant === 37"
+            class="info-row"
+            ><text>投粮详情</text><text class="link">点击查看</text></view
+          >
           <text class="continuous">已连续云养25天</text>
         </view>
 
-        <view id="qa-pet-detail-message-board" class="message-card">
+        <view
+          id="qa-pet-detail-message-board"
+          class="message-card"
+        >
           <text class="message-title">云家长寄语留言板</text>
-          <CommentThread class="message-thread" :comments="messageCommentsForDisplay" :comment-preview-count="1"
-            :reply-preview-count="2" @user-click="onMessageUserClick" @reply="onMessageReply" @like="onMessageLike" />
-          <ReplyComposerSheet v-model:visible="replySheetVisible" :reply-to-name="replyTargetName"
-            @send="onReplySheetSend" @voice="onReplySheetVoice" @pick-image="onReplySheetPickImage" />
+          <CommentThread
+            class="message-thread"
+            :comments="messageCommentsForDisplay"
+            :comment-preview-count="1"
+            :reply-preview-count="2"
+            @user-click="onMessageUserClick"
+            @reply="onMessageReply"
+            @like="onMessageLike"
+          />
+          <ReplyComposerSheet
+            v-model:visible="replySheetVisible"
+            :reply-to-name="replyTargetName"
+            @send="onReplySheetSend"
+            @voice="onReplySheetVoice"
+            @pick-image="onReplySheetPickImage"
+          />
         </view>
-        <view class="detail-scroll-bottom"
-          :class="{ 'detail-scroll-bottom--fixed-footer': variant === 35 || variant === 36 }" />
+        <view
+          class="detail-scroll-bottom"
+          :class="{ 'detail-scroll-bottom--fixed-footer': variant === 35 || variant === 36 }"
+        />
       </scroll-view>
     </view>
 
-    <PawFixedActionBar v-if="variant === 35" :actions="footerActions" :primary-action="primaryAction"
-      @action="onFooterAction" @primary="onFooterPrimary" />
-    <view v-else-if="variant === 36" class="manage-footer">
-      <view data-qa="pet-detail-footer-edit" @tap="emitManageAction('edit')">
-        <PawIcon name="actions/edit" :size="16" /><text>修改信息</text>
+    <PawFixedActionBar
+      v-if="variant === 35"
+      :actions="footerActions"
+      :primary-action="primaryAction"
+      @action="onFooterAction"
+      @primary="onFooterPrimary"
+    />
+    <view
+      v-else-if="variant === 36"
+      class="manage-footer"
+    >
+      <view
+        data-qa="pet-detail-footer-edit"
+        @tap="emitManageAction('edit')"
+      >
+        <PawIcon
+          name="actions/edit"
+          :size="16"
+        /><text>修改信息</text>
       </view>
-      <view data-qa="pet-detail-footer-manage-pet" @tap="emitManageAction('manage-pet')">
-        <PawIcon name="actions/manage-pet" :size="16" />
+      <view
+        data-qa="pet-detail-footer-manage-pet"
+        @tap="emitManageAction('manage-pet')"
+      >
+        <PawIcon
+          name="actions/manage-pet"
+          :size="16"
+        />
         <text>管理宠物</text>
       </view>
-      <view data-qa="pet-detail-footer-album" @tap="emitManageAction('album')">
-        <PawIcon name="actions/manage-album" :size="16" /><text>管理相册</text>
+      <view
+        data-qa="pet-detail-footer-album"
+        @tap="emitManageAction('album')"
+      >
+        <PawIcon
+          name="actions/manage-album"
+          :size="16"
+        /><text>管理相册</text>
       </view>
-      <view class="danger" data-qa="pet-detail-footer-delete" @tap="emitManageAction('delete')">
-        <PawIcon name="actions/delete" :size="16" /><text>删除宠物</text>
+      <view
+        class="danger"
+        data-qa="pet-detail-footer-delete"
+        @tap="emitManageAction('delete')"
+      >
+        <PawIcon
+          name="actions/delete"
+          :size="16"
+        /><text>删除宠物</text>
       </view>
     </view>
   </view>
@@ -129,7 +258,7 @@ interface PetDetailData {
 }
 
 function cloneComments(comments: readonly YardComment[]): YardComment[] {
-  return comments.map(comment => ({
+  return comments.map((comment) => ({
     ...comment,
     author: { ...comment.author },
     ...(comment.replyTo ? { replyTo: { ...comment.replyTo } } : {}),
@@ -139,13 +268,21 @@ function cloneComments(comments: readonly YardComment[]): YardComment[] {
 
 export default defineComponent({
   name: 'PawPetDetailFigma',
-  components: { PawPageNav, PawFixedActionBar, PawIcon, PawCarouselDots, CommentThread, ReplyComposerSheet },
+  components: {
+    PawPageNav,
+    PawFixedActionBar,
+    PawIcon,
+    PawCarouselDots,
+    CommentThread,
+    ReplyComposerSheet,
+  },
   emits: {
-    'back': eventContract<[]>(),
-    'album': eventContract<[]>(),
+    back: eventContract<[]>(),
+    album: eventContract<[]>(),
     'preview-image': eventContract<[payload: { current: string; urls: string[] }]>(),
     'select-pet': eventContract<[index: number]>(),
-    'footer-action': eventContract<[action: PetDetailFooterActionMetadata | { key: PetDetailManagementAction }]>(),
+    'footer-action':
+      eventContract<[action: PetDetailFooterActionMetadata | { key: PetDetailManagementAction }]>(),
     'footer-primary': eventContract<[action: PetDetailPrimaryActionMetadata]>(),
     'message-user-click': eventContract<[comment: YardComment]>(),
   },
@@ -166,154 +303,167 @@ export default defineComponent({
       replySheetVisible: false,
       replySheetTargetId: '',
       heroIndex: 0,
-    };
+    }
   },
   computed: {
     heroGallery(): string[] {
       const gallery = (this.displayPet.gallery || [])
-        .map(item => typeof item === 'string' ? item : item.src || item.url)
-        .filter((source): source is string => typeof source === 'string' && source.length > 0);
-      return gallery.length ? gallery : [this.displayPet.avatar || '/static/figma/adoption-flow/pet-hero.png'];
+        .map((item) => (typeof item === 'string' ? item : item.src || item.url))
+        .filter((source): source is string => typeof source === 'string' && source.length > 0)
+      return gallery.length
+        ? gallery
+        : [this.displayPet.avatar || '/static/figma/adoption-flow/pet-hero.png']
     },
     heroSource(): string {
-      return this.heroGallery[0] || '/static/figma/adoption-flow/pet-hero.png';
+      return this.heroGallery[0] || '/static/figma/adoption-flow/pet-hero.png'
     },
     stripItems(): PetDetailStripItemMetadata[] {
-      const fallback = createPetDetailStripMocks();
-      const source: PetDetailStripItemMetadata[] = this.pets.length ? this.pets : fallback;
+      const fallback = createPetDetailStripMocks()
+      const source: PetDetailStripItemMetadata[] = this.pets.length ? this.pets : fallback
       return Array.from(
         { length: Math.max(8, source.length) },
         (_, index) => source[index] || fallback[index % fallback.length],
-      );
+      )
     },
     displayPet(): PetDetailDisplayMetadata {
-      return { ...createPetDetailFallbackMock(), ...this.pet };
+      return { ...createPetDetailFallbackMock(), ...this.pet }
     },
     displayYard(): YardMock {
-      return { ...getPawHomeYardMock(), ...this.yard };
+      return { ...getPawHomeYardMock(), ...this.yard }
     },
     footerActions(): PetDetailFooterActionMetadata[] {
       return [
         { key: 'share', label: '分享', image: '/static/fenxiang.png' },
-        { key: 'join', label: this.joined ? '已入驻' : '入驻', image: this.joined ? '/static/yard-joined-checked.png' : '/static/ruzhu.png' },
+        {
+          key: 'join',
+          label: this.joined ? '已入驻' : '入驻',
+          image: this.joined ? '/static/yard-joined-checked.png' : '/static/ruzhu.png',
+        },
         { key: 'adopt', label: '领养', image: '/static/lingyang.png' },
-      ];
+      ]
     },
     primaryAction(): PetDetailPrimaryActionMetadata {
-      return { key: 'feed', label: '云养一只', iconName: 'actions/feed', iconSize: 32, size: 'md' };
+      return { key: 'feed', label: '云养一只', iconName: 'actions/feed', iconSize: 32, size: 'md' }
     },
     canManage(): boolean {
       // `variant=36` is a visual state only. Management actions require the
       // parent page to prove the current actor's yard/animal relation.
-      return this.managed === true;
+      return this.managed === true
     },
     messageCommentsForDisplay(): YardComment[] {
-      return this.messageComments.slice(0, 1).map(comment => ({
+      return this.messageComments.slice(0, 1).map((comment) => ({
         ...comment,
         author: {
           ...(comment.author || {}),
-          avatar: comment.id === 'yard-c-1'
-            ? '/static/figma/pet-detail/message-avatar.png'
-            : (comment.author && comment.author.avatar),
+          avatar:
+            comment.id === 'yard-c-1'
+              ? '/static/figma/pet-detail/message-avatar.png'
+              : comment.author && comment.author.avatar,
           owner: false,
           tag: `${this.displayPet.name || '小黄'}的第3任云家长`,
         },
-      }));
+      }))
     },
     replyTargetName(): string {
-      const target = this.findMessageComment(this.replySheetTargetId);
-      return target && target.author ? target.author.name || '' : '';
+      const target = this.findMessageComment(this.replySheetTargetId)
+      return target && target.author ? target.author.name || '' : ''
     },
   },
   watch: {
     petIndex() {
-      this.heroIndex = 0;
+      this.heroIndex = 0
     },
   },
   methods: {
     onHeroChange(event: PawEvent) {
-      const index = readPawEventNumber(event, 'current');
-      if (Number.isInteger(index) && index >= 0 && index < this.heroGallery.length) this.heroIndex = index;
+      const index = readPawEventNumber(event, 'current')
+      if (Number.isInteger(index) && index >= 0 && index < this.heroGallery.length)
+        this.heroIndex = index
     },
     onHeroTap(index?: number) {
-      const current = index === undefined ? this.heroIndex : index;
-      const currentIndex = Number.isInteger(current) && current >= 0 && current < this.heroGallery.length ? current : 0;
+      const current = index === undefined ? this.heroIndex : index
+      const currentIndex =
+        Number.isInteger(current) && current >= 0 && current < this.heroGallery.length ? current : 0
       this.$emit('preview-image', {
         current: this.heroGallery[currentIndex] || this.heroSource,
         urls: this.heroGallery,
-      });
+      })
     },
     onAlbumTap() {
-      if (this.canManage) this.$emit('album');
+      if (this.canManage) this.$emit('album')
     },
     emitManageAction(key: PetDetailManagementAction) {
-      if (this.canManage) this.$emit('footer-action', { key });
+      if (this.canManage) this.$emit('footer-action', { key })
     },
     onStripTap(index: number) {
-      if (index !== this.petIndex) this.$emit('select-pet', index);
+      if (index !== this.petIndex) this.$emit('select-pet', index)
     },
     onNavLayout(layout: Partial<WechatNavLayout>) {
-      if (layout && Number.isFinite(Number(layout.totalHeight))) this.navOverlayOffset = Number(layout.totalHeight);
+      if (layout && Number.isFinite(Number(layout.totalHeight)))
+        this.navOverlayOffset = Number(layout.totalHeight)
     },
     onFooterAction(action: import('@/components/layout/PawFixedActionBar.vue').PawFixedAction) {
-      const selected = this.footerActions.find(item => item.key === action.key);
-      if (selected) this.$emit('footer-action', selected);
+      const selected = this.footerActions.find((item) => item.key === action.key)
+      if (selected) this.$emit('footer-action', selected)
     },
     onFooterPrimary(action: import('@/components/layout/PawFixedActionBar.vue').PawFixedAction) {
-      if (action.key === this.primaryAction.key) this.$emit('footer-primary', this.primaryAction);
+      if (action.key === this.primaryAction.key) this.$emit('footer-primary', this.primaryAction)
     },
     findMessageComment(id: string, comments?: YardComment[]): YardComment | null {
-      const targetId = String(id || '').trim();
-      if (!targetId) return null;
-      const source = comments || this.messageComments;
+      const targetId = String(id || '').trim()
+      if (!targetId) return null
+      const source = comments || this.messageComments
       for (const comment of source) {
-        if (comment.id === targetId) return comment;
-        const nested = this.findMessageComment(targetId, comment.children || []);
-        if (nested) return nested;
+        if (comment.id === targetId) return comment
+        const nested = this.findMessageComment(targetId, comment.children || [])
+        if (nested) return nested
       }
-      return null;
+      return null
     },
     onMessageUserClick(comment: CommentItemRecord) {
-      const selected = this.findMessageComment(comment.id);
-      if (selected) this.$emit('message-user-click', selected);
+      const selected = this.findMessageComment(comment.id)
+      if (selected) this.$emit('message-user-click', selected)
     },
     onMessageReply(comment: CommentItemRecord) {
-      if (!comment.id) return;
-      this.replySheetTargetId = String(comment.id);
-      this.replySheetVisible = true;
+      if (!comment.id) return
+      this.replySheetTargetId = String(comment.id)
+      this.replySheetVisible = true
     },
     onMessageLike(comment: CommentItemRecord) {
-      const target = this.findMessageComment(comment.id);
-      if (!target) return;
-      target.liked = !target.liked;
-      target.likes = Math.max(0, Number(target.likes) + (target.liked ? 1 : -1));
+      const target = this.findMessageComment(comment.id)
+      if (!target) return
+      target.liked = !target.liked
+      target.likes = Math.max(0, Number(target.likes) + (target.liked ? 1 : -1))
     },
     onReplySheetSend(text: string) {
-      const target = this.findMessageComment(this.replySheetTargetId);
-      const value = String(text || '').trim();
-      if (!target || !value) return;
-      const replies = Array.isArray(target.children) ? target.children : [];
-      target.children = [...replies, {
-        id: `pet-detail-reply-${Date.now()}`,
-        author: { name: '我', avatar: '/static/user.png', pawId: '2876598765' },
-        replyTo: {
-          name: target.author && target.author.name ? target.author.name : '',
-          level: target.author && target.author.level ? target.author.level : 1,
+      const target = this.findMessageComment(this.replySheetTargetId)
+      const value = String(text || '').trim()
+      if (!target || !value) return
+      const replies = Array.isArray(target.children) ? target.children : []
+      target.children = [
+        ...replies,
+        {
+          id: `pet-detail-reply-${Date.now()}`,
+          author: { name: '我', avatar: '/static/user.png', pawId: '2876598765' },
+          replyTo: {
+            name: target.author && target.author.name ? target.author.name : '',
+            level: target.author && target.author.level ? target.author.level : 1,
+          },
+          copy: value,
+          meta: '刚刚',
+          likes: 0,
+          liked: false,
         },
-        copy: value,
-        meta: '刚刚',
-        likes: 0,
-        liked: false,
-      }];
+      ]
     },
     onReplySheetVoice() {
-      uni.showToast({ title: '暂不支持语音回复', icon: 'none' });
+      uni.showToast({ title: '暂不支持语音回复', icon: 'none' })
     },
     onReplySheetPickImage() {
-      uni.showToast({ title: '暂不支持图片回复', icon: 'none' });
+      uni.showToast({ title: '暂不支持图片回复', icon: 'none' })
     },
   },
-});
+})
 </script>
 
 <style lang="less" scoped>
@@ -377,7 +527,7 @@ export default defineComponent({
   justify-content: center;
   gap: 4px;
   border-radius: 5px;
-  background: rgba(0, 0, 0, .3);
+  background: rgba(0, 0, 0, 0.3);
   color: #f6f8fa;
   font-size: 12px;
   font-weight: 500;
@@ -617,7 +767,7 @@ export default defineComponent({
   line-height: 18px;
 }
 
-.info-row>text:last-child {
+.info-row > text:last-child {
   color: #333;
 }
 
@@ -707,8 +857,8 @@ export default defineComponent({
   justify-content: space-between;
   padding: 0 20px 34px;
   border-radius: 20px 20px 0 0;
-  background: rgba(255, 255, 255, .9);
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, .04);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.04);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-sizing: border-box;
@@ -739,6 +889,6 @@ export default defineComponent({
 }
 
 .manage-footer .danger {
-  color: #ff334d
+  color: #ff334d;
 }
 </style>

@@ -1,32 +1,76 @@
 <template>
   <view class="detail-shell">
-    <PawYardDetailFigma v-if="routeReady" :state="figmaState" :yard-data="yard" @pet-click="openPetDetail" @pet-list-click="openPetList"
-      @rank-user="openRankUser" @adopt="openAdoptSheet" />
-    <AdoptPickCatsSheet v-if="routeReady" v-model="adoptPickSheetVisible" :yard-name="yard.name" :yard-id="yardId" :cats="adoptionPets"
-      :owner-avatar="yard.avatar" :owner-paw-id="yard.owner && yard.owner.pawId" />
-    <view v-else class="yard-detail-state" data-qa="qa-yard-detail-state">
+    <PawYardDetailFigma
+      v-if="routeReady"
+      :state="figmaState"
+      :yard-data="yard"
+      @pet-click="openPetDetail"
+      @pet-list-click="openPetList"
+      @rank-user="openRankUser"
+      @adopt="openAdoptSheet"
+    />
+    <AdoptPickCatsSheet
+      v-if="routeReady"
+      v-model="adoptPickSheetVisible"
+      :yard-name="yard.name"
+      :yard-id="yardId"
+      :cats="adoptionPets"
+      :owner-avatar="yard.avatar"
+      :owner-paw-id="yard.owner && yard.owner.pawId"
+    />
+    <view
+      v-else
+      class="yard-detail-state"
+      data-qa="qa-yard-detail-state"
+    >
       <text class="yard-detail-state__title">小院详情暂不可用</text>
       <text class="yard-detail-state__copy">请从有效的小院入口重新进入。</text>
     </view>
-    <view v-if="helpPopup" class="help-mask">
-      <view class="help-dialog" :class="{ 'help-dialog--food': helpPopup === 'food-stat' }">
+    <view
+      v-if="helpPopup"
+      class="help-mask"
+    >
+      <view
+        class="help-dialog"
+        :class="{ 'help-dialog--food': helpPopup === 'food-stat' }"
+      >
         <text class="help-title">{{ helpContent.title }}</text>
         <view class="help-divider"></view>
         <template v-if="helpPopup === 'food-stat'">
           <view class="food-stat-row"><text>小院累计获得投粮</text><text>999斤</text></view>
           <view class="food-stat-row"><text>小院累计获粮次数</text><text>456次</text></view>
         </template>
-        <text v-else class="help-copy">{{ helpContent.copy }}</text>
+        <text
+          v-else
+          class="help-copy"
+          >{{ helpContent.copy }}</text
+        >
         <view class="help-footer">我知道了</view>
       </view>
     </view>
-    <view v-if="overlayState === 'reply-idle' || overlayState === 'reply-input'" class="reply-mask">
+    <view
+      v-if="overlayState === 'reply-idle' || overlayState === 'reply-input'"
+      class="reply-mask"
+    >
       <view class="reply-panel">
-        <view class="reply-input"><text>{{ overlayState === 'reply-input' ? '这是一个充满希望的季节，希望小猫今年也可以好好地' : '说点什么'
-        }}</text>
+        <view class="reply-input"
+          ><text>{{
+            overlayState === 'reply-input'
+              ? '这是一个充满希望的季节，希望小猫今年也可以好好地'
+              : '说点什么'
+          }}</text>
         </view>
-        <view class="reply-actions"><uni-icons type="mic" color="#444" :size="20"></uni-icons><uni-icons type="image"
-            color="#444" :size="20"></uni-icons>
+        <view class="reply-actions"
+          ><uni-icons
+            type="mic"
+            color="#444"
+            :size="20"
+          ></uni-icons
+          ><uni-icons
+            type="image"
+            color="#444"
+            :size="20"
+          ></uni-icons>
           <view class="reply-send">发送</view>
         </view>
       </view>
@@ -48,17 +92,29 @@ import {
   resolveYardDetailRoute,
   selectAdoptionPets,
   yardDetailRankUser,
-  type YardDetailPageState
+  type YardDetailPageState,
 } from '../../services/yardDetailMetadata.ts'
 
 export default defineComponent({
   components: { PawYardDetailFigma, AdoptPickCatsSheet },
-  data(): YardDetailPageState { return createYardDetailPageState(getPawHomeYardMock()) },
+  data(): YardDetailPageState {
+    return createYardDetailPageState(getPawHomeYardMock())
+  },
   computed: {
-    helpContent() { return this.helpPopup === 'feedback-stat' ? { title: '平均反馈时长', copy: '院主共反馈78次，平均反馈时长3天2小时；平均反馈时长指的是院主自投粮物流签收后的平均上传动态反馈时间，未计算次数内的反馈不计入' } : { title: '帮助领养', copy: '截止目前，院主已从43位领养人中仔细筛选出23人，并成功为13只猫咪找到新家，沉福它们，感谢院主和领养人不辞辛苦的坚持与努力' } },
+    helpContent() {
+      return this.helpPopup === 'feedback-stat'
+        ? {
+            title: '平均反馈时长',
+            copy: '院主共反馈78次，平均反馈时长3天2小时；平均反馈时长指的是院主自投粮物流签收后的平均上传动态反馈时间，未计算次数内的反馈不计入',
+          }
+        : {
+            title: '帮助领养',
+            copy: '截止目前，院主已从43位领养人中仔细筛选出23人，并成功为13只猫咪找到新家，沉福它们，感谢院主和领养人不辞辛苦的坚持与努力',
+          }
+    },
     adoptionPets() {
       return selectAdoptionPets(this.yard.pets)
-    }
+    },
   },
   onLoad(options: unknown = {}) {
     const route = resolveYardDetailRoute(options)
@@ -78,14 +134,14 @@ export default defineComponent({
     return {
       title: '我就是要喂猫｜一起照顾流浪猫',
       path: `/packages/yard/pages/detail/index?yardId=${encodeURIComponent(this.yardId)}`,
-      imageUrl: '/static/figma/yard-cover-exact.png'
+      imageUrl: '/static/figma/yard-cover-exact.png',
     }
   },
   onShareTimeline() {
     return {
       title: '我就是要喂猫｜一起照顾流浪猫',
       query: `id=${encodeURIComponent(this.yardId)}`,
-      imageUrl: '/static/figma/yard-cover-exact.png'
+      imageUrl: '/static/figma/yard-cover-exact.png',
     }
   },
   onShow() {
@@ -93,23 +149,29 @@ export default defineComponent({
   },
   methods: {
     refreshYard() {
-    const publicYard = readPublicYard(this.yardId)
-    if (publicYard.success && publicYard.data && publicYard.data.record) {
-      const record = publicYard.data.record
-      this.yard = mergePublicYardDetail(this.yard, record, this.yardId)
-    }
+      const publicYard = readPublicYard(this.yardId)
+      if (publicYard.success && publicYard.data && publicYard.data.record) {
+        const record = publicYard.data.record
+        this.yard = mergePublicYardDetail(this.yard, record, this.yardId)
+      }
     },
     openPetDetail(pet: { id: string }) {
       if (!pet.id) return
       uni.navigateTo({
-        url: '/packages/animal/pages/detail/index?animalId=' + encodeURIComponent(pet.id) +
-          '&yardId=' + encodeURIComponent(this.yardId || '1')
+        url:
+          '/packages/animal/pages/detail/index?animalId=' +
+          encodeURIComponent(pet.id) +
+          '&yardId=' +
+          encodeURIComponent(this.yardId || '1'),
       })
     },
     openPetList() {
       uni.navigateTo({
-        url: '/packages/yard/pages/animals/index?state=roster&name=' + encodeURIComponent('我就是要喂猫') +
-          '&yardId=' + encodeURIComponent(this.yardId || '1')
+        url:
+          '/packages/yard/pages/animals/index?state=roster&name=' +
+          encodeURIComponent('我就是要喂猫') +
+          '&yardId=' +
+          encodeURIComponent(this.yardId || '1'),
       })
     },
     openRankUser(item: YardRankItem) {
@@ -117,8 +179,8 @@ export default defineComponent({
     },
     openAdoptSheet() {
       this.adoptPickSheetVisible = true
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -128,7 +190,7 @@ page {
 }
 
 .detail-shell {
-  min-height: 100vh
+  min-height: 100vh;
 }
 
 .yard-detail-state {
@@ -160,7 +222,7 @@ page {
   position: fixed;
   inset: 0;
   z-index: 900;
-  background: #5b5b5b
+  background: #5b5b5b;
 }
 
 .reply-panel {
@@ -171,7 +233,7 @@ page {
   height: 130px;
   background: #fff;
   border-radius: 14px 14px 0 0;
-  overflow: hidden
+  overflow: hidden;
 }
 
 .reply-input {
@@ -183,7 +245,7 @@ page {
   box-sizing: border-box;
   color: #555;
   font-size: 14px;
-  line-height: 18px
+  line-height: 18px;
 }
 
 .reply-actions {
@@ -191,7 +253,7 @@ page {
   display: flex;
   align-items: center;
   gap: 18px;
-  padding: 0 24px
+  padding: 0 24px;
 }
 
 .reply-send {
@@ -204,14 +266,14 @@ page {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px
+  font-size: 13px;
 }
 
 .help-mask {
   position: fixed;
   inset: 0;
   z-index: 950;
-  background: #5b5b5b
+  background: #5b5b5b;
 }
 
 .help-dialog {
@@ -223,7 +285,7 @@ page {
   border-radius: 19px;
   background: #fff;
   overflow: hidden;
-  box-sizing: border-box
+  box-sizing: border-box;
 }
 
 .help-title {
@@ -233,13 +295,13 @@ page {
   text-align: center;
   font-size: 20px;
   font-weight: 500;
-  color: #222
+  color: #222;
 }
 
 .help-divider {
   height: 1px;
   margin: 0 22px;
-  background: #f0f0f0
+  background: #f0f0f0;
 }
 
 .help-copy {
@@ -252,7 +314,7 @@ page {
   text-align: center;
   color: #999;
   font-size: 14px;
-  line-height: 16px
+  line-height: 16px;
 }
 
 .help-footer {
@@ -266,13 +328,13 @@ page {
   align-items: center;
   justify-content: center;
   color: #999;
-  font-size: 15px
+  font-size: 15px;
 }
 
 .help-dialog--food {
   left: 62px;
   width: 251px;
-  height: 214px
+  height: 214px;
 }
 
 .food-stat-row {
@@ -282,11 +344,11 @@ page {
   align-items: center;
   justify-content: space-between;
   color: #999;
-  font-size: 14px
+  font-size: 14px;
 }
 
 .food-stat-row text:last-child {
   color: #333;
-  font-size: 16px
+  font-size: 16px;
 }
 </style>

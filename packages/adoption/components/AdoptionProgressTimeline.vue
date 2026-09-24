@@ -1,16 +1,41 @@
 <template>
-  <view class="adoption-progress-timeline" data-qa="qa-adoption-progress-timeline">
-    <view class="adoption-progress-timeline__track" :class="`is-step-${step}`" aria-hidden="true">
+  <view
+    class="adoption-progress-timeline"
+    data-qa="qa-adoption-progress-timeline"
+  >
+    <view
+      class="adoption-progress-timeline__track"
+      :class="`is-step-${step}`"
+      aria-hidden="true"
+    >
       <view class="adoption-progress-timeline__line" />
-      <view class="adoption-progress-timeline__active" :style="{ width: percent }" />
-      <view v-for="item in markers" :key="item.key" class="adoption-progress-timeline__marker"
-        :class="{ active: step >= item.step }" :style="{ left: item.offset }">
+      <view
+        class="adoption-progress-timeline__active"
+        :style="{ width: percent }"
+      />
+      <view
+        v-for="item in markers"
+        :key="item.key"
+        class="adoption-progress-timeline__marker"
+        :class="{ active: step >= item.step }"
+        :style="{ left: item.offset }"
+      >
         <view class="adoption-progress-timeline__dot">
-          <PawIcon v-if="step >= item.step" name="actions/selection-check" :size="9" />
+          <PawIcon
+            v-if="step >= item.step"
+            name="actions/selection-check"
+            :size="9"
+          />
         </view>
       </view>
-      <view class="adoption-progress-timeline__reward" :class="{ active: step >= 4 }">
-        <PawIcon name="badges/adoption-reward" :size="22" />
+      <view
+        class="adoption-progress-timeline__reward"
+        :class="{ active: step >= 4 }"
+      >
+        <PawIcon
+          name="badges/adoption-reward"
+          :size="22"
+        />
       </view>
     </view>
     <view class="adoption-progress-timeline__labels">
@@ -23,7 +48,8 @@
   </view>
 </template>
 
-<script lang="ts">import { defineComponent } from 'vue'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
@@ -32,17 +58,17 @@ export default defineComponent({
   components: { PawIcon },
   props: {
     step: { type: Number, default: 1 },
-    percent: { type: String, default: '0%' }
+    percent: { type: String, default: '0%' },
   },
   computed: {
     markers() {
       return [
         { key: 'adoption', step: 1, offset: '0%' },
         { key: 'owner', step: 2, offset: '28%' },
-        { key: 'review', step: 3, offset: '57%' }
+        { key: 'review', step: 3, offset: '57%' },
       ]
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -120,7 +146,7 @@ export default defineComponent({
   height: 22px;
   align-items: center;
   justify-content: center;
-  opacity: .35;
+  opacity: 0.35;
 }
 
 .adoption-progress-timeline__reward.active {
@@ -150,4 +176,3 @@ export default defineComponent({
   line-height: 16px;
 }
 </style>
-

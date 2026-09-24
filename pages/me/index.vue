@@ -1,185 +1,366 @@
 <template>
-	<view class="me-page">
-		<PawPageNav :show-back="false" background="#f5f5f5" slot-position="custom" :slot-style="{ left: '0px' }">
-			<template #content>
-				<view class="nav-menu-hit" data-qa="qa-me-menu" @tap.stop="onMenuTap">
-					<uni-icons type="bars" color="#333333" :size="24"></uni-icons>
-				</view>
-			</template>
-		</PawPageNav>
-		<scroll-view class="main-scroll" scroll-y :show-scrollbar="false" :enable-flex="true" :bounces="false">
-			<view class="scroll-inner">
-				<view class="profile-card card card--elevated">
-					<view class="profile-card__surface" aria-hidden="true"></view>
-					<view class="profile-main">
-						<PawImage class="profile-avatar" :src="profileAvatar" :size="65" :radius="32.5" :preview="false"
-							:clickable="true" data-qa="qa-me-avatar" @click="openProfileUpload" />
-						<view class="profile-info">
-							<view class="name-row" data-qa="qa-me-profile" @tap.stop="openSelfProfileEditor">
-								<text class="profile-name">浮生孤影</text>
-								<LevelBadge data-qa="qa-me-level" level="1" @click.stop="goLevelPage" />
-							</view>
-							<text class="paw-id">逢猫号：2876598765</text>
-						</view>
-						<PawMemberBanner class="profile-card__member-banner" data-qa="qa-me-membership-ribbon"
-							:title="membership.title" :progress-text="`距下一级${membership.remainingExp}`"
-							@click="goLevelPage" />
-					</view>
-					<view class="stats-row">
-						<view class="stat-cell" data-qa="qa-me-cloud-pets" @click="goMyCloudPets">
-							<PawBadge class="stat-badge" text="新反馈">
-								<text class="stat-num">11只</text>
-							</PawBadge>
-							<text class="stat-label">我的云养宠物</text>
-						</view>
-						<view class="stat-cell" data-qa="qa-me-my-pets" @click="goMyPets">
-							<text class="stat-num">1只</text>
-							<text class="stat-label">我的宠物</text>
-						</view>
-						<view class="stat-cell" data-qa="qa-me-my-adoption" @click="goMyAdoption">
-							<PawBadge class="stat-badge" text="新进度">
-								<text class="stat-num">22只</text>
-							</PawBadge>
-							<text class="stat-label">我的领养</text>
-						</view>
-						<view class="stat-cell" data-qa="qa-me-medals" @click="goMyMedals">
-							<text class="stat-num">1只</text>
-							<text class="stat-label">勋章</text>
-						</view>
-					</view>
-				</view>
+  <view class="me-page">
+    <PawPageNav
+      :show-back="false"
+      background="#f5f5f5"
+      slot-position="custom"
+      :slot-style="{ left: '0px' }"
+    >
+      <template #content>
+        <view
+          class="nav-menu-hit"
+          data-qa="qa-me-menu"
+          @tap.stop="onMenuTap"
+        >
+          <uni-icons
+            type="bars"
+            color="#333333"
+            :size="24"
+          ></uni-icons>
+        </view>
+      </template>
+    </PawPageNav>
+    <scroll-view
+      class="main-scroll"
+      scroll-y
+      :show-scrollbar="false"
+      :enable-flex="true"
+      :bounces="false"
+    >
+      <view class="scroll-inner">
+        <view class="profile-card card card--elevated">
+          <view
+            class="profile-card__surface"
+            aria-hidden="true"
+          ></view>
+          <view class="profile-main">
+            <PawImage
+              class="profile-avatar"
+              :src="profileAvatar"
+              :size="65"
+              :radius="32.5"
+              :preview="false"
+              :clickable="true"
+              data-qa="qa-me-avatar"
+              @click="openProfileUpload"
+            />
+            <view class="profile-info">
+              <view
+                class="name-row"
+                data-qa="qa-me-profile"
+                @tap.stop="openSelfProfileEditor"
+              >
+                <text class="profile-name">浮生孤影</text>
+                <LevelBadge
+                  data-qa="qa-me-level"
+                  level="1"
+                  @click.stop="goLevelPage"
+                />
+              </view>
+              <text class="paw-id">逢猫号：2876598765</text>
+            </view>
+            <PawMemberBanner
+              class="profile-card__member-banner"
+              data-qa="qa-me-membership-ribbon"
+              :title="membership.title"
+              :progress-text="`距下一级${membership.remainingExp}`"
+              @click="goLevelPage"
+            />
+          </view>
+          <view class="stats-row">
+            <view
+              class="stat-cell"
+              data-qa="qa-me-cloud-pets"
+              @click="goMyCloudPets"
+            >
+              <PawBadge
+                class="stat-badge"
+                text="新反馈"
+              >
+                <text class="stat-num">11只</text>
+              </PawBadge>
+              <text class="stat-label">我的云养宠物</text>
+            </view>
+            <view
+              class="stat-cell"
+              data-qa="qa-me-my-pets"
+              @click="goMyPets"
+            >
+              <text class="stat-num">1只</text>
+              <text class="stat-label">我的宠物</text>
+            </view>
+            <view
+              class="stat-cell"
+              data-qa="qa-me-my-adoption"
+              @click="goMyAdoption"
+            >
+              <PawBadge
+                class="stat-badge"
+                text="新进度"
+              >
+                <text class="stat-num">22只</text>
+              </PawBadge>
+              <text class="stat-label">我的领养</text>
+            </view>
+            <view
+              class="stat-cell"
+              data-qa="qa-me-medals"
+              @click="goMyMedals"
+            >
+              <text class="stat-num">1只</text>
+              <text class="stat-label">勋章</text>
+            </view>
+          </view>
+        </view>
 
-				<view class="orders-card card card--elevated">
-					<view class="card-header">
-						<text class="card-title">我的订单</text>
-						<view class="card-link" @click="toast('全部订单')">
-							<text>全部</text>
-							<PawIcon class="link-chevron" name="navigation/order-chevron-right" size="sm" />
-						</view>
-					</view>
-					<view class="orders-grid">
-						<view v-for="(item, i) in orderEntries" :key="i" class="order-item" @click="toast(item.label)">
-							<view class="order-icon-wrap">
-								<PawBadge :count="item.badge">
-									<PawIcon class="order-icon-img" :name="item.iconName" size="lg" />
-								</PawBadge>
-							</view>
-							<text class="order-label">{{ item.label }}</text>
-						</view>
-					</view>
-				</view>
+        <view class="orders-card card card--elevated">
+          <view class="card-header">
+            <text class="card-title">我的订单</text>
+            <view
+              class="card-link"
+              @click="toast('全部订单')"
+            >
+              <text>全部</text>
+              <PawIcon
+                class="link-chevron"
+                name="navigation/order-chevron-right"
+                size="sm"
+              />
+            </view>
+          </view>
+          <view class="orders-grid">
+            <view
+              v-for="(item, i) in orderEntries"
+              :key="i"
+              class="order-item"
+              @click="toast(item.label)"
+            >
+              <view class="order-icon-wrap">
+                <PawBadge :count="item.badge">
+                  <PawIcon
+                    class="order-icon-img"
+                    :name="item.iconName"
+                    size="lg"
+                  />
+                </PawBadge>
+              </view>
+              <text class="order-label">{{ item.label }}</text>
+            </view>
+          </view>
+        </view>
 
-				<view class="yard-card card card--elevated">
-					<view class="card-header">
-						<text class="card-title card-title--blue">我的小院</text>
-						<view class="card-link" @click="goManagedYard">
-							<text>查看</text>
-							<PawIcon class="link-chevron" name="navigation/order-chevron-right" size="sm" />
-						</view>
-					</view>
-					<view class="yard-body">
-						<view class="yard-left">
-							<view class="yard-line">
-								<text class="yard-line-label">今日曝光</text>
-								<text class="yard-num">361万</text>
-								<text class="yard-line-sub">(昨日12万)</text>
-							</view>
-							<view class="yard-line">
-								<text class="yard-line-label">今日获粮</text>
-								<text class="yard-num">361斤</text>
-								<text class="yard-line-sub">(昨日1斤)</text>
-							</view>
-						</view>
-						<view class="yard-divider"></view>
-						<view class="yard-right">
-							<view class="yard-action" @click="goYardFeedOrders">
-								<PawBadge :count="9">
-									<view class="yard-action-content">
-										<PawIcon class="yard-icon-img" name="actions/yard-feed" size="base" />
-										<text class="yard-action-text">投喂订单</text>
-									</view>
-								</PawBadge>
-							</view>
-							<view class="yard-action" @click="goAdoptionAudit">
-								<PawBadge :count="9">
-									<view class="yard-action-content">
-										<PawIcon class="yard-icon-img" name="actions/yard-audit" size="base" />
-										<text class="yard-action-text">领养审核</text>
-									</view>
-								</PawBadge>
-							</view>
-						</view>
-					</view>
-				</view>
+        <view class="yard-card card card--elevated">
+          <view class="card-header">
+            <text class="card-title card-title--blue">我的小院</text>
+            <view
+              class="card-link"
+              @click="goManagedYard"
+            >
+              <text>查看</text>
+              <PawIcon
+                class="link-chevron"
+                name="navigation/order-chevron-right"
+                size="sm"
+              />
+            </view>
+          </view>
+          <view class="yard-body">
+            <view class="yard-left">
+              <view class="yard-line">
+                <text class="yard-line-label">今日曝光</text>
+                <text class="yard-num">361万</text>
+                <text class="yard-line-sub">(昨日12万)</text>
+              </view>
+              <view class="yard-line">
+                <text class="yard-line-label">今日获粮</text>
+                <text class="yard-num">361斤</text>
+                <text class="yard-line-sub">(昨日1斤)</text>
+              </view>
+            </view>
+            <view class="yard-divider"></view>
+            <view class="yard-right">
+              <view
+                class="yard-action"
+                @click="goYardFeedOrders"
+              >
+                <PawBadge :count="9">
+                  <view class="yard-action-content">
+                    <PawIcon
+                      class="yard-icon-img"
+                      name="actions/yard-feed"
+                      size="base"
+                    />
+                    <text class="yard-action-text">投喂订单</text>
+                  </view>
+                </PawBadge>
+              </view>
+              <view
+                class="yard-action"
+                @click="goAdoptionAudit"
+              >
+                <PawBadge :count="9">
+                  <view class="yard-action-content">
+                    <PawIcon
+                      class="yard-icon-img"
+                      name="actions/yard-audit"
+                      size="base"
+                    />
+                    <text class="yard-action-text">领养审核</text>
+                  </view>
+                </PawBadge>
+              </view>
+            </view>
+          </view>
+        </view>
 
-				<view v-for="review in reviewCards" :key="review.title" class="review-card card card--elevated"
-					:data-qa="`qa-me-${review.reviewType}-review`" @tap="goJuryPanel(review.reviewType)">
-					<view class="card-header card-header--review">
-						<text class="card-title">{{ review.title }}</text>
-						<text class="card-sub">{{ review.question }}</text>
-					</view>
-					<view class="review-body">
-						<view class="review-text">{{ reviewText }}</view>
-						<view class="review-thumbs">
-							<image class="review-img" src="/static/figma/review-dog.jpg" mode="aspectFill"></image>
-							<image class="review-img" src="/static/figma/review-cat.png" mode="aspectFill"></image>
-						</view>
-					</view>
-					<view class="poll-wrap">
-						<PawVoteRatioBar class="poll-bar" :real-percent="review.realPercent"
-							:fake-percent="review.fakePercent" :real-label="`${review.realPercent}%（挺真实）`"
-							:fake-label="`${review.fakePercent}%`" :min-fake-width="48" :height="26" />
-					</view>
-				</view>
-			</view>
-		</scroll-view>
-		<CustomTabber :tab-index="3" />
+        <view
+          v-for="review in reviewCards"
+          :key="review.title"
+          class="review-card card card--elevated"
+          :data-qa="`qa-me-${review.reviewType}-review`"
+          @tap="goJuryPanel(review.reviewType)"
+        >
+          <view class="card-header card-header--review">
+            <text class="card-title">{{ review.title }}</text>
+            <text class="card-sub">{{ review.question }}</text>
+          </view>
+          <view class="review-body">
+            <view class="review-text">{{ reviewText }}</view>
+            <view class="review-thumbs">
+              <image
+                class="review-img"
+                src="/static/figma/review-dog.jpg"
+                mode="aspectFill"
+              ></image>
+              <image
+                class="review-img"
+                src="/static/figma/review-cat.png"
+                mode="aspectFill"
+              ></image>
+            </view>
+          </view>
+          <view class="poll-wrap">
+            <PawVoteRatioBar
+              class="poll-bar"
+              :real-percent="review.realPercent"
+              :fake-percent="review.fakePercent"
+              :real-label="`${review.realPercent}%（挺真实）`"
+              :fake-label="`${review.fakePercent}%`"
+              :min-fake-width="48"
+              :height="26"
+            />
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+    <CustomTabber :tab-index="3" />
 
-		<view v-if="drawerOpen" class="drawer-backdrop" :class="{ 'drawer-backdrop--show': drawerAnim }"
-			data-qa="qa-me-drawer-backdrop" @tap.stop="closeDrawer"></view>
-		<view v-if="drawerOpen" class="drawer-shell"
-			:class="{ 'drawer-shell--show': drawerAnim, 'drawer-shell--closing': !drawerAnim }" data-qa="qa-me-drawer"
-			@tap.stop>
-			<scroll-view class="drawer-scroll" scroll-y :show-scrollbar="false">
-				<view class="drawer-pad">
-					<view v-for="(section, si) in menuSections" :key="si" class="menu-section"
-						:class="`menu-section--${Number(si) + 1}`">
-						<view v-for="(label, ri) in section" :key="ri" class="menu-row"
-							:data-qa="label === '领养评审' ? 'qa-me-menu-adoption-review' : ''"
-							@tap.stop="onMenuRow(label)">
-							<text class="menu-row-label">{{ label }}</text>
-							<PawChevron class="menu-row-chevron" :size="8" />
-						</view>
-					</view>
-				</view>
-			</scroll-view>
-			<view class="drawer-settings" data-qa="qa-me-drawer-settings" @tap.stop="onMenuRow('设置')">
-				<view class="settings-icon-wrap">
-					<uni-icons type="gear" color="#666666" :size="18"></uni-icons>
-				</view>
-				<text class="settings-text">设置</text>
-			</view>
-		</view>
-		<PawBottomSheet v-model:visible="avatarSheetVisible" variant="profile-upload" height="379px"
-			:close-on-mask="true" :safe-area="true" :z-index="10060" @after-close="onProfileUploadClosed">
-			<view class="profile-upload-sheet" data-qa="qa-me-avatar-sheet" @tap.stop>
-				<view class="profile-upload-head">
-					<text class="profile-upload-title">更换头像</text>
-					<text class="profile-upload-skip" data-qa="qa-me-avatar-cancel" @tap="closeProfileUpload">取消</text>
-				</view>
-				<PawImage class="profile-upload-avatar" :src="profileAvatar" :size="95" :radius="47.5"
-					:preview="false" />
-				<text class="profile-upload-copy">选择一张新头像，让大家更容易认出你</text>
-				<view class="profile-upload-actions">
-					<view class="profile-upload-action" data-qa="qa-me-avatar-album" @tap="chooseAvatar">
-						<text>从相册选择</text>
-					</view>
-					<view class="profile-upload-action" data-qa="qa-me-avatar-camera" @tap="takeAvatar"><text>拍照</text>
-					</view>
-				</view>
-			</view>
-		</PawBottomSheet>
-	</view>
+    <view
+      v-if="drawerOpen"
+      class="drawer-backdrop"
+      :class="{ 'drawer-backdrop--show': drawerAnim }"
+      data-qa="qa-me-drawer-backdrop"
+      @tap.stop="closeDrawer"
+    ></view>
+    <view
+      v-if="drawerOpen"
+      class="drawer-shell"
+      :class="{ 'drawer-shell--show': drawerAnim, 'drawer-shell--closing': !drawerAnim }"
+      data-qa="qa-me-drawer"
+      @tap.stop
+    >
+      <scroll-view
+        class="drawer-scroll"
+        scroll-y
+        :show-scrollbar="false"
+      >
+        <view class="drawer-pad">
+          <view
+            v-for="(section, si) in menuSections"
+            :key="si"
+            class="menu-section"
+            :class="`menu-section--${Number(si) + 1}`"
+          >
+            <view
+              v-for="(label, ri) in section"
+              :key="ri"
+              class="menu-row"
+              :data-qa="label === '领养评审' ? 'qa-me-menu-adoption-review' : ''"
+              @tap.stop="onMenuRow(label)"
+            >
+              <text class="menu-row-label">{{ label }}</text>
+              <PawChevron
+                class="menu-row-chevron"
+                :size="8"
+              />
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+      <view
+        class="drawer-settings"
+        data-qa="qa-me-drawer-settings"
+        @tap.stop="onMenuRow('设置')"
+      >
+        <view class="settings-icon-wrap">
+          <uni-icons
+            type="gear"
+            color="#666666"
+            :size="18"
+          ></uni-icons>
+        </view>
+        <text class="settings-text">设置</text>
+      </view>
+    </view>
+    <PawBottomSheet
+      v-model:visible="avatarSheetVisible"
+      variant="profile-upload"
+      height="379px"
+      :close-on-mask="true"
+      :safe-area="true"
+      :z-index="10060"
+      @after-close="onProfileUploadClosed"
+    >
+      <view
+        class="profile-upload-sheet"
+        data-qa="qa-me-avatar-sheet"
+        @tap.stop
+      >
+        <view class="profile-upload-head">
+          <text class="profile-upload-title">更换头像</text>
+          <text
+            class="profile-upload-skip"
+            data-qa="qa-me-avatar-cancel"
+            @tap="closeProfileUpload"
+            >取消</text
+          >
+        </view>
+        <PawImage
+          class="profile-upload-avatar"
+          :src="profileAvatar"
+          :size="95"
+          :radius="47.5"
+          :preview="false"
+        />
+        <text class="profile-upload-copy">选择一张新头像，让大家更容易认出你</text>
+        <view class="profile-upload-actions">
+          <view
+            class="profile-upload-action"
+            data-qa="qa-me-avatar-album"
+            @tap="chooseAvatar"
+          >
+            <text>从相册选择</text>
+          </view>
+          <view
+            class="profile-upload-action"
+            data-qa="qa-me-avatar-camera"
+            @tap="takeAvatar"
+            ><text>拍照</text>
+          </view>
+        </view>
+      </view>
+    </PawBottomSheet>
+  </view>
 </template>
 
 <script lang="ts">
@@ -198,914 +379,931 @@ import PawPageNav from '@/components/PawPageNav.vue'
 import PawVoteRatioBar from '@/components/PawVoteRatioBar.vue'
 import { SELF_PAW_ID } from '@/utils/profileNav.ts'
 import {
-	createMePageState,
-	firstTempImagePath,
-	normalizeMePageMode,
-	type MeMenuItem,
-	type MePageState,
-	type MeReviewType,
+  createMePageState,
+  firstTempImagePath,
+  normalizeMePageMode,
+  type MeMenuItem,
+  type MePageState,
+  type MeReviewType,
 } from '@/utils/mePageMetadata.ts'
 
 function queryRecord(options: unknown): Record<string, unknown> {
-	return options !== null && typeof options === 'object' && !Array.isArray(options)
-		? options as Record<string, unknown>
-		: {}
+  return options !== null && typeof options === 'object' && !Array.isArray(options)
+    ? (options as Record<string, unknown>)
+    : {}
 }
 
 export default defineComponent({
-	components: { CustomTabber, PawIcon, PawBadge, LevelBadge, PawChevron, PawImage, PawMemberBanner, PawBottomSheet, PawPageNav, PawVoteRatioBar },
-	data(): MePageState { return createMePageState() },
-	onLoad(options: unknown = {}) {
-		this.pageState = normalizeMePageMode(queryRecord(options).state)
-		if (this.pageState === 'drawer') {
-			this.openDrawer()
-		}
-		if (this.pageState === 'profile-upload') this.avatarSheetVisible = true
-	},
-	beforeUnmount() {
-		this.clearDrawerTimers()
-	},
-	onShow() {
-		if (!this.ensureLogin()) return
-		// #ifdef MP-WEIXIN
-		this.$nextTick(() => {
-			const cur = getCurrentPages().slice(-1)[0]
-			if (cur && typeof cur.getTabBar === 'function') {
-				const tb = cur.getTabBar()
-				if (tb && typeof tb.setData === 'function') tb.setData({ selected: 3 })
-			}
-		})
-		// #endif
-	},
-	methods: {
-		ensureLogin() {
-			if (this.pageState === 'drawer' || this.pageState === 'profile-upload') return true
-			const loggedIn = !!uni.getStorageSync('PAWHOME_ACTOR_SESSION')
-			if (loggedIn) {
-				this.authChecked = true
-				return true
-			}
-			if (!this.authChecked) this.authChecked = true
-			uni.navigateTo({ url: '/packages/auth/pages/login/index' })
-			return false
-		},
-		openProfileUpload() {
-			this.avatarSheetVisible = true
-		},
-		onMenuTap() {
-			if (this.drawerOpen) {
-				this.closeDrawer()
-				return
-			}
-			this.openDrawer()
-		},
-		clearDrawerTimers() {
-			if (this.drawerEnterTimer) clearTimeout(this.drawerEnterTimer)
-			if (this.drawerCloseTimer) clearTimeout(this.drawerCloseTimer)
-			this.drawerEnterTimer = null
-			this.drawerCloseTimer = null
-		},
-		openDrawer() {
-			this.clearDrawerTimers()
-			this.drawerOpen = true
-			// Mount in the off-canvas position first. The delayed state change gives
-			// the browser and the mini-program renderer a real transition frame.
-			this.drawerAnim = false
-			this.$nextTick(() => {
-				this.drawerEnterTimer = setTimeout(() => {
-					this.drawerEnterTimer = null
-					if (this.drawerOpen) this.drawerAnim = true
-				}, 16)
-			})
-		},
-		closeDrawer() {
-			if (!this.drawerOpen) return
-			this.clearDrawerTimers()
-			this.drawerAnim = false
-			this.drawerCloseTimer = setTimeout(() => {
-				this.drawerOpen = false
-				this.drawerCloseTimer = null
-			}, 220)
-		},
-		onProfileUploadClosed() {
-			if (this.pageState === 'profile-upload') this.pageState = 'default'
-		},
-		closeProfileUpload() {
-			this.avatarSheetVisible = false
-		},
-		chooseAvatar() {
-			uni.chooseImage({
-				count: 1,
-				sourceType: ['album'],
-				success: (result: unknown) => {
-					const path = firstTempImagePath(result)
-					if (path) this.profileAvatar = path
-					this.closeProfileUpload()
-				}
-			})
-		},
-		takeAvatar() {
-			uni.chooseImage({
-				count: 1,
-				sourceType: ['camera'],
-				success: (result: unknown) => {
-					const path = firstTempImagePath(result)
-					if (path) this.profileAvatar = path
-					this.closeProfileUpload()
-				}
-			})
-		},
-		onMenuRow(label: MeMenuItem) {
-			this.closeDrawer()
-			if (label === '我的任务') {
-				// Canonical route contract: buildRoute('account.tasks', {})
-				uni.navigateTo({ url: '/packages/account/pages/tasks/index' })
-				return
-			}
-			if (label === '设置') {
-				uni.navigateTo({ url: buildRoute('account.settings', {}) })
-				return
-			}
-			if (label === '历史浏览') {
-				uni.navigateTo({ url: buildRoute('account.history', { entityType: 'dynamic' }) })
-				return
-			}
-			if (label === '我的云养宠物') {
-				this.goMyCloudPets()
-				return
-			}
-			if (label === '我的宠物') {
-				this.goMyPets()
-				return
-			}
-			if (label === '小院宠物') {
-				const yardId = String(uni.getStorageSync('PAWHOME_ACTIVE_YARD_ID') || '').trim()
-				if (!yardId) { this.toast('暂未绑定小院'); return }
-				uni.navigateTo({ url: buildRoute('yard.animals', { yardId }) })
-				return
-			}
-			if (label === '我的小院') {
-				this.goManagedYard()
-				return
-			}
-			if (label === '领养额度') {
-				uni.navigateTo({ url: '/packages/adoption/pages/quota/index' })
-				return
-			}
-			if (label === '我的勋章') {
-				uni.navigateTo({ url: buildRoute('account.medals', {}) })
-				return
-			}
-			if (label === '救助基金池') {
-				uni.navigateTo({ url: '/packages/rescue/pages/fund/index' })
-				return
-			}
-			if (label === '邀请入驻') {
-				uni.navigateTo({ url: '/packages/account/pages/invite/index' })
-				return
-			}
-			if (label === '投喂订单') {
-				uni.navigateTo({ url: buildRoute('feeding.yardOrders', { yardId: '1' }) })
-				return
-			}
-			if (label === '我的投喂订单') {
-				uni.navigateTo({ url: buildRoute('feeding.mine', { userId: 'local-user' }) })
-				return
-			}
-			if (label === '我申请的领养') {
-				this.goMyAdoption()
-				return
-			}
-			if (label === '领养评审') {
-				this.goJuryPanel('adoption')
-				return
-			}
-			this.toast(label)
-		},
-		goMyAdoption() {
-			uni.navigateTo({ url: buildRoute('adoption.mine', {}) })
-		},
-		goMyCloudPets() {
-			uni.navigateTo({ url: buildRoute('animal.sponsored', { userId: SELF_PAW_ID }) })
-		},
-		goManagedYard() {
-			const yardId = String(uni.getStorageSync('PAWHOME_ACTIVE_YARD_ID') || '').trim()
-			if (!yardId) {
-				this.toast('暂未绑定小院')
-				return
-			}
-			uni.navigateTo({ url: buildRoute('yard.manage.animals', { yardId }) })
-		},
-		openSelfProfileEditor() {
-			const session = uni.getStorageSync('PAWHOME_ACTOR_SESSION') || {}
-			const actor = session && session.actor ? session.actor : session
-			const userId = String(actor && (actor.id || actor.actorId) || SELF_PAW_ID).trim()
-			if (!userId) return
-			uni.navigateTo({ url: buildRoute('account.profile.edit', { userId }) })
-		},
-		goAdoptionSupport() {
-			uni.navigateTo({ url: '/packages/adoption/pages/support/index' })
-		},
-		goMyFeedings() {
-			uni.navigateTo({ url: buildRoute('feeding.mine', { userId: 'local-user' }) })
-		},
-		goMyPets() {
-			uni.navigateTo({ url: buildRoute('animal.mine', { userId: SELF_PAW_ID }) })
-		},
-		goMyMedals() {
-			uni.navigateTo({ url: buildRoute('account.medals', {}) })
-		},
-		goYardFeedOrders() {
-			uni.navigateTo({ url: buildRoute('feeding.yardOrders', { yardId: '1' }) })
-		},
-		goAdoptionAudit() {
-			uni.navigateTo({ url: buildRoute('adoption.review.list', {}) })
-		},
-		goJuryPanel(reviewType: MeReviewType | '' = '') {
-			if (reviewType === 'rescue') {
-				uni.navigateTo({ url: buildRoute('rescue.review.list', {}) })
-				return
-			}
-			const query = reviewType ? `?businessType=${encodeURIComponent(reviewType)}` : ''
-			uni.navigateTo({ url: `/packages/jury/pages/queue/index${query}` })
-		},
-		goLevelPage() {
-			const name = '浮生孤影'
-			uni.navigateTo({
-				url: buildRoute('account.level', {}) + '?nickname=' + encodeURIComponent(name)
-			})
-		},
-		toast(t: string) {
-			if (t === '领养审核') {
-				this.goAdoptionAudit()
-				return
-			}
-			uni.showToast({ title: t, icon: 'none' })
-		}
-	}
+  components: {
+    CustomTabber,
+    PawIcon,
+    PawBadge,
+    LevelBadge,
+    PawChevron,
+    PawImage,
+    PawMemberBanner,
+    PawBottomSheet,
+    PawPageNav,
+    PawVoteRatioBar,
+  },
+  data(): MePageState {
+    return createMePageState()
+  },
+  onLoad(options: unknown = {}) {
+    this.pageState = normalizeMePageMode(queryRecord(options).state)
+    if (this.pageState === 'drawer') {
+      this.openDrawer()
+    }
+    if (this.pageState === 'profile-upload') this.avatarSheetVisible = true
+  },
+  beforeUnmount() {
+    this.clearDrawerTimers()
+  },
+  onShow() {
+    if (!this.ensureLogin()) return
+    // #ifdef MP-WEIXIN
+    this.$nextTick(() => {
+      const cur = getCurrentPages().slice(-1)[0]
+      if (cur && typeof cur.getTabBar === 'function') {
+        const tb = cur.getTabBar()
+        if (tb && typeof tb.setData === 'function') tb.setData({ selected: 3 })
+      }
+    })
+    // #endif
+  },
+  methods: {
+    ensureLogin() {
+      if (this.pageState === 'drawer' || this.pageState === 'profile-upload') return true
+      const loggedIn = !!uni.getStorageSync('PAWHOME_ACTOR_SESSION')
+      if (loggedIn) {
+        this.authChecked = true
+        return true
+      }
+      if (!this.authChecked) this.authChecked = true
+      uni.navigateTo({ url: '/packages/auth/pages/login/index' })
+      return false
+    },
+    openProfileUpload() {
+      this.avatarSheetVisible = true
+    },
+    onMenuTap() {
+      if (this.drawerOpen) {
+        this.closeDrawer()
+        return
+      }
+      this.openDrawer()
+    },
+    clearDrawerTimers() {
+      if (this.drawerEnterTimer) clearTimeout(this.drawerEnterTimer)
+      if (this.drawerCloseTimer) clearTimeout(this.drawerCloseTimer)
+      this.drawerEnterTimer = null
+      this.drawerCloseTimer = null
+    },
+    openDrawer() {
+      this.clearDrawerTimers()
+      this.drawerOpen = true
+      // Mount in the off-canvas position first. The delayed state change gives
+      // the browser and the mini-program renderer a real transition frame.
+      this.drawerAnim = false
+      this.$nextTick(() => {
+        this.drawerEnterTimer = setTimeout(() => {
+          this.drawerEnterTimer = null
+          if (this.drawerOpen) this.drawerAnim = true
+        }, 16)
+      })
+    },
+    closeDrawer() {
+      if (!this.drawerOpen) return
+      this.clearDrawerTimers()
+      this.drawerAnim = false
+      this.drawerCloseTimer = setTimeout(() => {
+        this.drawerOpen = false
+        this.drawerCloseTimer = null
+      }, 220)
+    },
+    onProfileUploadClosed() {
+      if (this.pageState === 'profile-upload') this.pageState = 'default'
+    },
+    closeProfileUpload() {
+      this.avatarSheetVisible = false
+    },
+    chooseAvatar() {
+      uni.chooseImage({
+        count: 1,
+        sourceType: ['album'],
+        success: (result: unknown) => {
+          const path = firstTempImagePath(result)
+          if (path) this.profileAvatar = path
+          this.closeProfileUpload()
+        },
+      })
+    },
+    takeAvatar() {
+      uni.chooseImage({
+        count: 1,
+        sourceType: ['camera'],
+        success: (result: unknown) => {
+          const path = firstTempImagePath(result)
+          if (path) this.profileAvatar = path
+          this.closeProfileUpload()
+        },
+      })
+    },
+    onMenuRow(label: MeMenuItem) {
+      this.closeDrawer()
+      if (label === '我的任务') {
+        // Canonical route contract: buildRoute('account.tasks', {})
+        uni.navigateTo({ url: '/packages/account/pages/tasks/index' })
+        return
+      }
+      if (label === '设置') {
+        uni.navigateTo({ url: buildRoute('account.settings', {}) })
+        return
+      }
+      if (label === '历史浏览') {
+        uni.navigateTo({ url: buildRoute('account.history', { entityType: 'dynamic' }) })
+        return
+      }
+      if (label === '我的云养宠物') {
+        this.goMyCloudPets()
+        return
+      }
+      if (label === '我的宠物') {
+        this.goMyPets()
+        return
+      }
+      if (label === '小院宠物') {
+        const yardId = String(uni.getStorageSync('PAWHOME_ACTIVE_YARD_ID') || '').trim()
+        if (!yardId) {
+          this.toast('暂未绑定小院')
+          return
+        }
+        uni.navigateTo({ url: buildRoute('yard.animals', { yardId }) })
+        return
+      }
+      if (label === '我的小院') {
+        this.goManagedYard()
+        return
+      }
+      if (label === '领养额度') {
+        uni.navigateTo({ url: '/packages/adoption/pages/quota/index' })
+        return
+      }
+      if (label === '我的勋章') {
+        uni.navigateTo({ url: buildRoute('account.medals', {}) })
+        return
+      }
+      if (label === '救助基金池') {
+        uni.navigateTo({ url: '/packages/rescue/pages/fund/index' })
+        return
+      }
+      if (label === '邀请入驻') {
+        uni.navigateTo({ url: '/packages/account/pages/invite/index' })
+        return
+      }
+      if (label === '投喂订单') {
+        uni.navigateTo({ url: buildRoute('feeding.yardOrders', { yardId: '1' }) })
+        return
+      }
+      if (label === '我的投喂订单') {
+        uni.navigateTo({ url: buildRoute('feeding.mine', { userId: 'local-user' }) })
+        return
+      }
+      if (label === '我申请的领养') {
+        this.goMyAdoption()
+        return
+      }
+      if (label === '领养评审') {
+        this.goJuryPanel('adoption')
+        return
+      }
+      this.toast(label)
+    },
+    goMyAdoption() {
+      uni.navigateTo({ url: buildRoute('adoption.mine', {}) })
+    },
+    goMyCloudPets() {
+      uni.navigateTo({ url: buildRoute('animal.sponsored', { userId: SELF_PAW_ID }) })
+    },
+    goManagedYard() {
+      const yardId = String(uni.getStorageSync('PAWHOME_ACTIVE_YARD_ID') || '').trim()
+      if (!yardId) {
+        this.toast('暂未绑定小院')
+        return
+      }
+      uni.navigateTo({ url: buildRoute('yard.manage.animals', { yardId }) })
+    },
+    openSelfProfileEditor() {
+      const session = uni.getStorageSync('PAWHOME_ACTOR_SESSION') || {}
+      const actor = session && session.actor ? session.actor : session
+      const userId = String((actor && (actor.id || actor.actorId)) || SELF_PAW_ID).trim()
+      if (!userId) return
+      uni.navigateTo({ url: buildRoute('account.profile.edit', { userId }) })
+    },
+    goAdoptionSupport() {
+      uni.navigateTo({ url: '/packages/adoption/pages/support/index' })
+    },
+    goMyFeedings() {
+      uni.navigateTo({ url: buildRoute('feeding.mine', { userId: 'local-user' }) })
+    },
+    goMyPets() {
+      uni.navigateTo({ url: buildRoute('animal.mine', { userId: SELF_PAW_ID }) })
+    },
+    goMyMedals() {
+      uni.navigateTo({ url: buildRoute('account.medals', {}) })
+    },
+    goYardFeedOrders() {
+      uni.navigateTo({ url: buildRoute('feeding.yardOrders', { yardId: '1' }) })
+    },
+    goAdoptionAudit() {
+      uni.navigateTo({ url: buildRoute('adoption.review.list', {}) })
+    },
+    goJuryPanel(reviewType: MeReviewType | '' = '') {
+      if (reviewType === 'rescue') {
+        uni.navigateTo({ url: buildRoute('rescue.review.list', {}) })
+        return
+      }
+      const query = reviewType ? `?businessType=${encodeURIComponent(reviewType)}` : ''
+      uni.navigateTo({ url: `/packages/jury/pages/queue/index${query}` })
+    },
+    goLevelPage() {
+      const name = '浮生孤影'
+      uni.navigateTo({
+        url: buildRoute('account.level', {}) + '?nickname=' + encodeURIComponent(name),
+      })
+    },
+    toast(t: string) {
+      if (t === '领养审核') {
+        this.goAdoptionAudit()
+        return
+      }
+      uni.showToast({ title: t, icon: 'none' })
+    },
+  },
 })
 </script>
 
 <style scoped>
 .me-page {
-	height: 100vh;
-	display: flex;
-	flex-direction: column;
-	background: #f5f5f5;
-	box-sizing: border-box;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f5;
+  box-sizing: border-box;
 }
 
 .nav-menu-hit {
-	display: flex;
-	width: 44px;
-	height: 44px;
-	align-items: center;
-	justify-content: center;
+  display: flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
 }
 
 .main-scroll {
-	flex: 1;
-	height: 0;
-	min-height: 0;
-	width: 100%;
-	box-sizing: border-box;
-	padding: 6px 0 0;
-	background: #f5f5f5;
+  flex: 1;
+  height: 0;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 0 0;
+  background: #f5f5f5;
 }
 
 .scroll-inner {
-	padding-bottom: 81px;
-	box-sizing: border-box;
+  padding-bottom: 81px;
+  box-sizing: border-box;
 }
 
 .card {
-	margin: 0 8px 8px;
-	background: #ffffff;
-	border-radius: 8px;
-	box-sizing: border-box;
+  margin: 0 8px 8px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-sizing: border-box;
 }
 
 .card--elevated {
-	box-shadow: none;
-	overflow: hidden;
+  box-shadow: none;
+  overflow: hidden;
 }
 
 .profile-card {
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	height: 145.5px;
-	padding: 0;
-	gap: 23.5px;
-	background: transparent;
-	overflow: visible;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 145.5px;
+  padding: 0;
+  gap: 23.5px;
+  background: transparent;
+  overflow: visible;
 }
 
 .profile-card__surface {
-	position: absolute;
-	top: 11.5px;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	z-index: 0;
-	background: #ffffff;
-	border-radius: 8px;
+  position: absolute;
+  top: 11.5px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  background: #ffffff;
+  border-radius: 8px;
 }
 
 .profile-card__member-banner {
-	display: flex;
-	flex: 0 0 47.6323%;
-	align-self: flex-start;
-	width: 47.6323%;
-	max-width: 171px;
-	height: auto;
-	aspect-ratio: 171 / 73;
-	z-index: 2;
+  display: flex;
+  flex: 0 0 47.6323%;
+  align-self: flex-start;
+  width: 47.6323%;
+  max-width: 171px;
+  height: auto;
+  aspect-ratio: 171 / 73;
+  z-index: 2;
 }
 
 .profile-main {
-	position: relative;
-	display: flex;
-	align-items: flex-start;
-	flex: 0 0 65px;
-	min-height: 65px;
-	box-sizing: border-box;
-	padding: 11.5px 0 0 8px;
-	gap: 9px;
-	overflow: visible;
-	z-index: 1;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  flex: 0 0 65px;
+  min-height: 65px;
+  box-sizing: border-box;
+  padding: 11.5px 0 0 8px;
+  gap: 9px;
+  overflow: visible;
+  z-index: 1;
 }
 
 .profile-avatar {
-	position: relative;
-	z-index: 3;
-	width: 65px;
-	height: 65px;
-	margin-top: -11.5px;
-	box-sizing: border-box;
-	border-radius: 50%;
-	flex-shrink: 0;
-	background: #f0f0f0;
-	border: 3px solid #ffffff;
-	box-shadow: none;
+  position: relative;
+  z-index: 3;
+  width: 65px;
+  height: 65px;
+  margin-top: -11.5px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #f0f0f0;
+  border: 3px solid #ffffff;
+  box-shadow: none;
 }
 
 .profile-info {
-	flex: 1;
-	min-width: 0;
-	padding-top: 8px;
+  flex: 1;
+  min-width: 0;
+  padding-top: 8px;
 }
 
 .name-row {
-	display: flex;
-	align-items: center;
-	flex-wrap: nowrap;
-	gap: 5px;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 5px;
 }
 
 .profile-name {
-	flex: 0 1 auto;
-	min-width: 0;
-	max-width: 100%;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	font-size: 16px;
-	font-weight: 700;
-	color: #111111;
-	line-height: 23px;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 700;
+  color: #111111;
+  line-height: 23px;
 }
 
 .paw-id {
-	display: block;
-	margin-top: 0;
-	font-size: 10px;
-	color: #999999;
-	line-height: 16px;
+  display: block;
+  margin-top: 0;
+  font-size: 10px;
+  color: #999999;
+  line-height: 16px;
 }
 
 .stats-row {
-	position: static;
-	display: flex;
-	align-items: center;
-	flex: 0 0 auto;
-	margin: 0 13px;
-	column-gap: 8px;
-	padding: 0;
-	border-top: 0;
+  position: static;
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  margin: 0 13px;
+  column-gap: 8px;
+  padding: 0;
+  border-top: 0;
 }
 
 .stat-cell {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	position: relative;
-	min-width: 0;
-	padding-top: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-width: 0;
+  padding-top: 0;
 }
 
 .stat-num {
-	font-size: 15px;
-	font-weight: 700;
-	color: #111111;
-	line-height: 23px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111111;
+  line-height: 23px;
 }
 
 .stat-label {
-	margin-top: 0;
-	font-size: 10px;
-	color: #888888;
-	line-height: 17px;
-	text-align: center;
+  margin-top: 0;
+  font-size: 10px;
+  color: #888888;
+  line-height: 17px;
+  text-align: center;
 }
 
 .orders-card {
-	display: flex;
-	flex-direction: column;
-	height: 108px;
-	padding: 7px 13px 10px;
-	gap: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 108px;
+  padding: 7px 13px 10px;
+  gap: 10px;
 }
 
 .orders-card .card-header {
-	margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .card-header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	margin-bottom: 10px;
-	padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 0;
 }
 
 .card-header--review {
-	align-items: flex-start;
+  align-items: flex-start;
 }
 
 .card-title {
-	font-size: 14px;
-	font-weight: 400;
-	color: #111111;
-	line-height: 20px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #111111;
+  line-height: 20px;
 }
 
 .card-title--blue {
-	color: #0887f7;
-	font-weight: 500;
+  color: #0887f7;
+  font-weight: 500;
 }
 
 .card-link {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	gap: 0;
-	font-size: 11px;
-	color: #999999;
-	line-height: 18px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+  font-size: 11px;
+  color: #999999;
+  line-height: 18px;
 }
 
 .card-link .link-chevron {
-	flex-shrink: 0;
+  flex-shrink: 0;
 }
 
 .card-sub {
-	font-size: 11px;
-	color: #999999;
-	line-height: 16px;
-	max-width: 170px;
-	text-align: right;
+  font-size: 11px;
+  color: #999999;
+  line-height: 16px;
+  max-width: 170px;
+  text-align: right;
 }
 
 .orders-grid {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 2px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0 0;
 }
 
 .order-item {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 8px;
-	min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 .order-icon-wrap {
-	position: relative;
-	width: 28px;
-	height: 28px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+  position: relative;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .order-icon-img {
-	filter: none;
+  filter: none;
 }
 
 .order-label {
-	font-size: 11px;
-	color: #333333;
-	line-height: 17px;
-	text-align: center;
+  font-size: 11px;
+  color: #333333;
+  line-height: 17px;
+  text-align: center;
 }
 
 .yard-card {
-	display: flex;
-	flex-direction: column;
-	height: 109px;
-	padding: 5px 13px 9px;
-	gap: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 109px;
+  padding: 5px 13px 9px;
+  gap: 10px;
 }
 
 .yard-card .card-header {
-	margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .yard-body {
-	display: flex;
-	align-items: center;
-	min-height: 0;
-	gap: 12px;
-	padding: 0 8px;
+  display: flex;
+  align-items: center;
+  min-height: 0;
+  gap: 12px;
+  padding: 0 8px;
 }
 
 .yard-left {
-	flex: 1;
-	min-width: 0;
-	padding: 0 8px 0 7px;
-	display: flex;
-	flex-direction: row;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 8px;
+  flex: 1;
+  min-width: 0;
+  padding: 0 8px 0 7px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .yard-line {
-	flex: 1;
-	min-width: 0;
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	gap: 1px;
-	text-align: left;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  text-align: left;
 }
 
 .yard-line-label {
-	display: block;
-	font-size: 11px;
-	color: #333333;
-	line-height: 18px;
+  display: block;
+  font-size: 11px;
+  color: #333333;
+  line-height: 18px;
 }
 
 .yard-num {
-	display: block;
-	margin-top: 0;
-	font-size: 14px;
-	font-weight: 700;
-	color: #111111;
-	line-height: 24px;
+  display: block;
+  margin-top: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111111;
+  line-height: 24px;
 }
 
 .yard-line-sub {
-	font-size: 9px;
-	color: #999999;
-	line-height: 14px;
+  font-size: 9px;
+  color: #999999;
+  line-height: 14px;
 }
 
 .yard-divider {
-	width: 1px;
-	background: #e8e8e8;
-	flex-shrink: 0;
-	align-self: center;
-	height: 100%;
+  width: 1px;
+  background: #e8e8e8;
+  flex-shrink: 0;
+  align-self: center;
+  height: 100%;
 }
 
 .yard-right {
-	flex-shrink: 0;
-	width: 96px;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 10px;
-	padding-left: 2px;
+  flex-shrink: 0;
+  width: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding-left: 2px;
 }
 
 .yard-action {
-	position: relative;
-	display: flex;
-	align-items: center;
-	box-sizing: border-box;
-	gap: 4px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  gap: 4px;
 }
 
 .yard-action-content {
-	display: flex;
-	align-items: center;
-	gap: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .yard-icon-img {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .yard-action-text {
-	flex: 0 0 auto;
-	font-size: 11px;
-	color: #333333;
-	line-height: 18px;
-	white-space: nowrap;
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: #333333;
+  line-height: 18px;
+  white-space: nowrap;
 }
 
 .review-card {
-	min-height: 146px;
-	padding: 6px 15px 8px;
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	box-sizing: border-box;
+  min-height: 146px;
+  padding: 6px 15px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
 }
 
 .review-card .card-header {
-	margin-bottom: 1px;
+  margin-bottom: 1px;
 }
 
 .review-body {
-	display: flex;
-	align-items: flex-start;
-	gap: 7px;
-	margin-bottom: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-bottom: 0;
 }
 
 .review-text {
-	flex: 1;
-	width: auto;
-	min-width: 0;
-	font-size: 11px;
-	color: #333333;
-	line-height: 13.5px;
-	text-align: justify;
-	max-height: 42px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	display: -webkit-box;
-	-webkit-box-orient: vertical;
-	-webkit-line-clamp: 3;
-	word-break: break-word;
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  font-size: 11px;
+  color: #333333;
+  line-height: 13.5px;
+  text-align: justify;
+  max-height: 42px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  word-break: break-word;
 }
 
 .review-thumbs {
-	flex-shrink: 0;
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	gap: 6px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
 }
 
 .review-img {
-	width: 55px;
-	height: 55px;
-	border-radius: 5px;
-	background: #f0f0f0;
+  width: 55px;
+  height: 55px;
+  border-radius: 5px;
+  background: #f0f0f0;
 }
 
 .poll-wrap {
-	width: 100%;
-	margin-top: 0;
-	display: flex;
-	align-items: center;
+  width: 100%;
+  margin-top: 0;
+  display: flex;
+  align-items: center;
 }
 
 .poll-bar {
-	width: 100%;
-	flex: 1 1 auto;
+  width: 100%;
+  flex: 1 1 auto;
 }
 
 .drawer-shell {
-	position: fixed;
-	left: 0;
-	top: 0;
-	bottom: 0;
-	width: 300px;
-	max-width: none;
-	z-index: 10050;
-	box-sizing: border-box;
-	padding-top: 73px;
-	background: #fafafa;
-	display: flex;
-	flex-direction: column;
-	overflow: hidden;
-	transform: translate3d(-100%, 0, 0);
-	transition: transform var(--paw-motion-sheet, 260ms) var(--paw-ease-standard, cubic-bezier(.22, .61, .36, 1));
-	will-change: transform;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 300px;
+  max-width: none;
+  z-index: 10050;
+  box-sizing: border-box;
+  padding-top: 73px;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translate3d(-100%, 0, 0);
+  transition: transform var(--paw-motion-sheet, 260ms)
+    var(--paw-ease-standard, cubic-bezier(0.22, 0.61, 0.36, 1));
+  will-change: transform;
 }
 
 .drawer-backdrop {
-	position: fixed;
-	inset: 0;
-	z-index: 10049;
-	background: rgba(0, 0, 0, .6);
-	opacity: 0;
-	transition: opacity var(--paw-motion-fast, 160ms) var(--paw-ease-enter, ease);
-	will-change: opacity;
+  position: fixed;
+  inset: 0;
+  z-index: 10049;
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition: opacity var(--paw-motion-fast, 160ms) var(--paw-ease-enter, ease);
+  will-change: opacity;
 }
 
 .drawer-shell--show {
-	transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
 }
 
 .drawer-shell--closing {
-	transition-duration: var(--paw-motion-base, 220ms);
-	transition-timing-function: var(--paw-ease-exit, cubic-bezier(.4, 0, 1, 1));
+  transition-duration: var(--paw-motion-base, 220ms);
+  transition-timing-function: var(--paw-ease-exit, cubic-bezier(0.4, 0, 1, 1));
 }
 
 .drawer-backdrop--show {
-	opacity: 1;
+  opacity: 1;
 }
 
 .drawer-scroll {
-	flex: 1;
-	min-height: 0;
-	height: 0;
-	width: 100%;
-	box-sizing: border-box;
+  flex: 1;
+  min-height: 0;
+  height: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .drawer-pad {
-	display: flex;
-	flex-direction: column;
-	align-items: stretch;
-	gap: 10px;
-	width: 100%;
-	padding: 0 15px 24px;
-	box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
+  padding: 0 15px 24px;
+  box-sizing: border-box;
 }
 
 .menu-section {
-	display: flex;
-	flex: 0 0 auto;
-	flex-direction: column;
-	align-items: stretch;
-	width: 100%;
-	background: #ffffff;
-	border-radius: 10px;
-	overflow: hidden;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 .menu-row {
-	display: flex;
-	flex: 0 0 48px;
-	flex-direction: row;
-	align-items: center;
-	justify-content: space-between;
-	min-height: 48px;
-	padding: 0 16px;
-	box-sizing: border-box;
+  display: flex;
+  flex: 0 0 48px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 0 16px;
+  box-sizing: border-box;
 }
 
 .menu-section--2 .menu-row:nth-child(2),
 .menu-section--2 .menu-row:nth-child(3),
 .menu-section--3 .menu-row:nth-child(2),
 .menu-section--4 .menu-row:nth-child(2) {
-	flex-basis: 44px;
-	min-height: 44px;
+  flex-basis: 44px;
+  min-height: 44px;
 }
 
 .menu-section--6 .menu-row {
-	flex-basis: 52px;
-	min-height: 52px;
+  flex-basis: 52px;
+  min-height: 52px;
 }
 
 .menu-row-label {
-	flex: 1;
-	min-width: 0;
-	font-size: 13px;
-	font-weight: 400;
-	color: #333333;
-	line-height: 18px;
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 400;
+  color: #333333;
+  line-height: 18px;
 }
 
 .menu-row-chevron {
-	margin-left: 8px;
-	flex-shrink: 0;
-	opacity: 0.42;
+  margin-left: 8px;
+  flex-shrink: 0;
+  opacity: 0.42;
 }
 
 .drawer-settings {
-	flex: 0 0 136px;
-	height: 136px;
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	box-sizing: border-box;
-	padding: 19px 0 0 30px;
-	background: #fafafa;
-	border-top: 1px solid #ffffff;
+  flex: 0 0 136px;
+  height: 136px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  box-sizing: border-box;
+  padding: 19px 0 0 30px;
+  background: #fafafa;
+  border-top: 1px solid #ffffff;
 }
 
 .settings-icon-wrap {
-	width: 41px;
-	height: 41px;
-	border-radius: 50%;
-	background: #f0f0f0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+  width: 41px;
+  height: 41px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .settings-text {
-	margin-top: 8px;
-	margin-left: 8px;
-	font-size: 12px;
-	color: #898989;
-	line-height: 17px;
+  margin-top: 8px;
+  margin-left: 8px;
+  font-size: 12px;
+  color: #898989;
+  line-height: 17px;
 }
 
 .profile-upload-sheet {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	flex-direction: column;
-	box-sizing: border-box;
-	padding: 20px 20px 28px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 20px 20px 28px;
 }
 
 .profile-upload-head {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	min-height: 24px;
-	position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  position: relative;
 }
 
 .profile-upload-avatar {
-	align-self: center;
-	flex: 0 0 auto;
-	margin-top: 24px;
+  align-self: center;
+  flex: 0 0 auto;
+  margin-top: 24px;
 }
 
 .profile-upload-title {
-	font-size: 14px;
-	font-weight: 500;
-	line-height: 20px;
-	color: #222222;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #222222;
 }
 
 .profile-upload-skip {
-	position: absolute;
-	right: 0;
-	font-size: 12px;
-	line-height: 20px;
-	color: #777777;
+  position: absolute;
+  right: 0;
+  font-size: 12px;
+  line-height: 20px;
+  color: #777777;
 }
 
 .profile-upload-copy {
-	display: block;
-	margin-top: 18px;
-	text-align: center;
-	font-size: 12px;
-	line-height: 18px;
-	color: #999999;
+  display: block;
+  margin-top: 18px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 18px;
+  color: #999999;
 }
 
 .profile-upload-actions {
-	display: flex;
-	margin-top: auto;
-	gap: 10px;
+  display: flex;
+  margin-top: auto;
+  gap: 10px;
 }
 
 .profile-upload-action {
-	display: flex;
-	flex: 1 1 0;
-	height: 44px;
-	align-items: center;
-	justify-content: center;
-	box-sizing: border-box;
-	border-radius: 22px;
-	background: #ffe600;
-	font-size: 14px;
-	font-weight: 500;
-	line-height: 20px;
-	color: #222222;
+  display: flex;
+  flex: 1 1 0;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border-radius: 22px;
+  background: #ffe600;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #222222;
 }
 
 .profile-upload-action:first-child {
-	background: #f4f4f4;
-	color: #333333;
+  background: #f4f4f4;
+  color: #333333;
 }
 
 .profile-upload-action text {
-	display: flex;
-	align-items: center;
-	justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

@@ -1,13 +1,22 @@
 <template>
-  <view v-if="count > 1" class="paw-carousel-dots" aria-hidden="true">
+  <view
+    v-if="count > 1"
+    class="paw-carousel-dots"
+    aria-hidden="true"
+  >
     <view class="paw-carousel-dots__track">
-      <view v-for="index in count" :key="index" class="paw-carousel-dots__dot"
-        :class="{ 'paw-carousel-dots__dot--active': index - 1 === current }" />
+      <view
+        v-for="index in count"
+        :key="index"
+        class="paw-carousel-dots__dot"
+        :class="{ 'paw-carousel-dots__dot--active': index - 1 === current }"
+      />
     </view>
   </view>
 </template>
 
-<script lang="ts">import { defineComponent } from 'vue'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'PawCarouselDots',
@@ -46,8 +55,10 @@ export default defineComponent({
   height: 6px;
   flex: 0 0 6px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, .58);
-  transition: background-color 180ms ease, transform 180ms ease;
+  background: rgba(255, 255, 255, 0.58);
+  transition:
+    background-color 180ms ease,
+    transform 180ms ease;
 }
 
 .paw-carousel-dots__dot--active {

@@ -1,6 +1,12 @@
 <template>
-  <view v-if="visible && currentMessage" class="paw-toast" data-qa="paw-toast" role="status" aria-live="polite"
-    :style="toastStyle">
+  <view
+    v-if="visible && currentMessage"
+    class="paw-toast"
+    data-qa="paw-toast"
+    role="status"
+    aria-live="polite"
+    :style="toastStyle"
+  >
     <text class="paw-toast__text">{{ currentMessage }}</text>
   </view>
 </template>
@@ -26,20 +32,20 @@ export default defineComponent({
   },
   props: {
     duration: { type: Number, default: 1800 },
-    offsetTop: { type: Number, default: 40 }
+    offsetTop: { type: Number, default: 40 },
   },
   data(): PawToastState {
     return {
       visible: false,
       currentMessage: '',
       nav: getWechatNavLayout(),
-      timer: null
+      timer: null,
     }
   },
   computed: {
     toastStyle() {
       return { top: `${this.nav.totalHeight + this.offsetTop}px` }
-    }
+    },
   },
   beforeUnmount() {
     this.clearTimer()
@@ -51,7 +57,10 @@ export default defineComponent({
       this.clearTimer()
       this.currentMessage = text
       this.visible = true
-      this.timer = setTimeout(() => this.hide(), Math.max(0, Number(duration ?? this.duration) || 0))
+      this.timer = setTimeout(
+        () => this.hide(),
+        Math.max(0, Number(duration ?? this.duration) || 0),
+      )
     },
     hide() {
       this.clearTimer()
@@ -63,8 +72,8 @@ export default defineComponent({
         clearTimeout(this.timer)
         this.timer = null
       }
-    }
-  }
+    },
+  },
 })
 </script>
 
