@@ -13,9 +13,9 @@ let api
 
 before(async () => {
 	tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-order-contract-'))
-	await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
-	const sourcePath = path.join(ROOT, 'navigation/orderContracts.js')
-	const targetPath = path.join(tempRoot, 'orderContracts.js')
+	await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
+	const sourcePath = path.join(ROOT, 'navigation/orderContracts.ts')
+	const targetPath = path.join(tempRoot, 'orderContracts.ts')
 	await fs.copyFile(sourcePath, targetPath)
 	api = await import(`${pathToFileURL(targetPath).href}?test=${Date.now()}-${Math.random()}`)
 })
@@ -54,7 +54,7 @@ function throwsCode(callback, code) {
 }
 
 test('contract is pure and does not import Vue, uni, pages, storage, or mocks', async () => {
-	const source = await fs.readFile(path.join(ROOT, 'navigation/orderContracts.js'), 'utf8')
+	const source = await fs.readFile(path.join(ROOT, 'navigation/orderContracts.ts'), 'utf8')
 	assert.doesNotMatch(source, /(?:from\s+['"][^'"]*(?:vue|uni|pages|storage|mock)|require\s*\([^)]*(?:vue|uni|pages|storage|mock)|uni\.)/i)
 	assert.equal(api.NORMAL_FEED, 'normal_feed')
 	assert.equal(api.ADOPTION_GIFT, 'adoption_gift')

@@ -126,7 +126,7 @@ function collectModulePackages(routes) {
     const pageFile = path.join(projectRoot, `${route}.vue`)
     if (fs.existsSync(pageFile)) visit(pageFile, packageName)
   }
-  for (const seed of ['App.vue', 'main.js', 'custom-tab-bar/index.js']) {
+  for (const seed of ['App.vue', 'main.ts', 'custom-tab-bar/index.ts']) {
     const seedFile = path.join(projectRoot, seed)
     if (fs.existsSync(seedFile)) visit(seedFile, 'main')
   }
@@ -151,13 +151,13 @@ function extractStaticReferences(source, inferDirectoryConstants = false) {
   // Match only a root-relative /static path. The boundary before the slash
   // prevents remote URLs and already package-prefixed paths from being
   // mistaken for root assets.
-  const absolutePattern = /(?<![A-Za-z0-9_.:\/-])\/static\/([^"'`\s<>)}\\]+)/g
+  const absolutePattern = /(?<![A-Za-z0-9_.:/-])\/static\/([^"'`\s<>)}\\]+)/g
   let match
   while ((match = absolutePattern.exec(source))) addToken('exact', match[1])
 
   // Also accept the uni-app relative form static/foo, while excluding the
   // middle of /packages/<root>/static/foo and similar absolute paths.
-  const relativePattern = /(?<![A-Za-z0-9_\/:])static\/([^"'`\s<>)}\\]+)/g
+  const relativePattern = /(?<![A-Za-z0-9_/:])static\/([^"'`\s<>)}\\]+)/g
   while ((match = relativePattern.exec(source))) addToken('exact', match[1])
 
   // Keep explicit package paths visible to validation, but never route them
@@ -279,7 +279,7 @@ function isDuplicateAsset(relative) {
 
 function isConservativeMainModule(file, packageRoots) {
   const relative = relativeToRoot(file)
-  if (relative === 'App.vue' || relative === 'main.js' || relative === 'custom-tab-bar/index.js') return true
+  if (relative === 'App.vue' || relative === 'main.ts' || relative === 'custom-tab-bar/index.ts') return true
   return !packageRoots.some((root) => relative === root || relative.startsWith(`${root}/`))
 }
 
@@ -540,7 +540,7 @@ function replaceRootStaticReference(source, relative, replacement) {
     }
     const previous = index > 0 ? source[index - 1] : ''
     const next = source[index + needle.length] || ''
-    const leftBoundary = !previous || !/[A-Za-z0-9_.:\/-]/.test(previous)
+    const leftBoundary = !previous || !/[A-Za-z0-9_.:/-]/.test(previous)
     const rightBoundary = relative.endsWith('/')
       || !next
       || /[?#[\]}'"`),;\s]/.test(next)

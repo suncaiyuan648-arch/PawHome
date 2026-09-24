@@ -14,8 +14,9 @@
   </view>
 </template>
 
-<script>
-export default {
+<script lang="ts">import { defineComponent } from 'vue'
+
+export default defineComponent({
   name: 'PawCard',
   options: {
     // The card root is the layout box so parent classes, styles, and margins
@@ -58,7 +59,7 @@ export default {
       return String(this.border || 'none')
     }
   }
-}
+})
 </script>
 
 <style scoped>

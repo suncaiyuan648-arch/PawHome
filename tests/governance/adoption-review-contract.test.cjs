@@ -82,12 +82,12 @@ const CLOUD_POLICY_ALL = Object.freeze({
 
 before(async () => {
   tempRoot = await fsp.mkdtemp(path.join(os.tmpdir(), 'pawhome-adoption-review-'))
-  await fsp.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+  await fsp.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fsp.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
-  for (const file of ['actorCapabilities.js', 'adoptionConditionContract.js', 'adoptionReviewContract.js']) {
+  for (const file of ['actorCapabilities.ts', 'adoptionConditionContract.ts', 'adoptionReviewContract.ts']) {
     await fsp.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
   }
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/adoptionReviewContract.js')).href}?test=${Date.now()}`)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/adoptionReviewContract.ts')).href}?test=${Date.now()}`)
 })
 
 after(async () => {
@@ -99,7 +99,7 @@ function throwsCode(fn, code) {
 }
 
 test('contract is pure, exports explicit adoption review axes, and has no writer', () => {
-  const source = fs.readFileSync(path.join(ROOT, 'navigation/adoptionReviewContract.js'), 'utf8')
+  const source = fs.readFileSync(path.join(ROOT, 'navigation/adoptionReviewContract.ts'), 'utf8')
   assert.doesNotMatch(source, /(?:import|require\s*\()[^\n]*(?:vue|uni|pages|packages|storage|mock|network)/i)
   assert.deepEqual(api.ADOPTION_REVIEW_PHASES, ['cloud_parent', 'owner', 'owner_confirmation', 'jury'])
   assert.deepEqual(api.ADOPTION_REVIEW_STATUSES, ['pending', 'approved', 'rejected'])

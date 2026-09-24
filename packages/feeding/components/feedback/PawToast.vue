@@ -5,10 +5,19 @@
   </view>
 </template>
 
-<script>
-import { getWechatNavLayout } from '@/utils/navLayout.js'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
-export default {
+import { getWechatNavLayout, type WechatNavLayout } from '@/utils/navLayout.ts'
+
+interface PawToastState {
+  visible: boolean
+  currentMessage: string
+  nav: WechatNavLayout
+  timer: ReturnType<typeof setTimeout> | null
+}
+
+export default defineComponent({
   name: 'PawToast',
   options: {
     // #ifdef MP-WEIXIN
@@ -19,7 +28,7 @@ export default {
     duration: { type: Number, default: 1800 },
     offsetTop: { type: Number, default: 40 }
   },
-  data() {
+  data(): PawToastState {
     return {
       visible: false,
       currentMessage: '',
@@ -36,13 +45,13 @@ export default {
     this.clearTimer()
   },
   methods: {
-    show(message, duration = this.duration) {
+    show(message: string, duration?: number) {
       const text = String(message || '').trim()
       if (!text) return
       this.clearTimer()
       this.currentMessage = text
       this.visible = true
-      this.timer = setTimeout(() => this.hide(), Math.max(0, Number(duration) || 0))
+      this.timer = setTimeout(() => this.hide(), Math.max(0, Number(duration ?? this.duration) || 0))
     },
     hide() {
       this.clearTimer()
@@ -56,7 +65,7 @@ export default {
       }
     }
   }
-}
+})
 </script>
 
 <style scoped>

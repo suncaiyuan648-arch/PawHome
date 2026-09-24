@@ -13,19 +13,19 @@ let api
 
 before(async () => {
 	tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-task-adapter-'))
-	await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+	await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
 	await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
 	await fs.mkdir(path.join(tempRoot, 'packages/account/services'), { recursive: true })
 	await Promise.all([
-		'actorCapabilities.js',
-		'taskContracts.js',
-		'taskReadModel.js',
+		'actorCapabilities.ts',
+		'taskContracts.ts',
+		'taskReadModel.ts',
 	].map(file => fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))))
 	await fs.copyFile(
-		path.join(ROOT, 'packages/account/services/taskAdapter.js'),
-		path.join(tempRoot, 'packages/account/services/taskAdapter.js')
+		path.join(ROOT, 'packages/account/services/taskAdapter.ts'),
+		path.join(tempRoot, 'packages/account/services/taskAdapter.ts')
 	)
-	api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/taskAdapter.js')).href}?test=${Date.now()}-${Math.random()}`)
+	api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/taskAdapter.ts')).href}?test=${Date.now()}-${Math.random()}`)
 })
 
 after(async () => {

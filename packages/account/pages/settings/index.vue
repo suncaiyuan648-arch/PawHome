@@ -27,25 +27,31 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawOptionRow from './components/form/PawOptionRow.vue'
 import PawPageNav from '@/components/PawPageNav.vue'
-import { buildRoute } from '@/navigation/routeContracts.js'
+import { buildRoute } from '@/navigation/routeContracts.ts'
 
-export default {
+type SettingsRowName = '个人信息' | '收货地址' | '账号与安全' | '客服帮助' | '意见反馈' | '平台协议' | '关于逢猫'
+
+export default defineComponent({
 	name: 'AccountSettingsPage',
 	components: { PawOptionRow, PawPageNav },
 	methods: {
-		tapRow(name) {
+    tapRow(name: SettingsRowName) {
 			if (name === '收货地址') {
 				uni.navigateTo({
 					url: buildRoute('address.list', { kind: 'shipping', intent: 'manage' }),
-					fail: (err) => {
+          fail: (error: unknown) => {
+            const message = error !== null && typeof error === 'object' && 'errMsg' in error
+              && typeof error.errMsg === 'string' ? error.errMsg : ''
 						uni.redirectTo({
 							url: buildRoute('address.list', { kind: 'shipping', intent: 'manage' }),
 							fail: () => {
 								uni.showToast({
-									title: (err && err.errMsg) || '页面打开失败',
+                  title: message || '页面打开失败',
 									icon: 'none'
 								})
 							}
@@ -60,7 +66,7 @@ export default {
 			uni.showModal({
 				title: '提示',
 				content: '确定要退出登录吗？',
-				success: (res) => {
+      success: (res) => {
 					if (!res.confirm) return
 					uni.removeStorageSync('PAWHOME_ACTOR_SESSION')
 					uni.reLaunch({ url: '/packages/auth/pages/login/index' })
@@ -68,7 +74,7 @@ export default {
 			})
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

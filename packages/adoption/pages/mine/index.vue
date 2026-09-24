@@ -47,11 +47,20 @@
 	</view>
 </template>
 
-<script>
-import { goBackSmart } from '@/utils/navBack.js'
-import { openUserProfile } from '@/utils/profileNav.js'
-import { getAdoptionRecords, toAdoptionCard } from '@/utils/adoptionStorage.js'
-import { buildRoute } from '@/navigation/routeContracts.js'
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import {
+	createAdoptionMinePageState,
+	getAdoptionMineStatusTone,
+	normalizeAdoptionMineRouteOptions,
+	type AdoptionMinePageState,
+} from '../../services/mineMetadata.ts'
+import { getAdoptionRecords, toAdoptionCard } from '@/utils/adoptionStorage.ts'
+import type { AdoptionCard } from '@/utils/adoptionStorage.ts'
+import { goBackSmart } from '@/utils/navBack.ts'
+import { openUserProfile } from '@/utils/profileNav.ts'
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawButton from '@/components/base/PawButton.vue'
 import PawBadge from '@/components/base/PawBadge.vue'
@@ -59,26 +68,23 @@ import PawAvatar from '@/components/identity/PawAvatar.vue'
 import PawImage from '@/components/base/PawImage.vue'
 import PawStatusPill from '@/components/PawStatusPill.vue'
 
-export default {
+export default defineComponent({
 	components: { PawPageNav, PawButton, PawBadge, PawAvatar, PawImage, PawStatusPill },
-	data() {
-		return {
-			pageState: 'list',
-			adoptionList: []
-		}
+	data(): AdoptionMinePageState {
+		return createAdoptionMinePageState()
 	},
 	computed: {
-		listBadgeCount() {
+		listBadgeCount(): number {
 			return this.pageState === 'empty' ? 0 : this.adoptionList.length
 		}
 	},
-	onLoad(options) {
-		this.pageState = options.state === 'empty' ? 'empty' : 'list'
-		if (options.openDetail) {
-			const id = decodeURIComponent(options.openDetail)
+	onLoad(options: unknown) {
+		const routeState = normalizeAdoptionMineRouteOptions(options)
+		this.pageState = routeState.pageState
+		if (routeState.openDetailId) {
 			this.$nextTick(() => {
 				setTimeout(() => {
-					this.openAdoptionProgress(id)
+					this.openAdoptionProgress(routeState.openDetailId)
 				}, 80)
 			})
 		}
@@ -89,42 +95,41 @@ export default {
 	methods: {
 		refreshAdoptionList() {
 			this.adoptionList = getAdoptionRecords()
-				.map((record) => toAdoptionCard(record))
-				.filter(Boolean)
+				.map(toAdoptionCard)
+				.filter((card): card is AdoptionCard => card !== null)
 		},
 		goBack() {
 			goBackSmart({ fallbackUrl: '/pages/me/index' })
 		},
-		onCardTap(item) {
-			const recordId = item && (item.recordId || item.id)
+		onCardTap(item: AdoptionCard) {
+			const recordId = item.recordId || item.id
 			if (!recordId) return
 			this.openAdoptionProgress(recordId)
 		},
-		openAdoptionProgress(applicationId) {
+		openAdoptionProgress(applicationId: string) {
 			try {
 				uni.navigateTo({
-					url: buildRoute('adoption.progress', { applicationId: String(applicationId) })
+					url: buildRoute('adoption.progress', { applicationId })
 				})
-			} catch (error) {
+			} catch {
 				uni.showToast({ title: '领养申请链接无效', icon: 'none' })
 			}
 		},
-		openOwnerProfile(item) {
-			if (!item) return
+		openOwnerProfile(item: AdoptionCard) {
 			openUserProfile({
 				pawId: item.ownerPawId || 'adopt-owner-' + (item.id || item.ownerName),
 				nickname: item.ownerName,
 				avatar: item.ownerAvatar || ''
 			})
 		},
-		statusTone(tone) {
-			return tone === 'red' ? 'danger' : tone === 'green' ? 'success' : 'neutral'
+		statusTone(tone: string) {
+			return getAdoptionMineStatusTone(tone)
 		},
 		goAdoptEntry() {
 			uni.navigateTo({ url: '/packages/animal/pages/detail/index?animalId=pet-orange&yardId=1&state=35' })
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

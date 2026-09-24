@@ -41,18 +41,49 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawStatusPill from '@/components/PawStatusPill.vue'
 import PawFeedingDetailFigma from '../../../components/PawFeedingDetailFigma.vue'
-import { getFeedingOrderDetail } from '../../../services/orderMockApi.js'
-import { readPersistedOrderDetail } from '../../../services/orderRuntime.js'
-import { readOrderVisibility, setOrderHidden } from '../../../services/orderVisibilityStorage.js'
+import { getFeedingOrderDetail, type FeedingOrderDetail, type FeedingOrderDetailPerspective } from '../../../services/orderMockApi.ts'
+import { readPersistedOrderDetail } from '../../../services/orderRuntime.ts'
+import { readOrderVisibility, setOrderHidden } from '../../../services/orderVisibilityStorage.ts'
 
-export default {
+type FeedingOrderDetailModel = Extract<Awaited<ReturnType<typeof readPersistedOrderDetail>>, { success: true }>
+type PersistedOrderType = FeedingOrderDetailModel['data']['order']['orderType']
+type FeedingOrderFigmaVariant = 0 | 90 | 91 | 92
+
+interface FeedingOrderDetailPageState {
+  orderId: string
+  recordId: string
+  model: FeedingOrderDetailModel | null
+  mockDetail: FeedingOrderDetail | null
+  hidden: boolean
+  useFigma: boolean
+  figmaVariant: FeedingOrderFigmaVariant
+  detailPerspective: FeedingOrderDetailPerspective | ''
+  deliveryStatus: string
+  deliveryProgress: string
+  legacyMode: boolean
+  actorProvider: () => unknown
+}
+
+const ORDER_STATUS_LABELS: Readonly<Record<string, string>> = Object.freeze({
+  shipping: '运输中',
+  delivered: '已送达',
+  completed: '已完成',
+})
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+export default defineComponent({
   name: 'FeedingOrderDetailPage',
   components: { PawPageNav, PawStatusPill, PawFeedingDetailFigma },
-  data() {
+  data(): FeedingOrderDetailPageState {
     return {
       orderId: '',
       recordId: '',
@@ -68,11 +99,11 @@ export default {
       actorProvider: () => (typeof uni !== 'undefined' ? uni.getStorageSync('PAWHOME_ACTOR_SESSION') : null)
     }
   },
-  onLoad(options = {}) {
+  onLoad(options: unknown = {}) {
     this.orderId = this.readOption(options, ['orderId', 'id', 'recordId'])
     this.recordId = this.readOption(options, ['recordId', 'id', 'orderId'])
-    this.detailPerspective = this.normalizePerspective(options.perspective || options.type)
-    this.figmaVariant = this.normalizeVariant(options.variant)
+    this.detailPerspective = this.normalizePerspective(this.readOption(options, ['perspective', 'type']))
+    this.figmaVariant = this.normalizeVariant(this.readOption(options, ['variant']))
     if (!this.figmaVariant && this.detailPerspective) this.figmaVariant = this.detailPerspective === 'yard-owner' ? 91 : 90
     this.legacyMode = Boolean(this.figmaVariant || this.detailPerspective)
     this.deliveryStatus = this.readOption(options, ['deliveryStatus']) || 'shipping'
@@ -81,27 +112,29 @@ export default {
   },
   onShow() { if (this.orderId) this.refresh() },
   methods: {
-    readOption(options, names) {
+    readOption(options: unknown, names: readonly string[]): string {
+      if (!isRecord(options)) return ''
       for (const name of names) {
-        const value = options && options[name]
+        const value = options[name]
         if (value !== undefined && value !== null && String(value).trim()) return String(value).trim()
       }
       return ''
     },
-    normalizeVariant(value) {
+    normalizeVariant(value: string): FeedingOrderFigmaVariant {
       const variant = Number(value)
-      return [90, 91, 92].includes(variant) ? variant : 0
+      return variant === 90 || variant === 91 || variant === 92 ? variant : 0
     },
-    normalizePerspective(value) {
-      if (['yard-manager', 'yard-owner', 'yard', 'owner'].includes(String(value || ''))) return 'yard-owner'
-      if (['donor', 'cloud-parent', 'cloud', 'mine'].includes(String(value || ''))) return 'cloud-parent'
+    normalizePerspective(value: string): FeedingOrderDetailPerspective | '' {
+      const perspective = String(value || '')
+      if (['yard-manager', 'yard-owner', 'yard', 'owner'].includes(perspective)) return 'yard-owner'
+      if (['donor', 'cloud-parent', 'cloud', 'mine'].includes(perspective)) return 'cloud-parent'
       return ''
     },
     refresh() {
       const visibility = readOrderVisibility({ actorProvider: this.actorProvider, orderId: this.orderId })
-      this.hidden = Boolean(visibility.success && visibility.data.items.some(item => item.orderId === this.orderId && item.hidden))
+      this.hidden = Boolean(visibility.success && visibility.data.items.some((item) => item.orderId === this.orderId && item.hidden))
       if (this.hidden) { this.model = null; this.mockDetail = null; this.useFigma = false; return }
-      readPersistedOrderDetail(this.orderId, { actorProvider: this.actorProvider, hiddenEntries: visibility.success ? visibility.data.items : [] }).then(result => {
+      readPersistedOrderDetail(this.orderId, { actorProvider: this.actorProvider, hiddenEntries: visibility.success ? visibility.data.items : [] }).then((result) => {
         if (result && result.success) {
           this.model = result
           this.mockDetail = null
@@ -121,7 +154,7 @@ export default {
       getFeedingOrderDetail({
         type: this.detailPerspective || (this.figmaVariant === 91 ? 'yard-owner' : 'cloud-parent'),
         orderId: this.orderId,
-      }).then(result => {
+      }).then((result) => {
         if (result && result.success) {
           this.model = null
           this.mockDetail = result.data
@@ -137,15 +170,15 @@ export default {
         this.useFigma = false
       })
     },
-    toggleHidden(hidden) {
+    toggleHidden(hidden: boolean) {
       const result = setOrderHidden(this.orderId, hidden, { actorProvider: this.actorProvider })
       if (!result.success) { uni.showToast({ title: '订单状态未保存', icon: 'none' }); return }
       this.hidden = hidden
       if (!hidden) this.refresh()
       uni.showToast({ title: hidden ? '已隐藏订单' : '已恢复显示', icon: 'none' })
     },
-    onFeedback(detail) {
-      const value = detail || this.mockDetail || {}
+    onFeedback(detail: FeedingOrderDetail) {
+      const value = detail
       const query = [
         'type=yard-owner',
         'yardOwnerId=' + encodeURIComponent(value.yardOwnerId || 'yard-owner-1'),
@@ -154,11 +187,11 @@ export default {
       ].join('&')
       uni.navigateTo({ url: '/packages/dynamic/pages/editor/index?' + query })
     },
-    orderTypeLabel(type) { return type === 'adoption_gift' ? '领养赠礼' : '普通投喂' },
-    statusLabel(status) { return ({ shipping: '运输中', delivered: '已送达', completed: '已完成' })[status] || '处理中' },
-    statusTone(status) { return status === 'completed' ? 'success' : status === 'delivered' ? 'brand' : 'warning' },
+    orderTypeLabel(type: PersistedOrderType) { return type === 'adoption_gift' ? '领养赠礼' : '普通投喂' },
+    statusLabel(status: string) { return ORDER_STATUS_LABELS[status] || '处理中' },
+    statusTone(status: string): 'success' | 'brand' | 'warning' { return status === 'completed' ? 'success' : status === 'delivered' ? 'brand' : 'warning' },
   },
-}
+})
 </script>
 
 <style scoped>

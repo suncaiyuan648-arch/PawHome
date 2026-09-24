@@ -6,7 +6,7 @@
 
 ## 交付范围
 
-新增 [`navigation/socialMutationContracts.js`](../../../navigation/socialMutationContracts.js)
+新增 [`navigation/socialMutationContracts.ts`](../../../navigation/socialMutationContracts.ts)
 与 [`tests/governance/social-mutation-contract.test.cjs`](../../../tests/governance/social-mutation-contract.test.cjs)。
 
 `evaluateSocialMutation` 只接受 `delete`、`correct` 两类意图，以及精确
@@ -23,7 +23,7 @@
 ## 验证
 
 ```text
-node --check navigation/socialMutationContracts.js                 # PASS
+node --check navigation/socialMutationContracts.ts                 # PASS
 node --test tests/governance/social-mutation-contract.test.cjs      # 3/3 PASS
 npm run check:boundaries                                            # PASS
 ```

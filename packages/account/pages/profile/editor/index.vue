@@ -19,31 +19,61 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
-import { readLocalProfile, updateLocalProfile } from '../../../services/localProfileStorage.js'
-export default {
+import { readLocalProfile, updateLocalProfile } from '../../../services/localProfileStorage.ts'
+import { readPawEventValue } from '@/utils/pawEventMetadata.ts'
+
+type ProfileEditorField = 'nickname' | 'bio'
+
+interface ProfileEditorForm { nickname: string; bio: string; tags: string[] }
+interface ProfileEditorPageState {
+  userId: string
+  blocked: boolean
+  errorCode: string
+  saving: boolean
+  form: ProfileEditorForm
+}
+
+function queryRecord(options: unknown): Record<string, unknown> {
+  return options !== null && typeof options === 'object' && !Array.isArray(options)
+    ? options as Record<string, unknown>
+    : {}
+}
+
+function eventText(event: PawEvent): string {
+  return readPawEventValue(event)
+}
+
+export default defineComponent({
   name: 'AccountProfileEditorPage',
   components: { PawPageNav },
-  data() { return { userId: '', blocked: true, errorCode: 'READER_MISSING', saving: false, form: { nickname: '', bio: '', tags: [] } } },
+  data(): ProfileEditorPageState { return { userId: '', blocked: true, errorCode: 'READER_MISSING', saving: false, form: { nickname: '', bio: '', tags: [] } } },
   computed: {
     tagsText() { return Array.isArray(this.form.tags) ? this.form.tags.join('、') : '' },
   },
-  onLoad(options = {}) {
-    this.userId = typeof options.userId === 'string' ? options.userId : ''
+  onLoad(options: unknown = {}) {
+    const route = queryRecord(options)
+    this.userId = typeof route.userId === 'string' ? route.userId : ''
     const result = readLocalProfile(this.userId, { actorProvider: () => uni.getStorageSync('PAWHOME_ACTOR_SESSION') })
     this.blocked = !result.success
     this.errorCode = result.error && result.error.code || ''
-    if (result.success) {
+    if (result.success && result.data) {
       const record = result.data.record || {}
-      this.form = { nickname: record.nickname || record.name || '', bio: record.bio || '', tags: Array.isArray(record.tags) ? record.tags.slice() : [] }
+      this.form = {
+        nickname: typeof record.nickname === 'string' ? record.nickname : typeof record.name === 'string' ? record.name : '',
+        bio: typeof record.bio === 'string' ? record.bio : '',
+        tags: Array.isArray(record.tags) ? record.tags.filter((tag): tag is string => typeof tag === 'string') : []
+      }
     }
   },
   methods: {
-    onInput(field, event) { this.form[field] = event && event.detail ? event.detail.value : '' },
-    onTagsInput(event) {
-      const text = event && event.detail ? event.detail.value : ''
-      this.form.tags = text.split(/[、,，\s]+/).map(item => item.trim()).filter(Boolean).slice(0, 8)
+    onInput(field: ProfileEditorField, event: PawEvent) { this.form[field] = eventText(event) },
+    onTagsInput(event: PawEvent) {
+      const text = eventText(event)
+      this.form.tags = text.split(/[、,，\s]+/).map((item: string) => item.trim()).filter(Boolean).slice(0, 8)
     },
     onSave() {
       if (this.blocked || this.saving) return
@@ -59,7 +89,7 @@ export default {
       uni.navigateBack()
     },
   },
-}
+})
 </script>
 
 <style scoped>

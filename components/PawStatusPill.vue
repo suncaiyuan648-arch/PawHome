@@ -4,15 +4,16 @@
   </view>
 </template>
 
-<script>
-export default {
+<script lang="ts">import { defineComponent } from 'vue'
+
+export default defineComponent({
   name: 'PawStatusPill',
   props: {
     text: { type: String, default: '' },
     tone: { type: String, default: 'neutral' },
     variant: { type: String, default: 'solid' }
   }
-}
+})
 </script>
 
 <style scoped>

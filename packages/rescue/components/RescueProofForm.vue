@@ -47,28 +47,43 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">import { defineComponent, type PropType } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawFixedActionBar from '@/components/layout/PawFixedActionBar.vue'
 import PawCheckbox from '@/components/base/PawCheckbox.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
-import { buildRoute } from '@/navigation/routeContracts.js'
-import { submitRescueProof, validateProofInput } from '../services/proof.js'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import type { RescueRecord } from '@/utils/rescueStorage.ts'
+import {
+  createRescueProofFormState,
+  type RescueLoadState,
+  type RescueProofFormState,
+  type RescueProofSubmissionPayload,
+} from '../services/componentMetadata.ts'
+import { submitRescueProof, validateProofInput } from '../services/proof.ts'
 
-export default {
+export default defineComponent({
   name: 'RescueProofForm',
   components: { PawPageNav, PawFixedActionBar, PawCheckbox, PawIcon },
   props: {
-    record: { type: Object, default: null },
-    loadState: { type: String, default: 'idle' },
+    record: { type: Object as PropType<RescueRecord | null>, default: null },
+    loadState: { type: String as PropType<RescueLoadState>, default: 'idle' },
     rescueId: { type: String, default: '' }
   },
-  emits: ['submitted'],
-  data() { return { name: '', relation: '', note: '', idNo: '', agreementChecked: false, submitting: false } },
+  emits: {
+    submitted: (payload: RescueProofSubmissionPayload) => Boolean(
+      payload
+      && typeof payload.duplicate === 'boolean'
+      && payload.record?.applicationType === 'rescue'
+      && payload.record.id.length > 0
+    ),
+  },
+  data(): RescueProofFormState { return createRescueProofFormState() },
   computed: {
     navBackground() { return 'linear-gradient(180deg, #fffcdc 0%, #ffffff 13.225%, #f5f5f5 21.49%, #f5f5f5 100%)' },
     fallbackUrl() {
-      try { return buildRoute('rescue.detail', { rescueId: this.rescueId }) } catch (error) { return '/pages/me/index' }
+      try { return buildRoute('rescue.detail', { rescueId: this.rescueId }) } catch { return '/pages/me/index' }
     },
     validFields() { return validateProofInput({ name: this.name, relation: this.relation, note: this.note, idNo: this.idNo, agreementChecked: this.agreementChecked }).ok },
     submitAction() {
@@ -94,7 +109,7 @@ export default {
       this.$emit('submitted', { duplicate: result.duplicate, record: result.record })
     }
   }
-}
+})
 </script>
 
 <style scoped>

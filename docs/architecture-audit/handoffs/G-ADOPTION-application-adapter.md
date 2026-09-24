@@ -6,13 +6,13 @@
 
 ## 交付内容
 
-新增 [`packages/adoption/services/applicationAdapter.js`](../../../packages/adoption/services/applicationAdapter.js)，提供：
+新增 [`packages/adoption/services/applicationAdapter.ts`](../../../packages/adoption/services/applicationAdapter.ts)，提供：
 
 - `readAdoptionApplication(applicationId, options)` / `readAdoptionApplicationById`：读取一个明确的领养申请。
 - `readAdoptionApplicationWithResolver`：同步 resolver 迁移 seam，仅用于测试或未来替换读取传输；生产入口仍固定读取既有存储。
 - `readAdoptionProgress`：给后续进度页面迁移使用的只读别名。
 
-adapter 使用可信 `actorProvider` 重新解析 actor，并将申请条件交给 [`navigation/adoptionConditionContract.js`](../../../navigation/adoptionConditionContract.js)。状态只接受既有 [`utils/adoptionStorage.js`](../../../utils/adoptionStorage.js) 的 `ADOPTION_TRANSITIONS` 键；不创建第二套状态机，也不执行状态迁移。
+adapter 使用可信 `actorProvider` 重新解析 actor，并将申请条件交给 [`navigation/adoptionConditionContract.ts`](../../../navigation/adoptionConditionContract.ts)。状态只接受既有 [`utils/adoptionStorage.ts`](../../../utils/adoptionStorage.ts) 的 `ADOPTION_TRANSITIONS` 键；不创建第二套状态机，也不执行状态迁移。
 
 生产入口只调用 `getAdoptionRecords({ includeDemo: false })`，边界固定在 `PAWHOME_ADOPTIONS`。申请 ID 必须是原样、不含首尾空白的 opaque ID；空 ID、URL、跨 rescue/feeding/order/dynamic/yard/animal 域 ID、demo ID 均 fail-closed。记录的 `id`/`recordId`/`applicationId`、申请人/院主/云家长关系别名和 `status`/`applicationStatus` 别名出现冲突时不修复、不猜测，直接拒绝。
 
@@ -39,9 +39,9 @@ adapter 使用可信 `actorProvider` 重新解析 actor，并将申请条件交�
 本地检查：
 
 ```text
-node --check packages/adoption/services/applicationAdapter.js          # PASS
+node --check packages/adoption/services/applicationAdapter.ts          # PASS
 node --test tests/governance/adoption-application-adapter.test.cjs     # 11/11 PASS
 git diff --check                                                        # PASS
 ```
 
-本子批未修改页面、`pages.json`、路由注册、`utils/adoptionStorage.js`、storage schema、package scripts、lockfile或任何业务写 API；未进行领养提交、审核、奖励领取、支付或真实云端操作。后续需要由总工安排进度/申请成功页接入、审核列表/详情 adapter 接入、页面返回刷新，以及 DevTools 的 BUILD/RUNTIME/CONSOLE/INTERACTION/GEOMETRY/VISUAL 证据。
+本子批未修改页面、`pages.tson`、路由注册、`utils/adoptionStorage.ts`、storage schema、package scripts、lockfile或任何业务写 API；未进行领养提交、审核、奖励领取、支付或真实云端操作。后续需要由总工安排进度/申请成功页接入、审核列表/详情 adapter 接入、页面返回刷新，以及 DevTools 的 BUILD/RUNTIME/CONSOLE/INTERACTION/GEOMETRY/VISUAL 证据。

@@ -16,12 +16,16 @@
   </PawBottomSheet>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent } from 'vue'
+
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawButton from '@/components/base/PawButton.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
-export default {
+export default defineComponent({
   name: 'PawResultSheet',
   components: { PawBottomSheet, PawButton, PawIcon },
   props: {
@@ -30,14 +34,18 @@ export default {
     description: { type: String, default: '' },
     actionText: { type: String, default: '' }
   },
-  emits: ['update:modelValue', 'action', 'close'],
+  emits: {
+    'update:modelValue': eventContract<[value: boolean]>(),
+    'action': eventContract<[]>(),
+    'close': eventContract<[]>(),
+  },
   computed: {
     normalizedDescription() {
       return String(this.description || '').replace(/\\n/g, '\n')
     },
     valueProxy: {
       get() { return this.modelValue },
-      set(value) { this.$emit('update:modelValue', value) }
+      set(value: boolean) { this.$emit('update:modelValue', value) }
     }
   },
   methods: {
@@ -46,7 +54,7 @@ export default {
       this.$emit('close')
     }
   }
-}
+})
 </script>
 
 <style scoped>

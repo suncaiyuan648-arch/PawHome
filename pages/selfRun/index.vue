@@ -5,10 +5,11 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">import { defineComponent } from 'vue'
+
 import CustomTabber from '@/components/CustomTabber/index.vue'
 
-export default {
+export default defineComponent({
 	components: { CustomTabber },
 	onShow() {
 		// #ifdef MP-WEIXIN
@@ -21,7 +22,7 @@ export default {
 		})
 		// #endif
 	}
-}
+})
 </script>
 
 <style scoped>

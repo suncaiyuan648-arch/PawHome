@@ -42,22 +42,54 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawStatusPill from '@/components/PawStatusPill.vue'
-import { createReviewSessionProvider, readRescueReviewList } from '../../../services/reviewAdapter.js'
+import type { RescueReviewActionResult, RescueReviewListResult } from '../../../services/reviewActionAdapter.ts'
+import { createReviewSessionProvider, readRescueReviewList } from '../../../services/reviewAdapter.ts'
 
-export default {
+type RescueReviewFilter = 'pending' | 'processed'
+type RescueReviewStatus = RescueReviewActionResult['fromStatus']
+
+interface RescueReviewFilterTab {
+  readonly key: RescueReviewFilter
+  readonly label: string
+}
+
+interface RescueReviewListPageState {
+  activeFilter: RescueReviewFilter
+  tabs: RescueReviewFilterTab[]
+  model: RescueReviewListResult
+  actorError: string | null
+  actorProvider: ReturnType<typeof createReviewSessionProvider>
+}
+
+function emptyReviewList(): RescueReviewListResult {
+  const items: RescueReviewListResult['items'] = []
+  return {
+    actor: null,
+    items,
+    pending: items,
+    processed: items,
+    canWrite: false,
+    readOnly: true,
+    diagnostics: { scanned: 0, accepted: 0, skipped: [], actorError: { code: 'NOT_LOADED' } },
+  }
+}
+
+export default defineComponent({
   name: 'RescueReviewListPage',
   components: { PawPageNav, PawStatusPill },
-  data() {
+  data(): RescueReviewListPageState {
     return {
       activeFilter: 'pending',
       tabs: [
         { key: 'pending', label: '待审核' },
         { key: 'processed', label: '已处理' },
       ],
-      model: { items: [], pending: [], processed: [] },
+      model: emptyReviewList(),
       actorError: null,
       actorProvider: createReviewSessionProvider(),
     }
@@ -72,25 +104,26 @@ export default {
     refresh() {
       const result = readRescueReviewList({ actorProvider: this.actorProvider, filter: this.activeFilter })
       this.model = result
-      this.actorError = result.diagnostics && result.diagnostics.actorError
+      const code = result.diagnostics.actorError?.code
+      this.actorError = typeof code === 'string' ? code : null
     },
-    selectFilter(filter) {
+    selectFilter(filter: RescueReviewFilter) {
       if (this.activeFilter === filter) return
       this.activeFilter = filter
       this.refresh()
     },
-    statusLabel(status) {
-      return ({ pending: '待审核', approved: '已通过', rejected: '已否决' })[status] || '状态未知'
+    statusLabel(status: RescueReviewStatus): string {
+      const labels: Record<RescueReviewStatus, string> = { pending: '待审核', approved: '已通过', rejected: '已否决' }
+      return labels[status]
     },
-    statusTone(status) {
+    statusTone(status: RescueReviewStatus): 'success' | 'danger' | 'warning' {
       return status === 'approved' ? 'success' : status === 'rejected' ? 'danger' : 'warning'
     },
-    openDetail(item) {
-      if (!item || !item.reviewItemId) return
+    openDetail(item: RescueReviewListResult['items'][number]) {
       uni.navigateTo({ url: `/packages/rescue/pages/review/detail/index?reviewItemId=${encodeURIComponent(item.reviewItemId)}&rescueId=${encodeURIComponent(item.rescueId)}&businessType=rescue` })
     },
   },
-}
+})
 </script>
 
 <style scoped>

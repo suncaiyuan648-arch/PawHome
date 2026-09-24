@@ -2,10 +2,11 @@
   <PawBadge :text="label" color="#EE8002" text-color="#FFFFFF" />
 </template>
 
-<script>
+<script lang="ts">import { defineComponent } from 'vue'
+
 import PawBadge from '@/components/base/PawBadge.vue'
 
-export default {
+export default defineComponent({
   name: 'PersonalHelpBadge',
   components: { PawBadge },
   options: {
@@ -17,5 +18,5 @@ export default {
   props: {
     label: { type: String, default: '个人求助' }
   }
-}
+})
 </script>

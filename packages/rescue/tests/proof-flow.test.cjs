@@ -4,14 +4,18 @@ const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const path = require('node:path')
 const { test } = require('node:test')
+const ts = require('typescript')
 
 const packageRoot = path.resolve(__dirname, '..')
 
 function loadPureValidation() {
-  const source = fs.readFileSync(path.join(packageRoot, 'services/proof.js'), 'utf8')
+  const source = fs.readFileSync(path.join(packageRoot, 'services/proof.ts'), 'utf8')
     .replace(/^import[\s\S]*?from ['"][^'"]+['"]\n/gm, '')
     .replace(/^export /gm, '')
-  return new Function(`${source}\nreturn { normalizeProofInput, validateProofInput }`)()
+  const runtimeSource = ts.transpileModule(source, {
+    compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.None }
+  }).outputText
+  return new Function(`${runtimeSource}\nreturn { normalizeProofInput, validateProofInput }`)()
 }
 
 test('proof validation accepts repeatable local fixture input and rejects incomplete or invalid IDs', () => {
@@ -30,7 +34,7 @@ test('proof validation accepts repeatable local fixture input and rejects incomp
 })
 
 test('proof submission adapter is idempotent by actor and keeps rescue storage as the only write boundary', () => {
-  const source = fs.readFileSync(path.join(packageRoot, 'services/proof.js'), 'utf8')
+  const source = fs.readFileSync(path.join(packageRoot, 'services/proof.ts'), 'utf8')
   assert.match(source, /hasRescueProofByUser\(context\.record, actorId\)/)
   assert.match(source, /duplicate: true/)
   assert.match(source, /addRescueProof\(id, /)
@@ -46,8 +50,7 @@ for (const [relative, routeName] of [
   test(`${relative} accepts only the explicit rescueId route contract`, () => {
     const source = fs.readFileSync(path.join(packageRoot, relative), 'utf8')
     if (relative !== 'pages/fund/index.vue') {
-      assert.match(source, /params\.rescueId/)
-      assert.match(source, new RegExp(`buildRoute\\(['"]${routeName}['"]`))
+      assert.match(source, new RegExp(`resolveRescueRecordLoadRoute\\(options, ['"]${routeName}['"]\\)`))
       assert.doesNotMatch(source, /options\.(?:id|recordId)/)
       assert.doesNotMatch(source, /includeDemo:\s*false/) // public rescue/proof pages read explicit IDs, including local fixtures
       assert.doesNotMatch(source, /sourceType|adoptionStorage|applicationMockApi|source=adoption/)

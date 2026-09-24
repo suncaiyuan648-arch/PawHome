@@ -9,22 +9,42 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
 import ShareActionSheet from '@/components/ShareActionSheet.vue'
 import YardFeedPopup from '@/components/YardFeedPopup.vue'
 import PawFixedActionBar from '@/components/layout/PawFixedActionBar.vue'
+import type { YardFeedPaymentParams, YardFeedPaymentPayload } from '@/components/yard/yardFeedPopupMetadata.ts'
 
-export default {
+interface DetailTabberState {
+	shareSheetVisible: boolean
+	feedPopupVisible: boolean
+}
+
+export default defineComponent({
   name: 'DetailTabber',
   components: { ShareActionSheet, YardFeedPopup, PawFixedActionBar },
   props: {
     joined: { type: Boolean, default: false },
     shareUrl: { type: String, default: '' },
     petId: { type: String, default: '' },
-    paymentParams: { type: Object, default: null }
+    paymentParams: { type: Object as PropType<YardFeedPaymentParams | null>, default: null }
   },
-  emits: ['adopt', 'join', 'leave', 'share-action', 'feed-pay', 'feed-success', 'learn-food', 'agreement', 'feed-order'],
-  data() {
+  emits: {
+    'adopt': eventContract<[]>(),
+    'join': eventContract<[]>(),
+    'leave': eventContract<[]>(),
+    'share-action': eventContract<[key: string]>(),
+    'feed-pay': eventContract<[payload: YardFeedPaymentPayload]>(),
+    'feed-success': eventContract<[payload: YardFeedPaymentPayload]>(),
+    'learn-food': eventContract<[]>(),
+    'agreement': eventContract<[agreement: import('@/components/yard/yardFeedPopupMetadata.ts').YardFeedAgreement]>(),
+    'feed-order': eventContract<[]>(),
+  },
+  data(): DetailTabberState {
     return { shareSheetVisible: false, feedPopupVisible: false }
   },
   computed: {
@@ -40,7 +60,7 @@ export default {
     }
   },
   methods: {
-    onFooterAction(action) {
+    onFooterAction(action: import('@/components/layout/PawFixedActionBar.vue').PawFixedAction) {
       if (action.key === 'share') this.shareSheetVisible = true
       if (action.key === 'join') this.joined ? this.$emit('leave') : this.$emit('join')
       if (action.key === 'adopt') this.$emit('adopt')
@@ -48,14 +68,14 @@ export default {
     openFeed() {
       this.feedPopupVisible = true
     },
-    onShareSheetSelect(key) {
+    onShareSheetSelect(key: string) {
       this.$emit('share-action', key)
     },
-    onFeedPay(payload) {
+    onFeedPay(payload: YardFeedPaymentPayload) {
       this.$emit('feed-pay', payload)
     }
   }
-}
+})
 </script>
 
 <style scoped>

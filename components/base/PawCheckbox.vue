@@ -13,16 +13,26 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent } from 'vue'
+
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
 // Keep the hit area independent from the visual control. These optical sizes
 // follow the Figma address-card proportion: the check stays close to half of
 // the circle instead of filling the control.
-const SIZE_MAP = Object.freeze({ small: 12, middle: 16, large: 22 })
-const CHECK_SIZE_MAP = Object.freeze({ small: 6, middle: 9, large: 12 })
+type CheckboxSize = 'small' | 'middle' | 'large'
 
-export default {
+const SIZE_MAP: Record<CheckboxSize, number> = Object.freeze({ small: 12, middle: 16, large: 22 })
+const CHECK_SIZE_MAP: Record<CheckboxSize, number> = Object.freeze({ small: 6, middle: 9, large: 12 })
+
+function isCheckboxSize(value: unknown): value is CheckboxSize {
+  return typeof value === 'string' && Object.prototype.hasOwnProperty.call(SIZE_MAP, value)
+}
+
+export default defineComponent({
   name: 'PawCheckbox',
   components: { PawIcon },
   props: {
@@ -31,18 +41,23 @@ export default {
     size: {
       type: String,
       default: 'middle',
-      validator: value => Object.prototype.hasOwnProperty.call(SIZE_MAP, value)
+      validator: isCheckboxSize
     },
     inline: { type: Boolean, default: false }
   },
-  emits: ['update:modelValue', 'change'],
+  emits: {
+    'update:modelValue': eventContract<[value: boolean]>(),
+    'change': eventContract<[value: boolean]>(),
+  },
   computed: {
     visualStyle() {
-      const value = SIZE_MAP[this.size] || SIZE_MAP.middle
+      const size = isCheckboxSize(this.size) ? this.size : 'middle'
+      const value = SIZE_MAP[size]
       return { width: `${value}px`, height: `${value}px` }
     },
     checkSize() {
-      return CHECK_SIZE_MAP[this.size] || CHECK_SIZE_MAP.middle
+      const size = isCheckboxSize(this.size) ? this.size : 'middle'
+      return CHECK_SIZE_MAP[size]
     }
   },
   methods: {
@@ -53,7 +68,7 @@ export default {
       this.$emit('change', value)
     }
   }
-}
+})
 </script>
 
 <style scoped>

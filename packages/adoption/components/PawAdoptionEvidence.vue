@@ -59,21 +59,34 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { type CommentItemRecord } from '@/components/dynamic/commentMetadata.ts'
+
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawButton from '@/components/base/PawButton.vue'
 import PawImage from '@/components/base/PawImage.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import CommentThread from '@/components/dynamic/CommentThread.vue'
-import { goBackSmart } from '@/utils/navBack.js'
-import { getRescueById, hasRescueProofByUser } from '@/utils/rescueStorage.js'
-import { openUserProfile, SELF_PAW_ID } from '@/utils/profileNav.js'
-import { getApplication, submitAdoptionEvidence } from '@/utils/applicationMockApi.js'
-import { buildRoute } from '@/navigation/routeContracts.js'
+import { goBackSmart } from '@/utils/navBack.ts'
+import { getRescueById, hasRescueProofByUser } from '@/utils/rescueStorage.ts'
+import { openUserProfile, SELF_PAW_ID } from '@/utils/profileNav.ts'
+import { getApplication, submitAdoptionEvidence } from '@/utils/applicationMockApi.ts'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import {
+  createAdoptionEvidencePageState,
+  readAdoptionEvidenceDraft,
+  readAdoptionEvidenceProofEntries,
+  readChosenEvidenceMediaPaths,
+  updateAdoptionEvidencePhoto,
+  type AdoptionEvidencePageState,
+  type AdoptionEvidencePhotoIndex,
+  type AdoptionEvidencePhotoSlot,
+  type AdoptionEvidenceSubmitPayload,
+} from '../services/evidenceMetadata.ts'
 
-const EXAMPLE_IMAGE = '/static/figma/certify/ca69b21b61516589aa506613e5d3c587881cb57d.png'
-
-export default {
+export default defineComponent({
   name: 'PawAdoptionEvidence',
   components: { PawPageNav, PawButton, PawImage, PawIcon, CommentThread },
   props: {
@@ -83,37 +96,35 @@ export default {
     sourceType: { type: String, default: 'adoption' },
     rescueId: { type: String, default: '' }
   },
-  emits: ['submitted'],
-  data() {
-    return {
-      story: '', selectedPhotos: ['', ''],
-      proofList: [],
-      examples: [EXAMPLE_IMAGE, EXAMPLE_IMAGE]
-    }
+  emits: {
+    submitted: (payload: AdoptionEvidenceSubmitPayload) => Array.isArray(payload.photos) && typeof payload.story === 'string'
+  },
+  data(): AdoptionEvidencePageState {
+    return createAdoptionEvidencePageState()
   },
   computed: {
     listMode() { return this.mode === 'list' },
     navBackground() {
       return 'linear-gradient(to bottom, #fffcdc 0%, #ffffff 100%)'
     },
-    contextType() {
+    contextType(): 'rescue' | 'adoption' {
       const source = this.source || this.sourceType
       return source === 'rescue' ? 'rescue' : 'adoption'
     },
     isRescue() { return this.contextType === 'rescue' },
     resolvedRescueId() { return this.rescueId || this.recordId },
     rescueRecord() { return this.isRescue && this.resolvedRescueId ? getRescueById(this.resolvedRescueId) : null },
-    hasCurrentUserProof() { return this.isRescue && hasRescueProofByUser(this.rescueRecord, SELF_PAW_ID) },
-    evidenceCount() {
+		hasCurrentUserProof() { return this.isRescue && Boolean(this.rescueRecord && hasRescueProofByUser(this.rescueRecord, SELF_PAW_ID)) },
+    evidenceCount(): number {
       if (!this.isRescue) return 0
-      const count = this.rescueRecord && Number(this.rescueRecord.evidenceCount)
+      const count = this.rescueRecord ? Number(this.rescueRecord.evidenceCount) : Number.NaN
       return Number.isFinite(count) ? count : this.proofList.length
     },
     fallbackUrl() {
       if (this.isRescue && this.resolvedRescueId) return `/packages/rescue/pages/detail/index?rescueId=${encodeURIComponent(this.resolvedRescueId)}`
       return '/pages/me/index'
     },
-    photoSlots() { return [{ key: 'before', label: '小咪流浪时的样子', src: this.selectedPhotos[0] }, { key: 'after', label: '小咪在新家的样子', src: this.selectedPhotos[1] }] },
+    photoSlots(): AdoptionEvidencePhotoSlot[] { return [{ key: 'before', label: '小咪流浪时的样子', src: this.selectedPhotos[0] }, { key: 'after', label: '小咪在新家的样子', src: this.selectedPhotos[1] }] },
     canSubmit() { return this.selectedPhotos.every(Boolean) && this.story.trim().length > 0 }
   },
   watch: {
@@ -124,7 +135,7 @@ export default {
   },
   methods: {
     actorProvider() {
-      try { return typeof uni !== 'undefined' && uni && typeof uni.getStorageSync === 'function' ? uni.getStorageSync('PAWHOME_ACTOR_SESSION') : null } catch (error) { return null }
+      try { return typeof uni !== 'undefined' && uni && typeof uni.getStorageSync === 'function' ? uni.getStorageSync('PAWHOME_ACTOR_SESSION') : null } catch { return null }
     },
     loadRecord() {
       this.proofList = []
@@ -136,38 +147,22 @@ export default {
         : (adoptionResult && adoptionResult.success ? adoptionResult.data : null)
       if (!record) return
       if (this.isRescue) {
-        const sourceList = Array.isArray(record.proofList)
-          ? record.proofList
-          : (Array.isArray(record.evidenceList) ? record.evidenceList : [])
-        this.proofList = sourceList.map((item, index) => this.normalizeProof(item, index))
+        this.proofList = readAdoptionEvidenceProofEntries(record)
         return
       }
       if (!this.listMode) {
-        this.story = record.confirmStory || ''
-        this.selectedPhotos = Array.isArray(record.proofPhotos) ? record.proofPhotos.slice(0, 2) : ['', '']
+        const draft = readAdoptionEvidenceDraft(record)
+        this.story = draft.story
+        this.selectedPhotos = draft.photos
       }
     },
-    normalizeProof(item = {}, index = 0) {
-      const meta = item.meta || [item.createdAtText || item.time || item.createdAt, item.city || item.location].filter(Boolean).join('　') || '刚刚'
-      return {
-        id: item.id || item.proofId || `proof-${index + 1}`,
-        name: item.name || item.nickname || item.userName || '证实人',
-        level: item.level || 1,
-        avatar: item.avatar || item.userAvatar || item.avatarUrl || EXAMPLE_IMAGE,
-        text: item.text || item.content || item.note || item.story || item.confirmStory || '已提交证实信息。',
-        meta,
-        likes: Number(item.likes ?? item.likeCount ?? 0),
-        liked: item.liked === undefined ? true : Boolean(item.liked)
-      }
-    },
-    openProofUser(proof) {
+    openProofUser(proof: CommentItemRecord) {
       if (!proof) return
-      const author = proof.author || proof
-      openUserProfile({ pawId: author.pawId || proof.pawId || proof.userId || proof.id, nickname: author.name, avatar: author.avatar })
+      openUserProfile({ pawId: proof.id, nickname: proof.name, avatar: proof.avatar })
     },
-    toggleProofLike(comment) {
+    toggleProofLike(comment: CommentItemRecord) {
       if (!comment) return
-      const index = this.proofList.findIndex(item => item.id === comment.id)
+      const index = this.proofList.findIndex((item) => item.id === comment.id)
       if (index < 0) return
       const next = [...this.proofList]
       const current = next[index]
@@ -188,23 +183,27 @@ export default {
       }
       try {
         uni.navigateTo({ url: buildRoute('rescue.proof.create', { rescueId: this.resolvedRescueId }) })
-      } catch (error) {
+      } catch {
         uni.showToast({ title: '救助证实表单暂不可用', icon: 'none' })
       }
     },
-    choosePhoto(index) {
-      const done = (paths) => { const next = [...this.selectedPhotos]; next[index] = paths[0] || ''; this.selectedPhotos = next }
+    choosePhoto(index: number) {
+      if (index !== 0 && index !== 1) return
+      const photoIndex: AdoptionEvidencePhotoIndex = index
+      const done = (result: unknown) => {
+        const paths = readChosenEvidenceMediaPaths(result)
+        this.selectedPhotos = updateAdoptionEvidencePhoto(this.selectedPhotos, photoIndex, paths[0] || '')
+      }
       // #ifdef MP-WEIXIN
-      uni.chooseMedia({ count: 1, mediaType: ['image', 'video'], sourceType: ['album', 'camera'], success: res => done((res.tempFiles || []).map(file => file.tempFilePath)) })
+      uni.chooseMedia({ count: 1, mediaType: ['image', 'video'], sourceType: ['album', 'camera'], success: (res) => done(res) })
       // #endif
       // #ifndef MP-WEIXIN
-      uni.chooseImage({ count: 1, sourceType: ['album', 'camera'], success: res => done(res.tempFilePaths || []) })
+      uni.chooseImage({ count: 1, sourceType: ['album', 'camera'], success: (res) => done(res) })
       // #endif
     },
-    removePhoto(index) {
-      const next = [...this.selectedPhotos]
-      next[index] = ''
-      this.selectedPhotos = next
+    removePhoto(index: number) {
+      if (index !== 0 && index !== 1) return
+      this.selectedPhotos = updateAdoptionEvidencePhoto(this.selectedPhotos, index, '')
     },
     submit() {
       if (!this.canSubmit) { uni.showToast({ title: '请补充照片和领养感受', icon: 'none' }); return }
@@ -219,7 +218,7 @@ export default {
       this.$emit('submitted', { photos: [...this.selectedPhotos], story: this.story.trim() })
     }
   }
-}
+})
 </script>
 
 <style scoped>

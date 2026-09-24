@@ -1,0 +1,109 @@
+import type { PawIconFlip, PawIconSize } from './PawIcon.types'
+import { PAW_ICON_DEFAULT_SIZE, PAW_ICON_SIZE } from './PawIcon.tokens.ts'
+
+const monoUriCache = new Map<string, string>()
+const PAW_ICON_FLIPS = new Set(['none', 'horizontal', 'vertical', 'both'])
+export const PAW_ICON_MIN_RECOMMENDED_SIZE = 8
+export const PAW_ICON_MAX_SIZE = 96
+const warnedSizes = new Set<string>()
+
+function warnSizeBoundary(size: number, reason: string): void {
+  if (typeof process === 'undefined' || !process.env || process.env.NODE_ENV !== 'development') return
+  const key = `${reason}:${size}`
+  if (warnedSizes.has(key)) return
+  warnedSizes.add(key)
+	console.warn(`[PawIcon] size ${size}px ${reason}; recommended range is ${PAW_ICON_MIN_RECOMMENDED_SIZE}–${PAW_ICON_MAX_SIZE}px`)
+}
+
+export function resolvePawIconSize(size: PawIconSize = PAW_ICON_DEFAULT_SIZE): number {
+  let numeric = null
+  if (typeof size === 'number' && Number.isFinite(size)) numeric = size
+  if (typeof size === 'string') {
+    if (Object.prototype.hasOwnProperty.call(PAW_ICON_SIZE, size)) {
+      return PAW_ICON_SIZE[size as keyof typeof PAW_ICON_SIZE]
+    }
+    const parsed = Number(size.trim())
+    if (Number.isFinite(parsed)) numeric = parsed
+  }
+
+  if (numeric !== null && numeric > 0) {
+    if (numeric > PAW_ICON_MAX_SIZE) {
+      warnSizeBoundary(numeric, `exceeds the maximum and will be clamped to ${PAW_ICON_MAX_SIZE}`)
+      return PAW_ICON_MAX_SIZE
+    }
+    if (numeric < PAW_ICON_MIN_RECOMMENDED_SIZE) warnSizeBoundary(numeric, 'is below the recommended minimum')
+    // Keep decimals intact. Browser/WeChat performs final DPR rasterization.
+    return numeric
+  }
+  return PAW_ICON_SIZE[PAW_ICON_DEFAULT_SIZE]
+}
+
+function roundPx(value: number): number {
+  return Math.round(value * 1000) / 1000
+}
+
+/**
+ * PawIcon.size is the CSS edge of the canonical 24×24 design canvas.
+ * Build-time normalization maps each complete Designer source frame through
+ * its optical slot into that canvas. Runtime never adds per-size corrections:
+ * every icon owns a square layout box and the artwork's natural proportions
+ * remain inside it.
+ */
+export function resolvePawIconDimensions(size: PawIconSize, definition?: unknown) {
+  void definition
+  const target = resolvePawIconSize(size)
+  return { width: target, height: target, designWidth: 24, designHeight: 24 }
+}
+
+export function normalizePawIconRotate(value: number | string | null | undefined): number {
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric)) return 0
+  const normalized = ((numeric % 360) + 360) % 360
+  return roundPx(normalized)
+}
+
+export function resolvePawIconTransform(
+	rotate: number | string | null | undefined,
+	flip: PawIconFlip | string | null | undefined
+) {
+  const normalizedRotate = normalizePawIconRotate(rotate)
+	const normalizedFlip: PawIconFlip = typeof flip === 'string' && PAW_ICON_FLIPS.has(flip)
+		? (flip as PawIconFlip)
+		: 'none'
+	const transforms: string[] = []
+
+  // CSS applies the rightmost transform first, so this emits flip before
+  // rotate as required by the public PawIcon transform contract.
+  if (normalizedRotate) transforms.push(`rotate(${normalizedRotate}deg)`)
+  if (normalizedFlip === 'horizontal' || normalizedFlip === 'both') transforms.push('scaleX(-1)')
+  if (normalizedFlip === 'vertical' || normalizedFlip === 'both') transforms.push('scaleY(-1)')
+
+  return {
+    transform: transforms.length ? transforms.join(' ') : 'none',
+    transformOrigin: 'center center'
+  }
+}
+
+export function resolveMonoIconUri(template: string | null | undefined, color: string | null | undefined): string {
+  if (!template) return ''
+  const cacheKey = `${template}\u0000${color}`
+  if (!monoUriCache.has(cacheKey)) {
+		monoUriCache.set(
+			cacheKey,
+			`data:image/svg+xml;charset=utf-8,${template.replace(/__PAW_ICON_COLOR__/g, encodeURIComponent(color ?? ''))}`
+		)
+	}
+	return monoUriCache.get(cacheKey) ?? ''
+}
+
+export function warnColorOverride(name: string): void {
+  if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development') {
+		console.warn(`[PawIcon] color is ignored for color icon "${name}"; use the Figma asset color.`)
+  }
+}
+
+export function warnUnknownIcon(name: string): void {
+  if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development') {
+		console.warn(`[PawIcon] Unknown icon: ${name}`)
+  }
+}

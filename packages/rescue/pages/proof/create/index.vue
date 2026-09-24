@@ -2,31 +2,24 @@
   <RescueProofForm :rescue-id="rescueId" :record="record" :load-state="loadState" @submitted="onSubmitted" />
 </template>
 
-<script>
-import RescueProofForm from '../../../components/RescueProofForm.vue'
-import { getRescueById } from '@/utils/rescueStorage.js'
-import { buildRoute } from '@/navigation/routeContracts.js'
-import { decodeWeixinLoadOptions } from '@/navigation/weixinLoadOptions.js'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
-export default {
+import RescueProofForm from '../../../components/RescueProofForm.vue'
+import { getRescueById } from '@/utils/rescueStorage.ts'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import { createRescueRecordPageState, resolveRescueRecordLoadRoute } from '../../../services/componentMetadata.ts'
+
+export default defineComponent({
   name: 'RescueProofCreatePage',
   components: { RescueProofForm },
-  data() { return { rescueId: '', record: null, loadState: 'idle' } },
-  onLoad(options = {}) {
+  data() { return createRescueRecordPageState() },
+  onLoad(options: unknown = {}) {
     this.record = null
     this.rescueId = ''
-    let params = options
-    try {
-      // #ifdef MP-WEIXIN
-      params = decodeWeixinLoadOptions(options)
-      // #endif
-      if (!params || typeof params !== 'object' || !params.rescueId) { this.loadState = 'missing-id'; return }
-      buildRoute('rescue.proof.create', params)
-      this.rescueId = params.rescueId
-    } catch (error) {
-      this.loadState = 'invalid-params'
-      return
-    }
+    const route = resolveRescueRecordLoadRoute(options, 'rescue.proof.create')
+    if (!route.ok) { this.loadState = route.loadState; return }
+    this.rescueId = route.rescueId
     this.refresh()
   },
   onShow() {
@@ -50,10 +43,10 @@ export default {
         // Replace the form so both entry paths (detail → form and list → form)
         // land on the same refreshed proof list after a successful submission.
         uni.redirectTo({ url })
-      } catch (error) {
+      } catch {
         uni.showToast({ title: '证实已处理，请返回列表查看', icon: 'none' })
       }
     }
   }
-}
+})
 </script>

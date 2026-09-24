@@ -58,16 +58,17 @@ function seed(records) {
 
 before(async () => {
 	tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-rescue-lists-adapter-'))
-	await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+	await fs.cp(path.join(ROOT, 'contracts'), path.join(tempRoot, 'contracts'), { recursive: true })
+	await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
 	await fs.cp(path.join(ROOT, 'services/domainReads'), path.join(tempRoot, 'services/domainReads'), { recursive: true })
 	await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
 	await fs.mkdir(path.join(tempRoot, 'utils'), { recursive: true })
 	await fs.mkdir(path.join(tempRoot, 'packages/rescue/services'), { recursive: true })
-	for (const file of ['actorCapabilities.js', 'rescueListContract.js']) {
+	for (const file of ['actorCapabilities.ts', 'rescueListContract.ts']) {
 		await fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
 	}
-	await fs.copyFile(path.join(ROOT, 'utils/rescueStorage.js'), path.join(tempRoot, 'utils/rescueStorage.js'))
-	await fs.copyFile(path.join(ROOT, 'packages/rescue/services/lists.js'), path.join(tempRoot, 'packages/rescue/services/lists.js'))
+	await fs.copyFile(path.join(ROOT, 'utils/rescueStorage.ts'), path.join(tempRoot, 'utils/rescueStorage.ts'))
+	await fs.copyFile(path.join(ROOT, 'packages/rescue/services/lists.ts'), path.join(tempRoot, 'packages/rescue/services/lists.ts'))
 
 	globalThis.uni = {
 		storage: new Map(),
@@ -83,7 +84,7 @@ before(async () => {
 		}
 	}
 
-	api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/rescue/services/lists.js')).href}?test=${Date.now()}-${Math.random()}`)
+	api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/rescue/services/lists.ts')).href}?test=${Date.now()}-${Math.random()}`)
 })
 
 beforeEach(resetStorage)

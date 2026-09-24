@@ -5,8 +5,8 @@
 
 ## 已交付
 
-- `packages/account/services/managementMutationAdapter.js` 提供统一编辑边界。
-- 每次写动作先重新读取可信 actor 和当前记录，再由 `navigation/managementContracts.js` 计算 `profile.edit`、`yard.edit` 或 `animal.edit` 能力。
+- `packages/account/services/managementMutationAdapter.ts` 提供统一编辑边界。
+- 每次写动作先重新读取可信 actor 和当前记录，再由 `navigation/managementContracts.ts` 计算 `profile.edit`、`yard.edit` 或 `animal.edit` 能力。
 - 编辑 patch 只允许经过审计的展示字段；ID、状态、所有权、院子关系、云家长关系、管理者关系不能通过编辑器修改。
 - `writer` 必须由生产域显式注入并同步返回确认；没有 writer 时返回 `WRITER_MISSING`，不会把本地表单当成成功。
 - 取消编辑没有写动作；异步 writer、越权 actor、空 patch、原型键和未知字段全部 fail-closed。
@@ -30,7 +30,7 @@
 - `pages/yard/animalEditor.vue`
 
 它们只调用 package-local gate，缺真实 reader 时显示 `READER_MISSING`，缺稳定 ID 时显示
-`INVALID_ID`，不导入 `managementEditorRuntime`，不写 storage。`pages.json` 已注册物理页面并通过
+`INVALID_ID`，不导入 `managementEditorRuntime`，不写 storage。`pages.tson` 已注册物理页面并通过
 78/78 route check；这不等于 profile/yard/animal writer 已批准，也不为三个编辑器添加任意
 query 导航权限。DevTools 已验证 `pages/yard/editor?yardId=yard-a` 的关闭态截图
 `.artifacts/runtime/yard-editor-closed.png`。

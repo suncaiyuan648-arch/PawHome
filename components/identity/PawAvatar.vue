@@ -9,10 +9,14 @@
   </view>
 </template>
 
-<script>
-import { safeImgSrc } from '@/utils/safeImgSrc.js'
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
 
-export default {
+import { defineComponent } from 'vue'
+
+import { safeImgSrc } from '@/utils/safeImgSrc.ts'
+
+export default defineComponent({
   name: 'PawAvatar',
   props: {
     src: { type: String, default: '' },
@@ -23,7 +27,9 @@ export default {
     ringColor: { type: String, default: '' },
     clickable: { type: Boolean, default: false }
   },
-  emits: ['click'],
+  emits: {
+    'click': eventContract<[event: PawEvent]>(),
+  },
   computed: {
     safeSrc() { return safeImgSrc(this.src, this.fallback) },
     avatarStyle() {
@@ -35,8 +41,8 @@ export default {
       }
     }
   },
-  methods: { onClick(event) { if (this.clickable) this.$emit('click', event) } }
-}
+  methods: { onClick(event: PawEvent) { if (this.clickable) this.$emit('click', event) } }
+})
 </script>
 
 <style scoped>

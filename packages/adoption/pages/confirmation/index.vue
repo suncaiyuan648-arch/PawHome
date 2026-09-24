@@ -5,24 +5,31 @@
   </view>
   <PawAdoptionEvidence v-else mode="confirm" :record-id="recordId" @submitted="onSubmitted" />
 </template>
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawAdoptionEvidence from '../../components/PawAdoptionEvidence.vue'
 import PawPageNav from '@/components/PawPageNav.vue'
-import { buildRoute } from '@/navigation/routeContracts.js'
-export default {
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import {
+  createAdoptionConfirmationPageState,
+  resolveAdoptionPageRecordId,
+  type AdoptionConfirmationPageState
+} from '../../services/pageInputMetadata.ts'
+export default defineComponent({
   components: { PawAdoptionEvidence, PawPageNav },
-  data() { return { recordId: '', invalid: false } },
-  onLoad(options = {}) {
-    this.recordId = String(options.applicationId || options.id || options.recordId || '').trim()
+  data(): AdoptionConfirmationPageState { return createAdoptionConfirmationPageState() },
+  onLoad(options: unknown = {}) {
+    this.recordId = resolveAdoptionPageRecordId(options, ['applicationId', 'id', 'recordId'])
     this.invalid = !this.recordId
   },
   methods: {
     onSubmitted() {
       if (!this.recordId) return
-      try { uni.redirectTo({ url: buildRoute('adoption.result', { applicationId: this.recordId, outcome: 'confirmation-submitted' }) }) } catch (error) { uni.showToast({ title: '结果页暂不可用', icon: 'none' }) }
+      try { uni.redirectTo({ url: buildRoute('adoption.result', { applicationId: this.recordId, outcome: 'confirmation-submitted' }) }) } catch { uni.showToast({ title: '结果页暂不可用', icon: 'none' }) }
     }
   }
-}
+})
 </script>
 <style scoped>
 .confirmation-invalid { min-height: 100vh; background: #f5f5f5; }

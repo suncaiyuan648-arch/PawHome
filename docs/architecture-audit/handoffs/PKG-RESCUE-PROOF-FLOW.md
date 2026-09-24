@@ -6,7 +6,7 @@
 
 ## 交付结论
 
-本批新增了救助基金列表、公开救助详情、证实列表和证实表单。页面边界按救助实体和操作权限固定，均通过 `navigation/routeContracts.js` 的既有目标合同校验参数。coder 只负责 `packages/rescue/**`；总工随后完成了 `pages.json` 注册、旧 proof 入口兼容壳和跨域调用方的串行集成，未改根共享组件的业务职责。
+本批新增了救助基金列表、公开救助详情、证实列表和证实表单。页面边界按救助实体和操作权限固定，均通过 `navigation/routeContracts.ts` 的既有目标合同校验参数。coder 只负责 `packages/rescue/**`；总工随后完成了 `pages.tson` 注册、旧 proof 入口兼容壳和跨域调用方的串行集成，未改根共享组件的业务职责。
 
 新增文件：
 
@@ -18,7 +18,7 @@
 - `packages/rescue/components/RescueDetailView.vue`
 - `packages/rescue/components/RescueProofList.vue`
 - `packages/rescue/components/RescueProofForm.vue`
-- `packages/rescue/services/proof.js`
+- `packages/rescue/services/proof.ts`
 - `packages/rescue/tests/proof-flow.test.cjs`
 
 ## 行为和数据合同
@@ -27,7 +27,7 @@
 
 `RescueDetailPage`、`RescueProofListPage`、`RescueProofCreatePage` 在页面边界只接受 `rescueId`。缺失、非法、未知参数和找不到记录分别进入明确空态，页面不会从列表或演示数据猜一条记录。公开详情可以进入同一 `rescueId` 的证实列表或证实表单；评审入口只有在记录带有受信任的 `reviewerAuthorized === true` 和 `reviewItemId` 时才显示，申请人/记录所有者身份不会自动获得评审权。
 
-`services/proof.js` 复用 `utils/rescueStorage.js` 的 `getRescueById`、`hasRescueProofByUser` 和 `addRescueProof`，没有新增 storage key，也没有导入领养证实 API。表单保存姓名、关系、说明和身份证后四位，身份证原文不写入本地记录；当前用户对同一救助记录已有证实时返回幂等成功并不重复写入。成功后返回证实列表，列表 `onShow` 重新读取同一 `rescueId`。
+`services/proof.ts` 复用 `utils/rescueStorage.ts` 的 `getRescueById`、`hasRescueProofByUser` 和 `addRescueProof`，没有新增 storage key，也没有导入领养证实 API。表单保存姓名、关系、说明和身份证后四位，身份证原文不写入本地记录；当前用户对同一救助记录已有证实时返回幂等成功并不重复写入。成功后返回证实列表，列表 `onShow` 重新读取同一 `rescueId`。
 
 包内组件只依赖根共享层（`PawPageNav`、`PawButton`、`PawFixedActionBar`、`PawCheckbox`、`PawImage`、`PawAvatar`、`PawIcon`、`LevelBadge`、`PawStatusPill`）和根救助存储/导航工具；没有从 `pages/*`、其他业务分包或旧 Adoption proof 组件静态引入，也没有重绘原生胶囊、状态栏或 Home Indicator。
 
@@ -65,9 +65,9 @@
 | `rescue.proof.list` | `/packages/rescue/pages/proof/list/index` | 必填 `rescueId` |
 | `rescue.proof.create` | `/packages/rescue/pages/proof/create/index` | 必填 `rescueId` |
 
-当前目标合同已经存在于 `navigation/routeContracts.js`；注册后再把 active registry 注入实际导航壳。不要为这四页增加 `source`、`sourceType`、`id`、`recordId`、`mode`、`frame` 或 `variant`。
+当前目标合同已经存在于 `navigation/routeContracts.ts`；注册后再把 active registry 注入实际导航壳。不要为这四页增加 `source`、`sourceType`、`id`、`recordId`、`mode`、`frame` 或 `variant`。
 
-`navigation/legacyRoutes.js` 已覆盖 `/pages/meMore/rescueProofList` 和 `/pages/meMore/rescueProofForm`：先要求 `source`/`sourceType`/`type` 同值为 `rescue`，再校验 `rescueId`/`id`/`recordId` 别名一致并构造 `rescue.proof.*` 目标。未知参数、非 rescue 域、缺 ID 和别名冲突均失败；旧页面本身保持轻量壳，不静态导入新包组件，也不把 `role` 或 `source` 当作能力授权。
+`navigation/legacyRoutes.ts` 已覆盖 `/pages/meMore/rescueProofList` 和 `/pages/meMore/rescueProofForm`：先要求 `source`/`sourceType`/`type` 同值为 `rescue`，再校验 `rescueId`/`id`/`recordId` 别名一致并构造 `rescue.proof.*` 目标。未知参数、非 rescue 域、缺 ID 和别名冲突均失败；旧页面本身保持轻量壳，不静态导入新包组件，也不把 `role` 或 `source` 当作能力授权。
 
 ## 旧入口和调用方切换清单
 
@@ -94,14 +94,14 @@
 - `npm run check:typography`：PASS。
 - `npm run check:ui-governance`：PASS。
 - `git diff --check`：工作区已有改动未产生 whitespace 诊断；新增文件逐文件检查无 whitespace 诊断。
-- `npm run check:routes`：coder 交付时因按约定未改 `pages.json` 暂为 FAIL，报告四个新增目标页尚未注册；总工已完成串行注册并在下方独立复验通过。
+- `npm run check:routes`：coder 交付时因按约定未改 `pages.tson` 暂为 FAIL，报告四个新增目标页尚未注册；总工已完成串行注册并在下方独立复验通过。
 - `npm run build:mp-weixin`：PASS；主包 `1,567,897 bytes / 1,531.1 KiB`，`packages/rescue` `56,773 bytes / 55.4 KiB`，全量 `4,427,747 bytes / 4,324.0 KiB`；主包低于 1.5 MiB 目标，meMore `1,665,095 bytes / 1,626.1 KiB` 低于 2 MiB 硬上限但超过质量建议。
 - 微信开发者工具运行时：已在用户手动打开的 `unpackage/dist/dev/mp-weixin` 窗口完成只读路由冒烟；每条路线清空 Console 后均为 `Errors: 0 / Warnings: 0`。
 
 ## 总工串行集成复核
 
 - [x] 已将 `pages/fund/index`、`pages/detail/index`、`pages/proof/list/index`、`pages/proof/create/index` 注册到既有 `packages/rescue` 分包；`npm run check:routes` 通过（69/69）。
-- [x] 已将 `/pages/meMore/rescueProofList`、`/pages/meMore/rescueProofForm` 收敛为轻量兼容壳，使用同包 `buildRoute` 与严格的 rescue 域/ID 别名校验；旧壳不再静态导入旧 Adoption proof 组件，不把 `legacyRoutes.js` 引入 meMore 分包，避免主包回流。
+- [x] 已将 `/pages/meMore/rescueProofList`、`/pages/meMore/rescueProofForm` 收敛为轻量兼容壳，使用同包 `buildRoute` 与严格的 rescue 域/ID 别名校验；旧壳不再静态导入旧 Adoption proof 组件，不把 `legacyRoutes.ts` 引入 meMore 分包，避免主包回流。
 - [x] 已将个人中心救助基金入口、旧小院救助列表详情卡和旧 feature 页证实入口切换到 `rescue.fund`、`rescue.detail`、`rescue.proof.*` 目标合同；未改跨域页面的其他业务职责。
 - [x] 独立通过 `git diff --check`、本批 6 项反例测试、治理测试 80/80、路由 69/69、`check:ui`、`npm run build:mp-weixin`、`npm run check:package:final`。最终构建主包 `1,567,897 bytes / 1,531.1 KiB`，全量 `4,427,747 bytes / 4,324.0 KiB`，`packages/rescue` `56,773 bytes / 55.4 KiB`；主包低于 1.5 MiB 目标，meMore `1,665,095 bytes / 1,626.1 KiB` 仍低于 2 MiB 硬上限但超过质量建议。
 - [x] 在已打开的微信开发者工具中复验新基金/详情/证实列表/证实表单和旧兼容入口：

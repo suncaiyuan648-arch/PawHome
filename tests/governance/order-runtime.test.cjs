@@ -16,9 +16,9 @@ before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-order-runtime-'))
   await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'packages/feeding/services'), { recursive: true })
-  await fs.copyFile(path.join(ROOT, 'packages/feeding/services/orderRuntime.js'), path.join(tempRoot, 'packages/feeding/services/orderRuntime.js'))
+  await fs.copyFile(path.join(ROOT, 'packages/feeding/services/orderRuntime.ts'), path.join(tempRoot, 'packages/feeding/services/orderRuntime.ts'))
   globalThis.uni = { getStorageSync: key => storage.get(key) }
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/feeding/services/orderRuntime.js')).href}?test=${Date.now()}`)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/feeding/services/orderRuntime.ts')).href}?test=${Date.now()}`)
 })
 
 after(async () => { delete globalThis.uni; if (tempRoot) await fs.rm(tempRoot, { recursive: true, force: true }) })

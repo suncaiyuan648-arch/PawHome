@@ -18,11 +18,15 @@
   </PawOverlay>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent } from 'vue'
+
 import PawOverlay from '@/components/overlay/PawOverlay.vue'
 import PawSafeArea from '@/components/base/PawSafeArea.vue'
 
-export default {
+export default defineComponent({
   name: 'PawBottomSheet',
   components: { PawOverlay, PawSafeArea },
   props: {
@@ -37,7 +41,12 @@ export default {
     zIndex: { type: [String, Number], default: 10020 },
     showHandle: { type: Boolean, default: false }
   },
-  emits: ['update:modelValue', 'update:visible', 'after-open', 'after-close'],
+  emits: {
+    'update:modelValue': eventContract<[value: boolean]>(),
+    'update:visible': eventContract<[value: boolean]>(),
+    'after-open': eventContract<[]>(),
+    'after-close': eventContract<[]>(),
+  },
   computed: {
     openValue() { return this.modelValue !== undefined ? this.modelValue : !!this.visible },
     sheetStyle() {
@@ -46,12 +55,12 @@ export default {
     }
   },
   methods: {
-    setValue(value) {
+    setValue(value: boolean) {
       this.$emit('update:modelValue', value)
       this.$emit('update:visible', value)
     }
   }
-}
+})
 </script>
 
 <style scoped>

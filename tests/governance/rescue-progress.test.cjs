@@ -7,42 +7,47 @@ const os = require('node:os')
 const path = require('node:path')
 const { pathToFileURL } = require('node:url')
 const { test, before, after } = require('node:test')
+const ts = require('typescript')
 
 const projectRoot = path.resolve(__dirname, '..', '..')
 const pageFile = path.join(projectRoot, 'packages/rescue/pages/progress/index.vue')
 const componentFile = path.join(projectRoot, 'packages/rescue/components/RescueApplicantProgress.vue')
-const progressServiceFile = path.join(projectRoot, 'packages/rescue/services/progress.js')
-const rescueStorageFile = path.join(projectRoot, 'utils/rescueStorage.js')
+const progressServiceFile = path.join(projectRoot, 'packages/rescue/services/progress.ts')
+const rescueStorageFile = path.join(projectRoot, 'utils/rescueStorage.ts')
 let tempEsmRoot
 let routeApi
+let rescueMetadata
 let progressApi
 let storage
 
 before(async () => {
   tempEsmRoot = await fsp.mkdtemp(path.join(os.tmpdir(), 'pawhome-rescue-progress-'))
-  await fsp.writeFile(path.join(tempEsmRoot, 'package.json'), '{"type":"module"}\n')
+  await fsp.cp(path.join(projectRoot, 'contracts'), path.join(tempEsmRoot, 'contracts'), { recursive: true })
+  await fsp.writeFile(path.join(tempEsmRoot, 'package.tson'), '{"type":"module"}\n')
   await fsp.mkdir(path.join(tempEsmRoot, 'navigation'), { recursive: true })
   await fsp.mkdir(path.join(tempEsmRoot, 'packages/rescue/services'), { recursive: true })
   await fsp.mkdir(path.join(tempEsmRoot, 'services/domainReads'), { recursive: true })
   await fsp.mkdir(path.join(tempEsmRoot, 'utils'), { recursive: true })
-  await fsp.copyFile(path.join(projectRoot, 'navigation/routeContracts.js'), path.join(tempEsmRoot, 'navigation/routeContracts.js'))
-  await fsp.copyFile(path.join(projectRoot, 'navigation/weixinLoadOptions.js'), path.join(tempEsmRoot, 'navigation/weixinLoadOptions.js'))
-  await fsp.copyFile(progressServiceFile, path.join(tempEsmRoot, 'packages/rescue/services/progress.js'))
-  await fsp.copyFile(path.join(projectRoot, 'packages/rescue/services/stateAdapter.js'), path.join(tempEsmRoot, 'packages/rescue/services/stateAdapter.js'))
+  await fsp.copyFile(path.join(projectRoot, 'navigation/routeContracts.ts'), path.join(tempEsmRoot, 'navigation/routeContracts.ts'))
+  await fsp.copyFile(path.join(projectRoot, 'navigation/weixinLoadOptions.ts'), path.join(tempEsmRoot, 'navigation/weixinLoadOptions.ts'))
+  await fsp.copyFile(progressServiceFile, path.join(tempEsmRoot, 'packages/rescue/services/progress.ts'))
+  await fsp.copyFile(path.join(projectRoot, 'packages/rescue/services/stateAdapter.ts'), path.join(tempEsmRoot, 'packages/rescue/services/stateAdapter.ts'))
   await fsp.cp(path.join(projectRoot, 'services/domainReads/rescue'), path.join(tempEsmRoot, 'services/domainReads/rescue'), { recursive: true })
-  await fsp.copyFile(rescueStorageFile, path.join(tempEsmRoot, 'utils/rescueStorage.js'))
+  await fsp.copyFile(rescueStorageFile, path.join(tempEsmRoot, 'utils/rescueStorage.ts'))
   storage = new Map()
   globalThis.uni = {
     getStorageSync(key) { return storage.get(key) },
     setStorageSync(key, value) { storage.set(key, value) },
     removeStorageSync(key) { storage.delete(key) }
   }
-  const helperUrl = pathToFileURL(path.join(tempEsmRoot, 'navigation/weixinLoadOptions.js')).href
+  const helperUrl = pathToFileURL(path.join(tempEsmRoot, 'navigation/weixinLoadOptions.ts')).href
   routeApi = {
     ...(await import(`${helperUrl}?test=${Date.now()}-${Math.random()}`)),
-    ...(await import(`${pathToFileURL(path.join(tempEsmRoot, 'navigation/routeContracts.js')).href}?test=${Date.now()}-${Math.random()}`))
+    ...(await import(`${pathToFileURL(path.join(tempEsmRoot, 'navigation/routeContracts.ts')).href}?test=${Date.now()}-${Math.random()}`))
   }
-  progressApi = await import(`${pathToFileURL(path.join(tempEsmRoot, 'packages/rescue/services/progress.js')).href}?test=${Date.now()}-${Math.random()}`)
+  rescueMetadata = await import(`${pathToFileURL(path.join(projectRoot, 'packages/rescue/services/componentMetadata.ts')).href}?test=${Date.now()}-${Math.random()}`)
+  routeApi.resolveRescueRecordLoadRoute = rescueMetadata.resolveRescueRecordLoadRoute
+  progressApi = await import(`${pathToFileURL(path.join(tempEsmRoot, 'packages/rescue/services/progress.ts')).href}?test=${Date.now()}-${Math.random()}`)
 })
 
 after(async () => {
@@ -51,30 +56,40 @@ after(async () => {
 
 function readScript(file) {
   const source = fs.readFileSync(file, 'utf8')
-  const match = source.match(/<script>\s*([\s\S]*?)\s*<\/script>/)
+  const match = source.match(/<script(?:\s+[^>]*)?>\s*([\s\S]*?)\s*<\/script>/)
   assert.ok(match, `${file} must contain a script block`)
   return { source, script: match[1] }
 }
 
+function transpileRuntimeScript(source) {
+  return ts.transpileModule(source.replace(/\bdefineComponent\(/g, '('), {
+    compilerOptions: { target: ts.ScriptTarget.ES2019, module: ts.ModuleKind.None }
+  }).outputText
+}
+
 function loadPage(stub) {
   const { script } = readScript(pageFile)
-  const withoutImports = script.replace(/^import[^\n]+\n/gm, '').replace('export default', 'return')
-  return new Function('readRescueProgress', 'RescueApplicantProgress', 'decodeWeixinLoadOptions', 'buildRoute', withoutImports)(
+  const withoutImports = transpileRuntimeScript(script.replace(/^import[^\n]+\n/gm, '').replace('export default', 'return'))
+  return new Function('readRescueProgress', 'RescueApplicantProgress', 'resolveRescueRecordLoadRoute', 'createRescueProgressPageState', withoutImports)(
     stub,
     {},
-    routeApi.decodeWeixinLoadOptions,
-    routeApi.buildRoute
+    routeApi.resolveRescueRecordLoadRoute,
+    rescueMetadata.createRescueProgressPageState
   )
 }
 
 function loadComponent() {
   const { script } = readScript(componentFile)
-  const withoutImports = script.replace(/^import[^\n]+\n/gm, '').replace('export default', 'return')
-  return new Function('RESCUE_APPLICATION_STATUS_META', 'PawPageNav', 'PawIcon', 'PawStatusPill', 'LevelBadge', 'PawAdoptionPetsCard', withoutImports)({
+  const withoutImports = transpileRuntimeScript(script.replace(/^import[^\n]+\n/gm, '').replace('export default', 'return'))
+  const statusMetadata = {
     platform_pending: { text: '平台审核中', tone: 'pending' },
     platform_approved: { text: '平台审核成功', tone: 'success' },
     platform_rejected: { text: '平台审核未通过', tone: 'danger' }
-  }, {}, {}, {}, {}, {})
+  }
+  return new Function('getRescueApplicationStatusPresentation', 'PawPageNav', 'PawIcon', 'PawStatusPill', 'LevelBadge', 'PawAdoptionPetsCard', withoutImports)(
+    status => Object.prototype.hasOwnProperty.call(statusMetadata, status) ? statusMetadata[status] : null,
+    {}, {}, {}, {}, {}
+  )
 }
 
 test('rescue progress page requires rescueId, reads the progress service by exact ID, and refreshes onShow', () => {
@@ -221,13 +236,14 @@ test('rescue progress presentation derives pending, approved, rejected and unkno
 test('rescue progress migration does not import the aggregate application API and retains the approved layout/navigation', () => {
   const page = readScript(pageFile).source
   const component = readScript(componentFile).source
-  assert.match(page, /readRescueProgress\(this\.rescueId\)/)
+  const metadata = fs.readFileSync(path.join(projectRoot, 'packages/rescue/services/componentMetadata.ts'), 'utf8')
+  assert.match(page, /readRescueProgress\(this\.rescueId,/)
   assert.doesNotMatch(page, /getRescueById/)
   assert.doesNotMatch(page, /includeDemo:\s*false/)
   assert.match(page, /onShow\s*\(\)/)
-  assert.match(page, /params\.rescueId/)
-  assert.match(page, /decodeWeixinLoadOptions/)
-  assert.match(page, /buildRoute\(['"]rescue\.progress['"]/) 
+  assert.match(page, /resolveRescueRecordLoadRoute\(options, 'rescue\.progress'\)/)
+  assert.match(page, /resolveRescueRecordLoadRoute/)
+  assert.match(metadata, /decodeWeixinLoadOptions/)
   assert.doesNotMatch(page, /options\.(?:id|recordId)/)
   assert.doesNotMatch(page, /decodeQueryValue/)
   assert.doesNotMatch(page, /applicationMockApi/)

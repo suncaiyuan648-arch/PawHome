@@ -4,16 +4,27 @@
 		action-height="48" @back="goBack" @action="onActionTap" />
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawFlowResult from '@/components/PawFlowResult.vue'
 
-export default {
+interface VerificationResultPageState { isSuccess: boolean }
+
+function queryRecord(options: unknown): Record<string, unknown> {
+	return options !== null && typeof options === 'object' && !Array.isArray(options)
+		? options as Record<string, unknown>
+		: {}
+}
+
+export default defineComponent({
 	components: { PawFlowResult },
-	data() {
+	data(): VerificationResultPageState {
 		return { isSuccess: true }
 	},
-	onLoad(query = {}) {
-		this.isSuccess = query.outcome !== 'failure' && query.status !== 'fail'
+	onLoad(query: unknown = {}) {
+		const params = queryRecord(query)
+		this.isSuccess = params.outcome !== 'failure' && params.status !== 'fail'
 	},
 	methods: {
 		goBack() {
@@ -27,5 +38,5 @@ export default {
 			uni.navigateBack()
 		}
 	}
-}
+})
 </script>

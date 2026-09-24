@@ -10,12 +10,14 @@ const { test, before, after, beforeEach } = require('node:test')
 const ROOT = path.resolve(__dirname, '../..')
 const pagePath = path.join(ROOT, 'packages/adoption/pages/progress/index.vue')
 const viewPath = path.join(ROOT, 'packages/adoption/components/AdoptionProgressView.vue')
-const servicePath = path.join(ROOT, 'packages/adoption/services/progress.js')
+const servicePath = path.join(ROOT, 'packages/adoption/services/progress.ts')
+const metadataPath = path.join(ROOT, 'packages/adoption/services/progressPageMetadata.ts')
 const ADOPTION_KEY = 'PAWHOME_ADOPTIONS'
 
 let pageSource
 let viewSource
 let serviceSource
+let metadataSource
 let service
 let storage
 let tempRoot
@@ -32,23 +34,26 @@ before(async () => {
   pageSource = await fs.readFile(pagePath, 'utf8')
   viewSource = await fs.readFile(viewPath, 'utf8')
   serviceSource = await fs.readFile(servicePath, 'utf8')
+  metadataSource = await fs.readFile(metadataPath, 'utf8')
 
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-adoption-progress-'))
-  await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+
+  await fs.cp(path.join(ROOT, 'contracts'), path.join(tempRoot, 'contracts'), { recursive: true })
+  await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'utils'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'packages/adoption/services'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'services/domainReads/adoption'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
-  await fs.copyFile(path.join(ROOT, 'utils/adoptionStorage.js'), path.join(tempRoot, 'utils/adoptionStorage.js'))
-  await fs.copyFile(path.join(ROOT, 'services/domainReads/adoption/applicationAdapter.js'), path.join(tempRoot, 'services/domainReads/adoption/applicationAdapter.js'))
-  await fs.copyFile(path.join(ROOT, 'navigation/actorCapabilities.js'), path.join(tempRoot, 'navigation/actorCapabilities.js'))
-  await fs.copyFile(path.join(ROOT, 'navigation/adoptionConditionContract.js'), path.join(tempRoot, 'navigation/adoptionConditionContract.js'))
-  await fs.copyFile(path.join(ROOT, 'packages/adoption/services/applicationAdapter.js'), path.join(tempRoot, 'packages/adoption/services/applicationAdapter.js'))
-  await fs.copyFile(path.join(ROOT, 'packages/adoption/services/actorCapabilities.js'), path.join(tempRoot, 'packages/adoption/services/actorCapabilities.js'))
-  await fs.copyFile(path.join(ROOT, 'packages/adoption/services/adoptionConditionContract.js'), path.join(tempRoot, 'packages/adoption/services/adoptionConditionContract.js'))
+  await fs.copyFile(path.join(ROOT, 'utils/adoptionStorage.ts'), path.join(tempRoot, 'utils/adoptionStorage.ts'))
+  await fs.copyFile(path.join(ROOT, 'services/domainReads/adoption/applicationAdapter.ts'), path.join(tempRoot, 'services/domainReads/adoption/applicationAdapter.ts'))
+  await fs.copyFile(path.join(ROOT, 'navigation/actorCapabilities.ts'), path.join(tempRoot, 'navigation/actorCapabilities.ts'))
+  await fs.copyFile(path.join(ROOT, 'navigation/adoptionConditionContract.ts'), path.join(tempRoot, 'navigation/adoptionConditionContract.ts'))
+  await fs.copyFile(path.join(ROOT, 'packages/adoption/services/applicationAdapter.ts'), path.join(tempRoot, 'packages/adoption/services/applicationAdapter.ts'))
+  await fs.copyFile(path.join(ROOT, 'packages/adoption/services/actorCapabilities.ts'), path.join(tempRoot, 'packages/adoption/services/actorCapabilities.ts'))
+  await fs.copyFile(path.join(ROOT, 'packages/adoption/services/adoptionConditionContract.ts'), path.join(tempRoot, 'packages/adoption/services/adoptionConditionContract.ts'))
   await fs.writeFile(
-    path.join(tempRoot, 'packages/adoption/services/progress.js'),
-    serviceSource.replace("'@/utils/adoptionStorage.js'", "'../../../utils/adoptionStorage.js'")
+    path.join(tempRoot, 'packages/adoption/services/progress.ts'),
+    serviceSource.replace("'@/utils/adoptionStorage.ts'", "'../../../utils/adoptionStorage.ts'")
   )
 
   storage = new Map()
@@ -57,7 +62,7 @@ before(async () => {
     setStorageSync(key, value) { storage.set(key, value) },
     removeStorageSync(key) { storage.delete(key) }
   }
-  service = await import(`${pathToFileURL(path.join(tempRoot, 'packages/adoption/services/progress.js')).href}?test=${Date.now()}`)
+  service = await import(`${pathToFileURL(path.join(tempRoot, 'packages/adoption/services/progress.ts')).href}?test=${Date.now()}`)
 })
 
 beforeEach(resetStorage)
@@ -69,9 +74,9 @@ after(async () => {
 test('the page is a persisted, applicant-only boundary with explicit route validation', () => {
   assert.match(pageSource, /<PawPageNav\b/)
   assert.match(pageSource, /onShow\s*\(\)/)
-  assert.match(pageSource, /applicationId\s*=\s*String\(params\.applicationId/)
-  assert.match(pageSource, /buildRoute\('adoption\.progress', params\)/)
-  assert.match(pageSource, /decodeWeixinLoadOptions\(options\)/)
+  assert.match(metadataSource, /buildRoute\('adoption\.progress', params\)/)
+  assert.match(metadataSource, /decodeWeixinLoadOptions\(options\)/)
+  assert.match(pageSource, /resolveAdoptionProgressRoute\(options\)/)
   assert.match(pageSource, /readAdoptionProgress\(this\.applicationId,/)
   assert.match(pageSource, /view === 'adoption-info'/)
   assert.match(pageSource, /view === 'application'/)
@@ -83,6 +88,7 @@ test('the page is a persisted, applicant-only boundary with explicit route valid
   assert.match(serviceSource, /readAdoptionApplication/)
   assert.doesNotMatch(serviceSource, /getAdoptionById\(/)
   assert.match(viewSource, /AdoptionProgressTimeline/)
+  assert.match(viewSource, /PropType<AdoptionProgressRecordView>/)
   assert.doesNotMatch(viewSource, /fake-home-indicator|home-indicator|status-bar|capsule/)
 })
 

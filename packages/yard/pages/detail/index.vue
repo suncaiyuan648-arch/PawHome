@@ -34,39 +34,45 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawYardDetailFigma from '@/components/PawYardDetailFigma.vue'
 import AdoptPickCatsSheet from '@/components/AdoptPickCatsSheet.vue'
-import { openUserProfile } from '@/utils/profileNav.js'
-import { getPawHomeYardMock } from '@/utils/yardMock.js'
-import { readPublicYard } from '../../services/localManagementStorage.js'
+import { openUserProfile } from '@/utils/profileNav.ts'
+import { getPawHomeYardMock, type YardRankItem } from '@/utils/yardMock.ts'
+import { readPublicYard } from '../../services/localManagementStorage.ts'
+import {
+  createYardDetailPageState,
+  mergePublicYardDetail,
+  resolveYardDetailRoute,
+  selectAdoptionPets,
+  yardDetailRankUser,
+  type YardDetailPageState
+} from '../../services/yardDetailMetadata.ts'
 
-export default {
+export default defineComponent({
   components: { PawYardDetailFigma, AdoptPickCatsSheet },
-  data() {
-    const yard = getPawHomeYardMock()
-    return { figmaState: 'dynamic', overlayState: '', helpPopup: '', adoptPickSheetVisible: false, yardId: '', routeReady: false, yard }
-  },
+  data(): YardDetailPageState { return createYardDetailPageState(getPawHomeYardMock()) },
   computed: {
     helpContent() { return this.helpPopup === 'feedback-stat' ? { title: '平均反馈时长', copy: '院主共反馈78次，平均反馈时长3天2小时；平均反馈时长指的是院主自投粮物流签收后的平均上传动态反馈时间，未计算次数内的反馈不计入' } : { title: '帮助领养', copy: '截止目前，院主已从43位领养人中仔细筛选出23人，并成功为13只猫咪找到新家，沉福它们，感谢院主和领养人不辞辛苦的坚持与努力' } },
     adoptionPets() {
-      return (this.yard.pets || []).filter(pet => pet.state === 'pending' || pet.state === 'cloud')
+      return selectAdoptionPets(this.yard.pets)
     }
   },
-  onLoad(options = {}) {
-    const yardId = String(options.yardId || '')
-    if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(yardId)) {
+  onLoad(options: unknown = {}) {
+    const route = resolveYardDetailRoute(options)
+    if (!route) {
       uni.showToast({ title: '小院参数无效', icon: 'none' })
       return
     }
-    this.yardId = yardId
-    this.yard = { ...this.yard, id: yardId }
+    this.yardId = route.yardId
+    this.yard = { ...this.yard, id: route.yardId }
     this.refreshYard()
     this.routeReady = true
-    const allowed = ['dynamic', 'dynamic-empty', 'feeding', 'dynamic-expanded']
-    this.figmaState = allowed.includes(options.state) ? options.state : 'dynamic'
-    this.overlayState = ['reply-idle', 'reply-input'].includes(options.state) ? options.state : ''
-    this.helpPopup = ['help-adopt', 'feedback-stat', 'food-stat'].includes(options.popup) ? options.popup : ''
+    this.figmaState = route.figmaState
+    this.overlayState = route.overlayState
+    this.helpPopup = route.helpPopup
   },
   onShareAppMessage() {
     return {
@@ -90,15 +96,13 @@ export default {
     const publicYard = readPublicYard(this.yardId)
     if (publicYard.success && publicYard.data && publicYard.data.record) {
       const record = publicYard.data.record
-      this.yard = { ...this.yard, ...record, id: this.yardId, owner: record.owner || this.yard.owner }
-      if (record.stats) this.yard.stats = { ...this.yard.stats, ...record.stats }
+      this.yard = mergePublicYardDetail(this.yard, record, this.yardId)
     }
     },
-    openPetDetail(pet) {
-      const petId = pet && pet.id ? String(pet.id) : ''
-      if (!petId) return
+    openPetDetail(pet: { id: string }) {
+      if (!pet.id) return
       uni.navigateTo({
-        url: '/packages/animal/pages/detail/index?animalId=' + encodeURIComponent(petId) +
+        url: '/packages/animal/pages/detail/index?animalId=' + encodeURIComponent(pet.id) +
           '&yardId=' + encodeURIComponent(this.yardId || '1')
       })
     },
@@ -108,15 +112,14 @@ export default {
           '&yardId=' + encodeURIComponent(this.yardId || '1')
       })
     },
-    openRankUser(item) {
-      if (!item) return
-      openUserProfile({ pawId: item.pawId || item.id, nickname: item.text, avatar: item.avatar })
+    openRankUser(item: YardRankItem) {
+      openUserProfile(yardDetailRankUser(item))
     },
     openAdoptSheet() {
       this.adoptPickSheetVisible = true
     }
   }
-}
+})
 </script>
 
 <style scoped>

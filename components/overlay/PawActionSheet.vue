@@ -4,9 +4,40 @@
   </PawBottomSheet>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
-export default { name: 'PawActionSheet', components: { PawBottomSheet }, props: { modelValue: { type: Boolean, default: false }, items: { type: Array, default: () => [] } }, emits: ['update:modelValue', 'select'], computed: { valueProxy: { get() { return this.modelValue }, set(value) { this.$emit('update:modelValue', value) } } }, methods: { select(item) { this.$emit('select', item); this.$emit('update:modelValue', false) } } }
+
+export interface PawActionSheetItem {
+	key: string
+	label: string
+	tone?: 'default' | 'danger'
+}
+
+export default defineComponent({
+	name: 'PawActionSheet',
+	components: { PawBottomSheet },
+	props: {
+		modelValue: { type: Boolean, default: false },
+		items: { type: Array as PropType<PawActionSheetItem[]>, default: () => [] },
+	},
+	emits: {
+    'update:modelValue': eventContract<[value: boolean]>(),
+    'select': eventContract<[item: PawActionSheetItem]>(),
+  },
+	computed: {
+		valueProxy: {
+			get() { return this.modelValue },
+			set(value: boolean) { this.$emit('update:modelValue', value) },
+		},
+	},
+	methods: {
+		select(item: PawActionSheetItem) { this.$emit('select', item); this.$emit('update:modelValue', false) },
+	},
+})
 </script>
 
 <style scoped>

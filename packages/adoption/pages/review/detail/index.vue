@@ -121,7 +121,9 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawFixedActionBar from '@/components/layout/PawFixedActionBar.vue'
 import PawImage from '@/components/base/PawImage.vue'
@@ -130,27 +132,110 @@ import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawAdoptionPetsCard from '@/components/PawAdoptionPetsCard.vue'
 import PawAdoptionRejectReason from '@/components/adoption/PawAdoptionRejectReason.vue'
 import PawAdoptionReviewCard from '@/components/adoption/PawAdoptionReviewCard.vue'
-import { goBackSmart } from '@/utils/navBack.js'
-import { openYardDetail } from '@/utils/profileNav.js'
-import { getAdoptionRecords } from '@/utils/adoptionStorage.js'
-import { buildRoute } from '@/navigation/routeContracts.js'
-import { createReviewSessionProvider, readAdoptionReviewDetail, readAdoptionReviewList } from '../../../services/reviewAdapter.js'
-import { applyAdoptionReviewAction } from '../../../services/reviewActionAdapter.js'
-import { produceLocalActionNotification } from '../../../services/messageStore.js'
+import { goBackSmart } from '@/utils/navBack.ts'
+import { openYardDetail } from '@/utils/profileNav.ts'
+import { getAdoptionRecords } from '@/utils/adoptionStorage.ts'
+import type { AdoptionPetMetadata } from '@/utils/adoptionMockData.ts'
+import {
+  createAdoptionReviewFallbackPets,
+  createAdoptionReviewQueueCard,
+  normalizeAdoptionReviewRecord,
+  type AdoptionReviewActionMode,
+  type AdoptionReviewDetailAccess,
+  type AdoptionReviewQueueCardMetadata,
+  type AdoptionReviewRecordMetadata,
+  type AdoptionReviewResultVariant,
+  type AdoptionReviewReviewerRole,
+  type AdoptionReviewTab,
+} from '@/utils/adoptionReviewMetadata.ts'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import { createReviewSessionProvider, readAdoptionReviewDetail, readAdoptionReviewList } from '../../../services/reviewAdapter.ts'
+import { applyAdoptionReviewAction } from '../../../services/reviewActionAdapter.ts'
+import { produceLocalActionNotification } from '../../../services/messageStore.ts'
 
-function decodeValue(value) {
+type AdoptionReviewActionSuccess = ReturnType<typeof applyAdoptionReviewAction>
+
+interface AdoptionReviewActionFailure {
+  success: false
+  error: { code: string; message: string }
+}
+
+type AdoptionReviewActionResult = AdoptionReviewActionSuccess | AdoptionReviewActionFailure
+
+type AdoptionReviewRefreshResult =
+  | { success: true; data: AdoptionReviewRecordMetadata; error: null }
+  | { success: false; error: { code: string; message: string } }
+
+interface AdoptionReviewPageState {
+  mode: string
+  reviewerId: string
+  reviewerRole: AdoptionReviewReviewerRole
+  recordId: string
+  reviewItemId: string
+  record: AdoptionReviewRecordMetadata | null
+  reviewAccess: AdoptionReviewDetailAccess | null
+  reviewTab: AdoptionReviewTab
+  reviewList: AdoptionReviewQueueCardMetadata[]
+  actorProvider: () => unknown
+  showAgree: boolean
+  showReject: boolean
+  rejectReason: string
+}
+
+interface AdoptionReviewTabMetadata {
+  key: AdoptionReviewTab
+  label: string
+  count: number
+}
+
+interface ReviewNotificationAuthorizationContext {
+  actor: { id: string }
+  message: { businessType: string; reviewItemId?: string }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function errorText(error: unknown, key: 'code' | 'message', fallback: string): string {
+  if (!isRecord(error)) return fallback
+  const value = error[key]
+  return typeof value === 'string' && value.trim() ? value : fallback
+}
+
+function reviewActionFailure(error: unknown): AdoptionReviewActionFailure {
+  return {
+    success: false,
+    error: {
+      code: errorText(error, 'code', 'REVIEW_ACTION_FAILED'),
+      message: errorText(error, 'message', '审核状态保存失败'),
+    },
+  }
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && Boolean(value.trim())
+}
+
+function isAdoptionReviewActionMode(value: string): value is AdoptionReviewActionMode {
+  return value === 'cloudReview' || value === 'ownerReview' || value === 'ownerConfirm'
+}
+
+function decodeValue(value: unknown): string {
   if (value === undefined || value === null) return ''
-  try { return decodeURIComponent(String(value)) } catch (e) { return String(value) }
+  const text = String(value)
+  try { return decodeURIComponent(text) } catch { return text }
 }
 
-function recordForApplication(applicationId) {
-  return getAdoptionRecords({ includeDemo: false }).find(record => (
-    record && (record.applicationId === applicationId || record.id === applicationId || record.recordId === applicationId)
-  )) || null
+function recordForApplication(applicationId: string): AdoptionReviewRecordMetadata | null {
+  const source = getAdoptionRecords({ includeDemo: false }).find(record => (
+    record.applicationId === applicationId || record.id === applicationId || record.recordId === applicationId
+  ))
+  return normalizeAdoptionReviewRecord(source)
 }
 
 
-export default {
+export default defineComponent({
   components: {
     PawPageNav,
     PawFixedActionBar,
@@ -161,7 +246,7 @@ export default {
     PawAdoptionRejectReason,
     PawAdoptionReviewCard
   },
-  data() {
+  data(): AdoptionReviewPageState {
     return {
       mode: 'list',
       reviewerId: '',
@@ -179,25 +264,25 @@ export default {
     }
   },
   computed: {
-    reviewTabs() {
+    reviewTabs(): AdoptionReviewTabMetadata[] {
       return [
         { key: 'pending', label: '待审核', count: this.getReviewCount('pending') },
         { key: 'reviewed', label: '已审核', count: this.getReviewCount('reviewed') }
       ]
     },
-    reviewPageTitle() {
+    reviewPageTitle(): string {
       if (this.mode === 'info') return '小院信息'
       if (this.mode === 'application') return '申请内容'
       if (this.mode === 'list') return '领养审核'
       return '领养申请'
     },
-    reviewNavBackground() {
+    reviewNavBackground(): string {
       return 'var(--paw-color-adoption-review-bg, #fcf276)'
     },
-    canAct() {
+    canAct(): boolean {
       return ['ownerReview', 'cloudReview', 'ownerConfirm'].includes(this.mode)
     },
-    reviewRejectAction() {
+    reviewRejectAction(): { key: string; label: string; tone: string; shape: string; qa: string } {
       return {
         key: 'reject',
         label: this.mode === 'ownerConfirm' ? '驳回' : '拒绝',
@@ -206,7 +291,7 @@ export default {
         qa: 'qa-adoption-audit-reject'
       }
     },
-    reviewAgreeAction() {
+    reviewAgreeAction(): { key: string; label: string; tone: string; shape: string; qa: string } {
       return {
         key: 'agree',
         label: this.mode === 'ownerConfirm' ? '确认已领养' : '同意',
@@ -215,77 +300,74 @@ export default {
         qa: 'qa-adoption-audit-agree'
       }
     },
-    statusIconName() {
+    statusIconName(): string {
       if (['rejectDone', 'confirmReject', 'ownerConfirmRejected', 'cloudRejectDone'].includes(this.mode)) return 'status/rejected'
       if (['ownerConfirm', 'ownerConfirmed'].includes(this.mode)) return 'status/check'
       return 'navigation/clock'
     },
-    showRejectReason() {
+    showRejectReason(): boolean {
       return ['rejectDone', 'confirmReject', 'cloudRejectDone'].includes(this.mode)
     },
-    applicantName() {
+    applicantName(): string {
       return (this.record && this.record.applicantName) || '逢猫'
     },
-    applicantAvatar() {
+    applicantAvatar(): string {
       return (this.record && this.record.applicantAvatar) || '/static/figma/home/feed-avatar.png'
     },
-    applicationPhotos() {
-      const media = this.record && Array.isArray(this.record.mediaPaths)
-        ? this.record.mediaPaths.filter(Boolean)
-        : []
+    applicationPhotos(): string[] {
+      const media = this.record?.mediaPaths ?? []
       return [
         media[0] || '/static/figma/adoption-flow/04a93fa17267335f49e6e818f8caa78dd3afc80b.png',
         media[1] || '/static/figma/adoption-flow/b61b026ea991c01c6257c909021245fd64956837.png'
       ]
     },
-    ownerConfirmProofPhotos() {
-      const photos = this.record && Array.isArray(this.record.proofPhotos)
-        ? this.record.proofPhotos.filter(Boolean)
-        : []
+    ownerConfirmProofPhotos(): string[] {
+      const photos = this.record?.proofPhotos ?? []
       const fallback = '/static/figma/adoption-flow/e81f2c2074a7772e8fbca3d3828b3a751f5cb5bb.png'
       return [photos[0] || fallback, photos[1] || photos[0] || fallback]
     },
-    ownerConfirmProofDate() {
+    ownerConfirmProofDate(): string {
       const value = this.record && this.record.proofDate
       return typeof value === 'string' && value.trim() ? value : '2026.01.03'
     },
-    ownerConfirmProofCopy() {
+    ownerConfirmProofCopy(): string {
       return (this.record && this.record.confirmStory)
         || '我第一次去的时候小猫一直躲着我，去了几次都没有逮到，后来我买了一个网，趁着小猫睡着的时候我一个网兜给盖上去了，终于把小猫猫带回家了'
     },
-    isCloudParentReview() { return this.reviewerRole === 'cloud_parent' || this.mode === 'cloudReview' || this.mode === 'cloudAgreeWaiting' || this.mode === 'cloudAgreeDone' || this.mode === 'cloudRejectDone' },
-    hasRejectReason() { return Boolean(String(this.rejectReason || '').trim()) },
-    agreeDialogTitle() {
+    isCloudParentReview(): boolean { return this.reviewerRole === 'cloud_parent' || this.mode === 'cloudReview' || this.mode === 'cloudAgreeWaiting' || this.mode === 'cloudAgreeDone' || this.mode === 'cloudRejectDone' },
+    hasRejectReason(): boolean { return Boolean(String(this.rejectReason || '').trim()) },
+    agreeDialogTitle(): string {
       return this.mode === 'ownerConfirm' ? '确认已领养吗' : '确定同意领养吗'
     },
-    agreeDescription() {
+    agreeDescription(): string {
       if (this.isCloudParentReview) return '同意后申请将发给院主，由院主再次审核，为防止虐猫群体恶意领养，请您点击申请人头像审查领养人的历史记录后再做决定。'
       if (this.mode === 'ownerConfirm') return '请确认小动物已经找到新家，并且健康快乐的生活了。'
       return '同意后申请人可以查看小院位置（非收货地址）、您的联系方式以及您的领养留言。为防止虐猫群体恶意领养，请您点击申请人头像审查领养人的历史记录后再做决定。'
     },
-    titleByMode() {
-      return {
+    titleByMode(): string {
+      const titles: Record<string, string> = {
         cloudReview: '等待云家长审核中……', cloudAgreeWaiting: '等待云家长审核中……', cloudAgreeDone: '云家长已同意', cloudRejectDone: '云家长已拒绝',
         ownerReview: '等待院主审核中……', ownerPending: '院主已同意',
         ownerConfirm: '待院主确认', ownerConfirmed: '院主已确认', ownerConfirmRejected: '院主已驳回', agreeDone: '院主已同意',
         confirmAgree: '院主已确认', confirmReject: '院主已拒绝', rejectDone: '院主已拒绝', success: '院主已确认',
         info: '小院信息', application: '申请内容'
-      }[this.mode] || '领养申请'
+      }
+      return titles[this.mode] || '领养申请'
     },
-    resultBtnText() {
+    resultBtnText(): string {
       return ['agreeDone', 'cloudAgreeDone', 'cloudAgreeWaiting'].includes(this.mode)
         ? '查看领养进度'
         : this.mode === 'confirmAgree' ? '查看领养进度' : '查看详情'
     },
-    displayPets() {
-      const pets = this.record && Array.isArray(this.record.pets) ? this.record.pets : []
-      return pets.length ? pets : [{ name: '奥利奥', avatar: '/static/figma/adoption-flow/pet-orange.png' }]
+    displayPets(): AdoptionPetMetadata[] {
+      const pets = this.record?.pets ?? []
+      return pets.length ? pets : createAdoptionReviewFallbackPets()
     },
-    catSectionTitle() {
+    catSectionTitle(): string {
       return this.mode === 'success' ? '领走的猫咪' : '申请领养的猫咪'
     }
   },
-  onLoad(options = {}) {
+  onLoad(options: Record<string, unknown> = {}) {
     const requestedMode = String(options.mode || '').trim()
     if (requestedMode) this.mode = requestedMode
     this.recordId = decodeValue(options.id || options.recordId || options.applicationId)
@@ -317,7 +399,7 @@ export default {
     }
   },
   methods: {
-    getReviewCount(tab) {
+    getReviewCount(tab: AdoptionReviewTab) {
       const filter = tab === 'pending' ? 'pending' : 'processed'
       const result = readAdoptionReviewList({ actorProvider: this.actorProvider, filter })
       return result.items ? result.items.length : 0
@@ -325,40 +407,22 @@ export default {
     loadReviewList() {
       const filter = this.reviewTab === 'pending' ? 'pending' : 'processed'
       const result = readAdoptionReviewList({ actorProvider: this.actorProvider, filter })
-      this.reviewList = (result.items || []).map(item => {
-        const source = recordForApplication(item.applicationId) || {}
-        const meta = item.reviewStatus === 'rejected'
-          ? { text: '已拒绝', tone: 'danger' }
-          : item.reviewStatus === 'approved'
-            ? { text: '已通过', tone: 'success' }
-            : { text: item.phase === 'cloud_parent' ? '待云家长审批' : item.phase === 'owner_confirmation' ? '待院主确认' : '待院主审批', tone: 'neutral' }
-        return {
-          ...item,
-          id: item.applicationId,
-          recordId: item.applicationId,
-          reviewerRole: item.reviewerRole,
-          reviewerId: item.reviewerId,
-          statusText: meta.text,
-          statusTone: meta.tone,
-          detailMode: item.phase === 'cloud_parent' ? 'cloudReview' : item.phase === 'owner_confirmation' ? 'ownerConfirm' : 'ownerReview',
-          applicant: { name: source.applicantName || item.applicantId || '申请人', avatar: source.applicantAvatar || '/static/figma/home/feed-avatar.png', level: Number(source.applicantLevel) || 1 },
-          pets: Array.isArray(source.pets) ? source.pets : [],
-          cloudApproval: { required: Array.isArray(source.cloudParentIds) ? source.cloudParentIds.length : 0, approved: Array.isArray(source.cloudParentApprovals) ? source.cloudParentApprovals.length : 0 },
-        }
-      })
+      this.reviewList = result.items.map((item) => (
+        createAdoptionReviewQueueCard(item, recordForApplication(item.applicationId))
+      ))
     },
-    switchReviewTab(tab) {
+    switchReviewTab(tab: AdoptionReviewTab) {
       if (!['pending', 'reviewed'].includes(tab) || this.reviewTab === tab) return
       this.reviewTab = tab
       this.loadReviewList()
     },
-    openReview(item) {
-      if (!item || !item.recordId) return
+    openReview(item: AdoptionReviewQueueCardMetadata) {
+      if (!item.recordId) return
       const query = [
         `id=${encodeURIComponent(item.recordId)}`,
         `applicationId=${encodeURIComponent(item.applicationId)}`,
         `reviewItemId=${encodeURIComponent(item.reviewItemId)}`,
-        `reviewerRole=${encodeURIComponent(item.reviewerRole)}`,
+        `reviewerRole=${encodeURIComponent(item.reviewerRole || '')}`,
         `reviewerId=${encodeURIComponent(item.reviewerId || '')}`,
         item.detailMode && `mode=${encodeURIComponent(item.detailMode)}`
       ].filter(Boolean).join('&')
@@ -383,23 +447,28 @@ export default {
       }
       this.recordId = result.item.applicationId
       this.reviewItemId = result.item.reviewItemId
-      this.reviewerRole = result.item.reviewerRole
-      this.reviewerId = result.item.reviewerId
+      this.reviewerRole = result.item.reviewerRole || 'all'
+      this.reviewerId = result.item.reviewerId || ''
       this.record = recordForApplication(this.recordId)
       if (!this.record) this.reviewAccess = { ...result, canRead: false, reason: 'NOT_FOUND' }
     },
-    refreshRecord() {
+    refreshRecord(): AdoptionReviewRefreshResult {
       this.loadRecord()
-      return this.reviewAccess && this.reviewAccess.canRead
-        ? { success: true, data: this.record, error: null }
-        : { success: false, error: { code: this.reviewAccess && this.reviewAccess.reason || 'NOT_FOUND', message: '审核记录不可用' } }
+      if (this.reviewAccess?.canRead && this.record) {
+        return { success: true, data: this.record, error: null }
+      }
+      return {
+        success: false,
+        error: { code: this.reviewAccess?.reason || 'NOT_FOUND', message: '审核记录不可用' },
+      }
     },
-    isActionModeCompatible(mode, record) {
-      const validStatuses = {
+    isActionModeCompatible(mode: string, record: AdoptionReviewRecordMetadata | null): boolean {
+      const statusMap: Readonly<Record<AdoptionReviewActionMode, readonly string[]>> = {
         cloudReview: ['cloud_pending'],
         ownerReview: ['pending'],
-        ownerConfirm: ['owner_confirm', 'owner_confirm_pending']
-      }[mode]
+        ownerConfirm: ['owner_confirm', 'owner_confirm_pending'],
+      }
+      const validStatuses = isAdoptionReviewActionMode(mode) ? statusMap[mode] : undefined
       return !validStatuses || Boolean(record && validStatuses.includes(record.status))
     },
     syncActionMode() {
@@ -410,7 +479,7 @@ export default {
       this.showReject = false
       this.rejectReason = ''
     },
-    refreshActionRecord() {
+    refreshActionRecord(): AdoptionReviewRefreshResult | { success: false; stale: true; error: { code: string; message: string } } {
       const actionMode = this.mode
       const result = this.refreshRecord()
       if (!result.success) return result
@@ -420,21 +489,23 @@ export default {
         this.showReject = false
         this.rejectReason = ''
         uni.showToast({ title: '审核状态已更新，请重新操作', icon: 'none' })
-        return { ...result, success: false, stale: true }
+        return {
+          success: false,
+          stale: true,
+          error: { code: 'STALE_REVIEW', message: '审核状态已更新，请重新操作' },
+        }
       }
       return result
     },
     goBack() { goBackSmart({ fallbackUrl: '/pages/me/index' }) },
-    openPetDetail(pet, index) {
-      const petId = pet && (pet.id || pet.petId || pet.yardPetId)
-        ? String(pet.id || pet.petId || pet.yardPetId)
-        : ''
+    openPetDetail(pet: AdoptionPetMetadata, index: number) {
+      const petId = [pet.id, pet.petId, pet.yardPetId].find(isNonEmptyString) || ''
       if (!petId) return
       const params = [
         `animalId=${encodeURIComponent(petId)}`,
         `yardId=${encodeURIComponent((this.record && this.record.yardId) || '1')}`,
         'state=35',
-        `idx=${encodeURIComponent(index)}`,
+        `idx=${encodeURIComponent(String(index))}`,
         `yardName=${encodeURIComponent(((this.record && (this.record.yardName || this.record.ownerName)) || ''))}`
       ].join('&')
       uni.navigateTo({ url: '/packages/animal/pages/detail/index?' + params })
@@ -446,25 +517,25 @@ export default {
         yardName: this.record.yardName || this.record.ownerName || '小院'
       })
     },
-    openAuditSubpage(nextMode) {
+    openAuditSubpage(nextMode: 'info' | 'application') {
       const frame = nextMode === 'application' ? 49 : 48
       const view = frame === 49 ? 'application' : 'adoption-info'
       try {
         uni.navigateTo({
           url: buildRoute('adoption.progress', { applicationId: this.recordId, view })
         })
-      } catch (error) {
+      } catch {
         uni.showToast({ title: '申请内容链接无效', icon: 'none' })
       }
     },
-    goMode(nextMode) {
+    goMode(nextMode: string) {
       const role = this.reviewerRole ? `&reviewerRole=${encodeURIComponent(this.reviewerRole)}` : ''
       const reviewer = this.reviewerId ? `&reviewerId=${encodeURIComponent(this.reviewerId)}` : ''
       uni.redirectTo({ url: `/packages/adoption/pages/review/detail/index?mode=${nextMode}&applicationId=${encodeURIComponent(this.recordId)}${role}${reviewer}` })
     },
-    openReviewResult(variant, nextMode) {
-      const outcomeByVariant = { '81': 'review-approved', '82': 'adoption-confirmed-by-owner', '83': 'review-rejected' }
-      const outcome = outcomeByVariant[String(variant)]
+    openReviewResult(variant: AdoptionReviewResultVariant, nextMode: string) {
+      const outcomeByVariant: Record<AdoptionReviewResultVariant, string> = { '81': 'review-approved', '82': 'adoption-confirmed-by-owner', '83': 'review-rejected' }
+      const outcome = outcomeByVariant[variant]
       if (!outcome || !this.recordId) return
       const params = {
         applicationId: this.recordId,
@@ -473,13 +544,13 @@ export default {
         ...(this.reviewerRole ? { reviewerRole: this.reviewerRole } : {}),
         ...(this.reviewerId ? { reviewerId: this.reviewerId } : {})
       }
-      try { uni.redirectTo({ url: buildRoute('adoption.result', params) }) } catch (error) { uni.showToast({ title: '审核结果暂不可用', icon: 'none' }) }
+      try { uni.redirectTo({ url: buildRoute('adoption.result', params) }) } catch { uni.showToast({ title: '审核结果暂不可用', icon: 'none' }) }
     },
     onAgree() {
       const current = this.refreshActionRecord()
       if (!current.success) return
       const isCloud = this.isCloudParentReview
-      let result
+      let result: AdoptionReviewActionResult
       try {
         result = applyAdoptionReviewAction({
           actorProvider: this.actorProvider,
@@ -488,12 +559,12 @@ export default {
           outcome: 'approved',
           idempotencyKey: `adoption-review-${this.reviewItemId}-approved`,
         })
-      } catch (error) {
-        result = { success: false, error: { code: error && error.code || 'REVIEW_ACTION_FAILED', message: error && error.message || '审核状态保存失败' } }
+      } catch (error: unknown) {
+        result = reviewActionFailure(error)
       }
       if (!result.success) {
         const latest = this.refreshRecord()
-        const changed = latest.success && latest.data && !this.isActionModeCompatible(this.mode, latest.data)
+        const changed = latest.success && !this.isActionModeCompatible(this.mode, latest.data)
         if (latest.success) {
           this.record = latest.data
           this.syncActionMode()
@@ -532,7 +603,7 @@ export default {
       }
       this.showReject = false
       this.rejectReason = ''
-      let result
+      let result: AdoptionReviewActionResult
       try {
         result = applyAdoptionReviewAction({
           actorProvider: this.actorProvider,
@@ -542,8 +613,8 @@ export default {
           reason: ownerConfirmAction ? '驳回后领养信息申请人不再可见。' : reason,
           idempotencyKey: `adoption-review-${this.reviewItemId}-rejected`,
         })
-      } catch (error) {
-        result = { success: false, error: { code: error && error.code || 'REVIEW_ACTION_FAILED', message: error && error.message || '审核状态保存失败' } }
+      } catch (error: unknown) {
+        result = reviewActionFailure(error)
       }
       if (!result.success) {
         this.refreshRecord()
@@ -570,16 +641,20 @@ export default {
         uni.redirectTo({
           url: buildRoute('adoption.progress', { applicationId: this.recordId })
         })
-      } catch (error) {
+      } catch {
         uni.showToast({ title: '领养申请链接无效', icon: 'none' })
       }
     },
-    notifyReviewAction(action) {
-      const record = this.record || {}
-      const recipientId = [record.applicantId, record.applicantUserId,
-        record.applicant && record.applicant.id, record.applicant && record.applicant.pawId]
-        .find(value => typeof value === 'string' && value.trim())
-      if (!recipientId || !action || action.success !== true) return
+    notifyReviewAction(action: AdoptionReviewActionSuccess) {
+      const record = this.record
+      if (!record) return
+      const recipientId = [
+        record.applicantId,
+        record.applicantUserId,
+        record.applicant?.id,
+        record.applicant?.pawId,
+      ].find(isNonEmptyString)
+      if (!recipientId) return
       produceLocalActionNotification({
         action,
         recipientId,
@@ -589,20 +664,20 @@ export default {
         category: 'system',
         title: action.toStatus === 'approved' ? '领养审核已通过' : '领养审核未通过',
         preview: action.toStatus === 'approved' ? '你的领养申请已进入下一步处理。' : '你的领养申请审核未通过，请查看当前进度。',
-        authorize: ({ actor, message }) => actor.id === action.actorId
+        authorize: ({ actor, message }: ReviewNotificationAuthorizationContext) => actor.id === action.actorId
           && message.businessType === 'adoption'
           && message.reviewItemId === (action.reviewItemId || this.reviewItemId),
         actorProvider: this.actorProvider,
       })
     },
-    normalizeReviewerRole(value) {
+    normalizeReviewerRole(value: unknown): '' | 'owner' | 'cloud_parent' {
       const role = String(value || '').trim().toLowerCase()
       return ['cloud_parent', 'cloud-parent', 'cloud', 'owner', 'yard_owner', 'yard-owner'].includes(role)
         ? (['cloud_parent', 'cloud-parent', 'cloud'].includes(role) ? 'cloud_parent' : 'owner')
         : ''
     },
-    resolveReviewerRole(explicitRole, reviewerId, record) {
-      if (explicitRole) return explicitRole
+    resolveReviewerRole(explicitRole: string | undefined, reviewerId: string | undefined, record: AdoptionReviewRecordMetadata | null): string {
+      if (explicitRole) return String(explicitRole)
       const id = String(reviewerId || '').trim()
       if (id && record) {
         const cloudId = record.cloudParentPawId || record.cloudParentId || record.cloudOwnerId || ''
@@ -612,7 +687,7 @@ export default {
       if (record && (record.status === 'cloud_pending' || record.failureStage === 'cloud_parent')) return 'cloud_parent'
       return 'owner'
     },
-    modeForRecord(record, role) {
+    modeForRecord(record: AdoptionReviewRecordMetadata | null, role: string): string {
       if (!record) return role === 'cloud_parent' ? 'cloudReview' : 'ownerReview'
       if (role === 'cloud_parent') {
         if (record.status === 'cloud_pending' && Array.isArray(record.cloudParentApprovals)
@@ -631,7 +706,7 @@ export default {
       return 'ownerReview'
     },
   }
-}
+})
 </script>
 
 <style scoped>

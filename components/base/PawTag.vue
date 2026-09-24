@@ -4,8 +4,9 @@
   </view>
 </template>
 
-<script>
-export default {
+<script lang="ts">import { defineComponent } from 'vue'
+
+export default defineComponent({
   name: 'PawTag',
   options: {
     // 标签不增加额外布局盒，避免影响信息行的 flex 对齐。
@@ -17,7 +18,7 @@ export default {
     text: { type: String, default: '' },
     tone: { type: String, default: 'neutral' }
   }
-}
+})
 </script>
 
 <style scoped>

@@ -20,15 +20,43 @@
   </view>
 </template>
 
-<script>
-import { getAddressList } from '@/utils/addressMock.js'
-import { buildRoute } from '@/navigation/routeContracts.js'
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
 
-export default {
+import { defineComponent, type PropType } from 'vue'
+
+import { getAddressList } from '@/utils/addressMock.ts'
+import type { AddressKind, AddressRecord } from '@/utils/addressMock.ts'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+
+interface PawAddressPickerCardState {
+  selectedAddress: AddressRecord | null
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function normalizeAddress(value: unknown): AddressRecord | null {
+  if (!isRecord(value) || value.id === undefined || value.id === null || String(value.id).trim() === '') return null
+  return {
+    ...value,
+    id: String(value.id),
+    name: typeof value.name === 'string' ? value.name : '',
+    phone: typeof value.phone === 'string' ? value.phone : '',
+    regionParts: Array.isArray(value.regionParts)
+      ? value.regionParts.filter((part): part is string => typeof part === 'string')
+      : [],
+    detail: typeof value.detail === 'string' ? value.detail : '',
+    isDefault: value.isDefault === true
+  }
+}
+
+export default defineComponent({
   name: 'PawAddressPickerCard',
   props: {
     kind: { type: String, default: 'shipping' },
-    address: { type: Object, default: null },
+		address: { type: Object as PropType<AddressRecord | null>, default: null },
     returnUrl: { type: String, default: '' },
     title: { type: String, default: '' },
     subtitle: { type: String, default: '不对外展示，可放心填写' },
@@ -36,12 +64,14 @@ export default {
     useDefaultAddress: { type: Boolean, default: true },
     requestId: { type: String, default: 'address-picker' }
   },
-  emits: ['select'],
-  data() {
+  emits: {
+    'select': eventContract<[address: AddressRecord]>(),
+  },
+	data(): PawAddressPickerCardState {
     return { selectedAddress: null }
   },
   computed: {
-    normalizedKind() { return this.kind === 'service' ? 'service' : 'shipping' },
+		normalizedKind(): AddressKind { return this.kind === 'service' ? 'service' : 'shipping' },
     emptyTitle() {
       if (this.title) return this.title
       return this.normalizedKind === 'service' ? '请填写服务地址' : '请填写收货地址，用于接收猫粮'
@@ -56,19 +86,16 @@ export default {
     address: { deep: true, handler() { this.syncAddress() } },
     kind() { this.syncAddress() }
   },
-  created() { this.syncAddress() },
+	created() { this.syncAddress() },
   methods: {
     syncAddress() {
       this.selectedAddress = this.address || (this.useDefaultAddress
-        ? getAddressList(this.normalizedKind).find(item => item.isDefault) || null
+        ? getAddressList(this.normalizedKind).find((item) => item.isDefault) || null
         : null)
     },
     openAddressList() {
-      const selectedId = this.selectedAddress && this.selectedAddress.id
-        ? `&selectedId=${encodeURIComponent(this.selectedAddress.id)}`
-        : ''
       const returnUrl = this.returnUrl || ''
-      const params = {
+      const params: Record<string, string> = {
         kind: this.normalizedKind,
         intent: 'select',
         requestId: this.requestId,
@@ -79,16 +106,17 @@ export default {
       uni.navigateTo({
         url: route + query,
         events: {
-          addressPicked: (payload = {}) => {
-            if (!payload || !payload.id) return
-            this.selectedAddress = { ...payload, id: String(payload.id) }
+          addressPicked: (payload: unknown = {}) => {
+            const address = normalizeAddress(payload)
+            if (!address) return
+            this.selectedAddress = address
             this.$emit('select', this.selectedAddress)
           }
         }
       })
     }
   }
-}
+})
 </script>
 
 <style scoped>

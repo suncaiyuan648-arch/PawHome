@@ -22,13 +22,17 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent } from 'vue'
+
 import PawAvatar from '@/components/identity/PawAvatar.vue'
 import PawOwnerBadge from '@/components/identity/PawOwnerBadge.vue'
 import PawVerifiedBadge from '@/components/identity/PawVerifiedBadge.vue'
 import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 
-export default {
+export default defineComponent({
   name: 'PawUserIdentity',
   components: { PawAvatar, PawOwnerBadge, PawVerifiedBadge, LevelBadge },
   props: {
@@ -42,7 +46,13 @@ export default {
     avatarSize: { type: [Number, String], default: null },
     block: { type: Boolean, default: false }
   },
-  emits: ['click', 'avatar-click', 'name-click', 'membership-click', 'badge-click'],
+  emits: {
+    'click': eventContract<[event: PawEvent]>(),
+    'avatar-click': eventContract<[event: PawEvent]>(),
+    'name-click': eventContract<[event: PawEvent]>(),
+    'membership-click': eventContract<[event: PawEvent]>(),
+    'badge-click': eventContract<[event: PawEvent]>(),
+  },
   computed: {
     resolvedAvatarSize() {
       return this.avatarSize !== null && this.avatarSize !== undefined
@@ -51,13 +61,13 @@ export default {
     }
   },
   methods: {
-    onClick(event) { this.$emit('click', event) },
-    onAvatarClick(event) { this.$emit('avatar-click', event); this.$emit('click', event) },
-    onNameClick(event) { this.$emit('name-click', event); this.$emit('click', event) },
-    onMembershipClick(event) { this.$emit('membership-click', event) },
-    onBadgeClick(event) { this.$emit('badge-click', event) }
+    onClick(event: PawEvent) { this.$emit('click', event) },
+    onAvatarClick(event: PawEvent) { this.$emit('avatar-click', event); this.$emit('click', event) },
+    onNameClick(event: PawEvent) { this.$emit('name-click', event); this.$emit('click', event) },
+    onMembershipClick(event: PawEvent) { this.$emit('membership-click', event) },
+    onBadgeClick(event: PawEvent) { this.$emit('badge-click', event) }
   }
-}
+})
 </script>
 
 <style scoped>

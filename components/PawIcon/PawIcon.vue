@@ -4,9 +4,11 @@
   </view>
 </template>
 
-<script>
-import { PAW_ICON_DEFAULT_COLOR } from './PawIcon.tokens.js'
-import { PAW_ICON_REGISTRY } from './generated/icon-registry.js'
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
+import type { PawIconFlip, PawIconName, PawIconSize } from './PawIcon.types'
+import { PAW_ICON_DEFAULT_COLOR } from './PawIcon.tokens.ts'
+import { PAW_ICON_REGISTRY } from './generated/icon-registry.ts'
 import {
   normalizePawIconRotate,
   resolveMonoIconUri,
@@ -14,9 +16,9 @@ import {
   resolvePawIconTransform,
   warnColorOverride,
   warnUnknownIcon
-} from './PawIcon.utils.js'
+} from './PawIcon.utils.ts'
 
-export default {
+export default defineComponent({
   name: 'PawIcon',
   // The WeChat custom-component host otherwise participates in the parent
   // line box and can report a font-derived height (for example 19.29px for
@@ -27,20 +29,20 @@ export default {
     // #endif
   },
   props: {
-    name: { type: String, required: true },
-    size: { type: [String, Number], default: 'base' },
+    name: { type: String as () => PawIconName, required: true },
+    size: { type: [String, Number] as unknown as () => PawIconSize, default: 'base' },
     color: { type: String, default: PAW_ICON_DEFAULT_COLOR },
     label: { type: String, default: '' },
     rotate: { type: Number, default: 0 },
     flip: {
-      type: String,
+      type: String as PropType<PawIconFlip>,
       default: 'none',
-      validator: value => ['none', 'horizontal', 'vertical', 'both'].includes(value)
+      validator: (value: unknown) => typeof value === 'string' && ['none', 'horizontal', 'vertical', 'both'].includes(value)
     }
   },
   computed: {
     definition() {
-      return PAW_ICON_REGISTRY[this.name] || null
+      return PAW_ICON_REGISTRY[this.name as keyof typeof PAW_ICON_REGISTRY] || null
     },
     resolvedSize() {
       return resolvePawIconSize(this.size)
@@ -66,12 +68,14 @@ export default {
         warnUnknownIcon(this.name)
         return ''
       }
-      if (this.definition.kind === 'mono') return resolveMonoIconUri(this.definition.template, this.color)
+      if (this.definition.kind === 'mono' && 'template' in this.definition) {
+        return resolveMonoIconUri(this.definition.template, this.color)
+      }
       if (this.color !== PAW_ICON_DEFAULT_COLOR) warnColorOverride(this.name)
-      return this.definition.src
+      return 'src' in this.definition ? this.definition.src : ''
     }
   }
-}
+})
 </script>
 
 <style scoped>

@@ -57,20 +57,21 @@ function reset() {
 
 before(async () => {
 	tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-adoption-application-adapter-'))
-	await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+	await fs.cp(path.join(ROOT, 'contracts'), path.join(tempRoot, 'contracts'), { recursive: true })
+	await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
 	await fs.cp(path.join(ROOT, 'services/domainReads'), path.join(tempRoot, 'services/domainReads'), { recursive: true })
 	await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
 	await fs.mkdir(path.join(tempRoot, 'utils'), { recursive: true })
 	await fs.mkdir(path.join(tempRoot, 'packages/adoption/services'), { recursive: true })
-	for (const file of ['actorCapabilities.js', 'adoptionConditionContract.js']) {
+	for (const file of ['actorCapabilities.ts', 'adoptionConditionContract.ts']) {
 		await fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
 	}
-	await fs.copyFile(path.join(ROOT, 'utils/adoptionStorage.js'), path.join(tempRoot, 'utils/adoptionStorage.js'))
+	await fs.copyFile(path.join(ROOT, 'utils/adoptionStorage.ts'), path.join(tempRoot, 'utils/adoptionStorage.ts'))
 	await fs.copyFile(
-		path.join(ROOT, 'packages/adoption/services/applicationAdapter.js'),
-		path.join(tempRoot, 'packages/adoption/services/applicationAdapter.js')
+		path.join(ROOT, 'packages/adoption/services/applicationAdapter.ts'),
+		path.join(tempRoot, 'packages/adoption/services/applicationAdapter.ts')
 	)
-	for (const file of ['actorCapabilities.js', 'adoptionConditionContract.js']) {
+	for (const file of ['actorCapabilities.ts', 'adoptionConditionContract.ts']) {
 		await fs.copyFile(
 			path.join(ROOT, 'packages/adoption/services', file),
 			path.join(tempRoot, 'packages/adoption/services', file)
@@ -84,7 +85,7 @@ before(async () => {
 		setStorageSync(key, value) { writes.push({ key, value }); storage.set(key, value) },
 		removeStorageSync(key) { storage.delete(key) },
 	}
-	api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/adoption/services/applicationAdapter.js')).href}?test=${Date.now()}-${Math.random()}`)
+	api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/adoption/services/applicationAdapter.ts')).href}?test=${Date.now()}-${Math.random()}`)
 })
 
 beforeEach(reset)
@@ -95,7 +96,7 @@ after(async () => {
 })
 
 test('adapter is a read-only adoption boundary and has no page, payment, or writer dependency', async () => {
-	const source = await fs.readFile(path.join(ROOT, 'services/domainReads/adoption/applicationAdapter.js'), 'utf8')
+	const source = await fs.readFile(path.join(ROOT, 'services/domainReads/adoption/applicationAdapter.ts'), 'utf8')
 	assert.match(source, /getAdoptionRecords/)
 	assert.match(source, /includeDemo:\s*false/)
 	assert.match(source, /readAdoptionCondition/)

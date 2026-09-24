@@ -2,7 +2,7 @@
   <view class="paw-avatar-stack" :style="stackStyle" @tap.stop="$emit('click')">
     <PawAvatar
       v-for="(item, index) in visibleItems"
-      :key="item.id || item.pawId || index"
+      :key="typeof item === 'string' ? index : (item.id || item.pawId || index)"
       class="paw-avatar-stack__item"
       :src="typeof item === 'string' ? item : item.avatar"
       :size="size"
@@ -14,20 +14,26 @@
   </view>
 </template>
 
-<script>
-import PawAvatar from '@/components/identity/PawAvatar.vue'
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+import { defineComponent, type PropType } from 'vue'
 
-export default {
+import PawAvatar from '@/components/identity/PawAvatar.vue'
+import type { AvatarStackItem } from '@/utils/avatarStackMetadata.ts'
+
+export default defineComponent({
   name: 'PawAvatarStack',
   components: { PawAvatar },
   props: {
-    items: { type: Array, default: () => [] },
+    items: { type: Array as PropType<AvatarStackItem[]>, default: () => [] },
     size: { type: [Number, String], default: 22 },
     overlap: { type: [Number, String], default: 8 },
     max: { type: Number, default: 5 },
     fallback: { type: String, default: '/static/avatarlog.png' }
   },
-  emits: ['click'],
+  emits: {
+    'click': eventContract<[]>(),
+  },
   computed: {
     visibleItems() { return this.items.slice(0, this.max) },
     hiddenCount() { return Math.max(0, this.items.length - this.max) },
@@ -36,7 +42,7 @@ export default {
       return { height: resolvedSize, minHeight: resolvedSize }
     }
   }
-}
+})
 </script>
 
 <style scoped>

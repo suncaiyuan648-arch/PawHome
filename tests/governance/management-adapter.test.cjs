@@ -62,16 +62,16 @@ function readWith(resourceType, id, options = {}) {
 
 before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-management-adapter-'))
-  await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+  await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'packages/account/services'), { recursive: true })
-  await fs.copyFile(path.join(ROOT, 'navigation/actorCapabilities.js'), path.join(tempRoot, 'navigation/actorCapabilities.js'))
-  await fs.copyFile(path.join(ROOT, 'navigation/managementContracts.js'), path.join(tempRoot, 'navigation/managementContracts.js'))
+  await fs.copyFile(path.join(ROOT, 'navigation/actorCapabilities.ts'), path.join(tempRoot, 'navigation/actorCapabilities.ts'))
+  await fs.copyFile(path.join(ROOT, 'navigation/managementContracts.ts'), path.join(tempRoot, 'navigation/managementContracts.ts'))
   await fs.copyFile(
-    path.join(ROOT, 'packages/account/services/managementAdapter.js'),
-    path.join(tempRoot, 'packages/account/services/managementAdapter.js'),
+    path.join(ROOT, 'packages/account/services/managementAdapter.ts'),
+    path.join(tempRoot, 'packages/account/services/managementAdapter.ts'),
   )
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/managementAdapter.js')).href}?test=${Date.now()}`)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/managementAdapter.ts')).href}?test=${Date.now()}`)
 })
 
 after(async () => {
@@ -79,8 +79,8 @@ after(async () => {
 })
 
 test('management adapter is a read-only reader seam with no page or storage binding', async () => {
-  const source = await fs.readFile(path.join(ROOT, 'packages/account/services/managementAdapter.js'), 'utf8')
-  assert.match(source, /managementContracts\.js/)
+  const source = await fs.readFile(path.join(ROOT, 'packages/account/services/managementAdapter.ts'), 'utf8')
+  assert.match(source, /managementContracts\.ts/)
   assert.doesNotMatch(source, /from\s+['"][^'"]*(?:pages|utils\/|storage|mock)/i)
   assert.doesNotMatch(source, /setStorageSync|removeStorageSync|save[A-Z]|update[A-Z]|delete[A-Z]/)
   assert.equal(typeof api.readProfile, 'function')

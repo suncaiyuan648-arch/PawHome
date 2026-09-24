@@ -12,10 +12,13 @@
   ><slot>{{ text }}</slot></PawButton>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+import { defineComponent } from 'vue'
+
 import PawButton from '@/components/base/PawButton.vue'
 
-export default {
+export default defineComponent({
   name: 'PawPrimaryButton',
   components: { PawButton },
   props: {
@@ -27,9 +30,11 @@ export default {
     loading: { type: Boolean, default: false },
     formType: { type: String, default: '' }
   },
-  emits: ['click'],
+  emits: {
+    'click': eventContract<[event: PawEvent]>(),
+  },
   computed: {
     buttonTone() { return this.variant === 'default' ? 'brand' : this.variant }
   }
-}
+})
 </script>

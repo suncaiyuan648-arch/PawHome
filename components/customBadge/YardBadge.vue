@@ -3,11 +3,12 @@
     @tap.stop="onTap" />
 </template>
 
-<script>
-import PawBadge from '@/components/base/PawBadge.vue'
-import { openYardDetail } from '@/utils/profileNav.js'
+<script lang="ts">import { defineComponent } from 'vue'
 
-export default {
+import PawBadge from '@/components/base/PawBadge.vue'
+import { openYardDetail } from '@/utils/profileNav.ts'
+
+export default defineComponent({
   name: 'YardBadge',
   components: { PawBadge },
   options: {
@@ -28,5 +29,5 @@ export default {
       openYardDetail({ yardId, yardName: this.yardName || this.label })
     }
   }
-}
+})
 </script>

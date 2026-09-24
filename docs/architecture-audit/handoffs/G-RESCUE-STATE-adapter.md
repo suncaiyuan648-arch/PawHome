@@ -6,9 +6,9 @@ owner: 总工程师（C0 收口）
 
 ## 交付
 
-- 新增 `packages/rescue/services/stateAdapter.js`。
+- 新增 `packages/rescue/services/stateAdapter.ts`。
 - 新增 `tests/governance/rescue-state-adapter.test.cjs`，覆盖 6 项反例。
-- adapter 只调用既有 `utils/rescueStorage.js#getRescueById`，状态解释统一交给 `stateContract.js#normalizeRescueState`。
+- adapter 只调用既有 `utils/rescueStorage.ts#getRescueById`，状态解释统一交给 `stateContract.ts#normalizeRescueState`。
 - 默认 `includeDemo: false`，公开演示只能显式传 `includeDemo: true`；缺失、非法或跨形态 ID 不回落到首条演示记录。
 - 返回固定 `{ success, source, data, error, readOnly: true, canWrite: false }`；状态三轴的未知/冲突结果仍由合同返回，不被 adapter 改写成成功。
 - 提供同步 `readRescueStateWithResolver` seam，拒绝异步 resolver，供后续云端读取替换而不把页面参数当状态。
@@ -16,7 +16,7 @@ owner: 总工程师（C0 收口）
 ## 验收
 
 ```text
-node --check packages/rescue/services/stateAdapter.js   PASS
+node --check packages/rescue/services/stateAdapter.ts   PASS
 node --test tests/governance/rescue-state-adapter.test.cjs   6/6 PASS
 ```
 

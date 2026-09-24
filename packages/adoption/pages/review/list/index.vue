@@ -23,128 +23,76 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawAdoptionReviewCard from '@/components/adoption/PawAdoptionReviewCard.vue'
-import { buildRoute } from '@/navigation/routeContracts.js'
-import { getAdoptionRecords } from '@/utils/adoptionStorage.js'
-import { createReviewSessionProvider, readAdoptionReviewList } from '../../../services/reviewAdapter.js'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import { getAdoptionRecords } from '@/utils/adoptionStorage.ts'
+import {
+	createAdoptionReviewQueueCard,
+	createAdoptionReviewRecordIndex,
+	type AdoptionReviewQueueCardMetadata,
+	type AdoptionReviewTab,
+} from '@/utils/adoptionReviewMetadata.ts'
+import { createReviewSessionProvider, readAdoptionReviewList } from '../../../services/reviewAdapter.ts'
+import {
+	createAdoptionReviewListPageState,
+	type AdoptionReviewListPageState,
+} from '../../../services/reviewListMetadata.ts'
 
-function modeForItem(item) {
-  if (!item) return ''
-  if (item.reviewStatus === 'rejected') {
-    if (item.phase === 'cloud_parent') return 'cloudRejectDone'
-    if (item.phase === 'owner_confirmation') return 'ownerConfirmRejected'
-    return 'rejectDone'
-  }
-  if (item.reviewStatus === 'approved') {
-    if (item.phase === 'cloud_parent') return 'cloudAgreeDone'
-    if (item.phase === 'owner_confirmation') return 'ownerConfirmed'
-    if (item.phase === 'jury') return 'success'
-    return 'ownerPending'
-  }
-  if (item.phase === 'cloud_parent') return 'cloudReview'
-  if (item.phase === 'owner_confirmation') return 'ownerConfirm'
-  return item.phase === 'jury' ? 'ownerReview' : 'ownerReview'
-}
-
-function statusMeta(item) {
-  if (!item) return { text: '状态未知', tone: 'neutral' }
-  if (item.reviewStatus === 'rejected') return { text: '已拒绝', tone: 'danger' }
-  if (item.reviewStatus === 'approved') return { text: '已通过', tone: 'success' }
-  return {
-    text: item.phase === 'cloud_parent' ? '待云家长审批' : item.phase === 'owner_confirmation' ? '待院主确认' : item.phase === 'jury' ? '待评审团确认' : '待院主审批',
-    tone: 'neutral',
-  }
-}
-
-function cardForItem(item) {
-  const record = getAdoptionRecords({ includeDemo: false }).find(candidate => (
-    candidate && (candidate.applicationId === item.applicationId || candidate.id === item.applicationId || candidate.recordId === item.applicationId)
-  )) || {}
-  const meta = statusMeta(item)
-  const pets = Array.isArray(record.pets) ? record.pets : []
-  const cloudParents = Array.isArray(record.cloudParentIds) ? record.cloudParentIds : []
-  const approvedParents = Array.isArray(record.cloudParentApprovals) ? record.cloudParentApprovals : []
-  return {
-    ...item,
-    id: item.applicationId,
-    recordId: item.applicationId,
-    reviewerRole: item.reviewerRole,
-    reviewerId: item.reviewerId,
-    detailMode: modeForItem(item),
-    statusText: meta.text,
-    statusTone: meta.tone,
-    applicant: {
-      name: record.applicantName || item.applicantId || '申请人',
-      avatar: record.applicantAvatar || '/static/figma/home/feed-avatar.png',
-      level: Number(record.applicantLevel) || 1,
-      pawId: record.applicantPawId || item.applicantId || '',
-    },
-    pets,
-    cloudApproval: {
-      required: cloudParents.length,
-      approved: approvedParents.length,
-      waiting: item.reviewStatus === 'pending' && item.phase === 'cloud_parent',
-    },
-    yardId: record.yardId || item.yardId || '',
-    yardName: record.yardName || record.ownerName || item.yardName || '小院',
-  }
-}
-
-export default {
+export default defineComponent({
   name: 'AdoptionReviewListPage',
   components: { PawPageNav, PawAdoptionReviewCard },
-  data() {
-    return {
-      activeTab: 'pending',
-      tabs: [{ key: 'pending', label: '待审核' }, { key: 'reviewed', label: '已审核' }],
-      items: { pending: [], reviewed: [] },
-      actorError: null,
-      actorProvider: createReviewSessionProvider(),
-    }
+  data(): AdoptionReviewListPageState {
+    return createAdoptionReviewListPageState(createReviewSessionProvider())
   },
   computed: {
-    visibleItems() { return this.items[this.activeTab] || [] },
-    counts() { return { pending: this.items.pending.length, reviewed: this.items.reviewed.length } },
+    visibleItems(): AdoptionReviewQueueCardMetadata[] { return this.items[this.activeTab] },
+    counts(): Record<AdoptionReviewTab, number> {
+      return { pending: this.items.pending.length, reviewed: this.items.reviewed.length }
+    },
   },
   onShow() { this.refresh() },
   methods: {
     refresh() {
       const result = readAdoptionReviewList({ actorProvider: this.actorProvider, filter: 'all' })
+      const records = createAdoptionReviewRecordIndex(getAdoptionRecords({ includeDemo: false }))
       this.items = {
-        pending: (result.pending || []).map(cardForItem),
-        reviewed: (result.processed || []).map(cardForItem),
+        pending: result.pending.map(item => createAdoptionReviewQueueCard(item, records.get(item.applicationId) ?? null)),
+        reviewed: result.processed.map(item => createAdoptionReviewQueueCard(item, records.get(item.applicationId) ?? null)),
       }
-      this.actorError = result.diagnostics && result.diagnostics.actorError
+      this.actorError = result.diagnostics.actorError
     },
-    selectTab(tab) { if (this.items[tab]) this.activeTab = tab },
-    itemKey(item) { return `${item && (item.recordId || item.id || '')}-${item && item.reviewerRole || ''}` },
-    openReview(item) {
-      const applicationId = item && (item.recordId || item.id)
-      if (!applicationId) return
+    selectTab(tab: AdoptionReviewTab) {
+      this.activeTab = tab
+    },
+    itemKey(item: AdoptionReviewQueueCardMetadata): string {
+      return `${item.recordId}-${item.reviewerRole || ''}`
+    },
+    openReview(item: AdoptionReviewQueueCardMetadata) {
       try {
         if (item.reviewerRole === 'reviewer') {
           uni.navigateTo({ url: buildRoute('adoption.jury.detail', {
-            reviewItemId: String(item.reviewItemId),
+            reviewItemId: item.reviewItemId,
             businessType: 'adoption',
           }) })
           return
         }
         uni.navigateTo({ url: buildRoute('adoption.review.detail', {
-          applicationId: String(applicationId),
-          reviewItemId: String(item.reviewItemId),
+          applicationId: item.applicationId,
+          reviewItemId: item.reviewItemId,
           view: 'application',
-          mode: item.detailMode,
           reviewerRole: item.reviewerRole,
           reviewerId: item.reviewerId,
         }) })
-      } catch (error) {
+      } catch {
         uni.showToast({ title: '审核详情链接无效', icon: 'none' })
       }
     },
   },
-}
+})
 </script>
 
 <style scoped>

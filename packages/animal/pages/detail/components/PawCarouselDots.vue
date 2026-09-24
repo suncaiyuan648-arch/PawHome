@@ -7,14 +7,15 @@
   </view>
 </template>
 
-<script>
-export default {
+<script lang="ts">import { defineComponent } from 'vue'
+
+export default defineComponent({
   name: 'PawCarouselDots',
   props: {
     count: { type: Number, default: 0 },
     current: { type: Number, default: 0 },
   },
-}
+})
 </script>
 
 <style scoped>

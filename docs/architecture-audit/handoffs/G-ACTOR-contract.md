@@ -14,7 +14,7 @@
 
 ## 实施文件
 
-- `navigation/actorCapabilities.js`
+- `navigation/actorCapabilities.ts`
   - 纯 ESM JavaScript；没有 Vue、uni-app、pages、packages、storage、mock 或业务页面依赖。
   - `resolveTrustedActor(provider)`：支持 provider 返回 `{ actor: { id, roles } }` 或 actor 对象本身；每次授权重新读取，空 session 返回 `null`，provider 失败、actor ID 非法、未知角色均拒绝。
   - actor ID 规范为首字符字母/数字、后续允许字母、数字、`.`、`_`、`:`、`-`，最长 128；角色枚举为 `applicant`、`owner`、`reviewer`、`cloud_parent`、`yard_owner`、`animal_manager`。
@@ -59,7 +59,7 @@ PASS
 
 ## 回滚与后续
 
-本子批回滚单位是新增的 `navigation/actorCapabilities.js` 与 `tests/governance/actor-capabilities.test.cjs`，以及本 handoff 文件；删除它们即可回退，不涉及数据迁移、路由注册或业务记录。各域接入应另行形成原子变更，不能把本合同与页面搬迁或未批准状态迁移捆绑。
+本子批回滚单位是新增的 `navigation/actorCapabilities.ts` 与 `tests/governance/actor-capabilities.test.cjs`，以及本 handoff 文件；删除它们即可回退，不涉及数据迁移、路由注册或业务记录。各域接入应另行形成原子变更，不能把本合同与页面搬迁或未批准状态迁移捆绑。
 
 总工串行接入时需要继续补充：真实 session provider 适配、每个域的批准 policy/状态字段、对象读取与写入 adapter、progress/reward/审核/动物/小院入口的越权反例，以及接入后的 BUILD / RUNTIME / CONSOLE / INTERACTION 证据。本子批完成不等于 G-ACTOR 全批完成，也不等于线上后端鉴权已具备。
 

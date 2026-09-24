@@ -19,13 +19,14 @@ function actor(id = 'actor-a', roles = ['applicant']) {
 
 before(async () => {
 	tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-production-deeplink-'))
-	await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+	await fs.cp(path.join(ROOT, 'contracts'), path.join(tempRoot, 'contracts'), { recursive: true })
+	await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
 	await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
 	await fs.mkdir(path.join(tempRoot, 'utils'), { recursive: true })
-	for (const file of ['routeContracts.js', 'actorCapabilities.js', 'deeplinkContracts.js', 'productionDeepLinkResolver.js']) {
+	for (const file of ['routeContracts.ts', 'actorCapabilities.ts', 'deeplinkContracts.ts', 'productionDeepLinkResolver.ts']) {
 		await fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
 	}
-	for (const file of ['adoptionStorage.js', 'rescueStorage.js', 'rewardOrderStorage.js']) {
+	for (const file of ['adoptionStorage.ts', 'rescueStorage.ts', 'rewardOrderStorage.ts']) {
 		await fs.copyFile(path.join(ROOT, 'utils', file), path.join(tempRoot, 'utils', file))
 	}
 	globalThis.uni = {
@@ -33,7 +34,7 @@ before(async () => {
 		setStorageSync(key, value) { writes += 1; storage.set(key, value) },
 		removeStorageSync(key) { writes += 1; storage.delete(key) },
 	}
-	api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/productionDeepLinkResolver.js')).href}?test=${Date.now()}`)
+	api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/productionDeepLinkResolver.ts')).href}?test=${Date.now()}`)
 })
 
 after(async () => {

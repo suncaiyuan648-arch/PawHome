@@ -2,16 +2,16 @@
   <view class="paw-vote-ratio-bar" data-qa="qa-vote-ratio-bar">
     <view class="paw-vote-ratio-bar__track" :style="trackStyle" aria-hidden="true">
       <view class="paw-vote-ratio-bar__segment paw-vote-ratio-bar__segment--real"
-        :class="{ 'paw-vote-ratio-bar__segment--single': !fakePercent, 'paw-vote-ratio-bar__segment--interactive': interactive, 'paw-vote-ratio-bar__segment--center-labels': centerLabels }"
+        :class="{ 'paw-vote-ratio-bar__segment--single': !normalizedFakePercent, 'paw-vote-ratio-bar__segment--interactive': interactive, 'paw-vote-ratio-bar__segment--center-labels': centerLabels }"
         :style="realStyle" data-qa="qa-vote-ratio-real" @tap.stop="emitSegmentClick('real')">
-        <view v-if="showLabels && realPercent && (realLabel || $slots['real-label'])" class="paw-vote-ratio-bar__label">
+        <view v-if="showLabels && normalizedRealPercent && (realLabel || $slots['real-label'])" class="paw-vote-ratio-bar__label">
           <slot name="real-label">{{ realLabel }}</slot>
         </view>
       </view>
       <view class="paw-vote-ratio-bar__segment paw-vote-ratio-bar__segment--fake"
-        :class="{ 'paw-vote-ratio-bar__segment--single': !realPercent, 'paw-vote-ratio-bar__segment--interactive': interactive, 'paw-vote-ratio-bar__segment--center-labels': centerLabels }"
+        :class="{ 'paw-vote-ratio-bar__segment--single': !normalizedRealPercent, 'paw-vote-ratio-bar__segment--interactive': interactive, 'paw-vote-ratio-bar__segment--center-labels': centerLabels }"
         :style="fakeStyle" data-qa="qa-vote-ratio-fake" @tap.stop="emitSegmentClick('fake')">
-        <view v-if="showLabels && fakePercent && (fakeLabel || $slots['fake-label'])" class="paw-vote-ratio-bar__label">
+        <view v-if="showLabels && normalizedFakePercent && (fakeLabel || $slots['fake-label'])" class="paw-vote-ratio-bar__label">
           <slot name="fake-label">{{ fakeLabel }}</slot>
         </view>
       </view>
@@ -19,14 +19,18 @@
   </view>
 </template>
 
-<script>
-function clampPercent(value, fallback) {
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent } from 'vue'
+
+function clampPercent(value: number, fallback: number): number {
   const number = Number(value)
   if (!Number.isFinite(number)) return fallback
   return Math.max(0, Math.min(100, number))
 }
 
-export default {
+export default defineComponent({
   name: 'PawVoteRatioBar',
   props: {
     realPercent: { type: Number, default: 50 },
@@ -52,10 +56,10 @@ export default {
         fake: Math.round((100 - normalizedReal) * 10) / 10
       }
     },
-    realPercent() {
+    normalizedRealPercent(): number {
       return this.normalizedPercentages.real
     },
-    fakePercent() {
+    normalizedFakePercent(): number {
       return this.normalizedPercentages.fake
     },
     trackStyle() {
@@ -71,20 +75,22 @@ export default {
       }
     },
     realStyle() {
-      return { flexBasis: `${this.realPercent}%` }
+      return { flexBasis: `${this.normalizedRealPercent}%` }
     },
     fakeStyle() {
-      const minWidth = this.fakePercent && this.minFakeWidth > 0 ? `${this.minFakeWidth}px` : '0px'
-      return { flexBasis: `${this.fakePercent}%`, minWidth }
+      const minWidth = this.normalizedFakePercent && this.minFakeWidth > 0 ? `${this.minFakeWidth}px` : '0px'
+      return { flexBasis: `${this.normalizedFakePercent}%`, minWidth }
     }
   },
-  emits: ['segment-click'],
+  emits: {
+    'segment-click': eventContract<[vote: 'real' | 'fake']>(),
+  },
   methods: {
-    emitSegmentClick(segment) {
+    emitSegmentClick(segment: 'real' | 'fake') {
       if (this.interactive) this.$emit('segment-click', segment)
     }
   }
-}
+})
 </script>
 
 <style scoped>

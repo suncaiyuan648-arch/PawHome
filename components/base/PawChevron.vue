@@ -2,15 +2,17 @@
   <PawIcon class="paw-chevron" name="navigation/chevron-right" :size="size" :rotate="rotation" aria-hidden="true" />
 </template>
 
-<script>
-import PawIcon from '@/components/PawIcon/PawIcon.vue'
+<script lang="ts">import { defineComponent, type PropType } from 'vue'
 
-export default {
+import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import type { PawIconSize } from '@/components/PawIcon/PawIcon.types'
+
+export default defineComponent({
   name: 'PawChevron',
   components: { PawIcon },
   props: {
     direction: { type: String, default: 'right' },
-    size: { type: [Number, String], default: 8 }
+    size: { type: [Number, String] as unknown as PropType<PawIconSize>, default: 8 }
   },
   computed: {
     // The canonical chevron asset is left-facing. Apply the direction on
@@ -25,7 +27,7 @@ export default {
       }[this.direction] ?? 180
     }
   }
-}
+})
 </script>
 
 <style scoped>

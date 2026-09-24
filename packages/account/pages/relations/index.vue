@@ -49,61 +49,44 @@
 	</view>
 </template>
 
-<script>
-	import PawPageNav from '@/components/PawPageNav.vue'
-	import { openUserProfile } from '@/utils/profileNav.js'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
-	const mockUserRows = () => {
-		const one = (i) => ({
-			pawId: String(23456789 + i),
-			nickname: 'Q',
-			avatar: '/static/figma/follow/avatar.png',
-			fansCount: 315,
-			followed: false
-		})
-		return [one(0), one(1), one(2), one(3), one(4)]
-	}
+import PawPageNav from '@/components/PawPageNav.vue'
+import { openUserProfile } from '@/utils/profileNav.ts'
+import { createRelationsPageMetadata, normalizeRelationsRouteOptions } from '../../services/relationMetadata.ts'
+import type { RelationUserRow, RelationsPageState } from '../../services/relationMetadata.ts'
 
-	export default {
-		components: { PawPageNav },
-		data() {
-			return {
-				pageTitle: '',
-				ownerPawId: '',
-				listTab: 'follow',
-				followingRows: [],
-				fansRows: []
-			}
+export default defineComponent({
+	components: { PawPageNav },
+	data(): RelationsPageState {
+		return createRelationsPageMetadata()
+	},
+	computed: {
+		currentRows(): RelationUserRow[] {
+			return this.listTab === 'follow' ? this.followingRows : this.fansRows
+		}
+	},
+	onLoad(query: unknown = {}) {
+		const route = normalizeRelationsRouteOptions(query)
+		this.pageTitle = route.pageTitle || '晓晓'
+		this.ownerPawId = route.ownerPawId
+		this.listTab = route.listTab
+	},
+	methods: {
+		openRowProfile(row: RelationUserRow) {
+			if (!row || row.pawId === this.ownerPawId) return
+			openUserProfile({
+				pawId: row.pawId,
+				nickname: row.nickname,
+				avatar: row.avatar || ''
+			})
 		},
-		computed: {
-			currentRows() {
-				return this.listTab === 'follow' ? this.followingRows : this.fansRows
-			}
-		},
-		onLoad(query = {}) {
-			this.pageTitle = decodeURIComponent(query.nickname || '') || '晓晓'
-			this.ownerPawId = decodeURIComponent(query.userId || query.pawId || '')
-			const tab = (query.tab || 'following').toLowerCase()
-			this.listTab = ['fans', 'followers'].includes(tab) ? 'fans' : 'follow'
-
-			const base = mockUserRows()
-			this.followingRows = base.map((r) => ({ ...r, fansCount: 315 }))
-			this.fansRows = base.map((r) => ({ ...r, fansCount: 315 }))
-		},
-		methods: {
-			openRowProfile(row) {
-				if (!row || row.pawId === this.ownerPawId) return
-				openUserProfile({
-					pawId: row.pawId,
-					nickname: row.nickname,
-					avatar: row.avatar || ''
-				})
-			},
-			toggleRowFollow(row) {
-				row.followed = !row.followed
-			}
+		toggleRowFollow(row: RelationUserRow) {
+			row.followed = !row.followed
 		}
 	}
+})
 </script>
 
 <style scoped>

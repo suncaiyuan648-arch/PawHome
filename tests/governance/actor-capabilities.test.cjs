@@ -98,13 +98,13 @@ function throwsCode(fn, code) {
 
 before(async () => {
   tempRoot = await fsp.mkdtemp(path.join(os.tmpdir(), 'pawhome-actor-capabilities-'))
-  await fsp.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+  await fsp.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fsp.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
   await fsp.copyFile(
-    path.join(ROOT, 'navigation/actorCapabilities.js'),
-    path.join(tempRoot, 'navigation/actorCapabilities.js')
+    path.join(ROOT, 'navigation/actorCapabilities.ts'),
+    path.join(tempRoot, 'navigation/actorCapabilities.ts')
   )
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/actorCapabilities.js')).href}?test=${Date.now()}`)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/actorCapabilities.ts')).href}?test=${Date.now()}`)
 })
 
 after(async () => {
@@ -112,7 +112,7 @@ after(async () => {
 })
 
 test('actor contract is pure and exports stable actor roles and capability categories', () => {
-  const source = fs.readFileSync(path.join(ROOT, 'navigation/actorCapabilities.js'), 'utf8')
+  const source = fs.readFileSync(path.join(ROOT, 'navigation/actorCapabilities.ts'), 'utf8')
   assert.doesNotMatch(source, /(?:import|require\s*\()[^\n]*(?:vue|uni|pages|packages|storage|mock)/i)
   assert.deepEqual(api.resolveTrustedActor(provider(' actor-a ', ['applicant', 'applicant'])), {
     id: 'actor-a',

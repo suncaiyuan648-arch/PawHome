@@ -8,11 +8,11 @@
 
 本子批只新增：
 
-- [`navigation/deeplinkContracts.js`](../../../navigation/deeplinkContracts.js)
+- [`navigation/deeplinkContracts.ts`](../../../navigation/deeplinkContracts.ts)
 - [`tests/governance/deeplink-contracts.test.cjs`](../../../tests/governance/deeplink-contracts.test.cjs)
 - 本交接文档
 
-没有修改页面、`pages.json`、storage、mock、network、任务/消息生产者、现有路由注册或真实业务写入，也没有实现实际导航和 eventChannel。
+没有修改页面、`pages.tson`、storage、mock、network、任务/消息生产者、现有路由注册或真实业务写入，也没有实现实际导航和 eventChannel。
 
 ## 冻结合同
 
@@ -49,8 +49,8 @@
 
 ```text
 node --test tests/governance/deeplink-contracts.test.cjs  # 14/14 PASS
-node --check navigation/deeplinkContracts.js                # PASS
-git diff --check -- navigation/deeplinkContracts.js tests/governance/deeplink-contracts.test.cjs docs/architecture-audit/handoffs/G-DEEPLINK-contract.md  # PASS
+node --check navigation/deeplinkContracts.ts                # PASS
+git diff --check -- navigation/deeplinkContracts.ts tests/governance/deeplink-contracts.test.cjs docs/architecture-audit/handoffs/G-DEEPLINK-contract.md  # PASS
 ```
 
 ## 接入边界与后续

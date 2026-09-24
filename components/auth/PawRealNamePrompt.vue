@@ -25,21 +25,33 @@
   </PawOverlay>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
 import PawOverlay from '@/components/overlay/PawOverlay.vue'
 
-export default {
+export default defineComponent({
   name: 'PawRealNamePrompt',
   components: { PawOverlay },
   props: {
     visible: { type: Boolean, default: false },
-    type: { type: String, default: 'real-name', validator: value => ['real-name', 'privacy'].includes(value) }
+    type: {
+      type: String as PropType<'real-name' | 'privacy'>,
+      default: 'real-name',
+      validator: (value: unknown) => value === 'real-name' || value === 'privacy'
+    }
   },
-  emits: ['update:visible', 'cancel', 'confirm'],
+  emits: {
+    'update:visible': eventContract<[value: boolean]>(),
+    'cancel': eventContract<[]>(),
+    'confirm': eventContract<[]>(),
+  },
   computed: {
     visibleProxy: {
       get() { return this.visible },
-      set(value) { this.$emit('update:visible', value) }
+      set(value: boolean) { this.$emit('update:visible', value) }
     },
     title() {
       return this.type === 'privacy' ? '隐私政策及用户协议' : '实名认证'
@@ -55,7 +67,7 @@ export default {
       this.visibleProxy = false
     }
   }
-}
+})
 </script>
 
 <style scoped>

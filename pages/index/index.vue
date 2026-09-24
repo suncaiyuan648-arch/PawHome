@@ -100,38 +100,78 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import CustomTabber from "@/components/CustomTabber/index.vue"
 import PawAnnouncementMarquee from "@/components/PawAnnouncementMarquee.vue"
 import PawPopoverMenu from "@/components/navigation/PawPopoverMenu.vue"
 import PawSearchBar from "@/components/navigation/PawSearchBar.vue"
 import FeedCard from "@/components/dynamic/FeedCard.vue"
 import YardSummaryCard from "@/components/yard/YardSummaryCard.vue"
-import { openUserProfile } from "@/utils/profileNav.js"
-import { getPawHomeYardMock } from "@/utils/yardMock.js"
+import { readPawEventNumber } from '@/utils/pawEventMetadata.ts'
+import { openUserProfile } from "@/utils/profileNav.ts"
+import { getPawHomeYardMock } from "@/utils/yardMock.ts"
+import type { YardMock } from "@/utils/yardMock.ts"
+import {
+	createHomeAnnouncementMocks,
+	createHomeFeedMockCards,
+	createHomeFeedTabMocks,
+	createHomeYardCardMocks,
+	type HomeAnnouncementMockMetadata,
+	type HomeFeedCardMetadata,
+	type HomeFeedTabKey,
+	type HomeFeedTabMetadata,
+	type HomeYardCardMetadata,
+} from "@/utils/homeFeedMockData.ts"
 
 const FEED_PAGE_SIZE = 10
 const FEED_MOCK_TOTAL = 50
-const FEED_MOCK_TEMPLATES = [
-	{ cover: '/static/figma/home/dynamic-left.png', distance: '3.2km', district: '金水区', title: '小猫吃的好开心', liked: false, likes: 37 },
-	{ cover: '/static/figma/home/dynamic-right.png', distance: '2.6km', district: '天河区', title: '小猫吃得好开心啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊', liked: true, likes: 32 },
-	{ cover: '/static/figma/home/dynamic-left.png', distance: '1.8km', district: '越秀区', title: '今天也有认真吃饭的小猫咪', liked: false, likes: 24 },
-	{ cover: '/static/figma/home/dynamic-right.png', distance: '4.1km', district: '海珠区', title: '投喂完成，猫猫们已经排队开饭啦', liked: false, likes: 18 }
-]
 
-function createMockFeedCards() {
-	return Array.from({ length: FEED_MOCK_TOTAL }, (_, index) => {
-		const template = FEED_MOCK_TEMPLATES[index % FEED_MOCK_TEMPLATES.length]
-		return {
-			...template,
-			id: `mock-feed-${index + 1}`,
-			title: `${template.title} · ${index + 1}`,
-			likes: template.likes + (index % 9)
-		}
-	})
+interface HomePageData {
+	pageState: string
+	zan1: string
+	zan2: string
+	selectedCity: string
+	announcementItems: HomeAnnouncementMockMetadata[]
+	announcementPollUrl: string
+	announcementWsUrl: string
+	sortOptions: string[]
+	selectedSort: string
+	showSortDropdown: boolean
+	feedTabs: HomeFeedTabMetadata[]
+	activeFeedTab: HomeFeedTabKey
+	isTabSwitching: boolean
+	hideTopActions: boolean
+	lastFeedScrollTop: number
+	feedTouchLastY: number
+	isFeedTouching: boolean
+	feedPointerLastY: number
+	isFeedPointerActive: boolean
+	pendingTopActionsHidden: boolean | null
+	topActionsIntentTimer: ReturnType<typeof setTimeout> | null
+	suppressScrollIntentUntil: number
+	refresherTriggered: boolean
+	isRefreshing: boolean
+	pullingDistance: number
+	isLoadingMore: boolean
+	refreshRequestTimer: ReturnType<typeof setTimeout> | null
+	loadMoreRequestTimer: ReturnType<typeof setTimeout> | null
+	hasMore: boolean
+	feedPageSize: number
+	mockFeedCards: HomeFeedCardMetadata[]
+	noMoreHintVisible: boolean
+	noMoreHintTimer: ReturnType<typeof setTimeout> | null
+	showBackTopBtn: boolean
+	scrollIntoViewId: string
+	yardCards: HomeYardCardMetadata[]
+	feedCards: HomeFeedCardMetadata[]
+	searchAnimating?: boolean
+	showSearchOverlay?: boolean
+	searchOverlayExpanded?: boolean
 }
 
-export default {
+export default defineComponent({
 	components: {
 		CustomTabber,
 		PawAnnouncementMarquee,
@@ -145,7 +185,7 @@ export default {
 		this.showSearchOverlay = false
 		this.searchOverlayExpanded = false
 		const city = uni.getStorageSync('selectedCity')
-		if (city) this.selectedCity = city
+		if (typeof city === 'string' && city) this.selectedCity = city
 		// #ifdef MP-WEIXIN
 		this.$nextTick(() => {
 			const cur = getCurrentPages().slice(-1)[0]
@@ -156,37 +196,22 @@ export default {
 		})
 		// #endif
 	},
-	data() {
-		const mockFeedCards = createMockFeedCards()
+	data(): HomePageData {
+		const mockFeedCards = createHomeFeedMockCards(FEED_MOCK_TOTAL)
 		const initialFeedCards = mockFeedCards.slice(0, FEED_PAGE_SIZE)
 		return {
 			pageState: 'dynamic',
 			zan1: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAeCAYAAAA/xX6fAAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAF+SURBVEiJvZdbtoMgDEVPWJ3XpUOqDqA6gMiQpBMz/bjElVK10JaeL1FwmwcJEioVQvAicgXgAUBERudcvFwusWQ91cCYeSCi6+aLiM4lUFcDNLBIRGcRGQFEAEhWv9SpFMbMg153XXdWcHKxR3LxKxVbSER/wH/M7P3S2FUDkSxwzj0AQgj+60DrztyiZVkU+HD/I6AmS+5OKxG5fQVorev7fsifa2xLdQgMIfgC6zzwHNtqIDMPIjKnYdyyziZMabaedOGyLN64x5s50ey7B6U1AIBpmuatORpb/eBT2rizLswmj1uWqbL4+Z05HgCYGX3fD2TqY0wTRqDcRTapDj5szQOapkl0cGTNJ7JGrUlTmmXvyLzbV3WLd2Wr0U+ApvDffgKEKQ7NgXnhbw7MS2NToC19uuWaArd6ZVOgcefaK5sB9/poM+BeH3UoPIvU6OiUsJ5LRWRm5vGTmmp/AdL46ZRAAKAd45va6z4OALquo6MTWYUi0m/AXqu7A58a2QJRlyArAAAAAElFTkSuQmCC',
 			zan2: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAcCAYAAAB/E6/TAAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAE4SURBVEiJvZYxVoNAFEXvo05va+EyACcLcQG6iZBduAnX4IRhAR4b25xjZW/NtwiJRCFMQuBVw5n5//Lf8IcRZ8jS1CGtAAeAtFZZFjGxiobkeYHZqmPKK4TlUHwSC+qESG+AszR1VwFZnhc98EUD7Kr0fNAJ3cUujAN1782vpM1oUK9tO22H4qNBmN2fmL0FoK79KFBTjRtKoqq6HHSib/5qEAKthrU0dSSJa6xyEbFbdtb53o+hrv2+WgFYlr1GJm+9or4wu4lYt1ZZFjpYFBt4iaS1LMtskuTH8mNPhli5uUCTV/QOgLSZZY8UguawzsP438Swmmae3DqFIJi+os/9YGrQ4QycFKQQHuYAPbcfEuDjSom/W2OvEB6PQWZPVwItWpB/F8pEVeUxWwIvI0Ees2XfrfUHCTFt74bNhAQAAAAASUVORK5CYII=',
 			selectedCity: '广州市',
-			announcementItems: [
-				{ id: 'feeding-demo-1', feedingWeightJin: 40, text: '广东汕头的花开富贵老师对小院我就是要喂猫投粮40斤，积善缘，得福报~' },
-				{ id: 'feeding-demo-2', feedingWeightJin: 4, text: '广州天河的橘子汽水为幸福小院投粮4斤，愿每只流浪猫都能吃饱~' },
-				{ id: 'feeding-demo-3', feedingWeightJin: 0.4, text: '深圳南山的猫咪守护者为阳光小院投粮0.4斤，谢谢你的温柔投喂！' },
-				{ id: 'feeding-demo-4', text: '佛山禅城的小鱼干老师为喵星人之家投粮200克，爱心已送达~' },
-				{ id: 'feeding-demo-5', text: '东莞松山湖的春风十里为流浪猫驿站投粮800克，今日猫粮已加满！' },
-				{ id: 'feeding-demo-6', text: '珠海香洲的海边散步为暖暖小院投粮350克，让毛孩子不再挨饿~' },
-				{ id: 'feeding-demo-7', text: '惠州惠城的星空旅人为猫猫补给站投粮600克，感谢这份爱心！' },
-				{ id: 'feeding-demo-8', text: '中山石岐的团团圆圆为有猫小院投粮250克，愿善意一直传递~' },
-				{ id: 'feeding-demo-9', text: '江门蓬江的元气满满为街角猫屋投粮450克，猫咪们正在开心用餐~' },
-				{ id: 'feeding-demo-10', text: '肇庆端州的晚风为希望小院投粮700克，你的每次投喂都很有意义~' }
-			],
+			announcementItems: createHomeAnnouncementMocks(),
 			// 接入后端时填写轮询接口或 WebSocket 地址；为空时只播放本地初始公告。
 			announcementPollUrl: '',
 			announcementWsUrl: '',
 			sortOptions: ['最近更新', '离我最近', '只看猫咪', '只看狗狗'],
 			selectedSort: '最近更新',
 			showSortDropdown: false,
-			feedTabs: [
-				{ key: 'dynamic', label: '动态' },
-				{ key: 'yard', label: '小院' },
-				{ key: 'joined', label: '我加入的' }
-			],
+			feedTabs: createHomeFeedTabMocks(),
 			activeFeedTab: 'dynamic',
 			isTabSwitching: false,
 			hideTopActions: false,
@@ -211,12 +236,12 @@ export default {
 			noMoreHintTimer: null,
 			showBackTopBtn: false,
 			scrollIntoViewId: '',
-			yardCards: [{ id: 1, variant: 'badges' }, { id: 2, variant: 'org' }],
+			yardCards: createHomeYardCardMocks(),
 			feedCards: initialFeedCards
 		}
 	},
 	computed: {
-		feedColumns() {
+		feedColumns(): Array<Array<{ item: HomeFeedCardMetadata; index: number }>> {
 			return [0, 1].map(columnIndex => this.feedCards
 				.map((item, index) => ({ item, index }))
 				.filter(entry => entry.index % 2 === columnIndex))
@@ -228,8 +253,8 @@ export default {
 			return this.isRefreshing || this.pullingDistance > 20
 		}
 	},
-	onLoad(options = {}) {
-		const state = options.state || 'dynamic'
+	onLoad(options: Record<string, unknown> = {}) {
+		const state = typeof options.state === 'string' ? options.state : 'dynamic'
 		this.pageState = state
 		if (state === 'filter-sheet') this.showSortDropdown = true
 		if (state === 'yard-tab') {
@@ -240,6 +265,12 @@ export default {
 			this.hideTopActions = true
 			this.showBackTopBtn = true
 		}
+	},
+	beforeUnmount() {
+		if (this.noMoreHintTimer) clearTimeout(this.noMoreHintTimer)
+		if (this.topActionsIntentTimer) clearTimeout(this.topActionsIntentTimer)
+		if (this.refreshRequestTimer) clearTimeout(this.refreshRequestTimer)
+		if (this.loadMoreRequestTimer) clearTimeout(this.loadMoreRequestTimer)
 	},
 	methods: {
 		openSearchPage() {
@@ -259,21 +290,22 @@ export default {
 		toggleSortDropdown() {
 			this.showSortDropdown = !this.showSortDropdown
 		},
-		selectSort(sort) {
+		selectSort(sort: string | number) {
+			if (typeof sort !== 'string') return
 			this.selectedSort = sort
 			this.showSortDropdown = false
 		},
-		yardModel(yard) {
+		yardModel(yard: HomeYardCardMetadata): YardMock {
 			const base = getPawHomeYardMock()
 			return {
 				...base,
-				id: yard.id,
+				id: String(yard.id),
 				distance: `${base.distance} ${base.district}`,
 				location: yard.variant === 'org' ? '合肥市希望流浪动物基地' : '',
 				tags: yard.variant === 'badges' ? base.tags : []
 			}
 		},
-		changeFeedTab(tabKey) {
+		changeFeedTab(tabKey: HomeFeedTabKey) {
 			if (this.activeFeedTab === tabKey) return
 			this.activeFeedTab = tabKey
 			this.isTabSwitching = true
@@ -284,7 +316,7 @@ export default {
 		closeDropdowns() {
 			this.showSortDropdown = false
 		},
-		toggleFeedCardLike(idx) {
+		toggleFeedCardLike(idx: number) {
 			const item = this.feedCards[idx]
 			if (!item) return
 			if (item.liked) {
@@ -300,8 +332,8 @@ export default {
 				url: `/packages/discovery/pages/city-picker/index?current=${encodeURIComponent(this.selectedCity)}`
 			})
 		},
-		handleFeedScroll(e) {
-			const scrollTop = e?.detail?.scrollTop || 0
+		handleFeedScroll(e: PawEvent) {
+			const scrollTop = readPawEventNumber(e, 'scrollTop')
 			const scrollDelta = scrollTop - this.lastFeedScrollTop
 
 			// 无触摸设备用实际滚动方向兜底；头部动画引发的滚动重算在保护期内忽略。
@@ -312,16 +344,16 @@ export default {
 			this.showBackTopBtn = this.hideTopActions && scrollTop > 120
 			this.lastFeedScrollTop = scrollTop
 		},
-		getFeedTouchY(e) {
+		getFeedTouchY(e: PawEvent) {
 			const touch = (e?.touches && e.touches[0]) || (e?.changedTouches && e.changedTouches[0])
 			if (!touch) return 0
 			return Number(touch.clientY !== undefined ? touch.clientY : touch.pageY) || 0
 		},
-		onFeedTouchStart(e) {
+		onFeedTouchStart(e: PawEvent) {
 			this.isFeedTouching = true
 			this.feedTouchLastY = this.getFeedTouchY(e)
 		},
-		onFeedTouchMove(e) {
+		onFeedTouchMove(e: PawEvent) {
 			const currentY = this.getFeedTouchY(e)
 			const deltaY = currentY - this.feedTouchLastY
 			// 手指上滑代表内容向上移动并收起；手指下滑代表展开。
@@ -334,16 +366,16 @@ export default {
 			// 手势结束立即落地最后一个方向，避免快速滑动后停留在旧状态。
 			this.flushTopActionsIntent()
 		},
-		onFeedWheel(e) {
-			const deltaY = Number(e?.deltaY || e?.detail?.deltaY || 0)
+		onFeedWheel(e: PawEvent) {
+			const deltaY = Number(e?.deltaY || readPawEventNumber(e, 'deltaY') || 0)
 			if (deltaY > 0) this.queueTopActionsIntent(true)
 			if (deltaY < 0) this.queueTopActionsIntent(false)
 		},
-		onFeedPointerStart(e) {
+		onFeedPointerStart(e: PawEvent) {
 			this.isFeedPointerActive = true
 			this.feedPointerLastY = Number(e?.clientY || e?.pageY || 0)
 		},
-		onFeedPointerMove(e) {
+		onFeedPointerMove(e: PawEvent) {
 			if (!this.isFeedPointerActive) return
 			const currentY = Number(e?.clientY || e?.pageY || 0)
 			const deltaY = currentY - this.feedPointerLastY
@@ -356,7 +388,7 @@ export default {
 			this.isFeedPointerActive = false
 			this.flushTopActionsIntent()
 		},
-		queueTopActionsIntent(shouldHide) {
+		queueTopActionsIntent(shouldHide: boolean) {
 			// 同方向连续事件不反复延后；方向反转时重置 72ms 防抖，最后动作获胜。
 			if (this.pendingTopActionsHidden === shouldHide && this.topActionsIntentTimer) return
 			if (this.topActionsIntentTimer) clearTimeout(this.topActionsIntentTimer)
@@ -379,7 +411,7 @@ export default {
 			this.pendingTopActionsHidden = null
 			this.setTopActionsState(shouldHide)
 		},
-		setTopActionsState(shouldHide) {
+		setTopActionsState(shouldHide: boolean) {
 			if (this.hideTopActions === shouldHide) return
 			this.hideTopActions = shouldHide
 			this.suppressScrollIntentUntil = Date.now() + 320
@@ -401,8 +433,8 @@ export default {
 				this.scrollIntoViewId = ''
 			}, 300)
 		},
-		onRefresherPulling(e) {
-			this.pullingDistance = e?.detail?.dy || 0
+		onRefresherPulling(e: PawEvent) {
+			this.pullingDistance = readPawEventNumber(e, 'dy')
 			if (this.pullingDistance > 2) this.queueTopActionsIntent(false)
 		},
 		onPullRefresh() {
@@ -444,8 +476,8 @@ export default {
 				this.noMoreHintVisible = false
 			}, 700)
 		},
-		goDetail(item) {
-			const dynamicId = item && item.id ? String(item.id) : 'mock-feed-1'
+		goDetail(item: HomeFeedCardMetadata) {
+			const dynamicId = item.id ? String(item.id) : 'mock-feed-1'
 			uni.navigateTo({
 				url: `/packages/dynamic/pages/detail/index?yardId=1&dynamicId=${encodeURIComponent(dynamicId)}`
 			})
@@ -460,14 +492,8 @@ export default {
 				avatar: '/static/user.png'
 			})
 		}
-	},
-	beforeDestroy() {
-		if (this.noMoreHintTimer) clearTimeout(this.noMoreHintTimer)
-		if (this.topActionsIntentTimer) clearTimeout(this.topActionsIntentTimer)
-		if (this.refreshRequestTimer) clearTimeout(this.refreshRequestTimer)
-		if (this.loadMoreRequestTimer) clearTimeout(this.loadMoreRequestTimer)
 	}
-}
+})
 </script>
 
 <style lang="less" scoped>

@@ -24,8 +24,8 @@ const actor = (id = 'reviewer-a', roles = ['reviewer']) => () => ({
 before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-rescue-review-action-governance-'))
   await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
-  const target = path.join(tempRoot, 'reviewActionAdapter.js')
-  await fs.copyFile(path.join(ROOT, 'packages/rescue/services/reviewActionAdapter.js'), target)
+  const target = path.join(tempRoot, 'reviewActionAdapter.ts')
+  await fs.copyFile(path.join(ROOT, 'packages/rescue/services/reviewActionAdapter.ts'), target)
   api = await import(`${pathToFileURL(target).href}?test=${Date.now()}-${Math.random()}`)
 })
 
@@ -50,6 +50,18 @@ test('rescue review read model requires a fresh trusted reviewer session and exp
   assert.ok(noRelation.diagnostics.skipped.some(item => item.code === 'MISSING_REVIEWER_RELATION'))
 })
 
+test('rescue review detail projects display metadata and filters media to strings', () => {
+  const detail = api.readRescueReviewDetail({
+    actorProvider: actor(),
+    reader: () => [{ ...pending, detail: '需要进一步核实', amount: 120, media: ['/evidence-a.png', 17, '/evidence-b.png'] }],
+    reviewItemId: 'review-a',
+  })
+  assert.equal(detail.canRead, true)
+  assert.equal(detail.item.detail, '需要进一步核实')
+  assert.equal(detail.item.amount, 120)
+  assert.deepEqual(detail.item.media, ['/evidence-a.png', '/evidence-b.png'])
+})
+
 test('rescue review action is idempotent, permits only pending terminal decisions, and never pays', () => {
   let records = [{ ...pending }]
   let writes = 0
@@ -69,8 +81,25 @@ test('rescue review action is idempotent, permits only pending terminal decision
 })
 
 test('review action source has no root navigation/storage import or payment writer', async () => {
-  const source = await fs.readFile(path.join(ROOT, 'packages/rescue/services/reviewActionAdapter.js'), 'utf8')
+  const source = await fs.readFile(path.join(ROOT, 'packages/rescue/services/reviewActionAdapter.ts'), 'utf8')
   assert.doesNotMatch(source, /(?:from\s+['"][^'"]*(?:navigation|utils\/rescueStorage)|require\s*\()/)
   assert.doesNotMatch(source, /(?:transitionRescueFunding|createPayment|pay\s*\()/i)
   assert.match(source, /pending: Object\.freeze\(\['approved', 'rejected'\]\)/)
+})
+
+test('rescue review pages use the adapter contracts and contain no explicit any types', async () => {
+  const detailPage = await fs.readFile(path.join(ROOT, 'packages/rescue/pages/review/detail/index.vue'), 'utf8')
+  const listPage = await fs.readFile(path.join(ROOT, 'packages/rescue/pages/review/list/index.vue'), 'utf8')
+  for (const source of [detailPage, listPage]) {
+    assert.doesNotMatch(source, /\bany\b/)
+    assert.doesNotMatch(source, /as\s+any/)
+    assert.doesNotMatch(source, /Record<string,\s*any>/)
+  }
+  assert.match(detailPage, /data\(\):\s*RescueReviewDetailPageState/)
+  assert.match(detailPage, /model:\s*RescueReviewDetailResult/)
+  assert.match(detailPage, /onLoad\(options:\s*unknown/)
+  assert.match(detailPage, /notifyReviewAction\(action:\s*RescueReviewActionResult\)/)
+  assert.match(listPage, /data\(\):\s*RescueReviewListPageState/)
+  assert.match(listPage, /model:\s*RescueReviewListResult/)
+  assert.match(listPage, /openDetail\(item:\s*RescueReviewListResult\['items'\]\[number\]\)/)
 })

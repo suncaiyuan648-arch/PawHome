@@ -5,15 +5,18 @@
     :failure-tone="failureTone" @back="$emit('back')" @action="$emit('action')" />
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+import { defineComponent } from 'vue'
+
 import PawResultPage from '@/components/feedback/PawResultPage.vue'
-export default {
+export default defineComponent({
   name: 'PawFlowResult',
   components: { PawResultPage },
   props: {
-    title: String,
-    body: String,
-    buttonText: String,
+    title: { type: String, default: '' },
+    body: { type: String, default: '' },
+    buttonText: { type: String, default: '' },
     failed: Boolean,
     navTitle: { type: String, default: '' },
     contentTop: { type: [Number, String], default: 38 },
@@ -23,6 +26,9 @@ export default {
     failureIconName: { type: String, default: '' },
     failureTone: { type: String, default: 'muted' }
   },
-  emits: ['back', 'action']
-}
+  emits: {
+    'back': eventContract<[]>(),
+    'action': eventContract<[]>(),
+  }
+})
 </script>

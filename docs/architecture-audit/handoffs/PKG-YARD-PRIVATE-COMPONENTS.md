@@ -28,8 +28,8 @@
 - `PawRescueReviewPage` 只在 `pages/yard/rescueReview.vue` 注册和渲染。
 - `PawJuryItemCard` 只在 `pages/yard/juryPanel.vue` 注册和渲染。
 - 没有第二个页面模板、JSON `usingComponents`、字符串路径、`resolveComponent`、动态 `import()` 或其他分包调用。
-- `PawRescueReviewPage` 内部只引用主包共享的 `PawPageNav`、`PawStatusPill`、`PawAvatar`、`LevelBadge`、`utils/rescueStorage.js` 与 `utils/profileNav.js`。
-- `PawJuryItemCard` 内部只引用主包共享的 `PawAvatar`、`LevelBadge`、`PawStatusPill`、`PawVoteRatioBar` 和 `utils/safeImgSrc.js`。
+- `PawRescueReviewPage` 内部只引用主包共享的 `PawPageNav`、`PawStatusPill`、`PawAvatar`、`LevelBadge`、`utils/rescueStorage.ts` 与 `utils/profileNav.ts`。
+- `PawJuryItemCard` 内部只引用主包共享的 `PawAvatar`、`LevelBadge`、`PawStatusPill`、`PawVoteRatioBar` 和 `utils/safeImgSrc.ts`。
 - 迁移后依赖方向为 `pages/yard → main`；没有 `main → pages/yard`、`pages/yard → pages/adoption` 或其他 sibling-private 依赖。
 
 生产源码中仍存在的 `components/PawJuryActionBar.vue`、`components/PawJuryVoteDialog.vue`、`components/PawVoteRatioBar.vue` 等评审相关组件没有被误判为本批私有：它们由其他页面/功能入口使用，继续保留主包共享归属。
@@ -39,9 +39,9 @@
 本批没有移动、复制或删除源码静态资源：
 
 - `PawRescueReviewPage` 的 `/static/figma/feature/rescue-fund-info.svg`、`rescue-fund-bg.svg` 仍使用根 `static/` 源文件。
-- `PawJuryItemCard` 的证据图 `/static/figma/jury-e81f2c2074a7772e8fbca3d3828b3a751f5cb5bb.png` 同时被 `utils/juryMock.js` 使用，继续保留主包根静态资源。
+- `PawJuryItemCard` 的证据图 `/static/figma/jury-e81f2c2074a7772e8fbca3d3828b3a751f5cb5bb.png` 同时被 `utils/juryMock.ts` 使用，继续保留主包根静态资源。
 - 构建后 `rescue-fund-bg.svg` 被编译器按页面 CSS 依赖生成在 `pages/yard/static/`；模板绝对路径的 `rescue-fund-info.svg` 和评审证据图仍由主包静态资源提供，这是现有资源归属规则的正常产物，不是源码资源迁移。
-- 未修改 `common/assets.js`、资源内容、资源 URL 或 Figma 资产。
+- 未修改 `common/assets.ts`、资源内容、资源 URL 或 Figma 资产。
 
 生成产物确认存在：
 
@@ -120,7 +120,7 @@ unpackage/dist/build/mp-weixin/pages/yard/components/PawJuryItemCard.{js,json,wx
 
 没有修改：
 
-- `pages.json`、路由 URL、页面状态、storage key 或业务数据行为
+- `pages.tson`、路由 URL、页面状态、storage key 或业务数据行为
 - 两个组件的 props、events、template、script、style、组件 API
 - 主包共享组件默认值、Figma map、native legacy baseline
 - 源码静态资源、上传、发布或真实救助/领养/投票提交

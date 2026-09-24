@@ -20,8 +20,8 @@
 			<!-- 动态：双列瀑布流 -->
 			<view v-else-if="activeTab === 'feed'" class="masonry">
 				<view v-for="(item, idx) in feedList" :key="'f-' + idx" class="hist-card" @click="onFeedTap(item)">
-					<view class="hist-card-img-wrap">
-						<image class="hist-card-img" :class="{ 'hist-card-img--short': idx % 2 === 1 }"
+						<view class="hist-card-img-wrap">
+							<image class="hist-card-img" :class="{ 'hist-card-img--short': Number(idx) % 2 === 1 }"
 							:src="item.cover" mode="aspectFill"></image>
 						<view class="loc-pill">
 							<uni-icons type="location" color="#ffffff" :size="12"></uni-icons>
@@ -81,140 +81,26 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
-import { openUserProfile, openYardDetail } from '@/utils/profileNav.js'
-import { buildRoute } from '@/navigation/routeContracts.js'
+import { openUserProfile, openYardDetail } from '@/utils/profileNav.ts'
+import { buildRoute } from '@/navigation/routeContracts.ts'
 import PawAvatar from '@/components/identity/PawAvatar.vue'
 import PawVerifiedBadge from '@/components/identity/PawVerifiedBadge.vue'
 import PawLikeIcon from '@/components/base/PawLikeIcon.vue'
+import {
+	createHistoryFeedDisplayMocks,
+	createHistoryPageMetadata,
+	normalizeHistoryRouteState
+} from '../../services/historyMetadata.ts'
+import type { HistoryFeedItem, HistoryPageState, HistoryProfileTarget, HistoryYardItem } from '../../services/historyMetadata.ts'
 
-const mockFeed = () => [
-	{
-		dynamicId: 'history-dynamic-1',
-		cover: '/static/figma/history/white-cat.jpg',
-		title: '小猫吃的好开心',
-		distance: '3.2km',
-		district: '金水区',
-		userAvatar: '/static/figma/history/user.png',
-		userName: '朝阳小区猫猫队',
-		pawId: '100001',
-		yardId: '1',
-		likes: 37,
-		liked: false
-	},
-	{
-		dynamicId: 'history-dynamic-2',
-		cover: '/static/figma/history/food.jpg',
-		title: '小院午后阳光正好',
-		distance: '1.8km',
-		district: '二七区',
-		userAvatar: '/static/figma/history/user.png',
-		userName: '朝阳小区猫猫队',
-		pawId: '100001',
-		yardId: '2',
-		likes: 32,
-		liked: true
-	},
-	{
-		dynamicId: 'history-dynamic-3',
-		cover: '/static/figma/history/pattern.jpg',
-		title: '今天多喂了一点粮',
-		distance: '5.0km',
-		district: '中原区',
-		userAvatar: '/static/figma/history/user.png',
-		userName: '朝阳小区猫猫队',
-		pawId: '100001',
-		yardId: '1',
-		likes: 24,
-		liked: false
-	},
-	{
-		dynamicId: 'history-dynamic-4',
-		cover: '/static/figma/history/cat-bowl.png',
-		title: '猫咪排队吃饭中',
-		distance: '2.1km',
-		district: '管城区',
-		userAvatar: '/static/figma/history/user.png',
-		userName: '朝阳小区猫猫队',
-		pawId: '100001',
-		yardId: '1',
-		likes: 41,
-		liked: true
-	},
-	{
-		dynamicId: 'history-dynamic-5',
-		cover: '/static/figma/history/food.jpg',
-		title: '新来的橘猫很乖',
-		distance: '4.5km',
-		district: '惠济区',
-		userAvatar: '/static/figma/history/user.png',
-		userName: '朝阳小区猫猫队',
-		pawId: '100001',
-		yardId: '2',
-		likes: 18,
-		liked: false
-	},
-	{
-		dynamicId: 'history-dynamic-6',
-		cover: '/static/figma/history/cat-bowl.png',
-		title: '投喂记录打卡',
-		distance: '900m',
-		district: '高新区',
-		userAvatar: '/static/figma/history/user.png',
-		userName: '朝阳小区猫猫队',
-		pawId: '100001',
-		yardId: '1',
-		likes: 56,
-		liked: false
-	}
-]
-
-const galleryMock = () => [
-	{ img: '/static/figma/history-yard-gallery.png', caption: '开饭了开饭了开饭' },
-	{ img: '/static/figma/history-yard-gallery.png', caption: '开饭了开饭了开饭' },
-	{ img: '/static/figma/history-yard-gallery.png', caption: '开饭了开饭了开饭' },
-	{ img: '/static/figma/history-yard-gallery.png', caption: '开饭了开饭了开饭' }
-]
-
-const mockYard = () => [
-	{
-		yardId: '1',
-		userAvatar: '/static/figma/home/yard-avatar.png',
-		userName: '我就是要喂猫',
-		pawId: 'yard_owner_001',
-		verified: true,
-		distance: '3.2km',
-		district: '金水区',
-		variant: 'badges',
-		badges: ['6只猫咪', '已成立2个月', '入驻4人'],
-		desc: '春去秋来二十年的救助流浪猫时间匆匆而去，在此希望每个...',
-		gallery: galleryMock()
-	},
-	{
-		yardId: '2',
-		userAvatar: '/static/figma/home/yard-avatar.png',
-		userName: '我就是要喂猫',
-		pawId: 'yard_owner_001',
-		verified: true,
-		distance: '3.2km',
-		district: '金水区',
-		variant: 'org',
-		orgName: '合肥市希望流浪动物基地',
-		desc: '春去秋来二十年的救助流浪猫时间匆匆而去，在此希望每个...',
-		gallery: galleryMock()
-	}
-]
-
-export default {
+export default defineComponent({
 	components: { PawPageNav, PawAvatar, PawVerifiedBadge, PawLikeIcon },
-	data() {
-		return {
-			activeTab: 'feed',
-			// 接入接口后：有数据赋值列表，无数据赋 [] 即显示空状态
-			feedList: mockFeed(),
-			yardList: mockYard()
-		}
+	data(): HistoryPageState {
+		return createHistoryPageMetadata()
 	},
 	computed: {
 		isCurrentEmpty() {
@@ -222,24 +108,24 @@ export default {
 			return this.yardList.length === 0
 		}
 	},
-	onLoad(options = {}) {
-		const historyCovers = ['/static/figma/history-feed-1.png?v=2', '/static/figma/history-feed-2.png?v=2', '/static/figma/history-feed-3.png?v=2', '/static/figma/history-feed-4.png?v=2']
-		this.feedList = this.feedList.slice(0, 4).map((item, index) => ({ ...item, cover: historyCovers[index], title: '小猫吃的好开心', distance: '3.2km', district: '金水区', likes: index === 1 ? 32 : 37, liked: index === 1 }))
-		if (options.state === 'yard') this.activeTab = 'yard'
-		if (options.state === 'empty') {
+	onLoad(options: unknown = {}) {
+		this.feedList = createHistoryFeedDisplayMocks(this.feedList)
+		const state = normalizeHistoryRouteState(options)
+		if (state === 'yard') this.activeTab = 'yard'
+		if (state === 'empty') {
 			this.activeTab = 'yard'
 			this.yardList = []
 		}
 	},
 	methods: {
-		openUserFromItem(item) {
+		openUserFromItem(item: HistoryProfileTarget) {
 			openUserProfile({
 				pawId: item.pawId,
 				nickname: item.userName,
 				avatar: item.userAvatar
 			})
 		},
-		onFeedTap(item) {
+		onFeedTap(item: HistoryFeedItem) {
 			if (!item) return
 			const dynamicId = item.dynamicId != null && String(item.dynamicId).trim() !== '' ? String(item.dynamicId) : ''
 			if (!dynamicId) {
@@ -250,14 +136,14 @@ export default {
 				url: buildRoute('dynamic.detail', { dynamicId })
 			})
 		},
-		onYardTap(item) {
+		onYardTap(item: HistoryYardItem) {
 			if (!item) return
 			openYardDetail({
 				yardId: item.yardId || '1',
 				yardName: item.yardName || item.userName || ''
 			})
 		},
-		toggleFeedLike(idx) {
+		toggleFeedLike(idx: number) {
 			const item = this.feedList[idx]
 			if (!item) return
 			if (item.liked) {
@@ -269,7 +155,7 @@ export default {
 			}
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

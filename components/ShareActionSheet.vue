@@ -32,20 +32,54 @@
   </PawBottomSheet>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
-export default {
+export type ShareActionKey = 'poster' | 'link' | 'wechat' | 'moments' | 'report'
+
+export interface ShareData {
+  type?: 'jury-review'
+  reviewType?: 'adoption' | 'rescue'
+  itemId?: string
+  title?: string
+  summary?: string
+  applicantName?: string
+  yardName?: string
+  petNames?: string[]
+  imageUrl?: string
+  path?: string
+  query?: string
+}
+
+interface ShareActionItem {
+  key: Exclude<ShareActionKey, 'report'>
+  label: string
+  bubble: string
+  iconName: string
+  iconSize: number
+}
+
+interface ShareActionSheetState { mainActions: ShareActionItem[] }
+
+export default defineComponent({
   name: 'ShareActionSheet',
   components: { PawBottomSheet, PawIcon },
   props: {
     visible: { type: Boolean, default: false },
     // 页面控制器提供当前业务对象，组件只负责把它原样带回选择事件。
-    shareData: { type: Object, default: () => ({}) }
+    shareData: { type: Object as PropType<ShareData>, default: () => ({}) }
   },
-  emits: ['update:visible', 'select', 'close'],
-  data() {
+  emits: {
+    'update:visible': eventContract<[value: boolean]>(),
+    'select': eventContract<[key: ShareActionKey, data: ShareData]>(),
+    'close': eventContract<[]>(),
+  },
+  data(): ShareActionSheetState {
     return {
       mainActions: [
         {
@@ -82,23 +116,23 @@ export default {
   computed: {
     visibleProxy: {
       get() { return this.visible },
-      set(value) { this.$emit('update:visible', value) }
+      set(value: boolean) { this.$emit('update:visible', value) }
     }
   },
   methods: {
-    bubbleStyle(url) {
+    bubbleStyle(url: string) {
       return { backgroundImage: `url(${url})` }
     },
     close() {
       this.$emit('update:visible', false)
       this.$emit('close')
     },
-    onPick(key) {
+    onPick(key: ShareActionKey) {
       this.$emit('select', key, this.shareData)
       this.close()
     }
   }
-}
+})
 </script>
 
 <style scoped>

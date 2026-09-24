@@ -6,7 +6,7 @@
 
 ## 交付范围
 
-新增 [`navigation/orderContracts.js`](../../../navigation/orderContracts.js)，保持纯 JavaScript 合同。它没有 Vue、uni-app、页面、分包或 storage 依赖，也没有直接执行写入。域 adapter 后续注入可信 actor、订单读取器和显式确认写入的 writer。
+新增 [`navigation/orderContracts.ts`](../../../navigation/orderContracts.ts)，保持纯 JavaScript 合同。它没有 Vue、uni-app、页面、分包或 storage 依赖，也没有直接执行写入。域 adapter 后续注入可信 actor、订单读取器和显式确认写入的 writer。
 
 合同冻结以下边界：
 
@@ -35,7 +35,7 @@
 
 ## 验收边界
 
-本子批只冻结类型、关联、可见性、能力和注入式保存结果合同，**未接入** `utils/rewardOrderStorage.js`、`utils/applicationMockApi.js`、投喂订单详情、页面、路由或实际后端。没有宣称 G-ORDER 业务链路完成，也没有执行真实订单、支付、退款、履约或 DevTools 交互。
+本子批只冻结类型、关联、可见性、能力和注入式保存结果合同，**未接入** `utils/rewardOrderStorage.ts`、`utils/applicationMockApi.ts`、投喂订单详情、页面、路由或实际后端。没有宣称 G-ORDER 业务链路完成，也没有执行真实订单、支付、退款、履约或 DevTools 交互。
 
 总工接入时必须串行完成：
 
@@ -46,4 +46,4 @@
 
 ## 未修改项
 
-本批没有修改 `pages.json`、页面、storage、package scripts、lockfile、native UI baseline，没有真实写入，没有提交或暂存。
+本批没有修改 `pages.tson`、页面、storage、package scripts、lockfile、native UI baseline，没有真实写入，没有提交或暂存。

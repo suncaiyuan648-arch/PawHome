@@ -85,7 +85,7 @@
                 <view class="pd-message-name"><text>姜栋</text>
                   <LevelBadge level="1" /><text class="pd-role">小黄的第3任云家长</text>
                 </view><text class="pd-message-copy">给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞</text><text
-                  class="pd-message-meta">昨天 20:45　江西　回复</text>
+                  class="pd-message-meta">昨天 20:45&#x3000;江西&#x3000;回复</text>
               </view>
               <view class="pd-like">
                 <PawLikeIcon :liked="true" /><text>32</text>
@@ -114,8 +114,10 @@
   </view>
 </template>
 
-<script>
-import { goBackSmart } from "@/utils/navBack.js";
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+import { goBackSmart } from "@/utils/navBack.ts";
 import DetailTabber from "./components/DetailTabber.vue";
 import AdoptEntryHintModal from "./components/AdoptEntryHintModal.vue";
 import AdoptPickCatsSheet from "@/components/AdoptPickCatsSheet.vue";
@@ -125,39 +127,84 @@ import LevelBadge from "@/components/customBadge/LevelBadge.vue";
 import YardFeedPopup from "@/components/YardFeedPopup.vue";
 import ShareActionSheet from "@/components/ShareActionSheet.vue";
 import PawPageNav from "@/components/PawPageNav.vue";
-import { shouldShowAdoptEntryHint, dismissAdoptEntryHint } from "@/utils/adoptEntryGate.js";
-import { PAW_MSG_ADOPT_DAY_LIMIT } from "@/utils/pawNoticeMessages.js";
-import { getPawHomeYardMock } from "@/utils/yardMock.js";
+import { shouldShowAdoptEntryHint, dismissAdoptEntryHint } from "@/utils/adoptEntryGate.ts";
+import { PAW_MSG_ADOPT_DAY_LIMIT } from "@/utils/pawNoticeMessages.ts";
+import { getPawHomeYardMock } from "@/utils/yardMock.ts";
 import PawLikeIcon from "@/components/base/PawLikeIcon.vue";
-import { openUserProfile } from "@/utils/profileNav.js";
-import { getWechatNavLayout } from "@/utils/navLayout.js";
-import { buildRoute } from "@/navigation/routeContracts.js";
-import { readLocalAnimal, readPublicAnimal } from '../../services/localManagementStorage.js';
+import { openUserProfile } from "@/utils/profileNav.ts";
+import { getWechatNavLayout } from "@/utils/navLayout.ts";
+import { readPawEventNumber } from '@/utils/pawEventMetadata.ts'
+import { buildRoute } from "@/navigation/routeContracts.ts";
+import { readLocalAnimal, readPublicAnimal } from '../../services/localManagementStorage.ts';
+import type { WechatNavLayout } from '@/utils/navLayout.ts'
+import type { YardComment, YardMock, YardPet } from '@/utils/yardMock.ts'
+import {
+  createPetDetailFigmaVariantPets,
+  normalizePetDetailRecord,
+  PET_DETAIL_FIGMA_OWNER_AVATAR,
+} from '@/utils/petDetailMetadata.ts'
 
 const IMG_A = "/static/home-feed-1.png";
 
-function normalizePreviewImageUrl(value) {
+interface AnimalDetailState {
+  galleryHeightPx: number
+  navOverlayOffset: number
+  navRightReservedWidth: number
+  galleryIndex: number
+  activeIndex: number
+  yardId: string
+  yardName: string
+  yardJoined: boolean
+  showAdoptEntryHint: boolean
+  pendingOpenAdoptSheetAfterHint: boolean
+  pawAdoptEntryMsg: string
+  adoptPickVisible: boolean
+  figmaFeedPopupVisible: boolean
+  figmaShareSheetVisible: boolean
+  figmaVariant: number
+  managedPet: boolean
+  adoptablePets: YardPet[]
+  yard: YardMock
+}
+
+interface PetDetailFooterActionEvent {
+  key: string
+}
+
+interface PetImagePreviewPayload {
+  current: string
+  urls: string[]
+}
+
+function queryText(value: unknown): string {
+  return typeof value === 'string' || typeof value === 'number' ? String(value) : ''
+}
+
+function normalizePreviewImageUrl(value: string | null | undefined): string {
   if (typeof value !== 'string') return '';
   const url = value.trim();
   if (!url) return '';
   return /^(?:\/|https?:\/\/|wxfile:\/\/|cloud:\/\/)/i.test(url) ? url : '';
 }
 
-function normalizePreviewImageUrls(values) {
-  if (!Array.isArray(values)) return [];
-  return Array.from(new Set(values.map(normalizePreviewImageUrl).filter(Boolean)));
+function normalizePreviewImageUrls(values: readonly string[]): string[] {
+  const candidates = Array.isArray(values) ? values : [];
+  const urls = candidates
+    .map(normalizePreviewImageUrl)
+    .filter((url): url is string => Boolean(url));
+  return Array.from(new Set(urls));
 }
 
-function isPackagedPreviewImageUrl(url) {
+function isPackagedPreviewImageUrl(url: string): boolean {
   return /^\/static\//i.test(url);
 }
 
-function preparePreviewImageUrl(url) {
+function preparePreviewImageUrl(url: string): Promise<string> {
   if (!isPackagedPreviewImageUrl(url) || typeof uni === 'undefined' || typeof uni.compressImage !== 'function') {
     return Promise.resolve(url);
   }
 
-  return new Promise((resolve) => {
+  return new Promise<string>((resolve) => {
     uni.compressImage({
       src: url,
       compressedWidth: 1080,
@@ -176,7 +223,7 @@ function preparePreviewImageUrl(url) {
   });
 }
 
-export default {
+export default defineComponent({
   components: {
     DetailTabber,
     AdoptEntryHintModal,
@@ -187,8 +234,9 @@ export default {
     ShareActionSheet,
     PawLikeIcon,
     PawPageNav,
+    AdoptPickCatsSheet,
   },
-  data() {
+  data(): AnimalDetailState {
     const yard = getPawHomeYardMock();
     return {
       galleryHeightPx: getWechatNavLayout().windowWidth,
@@ -207,54 +255,52 @@ export default {
       figmaShareSheetVisible: false,
       figmaVariant: 0,
       managedPet: false,
-      adoptablePets: yard.pets.map((pet) => ({ ...pet })),
+      adoptablePets: yard.pets.map(pet => ({ ...pet })),
       yard,
     };
   },
   computed: {
-    currentPet() {
+    currentPet(): YardPet {
       return this.adoptablePets[this.activeIndex] || this.adoptablePets[0];
     },
-    galleryUrls() {
+    galleryUrls(): string[] {
       return (this.currentPet && this.currentPet.gallery) || [IMG_A];
     },
-    positionText() {
+    positionText(): string {
       if (this.figmaVariant) return `${this.activeIndex + 1}/${this.adoptablePets.length}`;
       const n = this.adoptablePets.length;
       return `${this.activeIndex + 1}/${n}`;
     },
   },
-  onLoad(query) {
+  onLoad(query: Record<string, unknown> = {}) {
     const layout = getWechatNavLayout();
     this.galleryHeightPx = layout.windowWidth;
     this.navOverlayOffset = layout.totalHeight;
     this.navRightReservedWidth = layout.rightReservedWidth;
-    if (query && query.yardName) {
+    const requestedYardName = queryText(query.yardName)
+    if (requestedYardName) {
       try {
-        this.yardName = decodeURIComponent(query.yardName);
-      } catch (e) {
-        this.yardName = query.yardName;
+        this.yardName = decodeURIComponent(requestedYardName);
+      } catch {
+        this.yardName = requestedYardName;
       }
       this.yard.name = this.yardName;
     }
-    if (query && query.yardId) this.yardId = String(query.yardId);
-    const rawAnimalId = query && (query.animalId !== undefined ? query.animalId : query.petId);
+    const requestedYardId = queryText(query.yardId)
+    if (requestedYardId) this.yardId = requestedYardId;
+    const rawAnimalId = query.animalId !== undefined ? query.animalId : query.petId;
     const requestedPetId = rawAnimalId !== undefined && rawAnimalId !== ""
       ? decodeURIComponent(String(rawAnimalId))
       : '';
-    const requestedIndex = query && query.idx !== undefined && query.idx !== ""
+    const requestedIndex = query.idx !== undefined && query.idx !== ""
       ? parseInt(String(query.idx), 10)
       : Number.NaN;
     if (requestedPetId) {
-      try {
-        const pi = this.adoptablePets.findIndex((x) => x.id === requestedPetId);
-        if (pi >= 0) {
-          this.activeIndex = pi;
-        } else if (!Number.isNaN(requestedIndex) && requestedIndex >= 0) {
-          this.activeIndex = Math.min(requestedIndex, this.adoptablePets.length - 1);
-        }
-      } catch (e) {
-        /* ignore */
+      const petIndex = this.adoptablePets.findIndex(pet => pet.id === requestedPetId);
+      if (petIndex >= 0) {
+        this.activeIndex = petIndex;
+      } else if (!Number.isNaN(requestedIndex) && requestedIndex >= 0) {
+        this.activeIndex = Math.min(requestedIndex, this.adoptablePets.length - 1);
       }
     } else if (!Number.isNaN(requestedIndex) && requestedIndex >= 0) {
       const max = this.adoptablePets.length - 1;
@@ -263,74 +309,50 @@ export default {
     this.galleryIndex = 0;
     // The state query selects a visual reference only.  It must never grant
     // management capability; that comes from a fresh actor/yard/animal read.
-    this.figmaVariant = Number(query && query.state) || 0;
+    this.figmaVariant = Number(query.state) || 0;
     if (this.figmaVariant >= 35 && this.figmaVariant <= 37) {
-      this.adoptablePets = this.adoptablePets.map((pet, index) => ({
-        ...pet,
-        avatar: index === 3 ? '/static/figma/adoption-flow/pet-hero.png' : '/static/figma/adoption-flow/pet-orange.png',
-        gallery: index === 3
-          ? [
-            '/static/figma/adoption-flow/pet-hero.png',
-            '/static/figma/adoption-flow/pet-orange.png',
-            '/static/figma/pets/pet-black-white.png'
-          ]
-          : [
-            '/static/figma/adoption-flow/pet-orange.png',
-            '/static/figma/pets/pet-black-white.png',
-            '/static/figma/adoption-flow/pet-hero.png'
-          ],
-        statusLabel: '已云养',
-        tags: ['中华田园犬', '男生', '已绝育', '2岁3个月']
-      }));
+      this.adoptablePets = createPetDetailFigmaVariantPets(this.adoptablePets);
       const requestedPetIndexById = requestedPetId
-        ? this.adoptablePets.findIndex((pet) => pet.id === requestedPetId)
+        ? this.adoptablePets.findIndex(pet => pet.id === requestedPetId)
         : -1;
       const requestedPetIndex = requestedPetIndexById >= 0 ? requestedPetIndexById : requestedIndex;
       this.activeIndex = requestedPetIndex >= 0 && requestedPetIndex < this.adoptablePets.length
         ? requestedPetIndex
         : 3;
-      this.yard.avatar = '/static/figma/adoption-flow/pet-owner.png';
+      this.yard.avatar = PET_DETAIL_FIGMA_OWNER_AVATAR;
     }
-    if (query && query.popup === 'adopt-limit') this.showAdoptEntryHint = true;
+    if (query.popup === 'adopt-limit') this.showAdoptEntryHint = true;
     this.refreshAnimal(requestedPetId);
   },
   onShow() {
     this.refreshAnimal(this.currentPet && this.currentPet.id);
   },
   methods: {
-    refreshAnimal(requestedPetId) {
-    if (requestedPetId) {
-      const publicAnimal = readPublicAnimal(requestedPetId, { yardId: this.yardId });
-      if (publicAnimal.success && publicAnimal.data && publicAnimal.data.record) {
-        const record = publicAnimal.data.record;
-        const normalized = {
-          ...record,
-          id: record.animalId,
-          name: record.name || '未命名动物',
-          avatar: record.avatar || IMG_A,
-          desc: record.desc || record.description || '',
-          statusLabel: record.statusLabel || record.status || '待领养',
-          state: record.state || 'pending',
-          tags: Array.isArray(record.tags) ? record.tags : [],
-          gallery: Array.isArray(record.gallery) && record.gallery.length ? record.gallery : [record.avatar || IMG_A]
-        };
-        const existing = this.adoptablePets.findIndex((pet) => pet.id === requestedPetId);
-        if (existing >= 0) this.adoptablePets.splice(existing, 1, { ...this.adoptablePets[existing], ...normalized });
-        else this.adoptablePets.unshift(normalized);
+    refreshAnimal(requestedPetId: string | null | undefined) {
+      const petId = queryText(requestedPetId);
+      if (petId) {
+        const publicAnimal = readPublicAnimal(petId, { yardId: this.yardId });
+        if (publicAnimal.success && publicAnimal.data?.record) {
+          const normalized = normalizePetDetailRecord(publicAnimal.data.record, IMG_A);
+          if (normalized) {
+            const existing = this.adoptablePets.findIndex(pet => pet.id === petId);
+            if (existing >= 0) this.adoptablePets.splice(existing, 1, { ...this.adoptablePets[existing], ...normalized });
+            else this.adoptablePets.unshift(normalized);
+          }
+        }
       }
-    }
-    this.managedPet = false;
-    if (requestedPetId) {
-      const managed = readLocalAnimal(requestedPetId, {
-        yardId: this.yardId,
-        actorProvider: () => uni.getStorageSync('PAWHOME_ACTOR_SESSION')
-      });
-      this.managedPet = Boolean(managed && managed.success);
-    }
-      const index = this.adoptablePets.findIndex(pet => pet.id === requestedPetId);
+      this.managedPet = false;
+      if (petId) {
+        const managed = readLocalAnimal(petId, {
+          yardId: this.yardId,
+          actorProvider: () => uni.getStorageSync('PAWHOME_ACTOR_SESSION')
+        });
+        this.managedPet = Boolean(managed && managed.success);
+      }
+      const index = this.adoptablePets.findIndex(pet => pet.id === petId);
       if (index >= 0) this.activeIndex = index;
     },
-    onNavLayout(layout) {
+    onNavLayout(layout: Partial<WechatNavLayout>) {
       if (!layout) return;
       if (Number.isFinite(Number(layout.totalHeight))) this.navOverlayOffset = Number(layout.totalHeight);
       if (Number.isFinite(Number(layout.rightReservedWidth))) {
@@ -342,12 +364,14 @@ export default {
       const petId = this.currentPet && this.currentPet.id ? encodeURIComponent(this.currentPet.id) : '';
       try {
         uni.navigateTo({ url: buildRoute('animal.album', { animalId: decodeURIComponent(petId), yardId: String(this.yardId || '') }) });
-      } catch (error) {
+      } catch {
         uni.showToast({ title: '相册暂不可用', icon: 'none' });
       }
     },
-    previewPetImage(payload) {
-      const requestedUrls = Array.isArray(payload?.urls) && payload.urls.length ? payload.urls : this.galleryUrls;
+    previewPetImage(payload: string | PetImagePreviewPayload) {
+      const payloadRecord = typeof payload === 'string' ? null : payload;
+      const payloadUrls = payloadRecord?.urls;
+      const requestedUrls = Array.isArray(payloadUrls) && payloadUrls.length ? payloadUrls : this.galleryUrls;
       let urls = normalizePreviewImageUrls(requestedUrls);
       if (!urls.length && requestedUrls !== this.galleryUrls) urls = normalizePreviewImageUrls(this.galleryUrls);
       if (!urls.length) {
@@ -356,7 +380,7 @@ export default {
         return;
       }
 
-      const requestedCurrent = typeof payload === 'string' ? payload : payload?.current;
+      const requestedCurrent = typeof payload === 'string' ? payload : payloadRecord?.current;
       const normalizedCurrent = normalizePreviewImageUrl(requestedCurrent);
       const current = urls.includes(normalizedCurrent) ? normalizedCurrent : urls[0];
       const currentIndex = urls.indexOf(current);
@@ -368,7 +392,7 @@ export default {
       }
 
       // 微信原生预览对包内静态路径的解码兼容性弱，先转换为临时文件路径；网络图保持原 URL。
-      Promise.all(urls.map(preparePreviewImageUrl)).then((preparedUrls) => {
+      Promise.all(urls.map(preparePreviewImageUrl)).then(preparedUrls => {
         const preparedCurrent = preparedUrls[currentIndex < 0 ? 0 : currentIndex] || preparedUrls[0];
         uni.previewImage({
           // uni-mp-weixin 对 current 的兼容处理以索引为准，且索引与 urls 始终一一对应。
@@ -381,7 +405,7 @@ export default {
               count: preparedUrls.length
             });
           },
-          fail: (error) => {
+          fail: error => {
             console.error('[PawHome][petDetail] previewImage failed', {
               current: preparedCurrent,
               currentIndex,
@@ -390,7 +414,7 @@ export default {
             });
             uni.showToast({ title: '图片预览失败，请稍后重试', icon: 'none' });
           },
-          complete: (result) => {
+          complete: result => {
             console.info('[PawHome][petDetail] previewImage complete', {
               current: preparedCurrent,
               currentIndex,
@@ -404,11 +428,11 @@ export default {
     goBack() {
       goBackSmart({ fallbackUrl: "/pages/index/index" });
     },
-    onGalleryChange(e) {
-      const cur = e?.detail?.current;
+    onGalleryChange(e: PawEvent) {
+      const cur = readPawEventNumber(e, 'current');
       if (typeof cur === "number") this.galleryIndex = cur;
     },
-    selectPet(pi) {
+    selectPet(pi: number) {
       if (pi === this.activeIndex) return;
       this.activeIndex = pi;
       this.galleryIndex = 0;
@@ -449,8 +473,7 @@ export default {
     showLearnFood() {
       uni.showToast({ title: '猫粮说明', icon: 'none' });
     },
-    onFigmaFooterAction(action) {
-      if (!action) return;
+    onFigmaFooterAction(action: PetDetailFooterActionEvent) {
       if (action.key === 'share') this.figmaShareSheetVisible = true;
       if (action.key === 'join') this.yardJoined ? this.onYardLeave() : this.onYardJoin();
       if (action.key === 'adopt') this.openAdoptFlow();
@@ -462,9 +485,9 @@ export default {
     onFigmaFooterPrimary() {
       this.figmaFeedPopupVisible = true;
     },
-    openMessageUser(comment) {
-      const author = comment && (comment.author || comment);
-      if (!author || !author.name) return;
+    openMessageUser(comment: YardComment) {
+      const author = comment.author;
+      if (!author.name) return;
       openUserProfile({
         pawId: author.pawId || `yard-comment-${comment.id || author.name}`,
         nickname: author.name,
@@ -472,7 +495,7 @@ export default {
       });
     },
   },
-};
+});
 </script>
 
 <style lang="less" scoped>

@@ -18,7 +18,7 @@
 ## 边界
 
 - 仅使用本地/mock storage 和既有 `feedingOrderMockApi`，不接入真实后端、支付、提交或生产写入。
-- `pages/meMore/adoptionFlow.vue` 已在后续 C0 批次删除；领养/救助进度分别由 `packages/adoption/pages/progress/index` 与 `packages/rescue/pages/progress/index` 承载，旧链接只由 `navigation/legacyRoutes.js` 做只读兼容解析。详见 [C0 adoption flow handoff](C0-ADOPTION-FLOW-ROUTE-MIGRATION-20260919.md)。
+- `pages/meMore/adoptionFlow.vue` 已在后续 C0 批次删除；领养/救助进度分别由 `packages/adoption/pages/progress/index` 与 `packages/rescue/pages/progress/index` 承载，旧链接只由 `navigation/legacyRoutes.ts` 做只读兼容解析。详见 [C0 adoption flow handoff](C0-ADOPTION-FLOW-ROUTE-MIGRATION-20260919.md)。
 - `myAssets`、`myCloudPets`、地址页和小院管理聚合页暂不删除，因其仍缺少完整的一对一 canonical 页面或需要继续拆分；`pages/dev/*` 保留为开发专用页面。
 
 ## 验证

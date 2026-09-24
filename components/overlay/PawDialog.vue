@@ -27,10 +27,20 @@
   </PawOverlay>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
 import PawOverlay from '@/components/overlay/PawOverlay.vue'
 
-export default {
+type DialogPlacement = 'top' | 'center' | 'bottom'
+
+function isDialogPlacement(value: unknown): value is DialogPlacement {
+  return value === 'top' || value === 'center' || value === 'bottom'
+}
+
+export default defineComponent({
   name: 'PawDialog',
   components: { PawOverlay },
   props: {
@@ -49,13 +59,20 @@ export default {
     maskColor: { type: String, default: '' },
     autoClose: { type: Boolean, default: true },
     placement: {
-      type: String,
+      type: String as PropType<DialogPlacement>,
       default: 'center',
-      validator: value => ['top', 'center', 'bottom'].includes(value)
+      validator: isDialogPlacement
     },
     zIndex: { type: [String, Number], default: 10000 }
   },
-  emits: ['update:modelValue', 'update:visible', 'confirm', 'cancel', 'after-open', 'after-close'],
+  emits: {
+    'update:modelValue': eventContract<[value: boolean]>(),
+    'update:visible': eventContract<[value: boolean]>(),
+    'confirm': eventContract<[]>(),
+    'cancel': eventContract<[]>(),
+    'after-open': eventContract<[]>(),
+    'after-close': eventContract<[]>(),
+  },
   computed: {
     openValue() { return this.modelValue !== undefined ? this.modelValue : !!this.visible },
     canCloseOnMask() { return this.variant !== 'destructive' && this.closeOnMask },
@@ -65,7 +82,7 @@ export default {
     showActions() { return this.showCancel || !!this.confirmText }
   },
   methods: {
-    setValue(value) { this.$emit('update:modelValue', value); this.$emit('update:visible', value) },
+    setValue(value: boolean) { this.$emit('update:modelValue', value); this.$emit('update:visible', value) },
     onCancel() { this.$emit('cancel'); this.setValue(false) },
     onConfirm() {
       if (this.confirmLoading || !this.confirmEnabled) return
@@ -73,7 +90,7 @@ export default {
       if (this.autoClose) this.setValue(false)
     }
   }
-}
+})
 </script>
 
 <style scoped>

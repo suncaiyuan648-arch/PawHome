@@ -15,11 +15,11 @@ let tempEsmRoot
 async function loadEsm(file) {
   if (!tempEsmRoot) {
     tempEsmRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-route-contracts-'))
-    await fs.writeFile(path.join(tempEsmRoot, 'package.json'), '{"type":"module"}\n')
+    await fs.writeFile(path.join(tempEsmRoot, 'package.tson'), '{"type":"module"}\n')
     await fs.mkdir(path.join(tempEsmRoot, 'navigation'), { recursive: true })
-    await fs.copyFile(path.join(ROOT, 'navigation/routeContracts.js'), path.join(tempEsmRoot, 'navigation/routeContracts.js'))
-    await fs.copyFile(path.join(ROOT, 'navigation/legacyRoutes.js'), path.join(tempEsmRoot, 'navigation/legacyRoutes.js'))
-    await fs.copyFile(path.join(ROOT, 'navigation/weixinLoadOptions.js'), path.join(tempEsmRoot, 'navigation/weixinLoadOptions.js'))
+    await fs.copyFile(path.join(ROOT, 'navigation/routeContracts.ts'), path.join(tempEsmRoot, 'navigation/routeContracts.ts'))
+    await fs.copyFile(path.join(ROOT, 'navigation/legacyRoutes.ts'), path.join(tempEsmRoot, 'navigation/legacyRoutes.ts'))
+    await fs.copyFile(path.join(ROOT, 'navigation/weixinLoadOptions.ts'), path.join(tempEsmRoot, 'navigation/weixinLoadOptions.ts'))
   }
   const fileUrl = pathToFileURL(path.join(tempEsmRoot, file)).href
   return import(`${fileUrl}?test=${Date.now()}-${Math.random()}`)
@@ -30,9 +30,9 @@ let legacy
 let weixin
 
 before(async () => {
-  contracts = await loadEsm('navigation/routeContracts.js')
-  legacy = await loadEsm('navigation/legacyRoutes.js')
-  weixin = await loadEsm('navigation/weixinLoadOptions.js')
+  contracts = await loadEsm('navigation/routeContracts.ts')
+  legacy = await loadEsm('navigation/legacyRoutes.ts')
+  weixin = await loadEsm('navigation/weixinLoadOptions.ts')
 })
 
 after(async () => {

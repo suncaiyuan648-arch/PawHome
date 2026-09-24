@@ -35,26 +35,30 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
-export default {
+interface YardFeedIconLabState { sizes: number[] }
+
+export default defineComponent({
   name: 'YardFeedIconLab',
   components: { PawIcon },
-  data() {
+  data(): YardFeedIconLabState {
     return {
       sizes: [16, 19, 22, 24, 28, 32, 48, 64, 96]
     }
   },
   methods: {
-    frameStyle(size) {
+    frameStyle(size: number) {
       return {
         width: `${size}px`,
         height: `${size}px`
       }
     }
   }
-}
+})
 </script>
 
 <style>

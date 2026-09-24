@@ -25,18 +25,34 @@
   </view>
 </template>
 
-<script>
-import { safeImgSrc } from "@/utils/safeImgSrc.js";
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
+
+import { safeImgSrc } from "@/utils/safeImgSrc.ts";
 import LevelBadge from "@/components/customBadge/LevelBadge.vue";
 import PawAvatar from "@/components/identity/PawAvatar.vue";
+import {
+  isYardRankScrollItem,
+  normalizeYardRankScrollItems,
+  type YardRankScrollInput,
+  type YardRankScrollItem,
+} from "@/utils/yardMock.ts";
 
-export default {
+interface SeamlessScrollState {
+  currentIndex: number
+  rowHeight: number
+  translateY: number
+  enableTransition: boolean
+  intervalTimer: ReturnType<typeof setInterval> | null
+}
+
+export default defineComponent({
   name: "SeamlessScroll",
   components: { LevelBadge, PawAvatar },
   props: {
-    /** 项可为 { text, level?, avatar?, rankTitle?, pawId? }；数据由页面传入。 */
+    /** 接收共享小院排行榜项，也兼容历史字符串名称。 */
     items: {
-      type: Array,
+      type: Array as PropType<YardRankScrollInput[]>,
       default: () => [],
     },
     avatarFallback: {
@@ -48,7 +64,10 @@ export default {
       default: "小院投喂第一名",
     },
   },
-  data() {
+  emits: {
+    "user-click": (item: YardRankScrollItem) => isYardRankScrollItem(item),
+  },
+  data(): SeamlessScrollState {
     return {
       currentIndex: 0,
       rowHeight: 40,
@@ -58,10 +77,10 @@ export default {
     };
   },
   computed: {
-    scrollList() {
-      return this.items.map((x, i) => typeof x === "string" ? { text: x, id: i } : { id: i, ...x });
+    scrollList(): YardRankScrollItem[] {
+      return normalizeYardRankScrollItems(this.items);
     },
-    renderList() {
+    renderList(): YardRankScrollItem[] {
       if (!this.scrollList.length) return [];
       return [...this.scrollList, this.scrollList[0]];
     },
@@ -82,14 +101,14 @@ export default {
   mounted() {
     this.startAutoScroll();
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.stopAutoScroll();
   },
   methods: {
-    resolveAvatar(item) {
+    resolveAvatar(item: YardRankScrollItem) {
       return safeImgSrc(item && item.avatar, safeImgSrc(this.avatarFallback));
     },
-    onUserTap(item) {
+    onUserTap(item: YardRankScrollItem) {
       if (!item) return;
       this.$emit("user-click", item);
     },
@@ -117,7 +136,7 @@ export default {
       }
     },
   },
-};
+});
 </script>
 
 <style lang="less" scoped>

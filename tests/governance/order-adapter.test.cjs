@@ -11,6 +11,7 @@ const ROOT = path.resolve(__dirname, '../..')
 const REWARD_KEY = 'PAWHOME_REWARD_ORDERS'
 let tempRoot
 let api
+let feedingApi
 
 const SELF_ID = '2876598765'
 const GIFT = {
@@ -39,19 +40,19 @@ function seedReward(records) {
 
 before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-order-adapter-'))
-  await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+  await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'utils'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'packages/feeding/services'), { recursive: true })
 
-  for (const file of ['actorCapabilities.js', 'orderContracts.js']) {
+  for (const file of ['actorCapabilities.ts', 'orderContracts.ts']) {
     await fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
   }
-  await fs.copyFile(path.join(ROOT, 'utils/rewardOrderStorage.js'), path.join(tempRoot, 'utils/rewardOrderStorage.js'))
-  await fs.copyFile(path.join(ROOT, 'utils/profileNav.js'), path.join(tempRoot, 'utils/profileNav.js'))
-  const feedingSource = await fs.readFile(path.join(ROOT, 'packages/feeding/services/orderMockApi.js'), 'utf8')
-  await fs.writeFile(path.join(tempRoot, 'packages/feeding/services/orderMockApi.js'), feedingSource.replace("'@/utils/profileNav.js'", "'../../../utils/profileNav.js'"))
-  await fs.copyFile(path.join(ROOT, 'packages/feeding/services/orderAdapter.js'), path.join(tempRoot, 'packages/feeding/services/orderAdapter.js'))
+  await fs.copyFile(path.join(ROOT, 'utils/rewardOrderStorage.ts'), path.join(tempRoot, 'utils/rewardOrderStorage.ts'))
+  await fs.copyFile(path.join(ROOT, 'utils/profileNav.ts'), path.join(tempRoot, 'utils/profileNav.ts'))
+  const feedingSource = await fs.readFile(path.join(ROOT, 'packages/feeding/services/orderMockApi.ts'), 'utf8')
+  await fs.writeFile(path.join(tempRoot, 'packages/feeding/services/orderMockApi.ts'), feedingSource.replace("'@/utils/profileNav.ts'", "'../../../utils/profileNav.ts'"))
+  await fs.copyFile(path.join(ROOT, 'packages/feeding/services/orderAdapter.ts'), path.join(tempRoot, 'packages/feeding/services/orderAdapter.ts'))
 
   globalThis.uni = {
     storage: new Map(),
@@ -66,7 +67,8 @@ before(async () => {
       this.storage.set(key, value)
     },
   }
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/feeding/services/orderAdapter.js')).href}?test=${Date.now()}-${Math.random()}`)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/feeding/services/orderAdapter.ts')).href}?test=${Date.now()}-${Math.random()}`)
+  feedingApi = await import(`${pathToFileURL(path.join(tempRoot, 'packages/feeding/services/orderMockApi.ts')).href}?api-test=${Date.now()}-${Math.random()}`)
 })
 
 after(async () => {
@@ -77,12 +79,42 @@ after(async () => {
 beforeEach(reset)
 
 test('adapter is read-only and binds the existing order contract/storage seams', async () => {
-  const source = await fs.readFile(path.join(ROOT, 'packages/feeding/services/orderAdapter.js'), 'utf8')
-  assert.match(source, /orderContracts\.js/)
-  assert.match(source, /rewardOrderStorage\.js/)
+  const source = await fs.readFile(path.join(ROOT, 'packages/feeding/services/orderAdapter.ts'), 'utf8')
+  assert.match(source, /orderContracts\.ts/)
+  assert.match(source, /rewardOrderStorage\.ts/)
   assert.match(source, /getFeedingOrders/)
   assert.doesNotMatch(source, /setStorageSync|removeStorageSync|saveRewardOrder|createRewardOrder|payOrder|refundOrder/i)
   assert.equal(api.readOrderList.constructor.name, 'AsyncFunction')
+})
+
+test('feeding mock API returns stable list, detail, timeline, logistics, and timeout projections', async () => {
+  const list = await feedingApi.getFeedingOrders({
+    variant: 'yard',
+    yardOwnerId: 'yard-owner-1',
+    yardId: '1',
+    sort: 'newest',
+  })
+  assert.equal(list.success, true)
+  assert.equal(list.source, 'mock')
+  assert.equal(list.data.total, 5)
+  assert.deepEqual(list.data.items.map((item) => item.id), [
+    'yard-order-1', 'yard-order-2', 'yard-order-3', 'yard-order-4', 'yard-order-5'
+  ])
+
+  const detail = await feedingApi.getFeedingOrderDetail({
+    type: 'yard-owner',
+    orderId: 'yard-order-4',
+    yardOwnerId: 'yard-owner-1',
+  })
+  assert.equal(detail.success, true)
+  assert.equal(detail.data.perspective, 'yard-owner')
+  assert.equal(detail.data.orderId, 'yard-order-4')
+  assert.equal(detail.data.orderNo, 'FEED-yard-order-4')
+  assert.equal(detail.data.timeline.length, 3)
+  assert.equal(detail.data.logistics.length, 4)
+  assert.equal(feedingApi.formatFeedbackTimeout('2025-01-01T00:00:00Z', Date.parse('2025-01-01T02:00:00Z')), '2小时')
+  assert.equal(feedingApi.formatFeedbackTimeout('2025-01-01T00:00:00Z', Date.parse('2025-01-04T00:00:00Z')), '3天')
+  assert.equal(feedingApi.formatFeedbackTimeout('invalid-date'), '')
 })
 
 test('saved reward records map to adoption_gift and legacy recordId without leaking address data', async () => {

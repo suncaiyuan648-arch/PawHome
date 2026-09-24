@@ -1,9 +1,20 @@
-<script>
-import { tryResolveLegacyRoute } from '@/navigation/legacyRoutes.js'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
-function normalizeLaunchQuery(query) {
-  if (!query || typeof query !== 'object' || Array.isArray(query)) return undefined
-  const normalized = {}
+import { tryResolveLegacyRoute } from '@/navigation/legacyRoutes.ts'
+
+interface LegacyRedirectTarget {
+  legacyPath: string
+  url: string
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function normalizeLaunchQuery(query: unknown) {
+  if (!isRecord(query)) return undefined
+  const normalized: Record<string, string> = {}
   for (const [key, value] of Object.entries(query)) {
     if (value === undefined || value === null) continue
     normalized[key] = String(value)
@@ -11,7 +22,8 @@ function normalizeLaunchQuery(query) {
   return normalized
 }
 
-function resolveLegacyRedirect(options = {}) {
+function resolveLegacyRedirect(options: unknown = {}): LegacyRedirectTarget | null {
+  if (!isRecord(options)) return null
   const rawPath = typeof options.path === 'string' ? options.path : ''
   if (!rawPath) return null
   const legacyPath = rawPath.startsWith('/') ? rawPath : `/${rawPath}`
@@ -20,24 +32,26 @@ function resolveLegacyRedirect(options = {}) {
   return { legacyPath, url: result.url }
 }
 
-function scheduleLegacyRedirect(app, target) {
-  if (!target || app.__legacyRedirectPath === target.legacyPath) return
-  app.__legacyRedirectPath = target.legacyPath
+const redirectedPathsByApp = new WeakMap<object, string>()
+
+function scheduleLegacyRedirect(app: object, target: LegacyRedirectTarget | null) {
+  if (!target || redirectedPathsByApp.get(app) === target.legacyPath) return
+  redirectedPathsByApp.set(app, target.legacyPath)
   // A cold-start route is already inside App.onLaunch. Redirect only after
   // the first native page stack exists; unsupported/ambiguous links stay
   // fail-closed instead of guessing a demo page.
   setTimeout(() => {
-    try { uni.redirectTo({ url: target.url }) } catch (error) { /* native stack may not be ready */ }
+    try { uni.redirectTo({ url: target.url }) } catch { /* native stack may not be ready */ }
   }, 0)
 }
 
-export default {
-  onLaunch(options = {}) {
+export default defineComponent({
+  onLaunch(options: unknown = {}) {
     console.warn('当前组件仅支持 uni_modules 目录结构 ，请升级 HBuilderX 到 3.1.0 版本以上！')
     console.log('App Launch')
     scheduleLegacyRedirect(this, resolveLegacyRedirect(options))
   },
-  onShow(options = {}) {
+  onShow(options: unknown = {}) {
     console.log('App Show')
     // onShow receives the same launch payload for a warm resume. Re-run the
     // resolver so an external old link is handled even when the app process
@@ -45,7 +59,7 @@ export default {
     scheduleLegacyRedirect(this, resolveLegacyRedirect(options))
   },
   onHide() { console.log('App Hide') }
-}
+})
 </script>
 
 <style lang="scss">

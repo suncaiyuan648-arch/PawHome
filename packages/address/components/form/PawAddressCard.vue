@@ -37,24 +37,35 @@
   </view>
 </template>
 
-<script>
-import PawCheckbox from '@/components/base/PawCheckbox.vue'
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
 
-export default {
+import PawCheckbox from '@/components/base/PawCheckbox.vue'
+import type { AddressRecord } from '@/utils/addressMock.ts'
+
+type AddressCardMode = 'display' | 'manage' | 'select'
+
+export default defineComponent({
   name: 'PawAddressCard',
   components: { PawCheckbox },
   props: {
-    address: { type: Object, default: () => ({}) },
+    address: { type: Object as PropType<AddressRecord>, required: true },
     mode: {
-      type: String,
+      type: String as PropType<AddressCardMode>,
       default: 'display',
-      validator: value => ['display', 'manage', 'select'].includes(value)
+      validator: (value: unknown): value is AddressCardMode => value === 'display' || value === 'manage' || value === 'select'
     },
     defaultLabel: { type: String, default: '默认收货地址' }
   },
-  emits: ['click', 'edit', 'select', 'set-default', 'delete'],
+  emits: {
+    click: (address: AddressRecord) => typeof address.id === 'string',
+    edit: (address: AddressRecord) => typeof address.id === 'string',
+    select: (address: AddressRecord) => typeof address.id === 'string',
+    'set-default': (id: string) => typeof id === 'string',
+    delete: (id: string) => typeof id === 'string'
+  },
   computed: {
-    displayDetail() {
+    displayDetail(): string {
       return [...(this.address.regionParts || []), this.address.detail || ''].filter(Boolean).join(' ')
     }
   },
@@ -73,7 +84,7 @@ export default {
       this.$emit('delete', this.address.id)
     }
   }
-}
+})
 </script>
 
 <style scoped>

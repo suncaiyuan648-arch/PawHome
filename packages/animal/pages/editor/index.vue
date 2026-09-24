@@ -153,25 +153,85 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawSelectionSheet from './components/PawSelectionSheet.vue'
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawButton from '@/components/base/PawButton.vue'
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
-import { canCreateLocalAnimal, createLocalAnimal, readLocalAnimal, updateLocalAnimal } from '../../services/localManagementStorage.js'
+import { readPawEventNumber, readPawEventValue } from '@/utils/pawEventMetadata.ts'
+import { canCreateLocalAnimal, createLocalAnimal, readLocalAnimal, updateLocalAnimal } from '../../services/localManagementStorage.ts'
+import {
+	createAnimalEditorMockMetadata,
+	createAnimalEditorOptions,
+	getAnimalEditorFormField,
+	getAnimalEditorPopupKind,
+	type AnimalEditorForm,
+	type AnimalEditorSheetKind,
+	type AnimalEditorSpecies
+} from '@/utils/animalEditorMetadata.ts'
 
-const STATUS_OPTS = ['待领养', '已领养', '失踪', '死亡']
-const GENDER_OPTS = ['男生', '女生']
-const NEUTER_OPTS = ['未绝育', '已绝育']
-const VACCINE_OPTS = ['未接种', '接种中', '已接种']
-const BREED_OPTS = ['蓝金', '金渐层', '银渐层', '英短', '美短', '中华田园猫']
-const PERSONALITY_OPTS = ['非常亲人', '亲人', '不亲人']
+interface AnimalEditorPageState {
+	animalId: string
+	yardId: string
+	createMode: boolean
+	blocked: boolean
+	errorCode: string
+	saving: boolean
+	petKind: AnimalEditorSpecies
+	yardName: string
+	avatarUrl: string
+	expandMore: boolean
+	birthValue: string
+	form: AnimalEditorForm
+	mediaList: string[]
+	sheetKind: AnimalEditorSheetKind
+	petValue: number
+	personalityValue: number
+	rulerValue: number
+	rulerWidth: number
+	rulerHeight: number
+	rulerViewportWidth: number
+	rulerPointerWidth: number
+	rulerDragging: boolean
+	rulerDragStartX: number
+	rulerDragStartValue: number
+}
 
-export default {
+interface RulerTick {
+	value: number
+	major: boolean
+	position: number
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return Boolean(value && typeof value === 'object' && !Array.isArray(value))
+}
+
+function readText(value: unknown): string {
+	return typeof value === 'string' ? value : ''
+}
+
+function firstText(...values: unknown[]): string {
+	for (const value of values) {
+		const text = readText(value)
+		if (text) return text
+	}
+	return ''
+}
+
+function readNumber(value: unknown, fallback: number): number {
+	const number = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : Number.NaN
+	return Number.isFinite(number) ? number : fallback
+}
+
+export default defineComponent({
 	name: 'AnimalEditorPage',
 	components: { PawSelectionSheet, PawBottomSheet, PawButton, PawPageNav, PawIcon },
-	data() {
+	data(): AnimalEditorPageState {
+		const mock = createAnimalEditorMockMetadata()
 		return {
 			animalId: '',
 			yardId: '',
@@ -183,22 +243,13 @@ export default {
 			yardName: '',
 			avatarUrl: '',
 			expandMore: false,
-			birthValue: '2020-06-27',
-			form: {
-				status: '待领养',
-				name: '小坏蛋',
-				breed: '白猫',
-				gender: '男生',
-				neuter: '未绝育',
-				vaccine: '接种中',
-				personality: '',
-				desc: ''
-			},
+			birthValue: mock.birthValue,
+			form: mock.form,
 			mediaList: [],
 			sheetKind: '',
-			petValue: 15,
-			personalityValue: 50,
-			rulerValue: 15,
+			petValue: mock.petValue,
+			personalityValue: mock.personalityValue,
+			rulerValue: mock.petValue,
 			rulerWidth: 309,
 			rulerHeight: 66,
 			rulerViewportWidth: 375,
@@ -223,31 +274,18 @@ export default {
 		descLen() {
 			return (this.form.desc || '').length
 		},
-		sheetOptions() {
-			switch (this.sheetKind) {
-				case 'status':
-					return STATUS_OPTS
-				case 'gender':
-					return GENDER_OPTS
-				case 'neuter':
-					return NEUTER_OPTS
-				case 'vaccine':
-					return VACCINE_OPTS
-				case 'personality':
-					return PERSONALITY_OPTS
-				default:
-					return []
-			}
+		sheetOptions(): string[] {
+			return createAnimalEditorOptions(this.sheetKind)
 		},
-		currentSheetValue() {
-			const map = { status: 'status', gender: 'gender', neuter: 'neuter', vaccine: 'vaccine', personality: 'personality' }
-			return map[this.sheetKind] ? this.form[map[this.sheetKind]] : ''
+		currentSheetValue(): string {
+			const field = getAnimalEditorFormField(this.sheetKind)
+			return field ? this.form[field] : ''
 		},
 		selectionSheetVisible: {
 			get() {
 				return !!this.sheetKind && this.sheetKind !== 'value'
 			},
-			set(value) {
+			set(value: boolean) {
 				if (!value) this.closeSheet()
 			}
 		},
@@ -255,16 +293,16 @@ export default {
 			get() {
 				return this.sheetKind === 'value'
 			},
-			set(value) {
+			set(value: boolean) {
 				if (!value) this.closeSheet()
 			}
 		},
-		rulerTicks() {
-			return Array.from({ length: 31 }, (_, value) => ({
-				value,
-				major: value % 5 === 0,
-				position: (value / 30) * 100
-			}))
+		rulerTicks(): RulerTick[] {
+			const ticks: RulerTick[] = []
+			for (let value = 0; value <= 30; value += 1) {
+				ticks.push({ value, major: value % 5 === 0, position: (value / 30) * 100 })
+			}
+			return ticks
 		},
 		rulerTrackStyle() {
 			return {
@@ -283,40 +321,41 @@ export default {
 			return this.rulerViewportWidth / 2 - (this.rulerValue / 30) * this.rulerWidth
 		}
 	},
-	onLoad(query = {}) {
-		this.animalId = typeof query.animalId === 'string' ? query.animalId.trim() : ''
-		this.yardId = typeof query.yardId === 'string' ? query.yardId.trim() : ''
+	onLoad(query: unknown = {}) {
+		const route = isRecord(query) ? query : {}
+		this.animalId = readText(route.animalId).trim()
+		this.yardId = readText(route.yardId).trim()
 		if (this.animalId) {
 			const result = readLocalAnimal(this.animalId, { yardId: this.yardId, actorProvider: () => uni.getStorageSync('PAWHOME_ACTOR_SESSION') })
 			this.blocked = !result.success
 			this.errorCode = result.success ? '' : (result.error && result.error.code || 'READER_MISSING')
-			if (result.success) {
+			if (result.success && result.data) {
 				const record = result.data.record || {}
 				this.petKind = record.species === 'dog' ? 'dog' : 'cat'
-				this.form.name = record.name || ''
-				this.form.breed = record.breed || this.form.breed
-				this.form.desc = record.desc || record.description || ''
-				this.form.status = record.statusLabel || record.status || record.state || this.form.status
-				this.form.gender = record.gender || this.form.gender
-				this.form.neuter = record.neuter || this.form.neuter
-				this.form.vaccine = record.vaccine || this.form.vaccine
-				this.form.personality = record.personality || this.form.personality
-				this.petValue = Number(record.petValue ?? record.value ?? this.petValue)
+				this.form.name = readText(record.name)
+				this.form.breed = readText(record.breed) || this.form.breed
+				this.form.desc = firstText(record.desc, record.description)
+				this.form.status = firstText(record.statusLabel, record.status, record.state) || this.form.status
+				this.form.gender = readText(record.gender) || this.form.gender
+				this.form.neuter = readText(record.neuter) || this.form.neuter
+				this.form.vaccine = readText(record.vaccine) || this.form.vaccine
+				this.form.personality = readText(record.personality) || this.form.personality
+				this.petValue = readNumber(record.petValue ?? record.value, this.petValue)
 				this.rulerValue = this.petValue
-				this.birthValue = record.birthValue || record.birthday || this.birthValue
-				this.avatarUrl = record.avatar || ''
+				this.birthValue = firstText(record.birthValue, record.birthday) || this.birthValue
+				this.avatarUrl = readText(record.avatar)
 			}
 		} else if (this.yardId) {
 			const result = canCreateLocalAnimal(this.yardId, { actorProvider: () => uni.getStorageSync('PAWHOME_ACTOR_SESSION') })
 			this.blocked = !result.success
 			this.createMode = result.success
 			this.errorCode = result.success ? '' : (result.error && result.error.code || 'FORBIDDEN')
-			if (result.success && result.data && result.data.yard) this.yardName = result.data.yard.name || this.yardName
+			if (result.success && result.data && result.data.yard) this.yardName = readText(result.data.yard.name) || this.yardName
 		} else {
 			this.blocked = true
 			this.errorCode = 'INVALID_ID'
 		}
-		const requestedDog = query && (query.species === 'dog' || query.kind === 'dog' || query.type === 'dog')
+		const requestedDog = route.species === 'dog' || route.kind === 'dog' || route.type === 'dog'
 		if (!this.animalId && requestedDog) {
 			this.petKind = 'dog'
 			if (!this.animalId || this.blocked) {
@@ -327,49 +366,53 @@ export default {
 			this.form.breed = '蓝金'
 			this.form.personality = '亲人'
 		}
-		if (query && query.state === 'more') this.expandMore = true
-		if (query && query.yardName) {
-			const y = decodeURIComponent(query.yardName)
-			if (y) this.yardName = y
+		if (route.state === 'more') this.expandMore = true
+		const routeYardName = readText(route.yardName)
+		if (routeYardName) {
+			try {
+				this.yardName = decodeURIComponent(routeYardName) || this.yardName
+			} catch {
+				this.yardName = routeYardName
+			}
 		}
-		const popupMap = { status: 'status', value: 'value', gender: 'gender', sterilization: 'neuter', vaccine: 'vaccine', personality: 'personality' }
-		if (query && popupMap[query.popup]) {
+		const popupKind = getAnimalEditorPopupKind(route.popup)
+		if (popupKind) {
 			this.expandMore = true
-			this.sheetKind = popupMap[query.popup]
-			if (query.popup === 'status') this.form.status = '失踪'
-			if (query.popup === 'vaccine') this.form.vaccine = '已接种'
-			if (query.popup === 'personality') this.form.personality = '非常亲人'
+			this.sheetKind = popupKind
+			if (route.popup === 'status') this.form.status = '失踪'
+			if (route.popup === 'vaccine') this.form.vaccine = '已接种'
+			if (route.popup === 'personality') this.form.personality = '非常亲人'
 		}
 	},
 	methods: {
 		goBack() {
 			uni.navigateBack()
 		},
-		onNameInput(e) {
-			this.form.name = (e.detail.value || '').trimStart()
+		onNameInput(e: PawEvent) {
+			this.form.name = readPawEventValue(e).trimStart()
 		},
-		onDescInput(e) {
-			this.form.desc = e.detail.value || ''
+		onDescInput(e: PawEvent) {
+			this.form.desc = readPawEventValue(e)
 		},
-		onBirthChange(e) {
-			this.birthValue = e.detail.value || this.birthValue
+		onBirthChange(e: PawEvent) {
+			this.birthValue = readPawEventValue(e) || this.birthValue
 		},
 		openBreedPicker() {
 			const kind = this.petKind === 'dog' ? 'dog' : 'cat'
 			uni.navigateTo({
 				url: '/packages/animal/pages/breed-picker/index?species=' + kind,
 				events: {
-					breedPicked: (payload = {}) => {
-						const b = (payload.breed || '').trim()
+					breedPicked: (payload: unknown) => {
+						const b = (isRecord(payload) ? readText(payload.breed) : '').trim()
 						if (b) this.form.breed = b
 					}
 				},
-				success: (res) => {
-					res.eventChannel.emit('initBreed', { breed: this.form.breed })
+				success: (result: UniNamespace.NavigateToSuccessOptions) => {
+					result.eventChannel.emit('initBreed', { breed: this.form.breed })
 				}
 			})
 		},
-		openSheet(kind) {
+		openSheet(kind: AnimalEditorSheetKind) {
 			this.sheetKind = kind
 			if (kind === 'value') this.rulerValue = this.petValue
 		},
@@ -380,7 +423,7 @@ export default {
 			}
 			this.sheetKind = ''
 		},
-		isOptionSelected(opt) {
+		isOptionSelected(opt: string) {
 			const k = this.sheetKind
 			if (k === 'status') return opt === this.form.status
 			if (k === 'gender') return opt === this.form.gender
@@ -389,17 +432,19 @@ export default {
 			if (k === 'personality') return opt === this.form.personality
 			return false
 		},
-		onPickOption(opt) {
-			const k = this.sheetKind
-			if (k === 'status') this.form.status = opt
-			else if (k === 'gender') this.form.gender = opt
-			else if (k === 'neuter') this.form.neuter = opt
-			else if (k === 'vaccine') this.form.vaccine = opt
-			else if (k === 'personality') this.form.personality = opt
+		onPickOption(opt: string | number) {
+			if (typeof opt === 'string') {
+				const k = this.sheetKind
+				if (k === 'status') this.form.status = opt
+				else if (k === 'gender') this.form.gender = opt
+				else if (k === 'neuter') this.form.neuter = opt
+				else if (k === 'vaccine') this.form.vaccine = opt
+				else if (k === 'personality') this.form.personality = opt
+			}
 			this.closeSheet()
 		},
-		onScaleChange(e) {
-			const value = Math.min(30, Math.max(0, Number(e.detail.value || 0)))
+		onScaleChange(e: PawEvent) {
+			const value = Math.min(30, Math.max(0, readPawEventNumber(e, 'value')))
 			if (this.sheetKind === 'value') {
 				this.rulerValue = value
 				this.petValue = Math.round(value)
@@ -409,28 +454,28 @@ export default {
 			this.$nextTick(() => {
 				uni.createSelectorQuery().in(this)
 					.select('.scale-ruler-viewport').boundingClientRect()
-					.exec((rects = []) => {
-						const viewport = rects[0]
-						if (!viewport || !viewport.width) return
+					.exec((rects: UniNamespace.NodeInfo[]) => {
+						const viewport = Array.isArray(rects) ? rects[0] : null
+						if (!isRecord(viewport) || typeof viewport.width !== 'number' || !viewport.width) return
 						this.rulerViewportWidth = viewport.width
 						this.rulerWidth = Math.min(309, Math.max(240, viewport.width - 66))
 					})
 			})
 		},
-		touchX(e) {
+		touchX(e: PawEvent) {
 			const touch = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0])
 			if (!touch) return null
 			const x = touch.clientX !== undefined ? touch.clientX : touch.pageX
 			return typeof x === 'number' ? x : null
 		},
-		onScaleTouchStart(e) {
+		onScaleTouchStart(e: PawEvent) {
 			const x = this.touchX(e)
 			if (x === null) return
 			this.rulerDragging = true
 			this.rulerDragStartX = x
 			this.rulerDragStartValue = this.rulerValue
 		},
-		onScaleTouchMove(e) {
+		onScaleTouchMove(e: PawEvent) {
 			if (!this.rulerDragging) return
 			const x = this.touchX(e)
 			if (x === null || !this.rulerWidth) return
@@ -450,8 +495,8 @@ export default {
 				count: 1,
 				sizeType: ['compressed'],
 				sourceType: ['album', 'camera'],
-				success: (res) => {
-					const p = res.tempFilePaths && res.tempFilePaths[0]
+				success: (result: UniNamespace.ChooseImageSuccessCallbackResult) => {
+					const p = result.tempFilePaths[0]
 					if (p) this.avatarUrl = p
 				}
 			})
@@ -461,14 +506,14 @@ export default {
 				count: 9 - this.mediaList.length,
 				sizeType: ['compressed'],
 				sourceType: ['album', 'camera'],
-				success: (res) => {
-					const arr = res.tempFilePaths || []
+				success: (result: UniNamespace.ChooseImageSuccessCallbackResult) => {
+					const arr = result.tempFilePaths || []
 					this.mediaList = this.mediaList.concat(arr).slice(0, 9)
 				}
 			})
 		},
-		removeMedia(i) {
-			this.mediaList.splice(i, 1)
+		removeMedia(index: number) {
+			this.mediaList.splice(index, 1)
 		},
 		onSave() {
 			if (this.blocked) {
@@ -494,11 +539,11 @@ export default {
 				vaccine: this.form.vaccine,
 				personality: this.form.personality || '',
 				birthValue: this.birthValue,
-				birthday: this.birthValue,
-			}
+				}
+			const actorProvider = () => uni.getStorageSync<unknown>('PAWHOME_ACTOR_SESSION')
 			const result = this.createMode
-				? createLocalAnimal(this.yardId, patch, { actorProvider: () => uni.getStorageSync('PAWHOME_ACTOR_SESSION') })
-				: updateLocalAnimal(this.animalId, patch, { yardId: this.yardId, actorProvider: () => uni.getStorageSync('PAWHOME_ACTOR_SESSION') })
+				? createLocalAnimal(this.yardId, patch, { actorProvider })
+				: updateLocalAnimal(this.animalId, patch, { yardId: this.yardId, actorProvider })
 			this.saving = false
 			if (!result.success) {
 				this.errorCode = result.error && result.error.code || 'STORAGE_WRITE_FAILED'
@@ -506,7 +551,7 @@ export default {
 				return
 			}
 			if (this.createMode && result.data && result.data.record) {
-				this.animalId = result.data.record.animalId
+				this.animalId = readText(result.data.record.animalId)
 				this.createMode = false
 			}
 			this.blocked = false
@@ -514,7 +559,7 @@ export default {
 			uni.navigateBack()
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

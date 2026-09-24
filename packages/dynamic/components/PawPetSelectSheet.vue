@@ -45,20 +45,32 @@
 	</PawBottomSheet>
 </template>
 
-<script>
-import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
 
-export default {
+import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
+import type { PublishEditorAnimal } from '../services/publishEditorMetadata.ts'
+
+interface PawPetSelectSheetState {
+	selectedIcon: string
+	unselectedIcon: string
+}
+
+export default defineComponent({
 	name: 'PawPetSelectSheet',
 	components: { PawBottomSheet },
 	props: {
 		modelValue: { type: Boolean, default: false },
-		animals: { type: Array, default: () => [] },
-		selectedIds: { type: Array, default: () => [] },
+		animals: { type: Array as PropType<PublishEditorAnimal[]>, default: () => [] },
+		selectedIds: { type: Array as PropType<string[]>, default: () => [] },
 		height: { type: [String, Number], default: '70vh' }
 	},
-	emits: ['update:modelValue', 'update:selectedIds', 'after-close'],
-	data() {
+	emits: {
+		'update:modelValue': (value: boolean) => typeof value === 'boolean',
+		'update:selectedIds': (ids: string[]) => Array.isArray(ids) && ids.every(id => typeof id === 'string'),
+		'after-close': () => true,
+	},
+	data(): PawPetSelectSheetState {
 		return {
 			selectedIcon: '/static/figma/publish/order-selected.svg',
 			unselectedIcon: '/static/figma/publish/order-unselected.svg'
@@ -69,18 +81,18 @@ export default {
 			get() {
 				return this.modelValue
 			},
-			set(value) {
+			set(value: boolean) {
 				this.$emit('update:modelValue', value)
 			}
 		}
 	},
 	methods: {
-		isSelected(id) {
-			return (this.selectedIds || []).some(selectedId => String(selectedId) === String(id))
+		isSelected(id: string): boolean {
+			return this.selectedIds.some(selectedId => selectedId === id)
 		},
-		toggleAnimal(animal) {
-			const id = String(animal.id)
-			const current = (this.selectedIds || []).map(selectedId => String(selectedId))
+		toggleAnimal(animal: PublishEditorAnimal) {
+			const id = animal.id
+			const current = this.selectedIds.slice()
 			const next = this.isSelected(animal.id)
 				? current.filter(selectedId => selectedId !== id)
 				: current.concat(id)
@@ -89,11 +101,11 @@ export default {
 		close() {
 			this.visibleProxy = false
 		},
-		onSheetValueChange(value) {
+		onSheetValueChange(value: boolean) {
 			this.visibleProxy = value
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

@@ -25,18 +25,18 @@ function memoryStorage() {
 
 before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-local-management-'))
-  await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+  await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
-  for (const file of ['actorCapabilities.js', 'managementContracts.js']) {
+  for (const file of ['actorCapabilities.ts', 'managementContracts.ts']) {
     await fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
   }
   for (const domain of ['account', 'yard', 'animal']) await fs.mkdir(path.join(tempRoot, 'packages', domain, 'services'), { recursive: true })
-  await fs.copyFile(path.join(ROOT, 'packages/account/services/localProfileStorage.js'), path.join(tempRoot, 'packages/account/services/localProfileStorage.js'))
-  await fs.copyFile(path.join(ROOT, 'packages/yard/services/localManagementStorage.js'), path.join(tempRoot, 'packages/yard/services/localManagementStorage.js'))
-  await fs.copyFile(path.join(ROOT, 'packages/animal/services/localManagementStorage.js'), path.join(tempRoot, 'packages/animal/services/localManagementStorage.js'))
-  profileApi = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/localProfileStorage.js')).href}?profile=${Date.now()}`)
-  yardApi = await import(`${pathToFileURL(path.join(tempRoot, 'packages/yard/services/localManagementStorage.js')).href}?yard=${Date.now()}`)
-  animalApi = await import(`${pathToFileURL(path.join(tempRoot, 'packages/animal/services/localManagementStorage.js')).href}?animal=${Date.now()}`)
+  await fs.copyFile(path.join(ROOT, 'packages/account/services/localProfileStorage.ts'), path.join(tempRoot, 'packages/account/services/localProfileStorage.ts'))
+  await fs.copyFile(path.join(ROOT, 'packages/yard/services/localManagementStorage.ts'), path.join(tempRoot, 'packages/yard/services/localManagementStorage.ts'))
+  await fs.copyFile(path.join(ROOT, 'packages/animal/services/localManagementStorage.ts'), path.join(tempRoot, 'packages/animal/services/localManagementStorage.ts'))
+  profileApi = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/localProfileStorage.ts')).href}?profile=${Date.now()}`)
+  yardApi = await import(`${pathToFileURL(path.join(tempRoot, 'packages/yard/services/localManagementStorage.ts')).href}?yard=${Date.now()}`)
+  animalApi = await import(`${pathToFileURL(path.join(tempRoot, 'packages/animal/services/localManagementStorage.ts')).href}?animal=${Date.now()}`)
 })
 
 after(async () => { if (tempRoot) await fs.rm(tempRoot, { recursive: true, force: true }) })

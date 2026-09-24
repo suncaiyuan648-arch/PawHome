@@ -6,10 +6,11 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">import { defineComponent } from 'vue'
+
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
-export default {
+export default defineComponent({
   name: 'FeedCardLocation',
   components: { PawIcon },
   props: {
@@ -19,7 +20,7 @@ export default {
   computed: {
     hasLocation() { return Boolean(this.distance || this.district) }
   }
-}
+})
 </script>
 
 <style scoped>

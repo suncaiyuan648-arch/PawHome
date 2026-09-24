@@ -56,11 +56,11 @@ const REVIEW_APPROVED = Object.freeze({
 
 before(async () => {
   tempRoot = await fsp.mkdtemp(path.join(os.tmpdir(), 'pawhome-rescue-list-'))
-  await fsp.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+  await fsp.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fsp.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
-  await fsp.copyFile(path.join(ROOT, 'navigation/actorCapabilities.js'), path.join(tempRoot, 'navigation/actorCapabilities.js'))
-  await fsp.copyFile(path.join(ROOT, 'navigation/rescueListContract.js'), path.join(tempRoot, 'navigation/rescueListContract.js'))
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/rescueListContract.js')).href}?test=${Date.now()}`)
+  await fsp.copyFile(path.join(ROOT, 'navigation/actorCapabilities.ts'), path.join(tempRoot, 'navigation/actorCapabilities.ts'))
+  await fsp.copyFile(path.join(ROOT, 'navigation/rescueListContract.ts'), path.join(tempRoot, 'navigation/rescueListContract.ts'))
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/rescueListContract.ts')).href}?test=${Date.now()}`)
 })
 
 after(async () => {
@@ -72,7 +72,7 @@ function throwsCode(fn, code) {
 }
 
 test('contract is pure, has explicit status/filter whitelists, and no write API', () => {
-  const source = fs.readFileSync(path.join(ROOT, 'navigation/rescueListContract.js'), 'utf8')
+  const source = fs.readFileSync(path.join(ROOT, 'navigation/rescueListContract.ts'), 'utf8')
   assert.doesNotMatch(source, /(?:import|require\s*\()[^\n]*(?:vue|uni|pages|packages|storage|mock|network)/i)
   assert.deepEqual(api.RESCUE_MINE_STATUSES, ['platform_pending', 'platform_approved', 'platform_rejected'])
   assert.deepEqual(api.RESCUE_REVIEW_STATUSES, ['pending', 'approved', 'rejected'])

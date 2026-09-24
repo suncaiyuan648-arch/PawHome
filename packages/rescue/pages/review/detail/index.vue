@@ -46,43 +46,99 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawButton from '@/components/base/PawButton.vue'
 import PawStatusPill from '@/components/PawStatusPill.vue'
-import { createReviewSessionProvider, readRescueReviewDetail } from '../../../services/reviewAdapter.js'
-import { applyRescueReviewAction } from '../../../services/reviewActionAdapter.js'
-import { produceLocalActionNotification } from '../../../services/messageStore.js'
+import type { RescueReviewActionResult, RescueReviewDetailResult } from '../../../services/reviewActionAdapter.ts'
+import { createReviewSessionProvider, readRescueReviewDetail } from '../../../services/reviewAdapter.ts'
+import { applyRescueReviewAction } from '../../../services/reviewActionAdapter.ts'
+import { produceLocalActionNotification } from '../../../services/messageStore.ts'
 
-export default {
+type RescueReviewStatus = RescueReviewActionResult['fromStatus']
+type RescueReviewOutcome = Extract<RescueReviewActionResult['toStatus'], 'approved' | 'rejected'>
+
+interface RescueReviewDetailPageState {
+  reviewItemId: string
+  rescueId: string
+  businessType: string
+  model: RescueReviewDetailResult
+  busy: boolean
+  fromTaskCenter: boolean
+  actorProvider: ReturnType<typeof createReviewSessionProvider>
+}
+
+interface RescueNotificationAuthorizationContext {
+  readonly actor: { readonly id: string }
+  readonly message: { readonly businessType: string; readonly reviewItemId?: string }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function readQueryText(options: unknown, key: string): string {
+  if (!isRecord(options)) return ''
+  const value = options[key]
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function readPageRoute(page: unknown): string {
+  if (!isRecord(page)) return ''
+  if (typeof page.route === 'string' && page.route) return page.route
+  const nestedPage = page.$page
+  return isRecord(nestedPage) && typeof nestedPage.route === 'string' ? nestedPage.route : ''
+}
+
+function findApplicantId(record: Readonly<Record<string, unknown>>): string {
+  const applicant = isRecord(record.applicant) ? record.applicant : {}
+  const candidates = [record.applicantId, record.applicantUserId, applicant.id, applicant.pawId]
+  return candidates.find((value): value is string => typeof value === 'string' && value.trim().length > 0) || ''
+}
+
+function emptyReviewDetail(reason = 'NOT_LOADED'): RescueReviewDetailResult {
+  return {
+    actor: null,
+    item: null,
+    canRead: false,
+    canWrite: false,
+    readOnly: true,
+    reason,
+    diagnostics: { actorError: { code: reason } },
+  }
+}
+
+export default defineComponent({
   name: 'RescueReviewDetailPage',
   components: { PawPageNav, PawButton, PawStatusPill },
-  data() {
+  data(): RescueReviewDetailPageState {
     return {
       reviewItemId: '',
       rescueId: '',
       businessType: '',
-      model: { item: null, canWrite: false },
+      model: emptyReviewDetail(),
       busy: false,
       fromTaskCenter: false,
       actorProvider: createReviewSessionProvider(),
     }
   },
   computed: {
-    emptyCopy() {
+    emptyCopy(): string {
       if (!this.reviewItemId) return '缺少审核项 ID'
-      if (this.model && this.model.reason === 'NOT_FOUND') return '找不到这条审核项'
-      if (this.model && this.model.reason === 'REVIEW_READ_DENIED') return '当前账号没有该审核项的访问权限'
+      if (this.model.item === null && this.model.reason === 'NOT_FOUND') return '找不到这条审核项'
+      if (this.model.item === null && this.model.reason === 'REVIEW_READ_DENIED') return '当前账号没有该审核项的访问权限'
       return '审核详情暂不可用'
     },
   },
-  onLoad(options = {}) {
+  onLoad(options: unknown = {}) {
     this.fromTaskCenter = this.wasOpenedFromTaskCenter()
-    this.businessType = typeof options.businessType === 'string' ? options.businessType.trim() : ''
-    this.reviewItemId = typeof options.reviewItemId === 'string' ? options.reviewItemId.trim() : ''
-    this.rescueId = typeof options.rescueId === 'string' ? options.rescueId.trim() : ''
+    this.businessType = readQueryText(options, 'businessType')
+    this.reviewItemId = readQueryText(options, 'reviewItemId')
+    this.rescueId = readQueryText(options, 'rescueId')
     if (this.businessType === 'rescue') this.refresh()
-    else this.model = { item: null, canWrite: false, reason: 'INVALID_BUSINESS_TYPE' }
+    else this.model = emptyReviewDetail('INVALID_BUSINESS_TYPE')
   },
   onShow() {
     if (this.reviewItemId && this.businessType === 'rescue') this.refresh()
@@ -91,23 +147,23 @@ export default {
     wasOpenedFromTaskCenter() {
       try {
         const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : []
-        const previous = pages.length > 1 ? pages[pages.length - 2] : null
-        const route = previous && (previous.route || previous.$page && previous.$page.route)
-        return route === 'packages/account/pages/tasks/index'
-      } catch (error) {
+        const previous: unknown = pages.length > 1 ? pages[pages.length - 2] : null
+        return readPageRoute(previous) === 'packages/account/pages/tasks/index'
+      } catch {
         return false
       }
     },
     refresh() {
       this.model = readRescueReviewDetail({ actorProvider: this.actorProvider, reviewItemId: this.reviewItemId, rescueId: this.rescueId })
     },
-    statusLabel(status) {
-      return ({ pending: '待审核', approved: '已通过', rejected: '已否决' })[status] || '状态未知'
+    statusLabel(status: RescueReviewStatus): string {
+      const labels: Record<RescueReviewStatus, string> = { pending: '待审核', approved: '已通过', rejected: '已否决' }
+      return labels[status]
     },
-    statusTone(status) {
+    statusTone(status: RescueReviewStatus): 'success' | 'danger' | 'warning' {
       return status === 'approved' ? 'success' : status === 'rejected' ? 'danger' : 'warning'
     },
-    submit(outcome) {
+    submit(outcome: RescueReviewOutcome) {
       if (!this.model.item || !this.model.canWrite || this.busy) return
       this.busy = true
       try {
@@ -124,43 +180,42 @@ export default {
           this.$nextTick(() => {
             try {
               uni.navigateBack({ delta: 1, fail: () => uni.reLaunch({ url: '/packages/account/pages/tasks/index' }) })
-            } catch (error) {
+            } catch {
               uni.reLaunch({ url: '/packages/account/pages/tasks/index' })
             }
           })
           return
         }
         this.refresh()
-      } catch (error) {
-        uni.showToast({ title: error && error.code === 'INVALID_TRANSITION' ? '该审核已处理' : '审核暂未提交', icon: 'none' })
+      } catch (error: unknown) {
+        const code = isRecord(error) && typeof error.code === 'string' ? error.code : ''
+        uni.showToast({ title: code === 'INVALID_TRANSITION' ? '该审核已处理' : '审核暂未提交', icon: 'none' })
         this.refresh()
       } finally {
         this.busy = false
       }
     },
-    notifyReviewAction(action) {
-      const record = this.model && this.model.record || {}
-      const applicant = record.applicant && typeof record.applicant === 'object' ? record.applicant : {}
-      const recipientId = [record.applicantId, record.applicantUserId, applicant.id, applicant.pawId]
-        .find(value => typeof value === 'string' && value.trim())
-      if (!recipientId || !action || action.success !== true) return
+    notifyReviewAction(action: RescueReviewActionResult) {
+      if (!this.model.canRead || !this.model.item) return
+      const recipientId = findApplicantId(this.model.record)
+      if (!recipientId) return
       produceLocalActionNotification({
         action,
         recipientId,
         businessType: 'rescue',
-        businessId: action.rescueId || this.model.item.rescueId,
-        reviewItemId: action.reviewItemId || this.model.item.reviewItemId,
+        businessId: action.rescueId,
+        reviewItemId: action.reviewItemId,
         category: 'service',
         title: action.toStatus === 'approved' ? '救助审核已通过' : '救助审核未通过',
         preview: action.toStatus === 'approved' ? '你的救助申请已通过审核。' : '你的救助申请审核未通过，请查看详情。',
-        authorize: ({ actor, message }) => actor.id === action.actorId
+        authorize: ({ actor, message }: RescueNotificationAuthorizationContext) => actor.id === action.actorId
           && message.businessType === 'rescue'
-          && message.reviewItemId === (action.reviewItemId || this.model.item.reviewItemId),
+          && message.reviewItemId === action.reviewItemId,
         actorProvider: this.actorProvider,
       })
     },
   },
-}
+})
 </script>
 
 <style scoped>

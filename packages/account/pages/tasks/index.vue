@@ -49,42 +49,38 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawEmptyState from '@/components/feedback/PawEmptyState.vue'
 import PawStatusPill from '@/components/PawStatusPill.vue'
-import { readAccountTasks } from '../../services/tasksRuntime.js'
-import { taskCards, taskDetailTarget } from '../../services/taskPageModel.js'
-import { buildRoute } from '@/navigation/routeContracts.js'
+import {
+	createAccountTaskPageState,
+	filterAccountTaskCards,
+	getAccountTaskRoleLabel,
+	getAccountTaskStatusTone,
+	type AccountTaskCard,
+	type AccountTaskPageState,
+} from '../../services/taskListMetadata.ts'
+import { readAccountTasks } from '../../services/tasksRuntime.ts'
+import { taskCards, taskDetailTarget } from '../../services/taskPageModel.ts'
+import { buildRoute } from '@/navigation/routeContracts.ts'
 
 // The canonical createTaskAdapter/createActorProvider/createDomainTaskReaders
 // contracts remain the source-level governance seam.  The page binds to the
 // package-local runtime so registering this subpackage cannot hoist the root
 // adoption/rescue adapters into the 1.5 MiB main package.
 
-export default {
+export default defineComponent({
   name: 'AccountTasksPage',
   components: { PawPageNav, PawEmptyState, PawStatusPill },
-  data() {
-    return {
-      activeTab: 'pending',
-      tabs: [
-        { key: 'pending', label: '待处理' },
-        { key: 'processed', label: '已处理' },
-      ],
-      model: null,
-      cards: Object.freeze([]),
-      pendingCount: 0,
-      actorError: null,
-      diagnosticText: '',
-      adapter: Object.freeze({ read: () => readAccountTasks() }),
-    }
+  data(): AccountTaskPageState {
+    return createAccountTaskPageState(() => readAccountTasks())
   },
   computed: {
-    visibleTasks() {
-      return this.cards.filter(task => this.activeTab === 'pending'
-        ? ['pending', 'in_progress'].includes(task.status)
-        : !['pending', 'in_progress'].includes(task.status))
+    visibleTasks(): AccountTaskCard[] {
+      return filterAccountTaskCards(this.cards, this.activeTab)
     },
   },
   onShow() {
@@ -96,23 +92,20 @@ export default {
       this.model = result
       this.cards = taskCards(result.all)
       this.pendingCount = result.pending.length
-      this.actorError = result.diagnostics && result.diagnostics.actorError
-      const skipped = result.diagnostics && result.diagnostics.skipped || []
+      this.actorError = result.diagnostics.actorError
+      const skipped = result.diagnostics.skipped
       this.diagnosticText = skipped.length ? '部分业务域暂未提供可读取的持久任务' : ''
     },
-    statusTone(status) {
-      if (status === 'failed' || status === 'cancelled' || status === 'expired') return 'danger'
-      if (status === 'completed' || status === 'processed') return 'success'
-      if (status === 'in_progress') return 'brand'
-      return 'warning'
+    statusTone(status: AccountTaskCard['status']) {
+      return getAccountTaskStatusTone(status)
     },
-    roleLabel(role) {
-      return ({ applicant: '申请人', owner: '小院主理人', cloud_parent: '云家长', reviewer: '评审人', verifier: '证实人' })[role] || '参与者'
+    roleLabel(role: AccountTaskCard['actorRole']) {
+      return getAccountTaskRoleLabel(role)
     },
-    canOpen(task) {
+    canOpen(task: AccountTaskCard) {
       return Boolean(taskDetailTarget(task))
     },
-    onTaskTap(task) {
+    onTaskTap(task: AccountTaskCard) {
       const target = taskDetailTarget(task)
       if (!target) {
         uni.showToast({ title: '该任务详情暂未接入', icon: 'none' })
@@ -124,7 +117,7 @@ export default {
       uni.navigateTo({ url: '/packages/auth/pages/login/index' })
     },
   },
-}
+})
 </script>
 
 <style scoped>

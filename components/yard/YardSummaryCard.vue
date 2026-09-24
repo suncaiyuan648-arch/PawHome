@@ -28,22 +28,46 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
 import PawAvatar from '@/components/identity/PawAvatar.vue'
 import PawVerifiedBadge from '@/components/identity/PawVerifiedBadge.vue'
 import YardLocationLine from '@/components/identity/YardLocationLine.vue'
-import { safeImgSrc } from '@/utils/safeImgSrc.js'
+import { safeImgSrc } from '@/utils/safeImgSrc.ts'
 
-export default {
+export type YardSummaryGallerySource = string | { id?: string | number; src?: string; url?: string; title?: string }
+
+export interface YardSummaryRecord {
+  avatar?: string
+  name?: string
+  verified?: boolean
+  location?: string
+  tags?: string[]
+  description?: string
+  distance?: string | number
+  gallery?: YardSummaryGallerySource[]
+  thumbUrls?: YardSummaryGallerySource[]
+}
+
+interface YardSummaryGalleryDisplay { src: string; title?: string }
+
+export default defineComponent({
   name: 'YardSummaryCard',
   components: { PawAvatar, PawVerifiedBadge, YardLocationLine },
   props: {
-    yard: { type: Object, default: () => ({}) },
+    yard: { type: Object as PropType<YardSummaryRecord>, default: () => ({}) },
     variant: { type: String, default: 'list' },
     showGallery: { type: Boolean, default: true },
     showDistance: { type: Boolean, default: true }
   },
-  emits: ['click', 'pet-click', 'gallery-scroll-end'],
+  emits: {
+    'click': eventContract<[yard: YardSummaryRecord]>(),
+    'pet-click': eventContract<[photo: { src: string; title?: string }]>(),
+    'gallery-scroll-end': eventContract<[]>(),
+  },
   computed: {
     distanceLabel() {
       if (!this.yard.distance) return ''
@@ -51,9 +75,13 @@ export default {
         ? `${this.yard.distance} ${this.yard.location}`
         : this.yard.distance
     },
-    gallery() { return (this.yard.gallery || this.yard.thumbUrls || []).map(item => typeof item === 'string' ? { src: safeImgSrc(item, '/static/avatarlog.png') } : { ...item, src: safeImgSrc(item.src || item.url, '/static/avatarlog.png') }) }
+    gallery(): YardSummaryGalleryDisplay[] {
+      return (this.yard.gallery || this.yard.thumbUrls || []).map((item) => typeof item === 'string'
+        ? { src: safeImgSrc(item, '/static/avatarlog.png') }
+        : { ...item, src: safeImgSrc(item.src || item.url, '/static/avatarlog.png') })
+    }
   }
-}
+})
 </script>
 
 <style scoped>

@@ -1,7 +1,8 @@
 <template><view class="paw-safe-area" :class="{ 'paw-safe-area--disabled': !enabled }"><slot /></view></template>
 
-<script>
-export default { name: 'PawSafeArea', props: { enabled: { type: Boolean, default: true } } }
+<script lang="ts">import { defineComponent } from 'vue'
+
+export default defineComponent({ name: 'PawSafeArea', props: { enabled: { type: Boolean, default: true } } })
 </script>
 
 <style scoped>

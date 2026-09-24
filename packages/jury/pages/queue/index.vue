@@ -36,46 +36,50 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawJuryItemCard from './components/PawJuryItemCard.vue'
-import { JURY_ITEM_STATUS } from '@/utils/juryMock.js'
-import { getJuryItems } from '@/utils/juryStorage.js'
-import { goBackSmart } from '@/utils/navBack.js'
-import { openUserProfile } from '@/utils/profileNav.js'
+import type { JuryIdentity, JuryItem } from '@/utils/juryMock.ts'
+import { getJuryItems } from '@/utils/juryStorage.ts'
+import { goBackSmart } from '@/utils/navBack.ts'
+import { openUserProfile } from '@/utils/profileNav.ts'
+import {
+	createJuryQueuePageState,
+	normalizeJuryQueueRouteOptions,
+	projectJuryQueueItems,
+	type JuryQueueListItem,
+	type JuryQueuePageState,
+	type JuryQueueTab
+} from '@/packages/jury/services/queueMetadata.ts'
 
-export default {
+export default defineComponent({
 	name: 'JuryPanelPage',
 	components: { PawPageNav, PawJuryItemCard },
-	data() {
-		return {
-			activeTab: 'pending',
-			reviewType: '',
-			juryItems: []
-		}
+	data(): JuryQueuePageState {
+		return createJuryQueuePageState()
 	},
 	computed: {
 		pageTitle() { return this.reviewType === 'rescue' ? '救助评审' : '领养评审' },
 		pageBackground() { return this.reviewType === 'rescue' ? '#fff6b8' : '#f7f7f7' },
 		itemsWithState() {
-			return this.juryItems.map((item) => ({
-				...item,
-				isFinished: item.status !== JURY_ITEM_STATUS.pending
-			}))
+			return projectJuryQueueItems(this.juryItems)
 		},
 		visibleItems() {
-			return this.itemsWithState.filter((item) => this.activeTab === 'finished' ? item.isFinished : !item.isFinished)
+			return this.itemsWithState.filter((item: JuryQueueListItem) => this.activeTab === 'finished' ? item.isFinished : !item.isFinished)
 		},
 		pendingCount() {
-			return this.itemsWithState.filter((item) => !item.isFinished).length
+			return this.itemsWithState.filter((item: JuryQueueListItem) => !item.isFinished).length
 		},
 		finishedCount() {
-			return this.itemsWithState.filter((item) => item.isFinished).length
+			return this.itemsWithState.filter((item: JuryQueueListItem) => item.isFinished).length
 		}
 	},
-	onLoad(options = {}) {
-		this.reviewType = this.normalizeReviewType(options.businessType || options.reviewType || options.type || options.juryType)
-		if (options.tab === 'finished' || options.state === 'finished') this.activeTab = 'finished'
+	onLoad(options: unknown = {}) {
+		const route = normalizeJuryQueueRouteOptions(options)
+		this.reviewType = route.reviewType
+		this.activeTab = route.activeTab
 		this.loadJuryState()
 	},
 	onShow() {
@@ -85,13 +89,13 @@ export default {
 		goBack() {
 			goBackSmart({ fallbackUrl: '/pages/index/index' })
 		},
-		selectTab(tab) {
+		selectTab(tab: JuryQueueTab) {
 			this.activeTab = tab
 		},
 		loadJuryState() {
 			this.juryItems = getJuryItems({ reviewType: this.reviewType })
 		},
-		openDetail(item) {
+		openDetail(item: JuryItem) {
 			if (!item || !item.id) return
 			const id = encodeURIComponent(item.id)
 			const businessType = item.reviewType || this.reviewType
@@ -103,20 +107,16 @@ export default {
 				uni.navigateTo({ url: `/packages/rescue/pages/review/detail/index?reviewItemId=${id}&businessType=rescue` })
 			}
 		},
-		normalizeReviewType(value) {
-			const type = value === undefined || value === null ? '' : String(value).trim().toLowerCase()
-			return type === 'rescue' || type === 'adoption' ? type : ''
-		},
-		openIdentity(identity) {
+		openIdentity(identity: JuryIdentity) {
 			if (!identity) return
 			openUserProfile({
-				pawId: identity.pawId || identity.userId || identity.id,
+				pawId: identity.pawId || identity.id,
 				nickname: identity.nickname || identity.name,
 				avatar: identity.avatar
 			})
 		}
 	}
-}
+})
 </script>
 
 <style lang="less" scoped>

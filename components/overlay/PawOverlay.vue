@@ -11,8 +11,26 @@
   </view>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent } from 'vue'
+
+type OverlayPlacement = 'top' | 'center' | 'bottom'
+interface PawOverlayState {
+  rendered: boolean
+  opened: boolean
+  closing: boolean
+  closeTimer: ReturnType<typeof setTimeout> | null
+  openTimer: ReturnType<typeof setTimeout> | null
+  afterOpenTimer: ReturnType<typeof setTimeout> | null
+}
+
+function isOverlayPlacement(value: unknown): value is OverlayPlacement {
+  return value === 'top' || value === 'center' || value === 'bottom'
+}
+
+export default defineComponent({
   name: 'PawOverlay',
   props: {
     modelValue: { type: Boolean, default: undefined },
@@ -23,14 +41,20 @@ export default {
     placement: {
       type: String,
       default: 'center',
-      validator: value => ['top', 'center', 'bottom'].includes(value)
+      validator: isOverlayPlacement
     },
     zIndex: { type: [Number, String], default: 10000 },
     enterDuration: { type: Number, default: 180 },
     exitDuration: { type: Number, default: 160 }
   },
-  emits: ['update:modelValue', 'update:visible', 'mask-click', 'after-open', 'after-close'],
-  data() {
+  emits: {
+    'update:modelValue': eventContract<[value: boolean]>(),
+    'update:visible': eventContract<[value: boolean]>(),
+    'mask-click': eventContract<[]>(),
+    'after-open': eventContract<[]>(),
+    'after-close': eventContract<[]>(),
+  },
+  data(): PawOverlayState {
     return { rendered: false, opened: false, closing: false, closeTimer: null, openTimer: null, afterOpenTimer: null }
   },
   computed: {
@@ -44,7 +68,7 @@ export default {
   watch: {
     openValue: {
       immediate: true,
-      handler(value) {
+      handler(value: boolean) {
         if (value) this.open()
         else this.close()
       }
@@ -82,7 +106,7 @@ export default {
         this.$emit('after-close')
       }, this.exitDuration)
     },
-    emitValue(value) {
+    emitValue(value: boolean) {
       this.$emit('update:modelValue', value)
       this.$emit('update:visible', value)
     },
@@ -92,7 +116,7 @@ export default {
     },
     noop() { }
   }
-}
+})
 </script>
 
 <style scoped>

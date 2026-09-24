@@ -24,12 +24,24 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 
-export default {
+interface AnnualReportData {
+	year: number
+	adoptCount: number
+	grainJin: number
+	animalCount: number
+	luckyAdopted: number
+	cityCount: number
+}
+
+interface AnnualReportPageState { report: AnnualReportData }
+
+export default defineComponent({
   components: { PawPageNav },
-  data() {
+  data(): AnnualReportPageState {
     return {
       report: {
         year: 2026,
@@ -41,7 +53,7 @@ export default {
       }
     }
   }
-}
+})
 </script>
 
 <style scoped>

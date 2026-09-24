@@ -14,15 +14,16 @@ let storage
 
 before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-message-producer-'))
-  await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+  await fs.cp(path.join(ROOT, 'contracts'), path.join(tempRoot, 'contracts'), { recursive: true })
+  await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'packages/message/services'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'utils'), { recursive: true })
-  await fs.copyFile(path.join(ROOT, 'packages/message/services/messageStore.js'), path.join(tempRoot, 'packages/message/services/messageStore.js'))
-  for (const file of ['actorCapabilities.js', 'deeplinkContracts.js', 'productionDeepLinkResolver.js', 'routeContracts.js']) {
+  await fs.copyFile(path.join(ROOT, 'packages/message/services/messageStore.ts'), path.join(tempRoot, 'packages/message/services/messageStore.ts'))
+  for (const file of ['actorCapabilities.ts', 'deeplinkContracts.ts', 'productionDeepLinkResolver.ts', 'routeContracts.ts']) {
     await fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
   }
-  for (const file of ['adoptionStorage.js', 'rescueStorage.js', 'rewardOrderStorage.js']) {
+  for (const file of ['adoptionStorage.ts', 'rescueStorage.ts', 'rewardOrderStorage.ts']) {
     await fs.copyFile(path.join(ROOT, 'utils', file), path.join(tempRoot, 'utils', file))
   }
   storage = new Map()
@@ -30,7 +31,7 @@ before(async () => {
     getStorageSync(key) { return storage.get(key) },
     setStorageSync(key, value) { storage.set(key, value) },
   }
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/message/services/messageStore.js')).href}?test=${Date.now()}`)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/message/services/messageStore.ts')).href}?test=${Date.now()}`)
 })
 
 beforeEach(() => {

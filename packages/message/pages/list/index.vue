@@ -28,38 +28,44 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawEmptyState from '@/components/feedback/PawEmptyState.vue'
-import { readMessages, resolveMessageDestination, emitMessageDeepLink, MESSAGE_CATEGORIES } from '../../services/messageStore.js'
-import { saveAuthContinuation } from '@/navigation/authContinuationStorage.js'
+import { readMessages, resolveMessageDestination, emitMessageDeepLink } from '../../services/messageStore.ts'
+import {
+  createNotificationListPageMetadata,
+  normalizeNotificationRouteOptions,
+  type NotificationListPageState,
+  type NotificationMessageOpenInput,
+} from '../../services/messageListMetadata.ts'
+import { saveAuthContinuation } from '@/navigation/authContinuationStorage.ts'
 
-const CATEGORY_LABELS = Object.freeze({
-  interaction: '互动',
-  order: '订单',
-  service: '服务',
-  system: '系统',
-  activity: '活动',
-  pet: '宠物',
-})
+const AUTH_REQUIRED_MESSAGE_ERRORS: ReadonlySet<string> = new Set([
+  'AUTH_REQUIRED',
+  'NO_ACTOR',
+  'ACTOR_PROVIDER_FAILED',
+])
 
-export default {
+function readActorSession(): unknown {
+  return typeof uni !== 'undefined' && typeof uni.getStorageSync === 'function'
+    ? uni.getStorageSync('PAWHOME_ACTOR_SESSION')
+    : null
+}
+
+export default defineComponent({
   name: 'NotificationListPage',
   components: { PawPageNav, PawEmptyState },
-  data() {
-    return {
-      category: 'order',
-      tabs: MESSAGE_CATEGORIES.map(key => ({ key, label: CATEGORY_LABELS[key] })),
-      items: [],
-      actorError: null,
-      diagnostics: '',
-      actorProvider: () => (typeof uni !== 'undefined' && uni && typeof uni.getStorageSync === 'function' ? uni.getStorageSync('PAWHOME_ACTOR_SESSION') : null),
-    }
+  data(): NotificationListPageState {
+    return createNotificationListPageMetadata(readActorSession)
   },
-  onLoad(options = {}) {
-    if (MESSAGE_CATEGORIES.includes(String(options.category))) this.category = String(options.category)
+  onLoad(options: unknown = {}) {
+    const routeOptions = normalizeNotificationRouteOptions(options)
+    if (routeOptions.category) this.category = routeOptions.category
     this.refresh()
-    if (options.messageId) this.$nextTick(() => this.openMessage({ messageId: String(options.messageId) }))
+    const messageId = routeOptions.messageId
+    if (messageId) this.$nextTick(() => this.openMessage({ messageId }))
   },
   onShow() { this.refresh() },
   methods: {
@@ -70,16 +76,20 @@ export default {
       const skipped = result.diagnostics && result.diagnostics.skipped || []
       this.diagnostics = skipped.length ? '部分消息记录已被安全忽略' : ''
     },
-    selectCategory(category) {
+    selectCategory(category: NotificationListPageState['category']) {
       this.category = category
       this.refresh()
     },
-    openMessage(item) {
+    openMessage(item: NotificationMessageOpenInput) {
       if (!item || !item.messageId) return
       const result = resolveMessageDestination(item.messageId, { actorProvider: this.actorProvider })
-      if (!result.success || !result.data || !result.data.target) {
-        const errorCode = result.error && result.error.code
-        if (['AUTH_REQUIRED', 'NO_ACTOR', 'ACTOR_PROVIDER_FAILED'].includes(errorCode)) {
+      if (result.success !== true) {
+        const errorCode = result.error?.code || ''
+        if (AUTH_REQUIRED_MESSAGE_ERRORS.has(errorCode)) {
+          if (!item.deepLink) {
+            uni.showToast({ title: '消息目标暂不可用', icon: 'none' })
+            return
+          }
           const saved = saveAuthContinuation({ target: item.deepLink, messageId: item.messageId, category: item.category })
           if (!saved.success) {
             uni.showToast({ title: '消息目标暂不可用', icon: 'none' })
@@ -97,12 +107,12 @@ export default {
       })
     },
     goLogin() { uni.navigateTo({ url: '/packages/auth/pages/login/index' }) },
-    formatTime(value) {
-      const text = String(value || '')
+    formatTime(value: NotificationListPageState['items'][number]['createdAt']) {
+      const text = value || ''
       return text.length > 16 ? text.slice(5, 16).replace('T', ' ') : text
     },
   },
-}
+})
 </script>
 
 <style scoped>

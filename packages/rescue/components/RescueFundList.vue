@@ -58,43 +58,44 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawStatusPill from '@/components/PawStatusPill.vue'
 import PawAvatar from '@/components/identity/PawAvatar.vue'
 import LevelBadge from '@/components/customBadge/LevelBadge.vue'
-import { buildRoute } from '@/navigation/routeContracts.js'
-import { getRescueRecords, getRescueReviewSummary } from '@/utils/rescueStorage.js'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import { getRescueRecords, getRescueReviewSummary } from '@/utils/rescueStorage.ts'
+import { createRescueFundListState, type RescueFundListState } from '../services/componentMetadata.ts'
 
-export default {
+export default defineComponent({
   name: 'RescueFundList',
   components: { PawPageNav, PawStatusPill, PawAvatar, LevelBadge },
-  data() {
-    return { rescueItems: [], activeStatus: 'pending' }
-  },
+  data(): RescueFundListState { return createRescueFundListState() },
   computed: {
     summary() { return getRescueReviewSummary(this.rescueItems) },
-    visibleItems() { return this.rescueItems.filter(item => item.status === this.activeStatus) }
+    visibleItems() { return this.rescueItems.filter((item) => item.status === this.activeStatus) }
   },
   created() { this.refresh() },
   onShow() { this.refresh() },
   methods: {
     refresh() { this.rescueItems = getRescueRecords() },
-    selectStatus(status) {
+    selectStatus(status: string) {
       const next = String(status || '').trim()
-      if (this.summary.statusStats.some(item => item.status === next)) this.activeStatus = next
+      if (this.summary.statusStats.some((item) => item.status === next)) this.activeStatus = next
     },
-    openDetail(rescueId) {
+    openDetail(rescueId: string) {
       const id = String(rescueId || '').trim()
       if (!id) return
       try {
         uni.navigateTo({ url: buildRoute('rescue.detail', { rescueId: id }) })
-      } catch (error) {
+      } catch {
         uni.showToast({ title: '救助详情暂不可用', icon: 'none' })
       }
     }
   }
-}
+})
 </script>
 
 <style scoped>

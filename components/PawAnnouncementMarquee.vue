@@ -24,44 +24,45 @@
   </view>
 </template>
 
-<script>
-// Figma 83:15347：规格单位为斤；旧公告正文仅用于兼容没有结构化规格的数据。
-function feedingSpec(item) {
-  if (item.feedingWeightJin !== undefined && item.feedingWeightJin !== null) {
-    return Number(item.feedingWeightJin)
-  }
-  const match = String(item.text || item.content || item.title || '').match(/(?:投粮|投喂)\s*(\d+(?:\.\d+)?)\s*(公斤|千克|kg|斤|克|g)/i)
-  if (!match) return null
-  const amount = Number(match[1])
-  return /^(公斤|千克|kg)$/i.test(match[2]) ? amount * 2 : /^(克|g)$/i.test(match[2]) ? amount / 500 : amount
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
+import {
+  extractAnnouncementItems,
+  getAnnouncementFeedingWeightJin,
+  normalizeAnnouncement,
+  type AnnouncementInput,
+  type NormalizedAnnouncement
+} from '@/utils/announcementMetadata'
+
+interface AnnouncementMarqueeState {
+  announcementQueue: NormalizedAnnouncement[]
+  currentItem: NormalizedAnnouncement | null
+  animationData: Record<string, unknown>
+  viewportWidth: number
+  textWidth: number
+  pollTimer: ReturnType<typeof setInterval> | null
+  finishTimer: ReturnType<typeof setTimeout> | null
+  startTimer: ReturnType<typeof setTimeout> | null
+  gapTimer: ReturnType<typeof setTimeout> | null
+  reconnectTimer: ReturnType<typeof setTimeout> | null
+  socketTask: UniNamespace.SocketTask | null
+  destroyed: boolean
+  isMounted: boolean
+  knownIds: Set<string>
 }
 
-function parsePayload(payload) {
-  if (typeof payload !== 'string') return payload
-  try {
-    return JSON.parse(payload)
-  } catch (e) {
-    return payload
-  }
+function readNodeWidth(
+  result: UniNamespace.NodeInfo | UniNamespace.NodeInfo[] | null | undefined
+): number {
+  const node = Array.isArray(result) ? result[0] : result
+  return node?.width ?? 0
 }
 
-function extractItems(payload) {
-  const value = parsePayload(payload)
-  if (Array.isArray(value)) return value
-  if (!value || typeof value !== 'object') return value ? [value] : []
-  if (Array.isArray(value.items)) return value.items
-  if (Array.isArray(value.notices)) return value.notices
-  if (Array.isArray(value.announcements)) return value.announcements
-  if (Array.isArray(value.data)) return value.data
-  if (value.data && typeof value.data === 'object') return extractItems(value.data)
-  return [value]
-}
-
-export default {
+export default defineComponent({
   name: 'PawAnnouncementMarquee',
   props: {
     // 支持字符串及 { id, text/content, feedingWeightJin }；结构化规格优先。
-    items: { type: Array, default: () => [] },
+    items: { type: Array as PropType<AnnouncementInput[]>, default: () => [] },
     height: { type: Number, default: 20 },
     speed: { type: Number, default: 82 },
     gap: { type: Number, default: 900 },
@@ -73,7 +74,12 @@ export default {
     // 传入 WebSocket 地址后自动监听消息；轮询和 WS 可以同时开启。
     wsUrl: { type: String, default: '' }
   },
-  data() {
+  emits: {
+    queued: (queue: NormalizedAnnouncement[]) => Array.isArray(queue),
+    finished: (item: NormalizedAnnouncement['raw']) => item !== undefined,
+    click: (item: NormalizedAnnouncement['raw'] | null) => item !== undefined
+  },
+  data(): AnnouncementMarqueeState {
     return {
       announcementQueue: [],
       currentItem: null,
@@ -88,12 +94,12 @@ export default {
       socketTask: null,
       destroyed: false,
       isMounted: false,
-      knownIds: {}
+      knownIds: new Set<string>()
     }
   },
   computed: {
     currentAppearance() {
-      const weight = this.currentItem ? feedingSpec(this.currentItem.raw) : null
+      const weight = this.currentItem ? getAnnouncementFeedingWeightJin(this.currentItem.raw) : null
       if (weight === 40) return { background: '#282827', color: '#E0FF89', premium: true }
       if (weight === 4) return { background: 'linear-gradient(90deg, #FFF599 0%, #FFFBDC 100%)', color: '#333333' }
       if (weight === 0.4) return { background: '#FFFBDC', color: '#505050' }
@@ -104,7 +110,7 @@ export default {
     items: {
       deep: true,
       immediate: true,
-      handler(value) {
+      handler(value: AnnouncementInput[]) {
         this.enqueue(value)
       }
     }
@@ -118,33 +124,14 @@ export default {
   beforeUnmount() {
     this.cleanup()
   },
-  beforeDestroy() {
-    // 兼容旧版运行时，避免定时器在页面销毁后继续更新组件状态。
-    this.cleanup()
-  },
   methods: {
-    normalizeItem(item) {
-      if (item === null || item === undefined) return null
-      const source = typeof item === 'object' ? item : { text: item }
-      const text = String(source.text || source.content || source.title || '').trim()
-      if (!text) return null
-      const rawId = source.id || source._id || source.key || text
-      return {
-        // 没有后端 id 时用正文去重，避免轮询返回同一公告时重复入队。
-        id: String(rawId),
-        text,
-        raw: source
-      }
-    },
+    enqueue(value: unknown) {
+      const incoming = extractAnnouncementItems(value)
 
-    enqueue(value) {
-      const incoming = extractItems(value)
-      if (!Array.isArray(incoming)) return
-
-      incoming.forEach(item => {
-        const normalized = this.normalizeItem(item)
-        if (!normalized || this.knownIds[normalized.id]) return
-        this.knownIds[normalized.id] = true
+      incoming.forEach((item) => {
+        const normalized = normalizeAnnouncement(item)
+        if (!normalized || this.knownIds.has(normalized.id)) return
+        this.knownIds.add(normalized.id)
         this.announcementQueue.push(normalized)
       })
 
@@ -175,12 +162,12 @@ export default {
       // #endif
       query
         .select('.paw-announcement__viewport')
-        .boundingClientRect(viewport => {
-          this.viewportWidth = viewport && viewport.width ? viewport.width : 375
+        .boundingClientRect((viewport) => {
+          this.viewportWidth = readNodeWidth(viewport) || 375
         })
         .select('.paw-announcement__bubble')
-        .boundingClientRect(text => {
-          this.textWidth = text && text.width ? text.width : 0
+        .boundingClientRect((text) => {
+          this.textWidth = readNodeWidth(text)
         })
         .exec(() => {
           if (this.destroyed || !this.currentItem) return
@@ -222,7 +209,7 @@ export default {
       if (this.announcementQueue[0] && this.announcementQueue[0].id === finished.id) {
         this.announcementQueue.shift()
       } else {
-        const index = this.announcementQueue.findIndex(item => item.id === finished.id)
+        const index = this.announcementQueue.findIndex((item) => item.id === finished.id)
         if (index >= 0) this.announcementQueue.splice(index, 1)
       }
 
@@ -250,8 +237,9 @@ export default {
       uni.request({
         url: this.pollUrl,
         method: 'GET',
-        success: response => {
-          if (!this.destroyed) this.enqueue(response && response.data)
+        success: (response) => {
+          const payload: unknown = response.data
+          if (!this.destroyed) this.enqueue(payload)
         }
       })
     },
@@ -259,10 +247,11 @@ export default {
     connectSocket() {
       if (this.destroyed || !this.wsUrl || !uni.connectSocket) return
       try {
-        this.socketTask = uni.connectSocket({ url: this.wsUrl })
+        this.socketTask = uni.connectSocket({ url: this.wsUrl, success: () => {} })
         if (!this.socketTask) return
-        this.socketTask.onMessage(event => {
-          if (!this.destroyed) this.enqueue(event && event.data)
+        this.socketTask.onMessage((event: UniNamespace.OnSocketMessageCallbackResult<unknown>) => {
+          const payload: unknown = event.data
+          if (!this.destroyed) this.enqueue(payload)
         })
         this.socketTask.onClose(() => {
           this.socketTask = null
@@ -271,32 +260,40 @@ export default {
             this.reconnectTimer = setTimeout(() => this.connectSocket(), 5000)
           }
         })
-      } catch (e) {
+      } catch {
         // 网络源是可选能力，连接失败不影响首页其他内容。
       }
     },
 
     onTap() {
-      this.$emit('click', this.currentItem && this.currentItem.raw)
+      this.$emit('click', this.currentItem ? this.currentItem.raw : null)
     },
 
     cleanup() {
       if (this.destroyed) return
       this.destroyed = true
       this.isMounted = false
-      if (this.pollTimer) clearInterval(this.pollTimer)
+      if (this.pollTimer !== null) clearInterval(this.pollTimer)
       this.pollTimer = null
-      ;['finishTimer', 'startTimer', 'gapTimer', 'reconnectTimer'].forEach(key => {
-        if (this[key]) clearTimeout(this[key])
-        this[key] = null
+      const timers = [this.finishTimer, this.startTimer, this.gapTimer, this.reconnectTimer]
+      timers.forEach((timer) => {
+        if (timer !== null) clearTimeout(timer)
       })
-      if (this.socketTask && this.socketTask.close) {
-        try { this.socketTask.close() } catch (e) {}
+      this.finishTimer = null
+      this.startTimer = null
+      this.gapTimer = null
+      this.reconnectTimer = null
+      if (this.socketTask) {
+        try {
+          this.socketTask.close({})
+        } catch {
+          // Socket shutdown is best-effort during component teardown.
+        }
       }
       this.socketTask = null
     }
   }
-}
+})
 </script>
 
 <style lang="scss" scoped>

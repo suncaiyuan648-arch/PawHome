@@ -53,7 +53,7 @@
           <view v-if="item.application.media.length" class="jury-application-card__media">
             <PawImage v-for="(media, index) in item.application.media" :key="media.id"
               class="jury-application-card__media-image" :src="media.src" display-mode="fixed" :width="106"
-              :height="106" :radius="3" :preview-urls="applicationMediaUrls" :preview-index="index"
+              :height="106" :radius="3" :preview-urls="applicationMediaUrls" :preview-index="Number(index)"
               data-qa="qa-jury-application-media-image" />
           </view>
         </view>
@@ -90,7 +90,9 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawAvatar from '@/components/identity/PawAvatar.vue'
 import PawImage from '@/components/base/PawImage.vue'
@@ -99,24 +101,101 @@ import PawJuryActionBar from '@/components/PawJuryActionBar.vue'
 import PawJuryVoteDialog from '@/components/PawJuryVoteDialog.vue'
 import PawVoteRatioBar from '@/components/PawVoteRatioBar.vue'
 import ShareActionSheet from '@/components/ShareActionSheet.vue'
-import { goBackSmart } from '@/utils/navBack.js'
-import { PAW_MSG_VOTE_DAY_LIMIT } from '@/utils/pawNoticeMessages.js'
-import { JURY_ITEM_STATUS } from '@/utils/juryMock.js'
-import { openUserProfile, openYardDetail } from '@/utils/profileNav.js'
-import { createReviewSessionProvider } from '../../../services/reviewAdapter.js'
-import { applyAdoptionReviewAction } from '../../../services/reviewActionAdapter.js'
-import { produceLocalActionNotification } from '../../../services/messageStore.js'
+import { goBackSmart } from '@/utils/navBack.ts'
+import { PAW_MSG_VOTE_DAY_LIMIT } from '@/utils/pawNoticeMessages.ts'
+import { JURY_ITEM_STATUS } from '@/utils/juryMock.ts'
+import { openUserProfile, openYardDetail } from '@/utils/profileNav.ts'
+import { createReviewSessionProvider } from '../../../services/reviewAdapter.ts'
+import { applyAdoptionReviewAction } from '../../../services/reviewActionAdapter.ts'
+import { produceLocalActionNotification } from '../../../services/messageStore.ts'
 import {
   getJuryItemById,
   getJuryItems,
   getJuryVoteLimitState,
   writeJuryVote
-} from '@/utils/juryStorage.js'
+} from '@/utils/juryStorage.ts'
+import type { JuryEvidence, JuryItem, JuryPet, JuryVote } from '@/utils/juryMock.ts'
 
-export default {
+interface JuryDetailPageState {
+  itemId: string
+  item: JuryItem | null
+  selectedVote: JuryVote | ''
+  showVoteResult: boolean
+  shareSheetVisible: boolean
+  showVoteLimitModal: boolean
+  voteLimitMessage: string
+  fromTaskCenter: boolean
+  actorProvider: ReturnType<typeof createReviewSessionProvider>
+}
+
+interface JuryDetailVoteStats {
+  realPercent: number
+  fakePercent: number
+  realCount: number
+  fakeCount: number
+}
+
+interface JuryShareMetadata {
+  type: 'jury-review'
+  reviewType: 'adoption'
+  itemId: string
+  title: string
+  summary: string
+  applicantName: string
+  yardName: string
+  petNames: string[]
+  imageUrl: string
+  path: string
+  query: string
+}
+
+interface JuryReviewActionFailure {
+  success: false
+  error: { code: string; message: string }
+}
+
+type JuryReviewActionSuccess = ReturnType<typeof applyAdoptionReviewAction>
+type JuryReviewActionResult = JuryReviewActionSuccess | JuryReviewActionFailure
+
+interface ReviewNotificationAuthorizationContext {
+  actor: { id: string }
+  message: { businessType: string; reviewItemId?: string }
+}
+
+interface JuryDetailRouteOptions {
+  reviewItemId?: unknown
+  businessType?: unknown
+  popup?: unknown
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function errorField(error: unknown, key: 'code' | 'message', fallback: string): string {
+  if (!isRecord(error)) return fallback
+  const value = error[key]
+  return typeof value === 'string' && value.trim() ? value : fallback
+}
+
+function reviewActionFailure(error: unknown): JuryReviewActionFailure {
+  return {
+    success: false,
+    error: {
+      code: errorField(error, 'code', 'REVIEW_ACTION_FAILED'),
+      message: errorField(error, 'message', '审批单状态未更新')
+    }
+  }
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0
+}
+
+export default defineComponent({
   name: 'JuryDetailPage',
   components: { PawPageNav, PawAvatar, PawImage, PawNoticeModal, PawJuryActionBar, PawJuryVoteDialog, PawVoteRatioBar, ShareActionSheet },
-  data() {
+  data(): JuryDetailPageState {
     return {
       itemId: '',
       item: null,
@@ -141,11 +220,11 @@ export default {
     },
     petSectionTitle() { return '申请领养的猫咪' },
     voted() {
-      const item = this.item || {}
-      return Boolean(item.hasVoted || item.vote || item.status === JURY_ITEM_STATUS.voted || item.status === JURY_ITEM_STATUS.closed)
+      const item = this.item
+      return Boolean(item && (item.hasVoted || item.vote || item.status === JURY_ITEM_STATUS.voted || item.status === JURY_ITEM_STATUS.closed))
     },
-    voteStats() {
-      const source = (this.item && (this.item.voteStats || this.item.voteStatistics)) || {}
+    voteStats(): JuryDetailVoteStats {
+      const source = this.item && (this.item.voteStats || this.item.voteStatistics)
       if (this.voted) {
         return {
           realPercent: 50,
@@ -154,64 +233,65 @@ export default {
           fakeCount: 32
         }
       }
-      const realPercent = Number(source.realPercent ?? source.real ?? 0)
-      const fakePercent = Number(source.fakePercent ?? source.fake ?? 0)
+      const realPercent = Number(source?.realPercent ?? source?.real ?? 0)
+      const fakePercent = Number(source?.fakePercent ?? source?.fake ?? 0)
       return {
         realPercent: Number.isFinite(realPercent) ? realPercent : 0,
         fakePercent: Number.isFinite(fakePercent) ? fakePercent : 0,
-        realCount: source.realCount ?? 0,
-        fakeCount: source.fakeCount ?? 0
+        realCount: source?.realCount ?? 0,
+        fakeCount: source?.fakeCount ?? 0
       }
     },
     queueItems() {
       return getJuryItems({ reviewType: 'adoption', includeClosed: false })
     },
     pendingQueueItems() {
-      return this.queueItems.filter(item => item.status === JURY_ITEM_STATUS.pending)
+      return this.queueItems.filter((item) => item.status === JURY_ITEM_STATUS.pending)
     },
     detailEvidenceUrls() {
-      return (this.item && (this.item.detailEvidence || this.item.evidence) || []).map(entry => entry.src)
+      return (this.item?.detailEvidence || this.item?.evidence || []).map((entry) => entry.src)
     },
     applicationMediaUrls() {
-      return (this.item && this.item.application && this.item.application.media || []).map(entry => entry.src)
+      return (this.item?.application.media || []).map((entry) => entry.src)
     },
-    juryShareData() {
-      const item = this.item || {}
-      const evidence = item.detailEvidence || item.evidence || []
-      const media = item.application && item.application.media || []
+    juryShareData(): JuryShareMetadata {
+      const item = this.item
+      const evidence = item?.detailEvidence || item?.evidence || []
+      const media = item?.application.media || []
       // 评审证据通常是更轻量的分享封面；没有证据时再回退到申请材料或头像。
-      const imageUrl = (evidence[0] && evidence[0].src) || (media[0] && media[0].src) || item.applicantAvatar || ''
+      const imageUrl = evidence[0]?.src || media[0]?.src || item?.applicantAvatar || ''
       const title = '逢猫领养评审'
       const query = [
-        `reviewItemId=${encodeURIComponent(item.id || this.itemId)}`,
+        `reviewItemId=${encodeURIComponent(item?.id || this.itemId)}`,
         'businessType=adoption'
       ].join('&')
       return {
         type: 'jury-review',
         reviewType: 'adoption',
-        itemId: item.id || this.itemId,
+        itemId: item?.id || this.itemId,
         title,
-        summary: item.summary || item.applyText || '',
-        applicantName: item.applicantName || '',
-        yardName: item.yardName || item.ownerName || '',
-        petNames: (item.pets || []).map(pet => pet.name),
+        summary: item?.summary || item?.applyText || '',
+        applicantName: item?.applicantName || '',
+        yardName: item?.yardName || item?.ownerName || '',
+        petNames: (item?.pets || []).map((pet) => pet.name),
         imageUrl,
         path: `/packages/adoption/pages/jury/detail/index?${query}`,
         query
       }
     },
     nextItem() {
-      const currentIndex = this.queueItems.findIndex(entry => entry.id === this.itemId)
+      const currentIndex = this.queueItems.findIndex((entry) => entry.id === this.itemId)
       const startIndex = currentIndex >= 0 ? currentIndex + 1 : 0
-      return this.queueItems.slice(startIndex).find(item => item.status === JURY_ITEM_STATUS.pending) || null
+      return this.queueItems.slice(startIndex).find((item) => item.status === JURY_ITEM_STATUS.pending) || null
     },
     nextLabel() {
-      if (!this.nextItem) return '返回评审团'
-      const nextIndex = this.pendingQueueItems.findIndex(entry => entry.id === this.nextItem.id)
+      const nextItem = this.nextItem
+      if (!nextItem) return '返回评审团'
+      const nextIndex = this.pendingQueueItems.findIndex((entry) => entry.id === nextItem.id)
       return `下一个（${nextIndex + 1}/${this.pendingQueueItems.length}）`
     }
   },
-  onLoad(options = {}) {
+  onLoad(options: JuryDetailRouteOptions = {}) {
     this.itemId = String(options.reviewItemId || '')
     this.fromTaskCenter = this.wasOpenedFromTaskCenter()
     if (!this.itemId || options.businessType !== 'adoption') {
@@ -250,7 +330,7 @@ export default {
         const previous = pages.length > 1 ? pages[pages.length - 2] : null
         const route = previous && (previous.route || previous.$page && previous.$page.route)
         return route === 'packages/account/pages/tasks/index'
-      } catch (error) {
+      } catch {
         return false
       }
     },
@@ -264,7 +344,7 @@ export default {
     goBack() {
       goBackSmart({ fallbackUrl: '/packages/jury/pages/queue/index?businessType=adoption' })
     },
-    vote(value) {
+    vote(value: JuryVote) {
       if (this.voted) return
       const result = writeJuryVote(this.itemId, value, getJuryVoteLimitState())
       if (!result.ok) {
@@ -280,12 +360,12 @@ export default {
     closeVoteLimit() {
       this.showVoteLimitModal = false
     },
-    syncAdoptionApplication(vote) {
+    syncAdoptionApplication(vote: JuryVote) {
       const item = this.item
       if (!item || !item.recordId) return
       const reviewItemId = String(item.reviewItemId || item.id || '').trim()
       if (!reviewItemId) return
-      let result
+      let result: JuryReviewActionResult
       try {
         // Jury votes are public feedback, but they must never mutate a demo or
         // another user's adoption record. The persisted review adapter re-reads
@@ -298,34 +378,33 @@ export default {
           reason: vote === 'fake' ? '评审团未通过本次领养确认。' : '',
           idempotencyKey: `adoption-jury-${reviewItemId}-${vote}`,
         })
-      } catch (error) {
-        result = { success: false, error: { code: error && error.code || 'REVIEW_ACTION_FAILED', message: error && error.message || '审批单状态未更新' } }
+      } catch (error: unknown) {
+        result = reviewActionFailure(error)
       }
       if (!result.success) {
         // A demo jury card may still record the local vote, but it cannot write
         // an application without a persisted review relation and trusted actor.
-        if (!['NOT_FOUND', 'FORBIDDEN', 'REVIEW_READ_DENIED', 'NO_ACTOR'].includes(result.error && result.error.code)) {
-          uni.showToast({ title: result.error.message || '审批单状态未更新', icon: 'none' })
+        if (!['NOT_FOUND', 'FORBIDDEN', 'REVIEW_READ_DENIED', 'NO_ACTOR'].includes(result.error.code)) {
+          uni.showToast({ title: result.error.message, icon: 'none' })
         }
         return
       }
       this.notifyReviewAction(result, item)
     },
-    notifyReviewAction(action, item) {
-      const applicant = item && item.applicant && typeof item.applicant === 'object' ? item.applicant : {}
-      const recipientId = [item && item.applicantId, applicant.id, applicant.pawId]
-        .find(value => typeof value === 'string' && value.trim())
-      if (!recipientId || !action || action.success !== true) return
+    notifyReviewAction(action: JuryReviewActionSuccess, item: JuryItem) {
+      const recipientId = [item.applicantId, item.applicant.id, item.applicant.pawId]
+        .find(isNonEmptyString)
+      if (!recipientId) return
       produceLocalActionNotification({
         action,
         recipientId,
         businessType: 'adoption',
         businessId: action.applicationId || item.recordId,
-        reviewItemId: action.reviewItemId || item.reviewItemId || item.id,
+		reviewItemId: action.reviewItemId || (typeof item.reviewItemId === 'string' ? item.reviewItemId : '') || item.id,
         category: 'system',
         title: action.toStatus === 'approved' ? '领养评审已通过' : '领养评审未通过',
         preview: action.toStatus === 'approved' ? '你的领养申请已完成评审。' : '你的领养申请评审未通过，请查看当前进度。',
-        authorize: ({ actor, message }) => actor.id === action.actorId
+        authorize: ({ actor, message }: ReviewNotificationAuthorizationContext) => actor.id === action.actorId
           && message.businessType === 'adoption'
           && message.reviewItemId === (action.reviewItemId || item.reviewItemId || item.id),
         actorProvider: this.actorProvider,
@@ -365,11 +444,13 @@ export default {
       if (!this.item) return
       this.shareSheetVisible = true
     },
-    onShareAction(key, shareData) {
-      const payload = shareData && shareData.path ? shareData : this.juryShareData
+    onShareAction(key: import('@/components/ShareActionSheet.vue').ShareActionKey, shareData: import('@/components/ShareActionSheet.vue').ShareData) {
+      const path = typeof shareData.path === 'string'
+        ? shareData.path
+        : this.juryShareData.path
       if (key === 'link') {
         uni.setClipboardData({
-          data: payload.path,
+          data: path,
           success: () => uni.showToast({ title: '评审链接已复制', icon: 'none' })
         })
         return
@@ -386,8 +467,8 @@ export default {
         uni.showToast({ title: '已收到举报反馈', icon: 'none' })
       }
     },
-    evidenceIndex(evidence) {
-      return (this.item && (this.item.detailEvidence || this.item.evidence) || []).findIndex(entry => entry.id === evidence.id)
+    evidenceIndex(evidence: JuryEvidence) {
+      return (this.item?.detailEvidence || this.item?.evidence || []).findIndex((entry) => entry.id === evidence.id)
     },
     openApplicant() {
       if (!this.item || !this.item.applicant) return
@@ -401,7 +482,7 @@ export default {
       if (!this.item) return
       openYardDetail({ yardId: this.item.yardId, yardName: this.item.yardName || this.item.ownerName })
     },
-    openPet(pet) {
+    openPet(pet: JuryPet) {
       const petId = String(pet && (pet.yardPetId || pet.sourcePetId || pet.petId || pet.id) || '').trim()
       if (!petId) return
       const yardId = encodeURIComponent(this.item && this.item.yardId || '1')
@@ -411,9 +492,9 @@ export default {
         url: `/packages/animal/pages/detail/index?animalId=${encodeURIComponent(petId)}&yardId=${yardId}&state=0${yardQuery}`
       })
     },
-    normalizeReviewType(value) { return value === 'adoption' ? 'adoption' : '' }
+    normalizeReviewType(value: string) { return value === 'adoption' ? 'adoption' : '' }
   }
-}
+})
 </script>
 
 <style lang="less" scoped>

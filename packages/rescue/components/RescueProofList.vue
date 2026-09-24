@@ -32,29 +32,32 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawButton from '@/components/base/PawButton.vue'
 import PawAvatar from '@/components/identity/PawAvatar.vue'
 import LevelBadge from '@/components/customBadge/LevelBadge.vue'
-import { SELF_PAW_ID, openUserProfile } from '@/utils/profileNav.js'
-import { buildRoute } from '@/navigation/routeContracts.js'
-import { hasRescueProofByUser } from '@/utils/rescueStorage.js'
-import { normalizedProofList, proofCount } from '../services/proof.js'
+import { SELF_PAW_ID, openUserProfile } from '@/utils/profileNav.ts'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import { hasRescueProofByUser, type RescueRecord } from '@/utils/rescueStorage.ts'
+import { normalizedProofList, proofCount, type NormalizedRescueProof } from '../services/proof.ts'
+import { type RescueLoadState } from '../services/componentMetadata.ts'
 
-export default {
+export default defineComponent({
   name: 'RescueProofList',
   components: { PawPageNav, PawIcon, PawButton, PawAvatar, LevelBadge },
   props: {
-    record: { type: Object, default: null },
-    loadState: { type: String, default: 'idle' }
+    record: { type: Object as PropType<RescueRecord | null>, default: null },
+    loadState: { type: String as PropType<RescueLoadState>, default: 'idle' }
   },
   computed: {
     navBackground() { return 'linear-gradient(to bottom, #fffcdc 0%, #ffffff 100%)' },
     fallbackUrl() {
       if (!this.record) return '/pages/me/index'
-      try { return buildRoute('rescue.detail', { rescueId: this.record.id }) } catch (error) { return '/pages/me/index' }
+      try { return buildRoute('rescue.detail', { rescueId: this.record.id }) } catch { return '/pages/me/index' }
     },
     proofs() { return normalizedProofList(this.record) },
     proofCount() { return proofCount(this.record) },
@@ -69,14 +72,16 @@ export default {
   methods: {
     openCreate() {
       if (!this.record || this.alreadySubmitted) return
-      try { uni.navigateTo({ url: buildRoute('rescue.proof.create', { rescueId: this.record.id }) }) } catch (error) { uni.showToast({ title: '证实表单暂不可用', icon: 'none' }) }
+      try { uni.navigateTo({ url: buildRoute('rescue.proof.create', { rescueId: this.record.id }) }) } catch { uni.showToast({ title: '证实表单暂不可用', icon: 'none' }) }
     },
-    openProofUser(proof) {
+    openProofUser(proof: NormalizedRescueProof) {
       if (!proof) return
-      openUserProfile({ pawId: proof.pawId || proof.userId || proof.id, nickname: proof.name, avatar: proof.avatar })
+      const candidate = proof.pawId || proof.userId || proof.id
+      const pawId = typeof candidate === 'string' || typeof candidate === 'number' ? candidate : null
+      openUserProfile({ pawId, nickname: proof.name, avatar: proof.avatar })
     }
   }
-}
+})
 </script>
 
 <style scoped>

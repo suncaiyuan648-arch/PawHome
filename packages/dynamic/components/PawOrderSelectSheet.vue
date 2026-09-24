@@ -46,24 +46,38 @@
 	</PawBottomSheet>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
+
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawFeedingFeedbackTag from '@/components/feeding/PawFeedingFeedbackTag.vue'
 import LevelBadge from '@/components/customBadge/LevelBadge.vue'
+import type { PublishEditorOrder } from '../services/publishEditorMetadata.ts'
 
 const FIGMA_ORDER_AVATAR = '/static/figma/publish/order-avatar.png'
 
-export default {
+interface PawOrderSelectSheetState {
+	selectedIcon: string
+	unselectedIcon: string
+	fallbackAvatar: string
+}
+
+export default defineComponent({
 	name: 'PawOrderSelectSheet',
 	components: { PawBottomSheet, PawFeedingFeedbackTag, LevelBadge },
 	props: {
 		modelValue: { type: Boolean, default: false },
-		orders: { type: Array, default: () => [] },
-		selectedIds: { type: Array, default: () => [] },
+		orders: { type: Array as PropType<PublishEditorOrder[]>, default: () => [] },
+		selectedIds: { type: Array as PropType<string[]>, default: () => [] },
 		height: { type: [String, Number], default: '70vh' }
 	},
-	emits: ['update:modelValue', 'update:selectedIds', 'order-user-click', 'after-close'],
-	data() {
+	emits: {
+		'update:modelValue': (value: boolean) => typeof value === 'boolean',
+		'update:selectedIds': (ids: string[]) => Array.isArray(ids) && ids.every(id => typeof id === 'string'),
+		'order-user-click': (order: PublishEditorOrder) => Boolean(order && typeof order.id === 'string'),
+		'after-close': () => true,
+	},
+	data(): PawOrderSelectSheetState {
 		return {
 			selectedIcon: '/static/figma/publish/order-selected.svg',
 			unselectedIcon: '/static/figma/publish/order-unselected.svg',
@@ -75,34 +89,34 @@ export default {
 			get() {
 				return this.modelValue
 			},
-			set(value) {
+			set(value: boolean) {
 				this.$emit('update:modelValue', value)
 			}
 		}
 	},
 	methods: {
-		isSelected(id) {
-			return (this.selectedIds || []).some(selectedId => String(selectedId) === String(id))
+		isSelected(id: string): boolean {
+			return this.selectedIds.some(selectedId => selectedId === id)
 		},
-		toggleOrder(order) {
-			const id = String(order.id)
-			const current = (this.selectedIds || []).map(selectedId => String(selectedId))
+		toggleOrder(order: PublishEditorOrder) {
+			const id = order.id
+			const current = this.selectedIds.slice()
 			const next = this.isSelected(order.id)
 				? current.filter(selectedId => selectedId !== id)
 				: current.concat(id)
 			this.$emit('update:selectedIds', next)
 		},
-		emitOrderUser(order) {
+		emitOrderUser(order: PublishEditorOrder) {
 			this.$emit('order-user-click', order)
 		},
 		close() {
 			this.visibleProxy = false
 		},
-		onSheetValueChange(value) {
+		onSheetValueChange(value: boolean) {
 			this.visibleProxy = value
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

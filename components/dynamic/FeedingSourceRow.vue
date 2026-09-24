@@ -5,19 +5,25 @@
   </view>
 </template>
 
-<script>
-import PawAvatarStack from '@/components/identity/PawAvatarStack.vue'
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+import { defineComponent, type PropType } from 'vue'
 
-export default {
+import PawAvatarStack from '@/components/identity/PawAvatarStack.vue'
+import type { AvatarStackItem } from '@/utils/avatarStackMetadata.ts'
+
+export default defineComponent({
   name: 'FeedingSourceRow',
   components: { PawAvatarStack },
   props: {
-    feeders: { type: Array, default: () => [] },
+    feeders: { type: Array as PropType<AvatarStackItem[]>, default: () => [] },
     text: { type: String, default: '' },
     max: { type: Number, default: 5 }
   },
-  emits: ['click']
-}
+  emits: {
+    'click': eventContract<[]>(),
+  }
+})
 </script>
 
 <style scoped>

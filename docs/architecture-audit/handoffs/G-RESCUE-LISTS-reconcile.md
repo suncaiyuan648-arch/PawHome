@@ -4,12 +4,12 @@
 
 ## 结论
 
-唯一 canonical 是 [`navigation/rescueListContract.js`](../../../navigation/rescueListContract.js)。它已经被 G-RESCUE-LISTS 的测试与台账引用，保持纯函数边界：调用方注入已读取记录或同步 resolver，合同重新解析可信 actor，只输出冻结的 `rescue.mine` 与 `rescue.review.list` 读模型。
+唯一 canonical 是 [`navigation/rescueListContract.ts`](../../../navigation/rescueListContract.ts)。它已经被 G-RESCUE-LISTS 的测试与台账引用，保持纯函数边界：调用方注入已读取记录或同步 resolver，合同重新解析可信 actor，只输出冻结的 `rescue.mine` 与 `rescue.review.list` 读模型。
 
 本轮审计发现以下两个未采用的中间产物没有源码引用、测试引用或构建入口，且不在 Git 索引中，已安全删除：
 
-- `navigation/rescueListContracts.js`
-- `packages/rescue/services/listsContract.js`
+- `navigation/rescueListContracts.ts`
+- `packages/rescue/services/listsContract.ts`
 
 它们的 API、状态语义和归属校验与 canonical 不一致：前者额外引入任务合同并允许另一套任务字段，后者把 adapter 绑定、任务摘要和救助列表合同混在同一服务中。保留它们会让后续 coder 无法判断应实现哪一份合同，也可能再次把基金/评审状态轴混用。
 
@@ -24,7 +24,7 @@ W2b adapter 只依赖 canonical：先由救助域读取并筛选拥有明确业�
 - `reviewStatus`、`voteStatus` 等显式 `null` 值不会被另一个别名绕过；`undefined` 仅按现有兼容记录视为缺失。
 - 新增跨域 `businessType: adoption` 反例；记录域别名不一致时 fail-closed。
 - `node --test tests/governance/rescue-list-contract.test.cjs`：13/13 PASS。
-- `node --check navigation/rescueListContract.js`：PASS。
+- `node --check navigation/rescueListContract.ts`：PASS。
 - `git diff --check`：PASS。
 
 当前交付仍是合同子批，不代表救助个人列表/评审列表页面、storage adapter、路由注册或运行时 UI 已完成；这些按 [G-RESCUE-LISTS 计划](../11-采纳建议治理增补计划.md) 进入后续 W2b。

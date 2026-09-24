@@ -2,10 +2,11 @@
   <PawBadge text="已实名" color="#fffaf0" text-color="#a9731d" size="middle" />
 </template>
 
-<script>
+<script lang="ts">import { defineComponent } from 'vue'
+
 import PawBadge from '@/components/base/PawBadge.vue'
 
-export default {
+export default defineComponent({
   name: 'VerifiedBadge',
   components: { PawBadge },
   options: {
@@ -14,5 +15,5 @@ export default {
     virtualHost: true,
     // #endif
   }
-}
+})
 </script>

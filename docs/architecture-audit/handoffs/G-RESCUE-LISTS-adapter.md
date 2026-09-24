@@ -6,18 +6,18 @@
 
 ## 交付内容
 
-新增 [`packages/rescue/services/lists.js`](../../../packages/rescue/services/lists.js)，提供：
+新增 [`packages/rescue/services/lists.ts`](../../../packages/rescue/services/lists.ts)，提供：
 
 - `readRescueMine(options)` / `getRescueMine(options)`：读取当前可信 actor 作为申请人的救助列表；要求 `applicant` 角色。
 - `readRescueReviewList(options)` / `getRescueReviewList(options)`：读取当前可信 actor 被明确列为 reviewer 的救助评审列表；要求 `reviewer` 角色。
 
-adapter 只接受 `actorProvider` 和合同定义的 `filter`。传入的 `records`、`resolver`、`query`、`role`、`managed`、`state` 或 `includeDemo` 不会改变读取边界。每次调用先由 [`navigation/rescueListContract.js`](../../../navigation/rescueListContract.js) 重新解析 trusted actor，随后通过 resolver 重新调用：
+adapter 只接受 `actorProvider` 和合同定义的 `filter`。传入的 `records`、`resolver`、`query`、`role`、`managed`、`state` 或 `includeDemo` 不会改变读取边界。每次调用先由 [`navigation/rescueListContract.ts`](../../../navigation/rescueListContract.ts) 重新解析 trusted actor，随后通过 resolver 重新调用：
 
 ```js
 getRescueRecords({ includeDemo: false })
 ```
 
-因此真实边界只有 `utils/rescueStorage.js` 的 `PAWHOME_RESCUES` 已保存记录；不会读取稳定 demo、基金汇总、proofList、juryStorage、领养集合或其他域的 fixture。评审项必须从保存记录中带有明确且一致的 `rescueId`、`reviewItemId`、reviewer 关系和评审状态，adapter 不生成评审 ID 或投票资格。
+因此真实边界只有 `utils/rescueStorage.ts` 的 `PAWHOME_RESCUES` 已保存记录；不会读取稳定 demo、基金汇总、proofList、juryStorage、领养集合或其他域的 fixture。评审项必须从保存记录中带有明确且一致的 `rescueId`、`reviewItemId`、reviewer 关系和评审状态，adapter 不生成评审 ID 或投票资格。
 
 `rescueStorage` 会为兼容旧记录补齐顶层 `status`。评审读取只在该字段与唯一显式 review/vote 状态完全重复时移除冗余兼容字段；任何不一致仍完整交给 canonical contract 并 fail-closed，避免把冲突修成合法评审。
 
@@ -38,9 +38,9 @@ getRescueRecords({ includeDemo: false })
 本地检查：
 
 ```text
-node --check packages/rescue/services/lists.js                         # PASS
+node --check packages/rescue/services/lists.ts                         # PASS
 node --test tests/governance/rescue-lists-adapter.test.cjs              # 5/5 PASS
 git diff --check                                                        # PASS
 ```
 
-本子批未修改 `pages.json`、页面/Vue/UI、路由注册、`rescueStorage.js`、storage schema、package scripts、lockfile、全局导航或任何写操作；未运行 BUILD、微信开发者工具、Console、INTERACTION、GEOMETRY 或 VISUAL 验收。后续仍需由 C1/总工决定真实列表页面、任务聚合和 review metadata 的产品接入方式，并分别取得运行时证据。
+本子批未修改 `pages.tson`、页面/Vue/UI、路由注册、`rescueStorage.ts`、storage schema、package scripts、lockfile、全局导航或任何写操作；未运行 BUILD、微信开发者工具、Console、INTERACTION、GEOMETRY 或 VISUAL 验收。后续仍需由 C1/总工决定真实列表页面、任务聚合和 review metadata 的产品接入方式，并分别取得运行时证据。

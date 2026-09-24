@@ -3,38 +3,45 @@
     @detail="openDetail" @yard-click="openYard" @user-click="openUser" />
 </template>
 
-<script>
-import PawFeedingOrderList from '../../components/PawFeedingOrderList.vue'
-import { goBackSmart } from '@/utils/navBack.js'
-import { openUserProfile, openYardDetail, SELF_PAW_ID } from '@/utils/profileNav.js'
-import { buildRoute } from '@/navigation/routeContracts.js'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
-export default {
+import PawFeedingOrderList from '../../components/PawFeedingOrderList.vue'
+import { goBackSmart } from '@/utils/navBack.ts'
+import { openUserProfile, openYardDetail, SELF_PAW_ID } from '@/utils/profileNav.ts'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import {
+  createMyFeedingPageState,
+  readFeedingRouteText,
+  type FeedingOrderListItem,
+  type MyFeedingPageState
+} from '../../services/orderListMetadata.ts'
+
+export default defineComponent({
   name: 'MyFeedings',
   components: { PawFeedingOrderList },
-  data() {
-    return { userPawId: SELF_PAW_ID, emptyState: false }
-  },
-  onLoad(query = {}) {
-    if (query.userPawId || query.pawId) this.userPawId = String(query.userPawId || query.pawId)
-    this.emptyState = String(query.state || '') === '30'
+  data(): MyFeedingPageState { return createMyFeedingPageState(SELF_PAW_ID) },
+  onLoad(query: unknown = {}) {
+    const userPawId = readFeedingRouteText(query, 'userPawId') || readFeedingRouteText(query, 'pawId')
+    if (userPawId) this.userPawId = userPawId
+    this.emptyState = readFeedingRouteText(query, 'state') === '30'
   },
   methods: {
     goBack() { goBackSmart({ fallbackUrl: '/pages/me/index' }) },
-    openDetail(item) {
-      if (!item || !item.id) return
-      uni.navigateTo({ url: buildRoute('feeding.order.detail', { orderId: String(item.id), perspective: 'donor' }) })
+    openDetail(item: FeedingOrderListItem) {
+      if (!item.id) return
+      uni.navigateTo({ url: buildRoute('feeding.order.detail', { orderId: item.id, perspective: 'donor' }) })
     },
-    openYard(item) {
-      openYardDetail({ yardId: item && item.yardId, yardName: item && item.yardName })
+    openYard(item: FeedingOrderListItem) {
+      openYardDetail({ yardId: item.yardId, yardName: item.yardName })
     },
-    openUser(item) {
+    openUser(item: FeedingOrderListItem) {
       openUserProfile({
-        pawId: item && (item.pawId || item.userPawId),
-        nickname: item && item.name,
-        avatar: item && (item.yardAvatar || item.avatar)
+        pawId: item.pawId || item.userPawId,
+        nickname: item.name,
+        avatar: item.yardAvatar || item.avatar
       })
     }
   }
-}
+})
 </script>

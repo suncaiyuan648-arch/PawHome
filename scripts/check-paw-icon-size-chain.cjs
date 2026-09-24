@@ -11,9 +11,9 @@ const {
 const { DESIGN_CANVAS, OPTICAL_SLOTS, isExplicitFrameSlot, readViewBox } = require('./paw-icon-normalize.cjs')
 
 const component = fs.readFileSync(path.join(ROOT, 'components/PawIcon/PawIcon.vue'), 'utf8')
-const utils = fs.readFileSync(path.join(ROOT, 'components/PawIcon/PawIcon.utils.js'), 'utf8')
-const registrySource = fs.readFileSync(path.join(ROOT, 'components/PawIcon/generated/icon-registry.js'), 'utf8')
-const metricsFile = path.join(ROOT, 'components/PawIcon/generated/icon-metrics.js')
+const utils = fs.readFileSync(path.join(ROOT, 'components/PawIcon/PawIcon.utils.ts'), 'utf8')
+const registrySource = fs.readFileSync(path.join(ROOT, 'components/PawIcon/generated/icon-registry.ts'), 'utf8')
+const metricsFile = path.join(ROOT, 'components/PawIcon/generated/icon-metrics.ts')
 
 function fail(message) {
   throw new Error(`[PawIcon size chain] ${message}`)

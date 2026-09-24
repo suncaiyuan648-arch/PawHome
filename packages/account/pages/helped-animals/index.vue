@@ -14,27 +14,29 @@
 	</view>
 </template>
 
-<script>
-	import PawPageNav from '@/components/PawPageNav.vue'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
-	const mockPhotos = () => ["/static/figma/helped/animal-01.jpg", "/static/figma/helped/animal-02.jpg", "/static/figma/helped/animal-03.jpg", "/static/figma/helped/animal-04.jpg", "/static/figma/helped/animal-05.jpg", "/static/figma/helped/animal-06.jpg", "/static/figma/helped/animal-07.png", "/static/figma/helped/animal-08.jpg", "/static/figma/helped/animal-09.jpg", "/static/figma/helped/animal-10.jpg", "/static/figma/helped/animal-11.jpg"]
+import PawPageNav from '@/components/PawPageNav.vue'
+import {
+	createHelpedAnimalPreviewOptions,
+	createHelpedAnimalsPageMetadata,
+	type HelpedAnimalsPageState
+} from '@/packages/account/services/helpedAnimalsMetadata'
 
-	export default {
-		components: { PawPageNav },
-		data() {
-			return {
-				photoList: mockPhotos()
-			}
-		},
-		methods: {
-			onThumbTap(i) {
-				uni.previewImage({
-					urls: this.photoList,
-					current: this.photoList[i]
-				})
-			}
+export default defineComponent({
+	components: { PawPageNav },
+	data(): HelpedAnimalsPageState {
+		return createHelpedAnimalsPageMetadata()
+	},
+	methods: {
+		onThumbTap(index: number) {
+			const previewOptions = createHelpedAnimalPreviewOptions(this.photoList, index)
+			if (!previewOptions) return
+			uni.previewImage(previewOptions)
 		}
 	}
+})
 </script>
 
 <style scoped>

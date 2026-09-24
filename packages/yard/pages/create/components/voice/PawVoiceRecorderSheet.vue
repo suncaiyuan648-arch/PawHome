@@ -18,10 +18,14 @@
 	</PawBottomSheet>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent } from 'vue'
+
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 
-export default {
+export default defineComponent({
 	name: 'PawVoiceRecorderSheet',
 	components: { PawBottomSheet },
 	props: {
@@ -29,14 +33,19 @@ export default {
 		recording: { type: Boolean, default: false },
 		duration: { type: [Number, String], default: 0 }
 	},
-	emits: ['update:visible', 'record-start', 'record-end', 'after-close'],
+	emits: {
+    'update:visible': eventContract<[value: boolean]>(),
+    'record-start': eventContract<[]>(),
+    'record-end': eventContract<[]>(),
+    'after-close': eventContract<[]>(),
+  },
 	computed: {
 		visibleProxy: {
 			get() { return this.visible },
-			set(value) { this.$emit('update:visible', value) }
+			set(value: boolean) { this.$emit('update:visible', value) }
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

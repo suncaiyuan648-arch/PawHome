@@ -22,12 +22,15 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawButton from '@/components/base/PawButton.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
-export default {
+export default defineComponent({
   name: 'PawResultPage',
   components: { PawPageNav, PawButton, PawIcon },
   props: {
@@ -44,7 +47,10 @@ export default {
     failureTone: { type: String, default: 'muted' },
     fallbackUrl: { type: String, default: '/pages/index/index' }
   },
-  emits: ['back', 'action'],
+  emits: {
+    'back': eventContract<[]>(),
+    'action': eventContract<[]>(),
+  },
   computed: {
     contentStyle() {
       return { paddingTop: `${Number(this.contentTop) || 38}px` }
@@ -63,7 +69,7 @@ export default {
       }
     }
   }
-}
+})
 </script>
 
 <style scoped>

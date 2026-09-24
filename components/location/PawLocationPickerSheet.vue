@@ -37,11 +37,29 @@
   </PawBottomSheet>
 </template>
 
-<script>
-import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
-import { fetchLocationPlaces, getPreciseLocation } from '@/utils/locationService.js'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
-export default {
+import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
+import { readPawEventValue } from '@/utils/pawEventMetadata.ts'
+import {
+  fetchLocationPlaces,
+  getPreciseLocation,
+  type LocationPlace,
+  type PreciseLocation
+} from '@/utils/locationService.ts'
+
+interface LocationPickerState {
+  keyword: string
+  currentCity: string
+  places: LocationPlace[]
+  loading: boolean
+  location: PreciseLocation | null
+  requestId: number
+  searchTimer: ReturnType<typeof setTimeout> | null
+}
+
+export default defineComponent({
   name: 'PawLocationPickerSheet',
   components: { PawBottomSheet },
   props: {
@@ -49,8 +67,12 @@ export default {
     city: { type: String, default: '长沙市' },
     sheetHeight: { type: String, default: '70vh' }
   },
-  emits: ['update:visible', 'select', 'city-tap'],
-  data() {
+  emits: {
+    'update:visible': (value: boolean) => typeof value === 'boolean',
+    select: (place: LocationPlace) => typeof place.id === 'string' && typeof place.name === 'string',
+    'city-tap': (city: string) => typeof city === 'string'
+  },
+  data(): LocationPickerState {
     return {
       keyword: '',
       currentCity: this.city || '长沙市',
@@ -63,16 +85,16 @@ export default {
   },
   computed: {
     visibleProxy: {
-      get() { return this.visible },
-      set(value) { this.$emit('update:visible', value) }
+      get(): boolean { return this.visible },
+      set(value: boolean) { this.$emit('update:visible', value) }
     }
   },
   watch: {
-    visible(value) {
+    visible(value: boolean) {
       if (value) this.loadNearby()
       else this.clearSearchTimer()
     },
-    city(value) {
+    city(value: string) {
       this.currentCity = value || '长沙市'
       if (this.visible) this.loadNearby()
     }
@@ -86,8 +108,8 @@ export default {
       clearTimeout(this.searchTimer)
       this.searchTimer = null
     },
-    onKeywordInput(event) {
-      this.keyword = event && event.detail ? event.detail.value || '' : ''
+    onKeywordInput(event: PawEvent) {
+      this.keyword = readPawEventValue(event)
       this.clearSearchTimer()
       this.searchTimer = setTimeout(() => this.loadLocations(), 260)
     },
@@ -103,8 +125,8 @@ export default {
       const location = this.location || await getPreciseLocation()
       const result = await fetchLocationPlaces({
         city: this.currentCity,
-        latitude: location && location.latitude,
-        longitude: location && location.longitude,
+        latitude: location?.latitude,
+        longitude: location?.longitude,
         keyword: this.keyword
       })
       if (requestId !== this.requestId) return
@@ -113,7 +135,7 @@ export default {
       this.places = result.list || []
       this.loading = false
     },
-    selectPlace(item) {
+    selectPlace(item: LocationPlace) {
       this.$emit('select', item)
       this.visibleProxy = false
     },
@@ -121,7 +143,7 @@ export default {
       this.$emit('city-tap', this.currentCity)
     }
   }
-}
+})
 </script>
 
 <style scoped>

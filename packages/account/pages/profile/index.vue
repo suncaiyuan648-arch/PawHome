@@ -105,7 +105,7 @@
 								<LevelBadge level="1" />
 							</view>
 							<text class="review-copy">{{ item.copy }}</text>
-							<text class="review-meta">{{ item.time }}　{{ item.region }}　回复</text>
+							<text class="review-meta">{{ item.time }}{{ '\u3000' }}{{ item.region }}{{ '\u3000' }}回复</text>
 						</view>
 						<view class="review-like">
 							<PawLikeIcon :liked="true" /><text>{{ item.likes }}</text>
@@ -121,7 +121,7 @@
 					<view v-for="(item, idx) in feedList" :key="'p-' + idx" class="feed-card"
 						@click="onFeedCardTap(item)">
 						<view class="feed-img-wrap">
-							<image class="feed-img" :class="{ 'feed-img--tall': idx % 2 === 0 }" :src="item.cover"
+						<image class="feed-img" :class="{ 'feed-img--tall': Number(idx) % 2 === 0 }" :src="item.cover"
 								mode="aspectFill"></image>
 							<view class="loc-pill">
 								<uni-icons type="location" color="#f6f8fa" :size="10"></uni-icons>
@@ -307,181 +307,41 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
-import { buildRoute } from '@/navigation/routeContracts.js'
+import { buildRoute } from '@/navigation/routeContracts.ts'
 import YardBadge from '@/components/customBadge/YardBadge.vue'
 import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import PawVerifiedBadge from '@/components/identity/PawVerifiedBadge.vue'
 import PawActionSheet from '@/components/overlay/PawActionSheet.vue'
+import type { PawActionSheetItem } from '@/components/overlay/PawActionSheet.vue'
 import PawLikeIcon from '@/components/base/PawLikeIcon.vue'
-import { readPublicProfile, readLocalProfile } from '../../services/localProfileStorage.js'
+import { readPublicProfile, readLocalProfile } from '../../services/localProfileStorage.ts'
+import {
+	createProfileFeedMocks,
+	createProfilePageMockMetadata,
+	normalizeProfileRouteOptions,
+	normalizeProfileStats,
+	normalizePublicProfileRecord,
+	resolveProfileActionKey
+} from '../../services/profilePageMetadata.ts'
+import type { ProfileActionKey, ProfileFeedItem, ProfilePageState, ProfileTabKey } from '../../services/profilePageMetadata.ts'
 
-const mockFeedForUser = (nickname, avatar) => [
-	{
-		cover: '/static/home-feed-1.png',
-		title: '小猫吃的好开心',
-		distance: '3.2km',
-		district: '金水区',
-		userAvatar: avatar || '/static/user.png',
-		userName: nickname,
-		likes: 37,
-		liked: false
-	},
-	{
-		cover: '/static/home-feed-2.png',
-		title: '小猫吃的好开心呃呃呃呃呃呃',
-		distance: '3.2km',
-		district: '金水区',
-		userAvatar: avatar || '/static/user.png',
-		userName: nickname,
-		likes: 32,
-		liked: true
-	},
-	{
-		cover: '/static/home-feed-1.png',
-		title: '今天多喂了一点粮',
-		distance: '5.0km',
-		district: '中原区',
-		userAvatar: avatar || '/static/user.png',
-		userName: nickname,
-		likes: 24,
-		liked: false
-	},
-	{
-		cover: '/static/home-feed-2.png',
-		title: '猫咪排队吃饭中',
-		distance: '2.1km',
-		district: '管城区',
-		userAvatar: avatar || '/static/user.png',
-		userName: nickname,
-		likes: 41,
-		liked: true
-	}
-]
-
-const mockAdoptRows = () => {
-	const cat = { name: '小灰灰', img: '/static/avatarlog.png' }
-	const row = {
-		userName: '平安是福',
-		userAvatar: '/static/user.png',
-		status: '等待院主审核',
-		cats: [cat, cat, cat, cat, cat]
-	}
-	return [row, { ...row, userName: '平安是福' }]
-}
-
-const joinedGalleryMock = () => [
-	{ img: '/static/home-feed-1.png', caption: '开饭了开饭了开饭' },
-	{ img: '/static/home-feed-2.png', caption: '开饭了开饭了开饭' },
-	{ img: '/static/home-feed-1.png', caption: '开饭了开饭了开饭' },
-	{ img: '/static/home-feed-2.png', caption: '开饭了开饭了开饭' }
-]
-
-const mockJoinedRows = () => [
-	{
-		userAvatar: '/static/avatar.png',
-		userName: '我就是要喂猫',
-		verified: true,
-		distance: '3.2km',
-		district: '金水区',
-		variant: 'badges',
-		badges: ['6只猫咪', '已成立2个月', '入驻4人'],
-		desc: '春去秋来二十年的救助流浪猫时间匆匆而去，在此希望每个...',
-		gallery: joinedGalleryMock()
-	},
-	{
-		userAvatar: '/static/avatar.png',
-		userName: '我就是要喂猫',
-		verified: true,
-		distance: '3.2km',
-		district: '金水区',
-		variant: 'org',
-		orgName: '合肥市希望流浪动物基地',
-		desc: '春去秋来二十年的救助流浪猫时间匆匆而去，在此希望每个...',
-		gallery: joinedGalleryMock()
-	}
-]
-
-const mockDonateRows = () => [
-	{
-		userName: '平安是福',
-		userAvatar: '/static/avatarlog.png',
-		actionText: '投粮4斤',
-		timeStr: '2026-2-5 13:23:56',
-		topBadge: { kind: 'feedback', text: '已反馈', notify: 3 },
-		progressText: '已反馈3/5次'
-	},
-	{
-		userName: '平安是福',
-		userAvatar: '/static/avatarlog.png',
-		actionText: '投粮4斤',
-		timeStr: '2026-2-5 13:23:56',
-		topBadge: { kind: 'feedback', text: '已反馈', notify: 4 },
-		progressText: '已反馈2/5次'
-	},
-	{
-		userName: '平安是福',
-		userAvatar: '/static/avatarlog.png',
-		actionText: '投粮4斤',
-		timeStr: '2026-2-5 13:23:56',
-		topBadge: { kind: 'complete', text: '全部完成', notify: null },
-		progressText: '已反馈5/5次'
-	}
-]
-
-export default {
+export default defineComponent({
 	components: { PawPageNav, YardBadge, LevelBadge, PawVerifiedBadge, PawActionSheet, PawLikeIcon },
-	data() {
+	data(): ProfilePageState {
 		return {
-			donateList: mockDonateRows(),
-			joinedList: mockJoinedRows(),
-			yardList: mockJoinedRows(),
-			adoptList: mockAdoptRows(),
-			heroBgSrc: '/static/figma/feature/2ecb240e40e2e1063b6880669cd2ed5a63626710.jpg',
+			...createProfilePageMockMetadata(),
 			pawId: '',
 			queryNickname: '',
 			queryAvatar: '',
 			profileRecord: null,
-			lastActiveText: '1小时前来过',
-			verified: true,
-			profileTags: ['男生', '安徽'],
-			bio: '建国路猫小院　开店的那些事',
-			stats: {
-				follow: 2,
-				fans: 185,
-				likes: 185,
-				donate: 13
-			},
 			showMoreActionSheet: false,
 			showDonateSummaryPopup: false,
-			donateSummary: {
-				totalJin: '879',
-				totalTimes: '456'
-			},
 			followed: false,
 			showUnfollowConfirm: false,
-			moreActionItems: [
-				{ key: 'report', label: '举报', tone: 'danger' },
-				{ key: 'share', label: '分享' },
-				{ key: 'block', label: '拉黑' },
-				{ key: 'remark', label: '备注' }
-			],
-			profileTimelineMode: false,
-			profileTimeline: [
-				{ day: '23', month: '', action: '云养了一只宠物30天', copy: '流浪的时候经常去小卖店偷吃火腿肠被打骂', images: ['/static/figma/profile/timeline-1.png', '/static/figma/profile/timeline-2.png', '/static/figma/profile/timeline-3.png'] },
-				{ day: '14', month: '5月', action: '申请领养了一只宠物', copy: '流浪的时候经常去小卖店偷吃火腿肠被打骂' },
-				{ day: '27', month: '4月', action: '发起了一次求助', copy: '流浪的时候经常去小卖店偷吃火腿肠被打骂' },
-				{ day: '21', month: '4月', action: '第一次来到逢猫', wide: '/static/figma/profile/timeline-wide.png' }
-			],
-			activeTab: 'review',
-			profileTabs: [
-				{ key: 'review', label: '评价' }
-			],
-			reviewList: [
-				{ id: 1, name: '姜栋', avatar: '/static/figma/feature/04a93fa17267335f49e6e818f8caa78dd3afc80b.png', copy: '给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞', time: '昨天 20:45', region: '江西', likes: 32 }
-			],
-			feedList: [],
 			profileReady: false
 		}
 	},
@@ -494,7 +354,7 @@ export default {
 			return a || ''
 		},
 		placeholderText() {
-			const map = {
+			const map: Partial<Record<ProfileTabKey, string>> = {
 				adopt: '领养内容开发中'
 			}
 			return map[this.activeTab] || ''
@@ -503,25 +363,26 @@ export default {
 			return this.activeTab === 'yard' ? this.yardList : this.joinedList
 		}
 	},
-	 onLoad(query = {}) {
-		const rawPawId = decodeURIComponent(query.userId || query.pawId || '')
+	onLoad(rawQuery: unknown = {}) {
+		const query = normalizeProfileRouteOptions(rawQuery)
+		const rawPawId = query.userId || query.pawId || ''
 		if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(rawPawId)) return
 		this.pawId = rawPawId
 		this.profileReady = true
-		this.queryNickname = decodeURIComponent(query.nickname || '')
-		this.queryAvatar = decodeURIComponent(query.avatar || '')
+		this.queryNickname = query.nickname
+		this.queryAvatar = query.avatar
 		this.refreshProfile()
 		if (query.state === 'dynamic-long') {
 			this.profileTimelineMode = true
 			this.heroBgSrc = '/static/figma/profile/hero.jpg'
 			this.queryAvatar = '/static/figma/profile/avatar.png'
 		}
-		this.feedList = mockFeedForUser(this.displayNickname, this.displayAvatar || '/static/user.png')
-		const dynTab = this.profileTabs.find((t) => t.key === 'dynamic')
+		this.feedList = createProfileFeedMocks(this.displayNickname, this.displayAvatar || '/static/user.png')
+		const dynTab = this.profileTabs.find((tab) => tab.key === 'dynamic')
 		if (dynTab) dynTab.count = this.feedList.length
-		const joinedTab = this.profileTabs.find((t) => t.key === 'joined')
+		const joinedTab = this.profileTabs.find((tab) => tab.key === 'joined')
 		if (joinedTab) joinedTab.count = this.joinedList.length
-		const yardTab = this.profileTabs.find((t) => t.key === 'yard')
+		const yardTab = this.profileTabs.find((tab) => tab.key === 'yard')
 		if (yardTab) yardTab.count = this.yardList.length
 	},
 	onShow() {
@@ -530,17 +391,18 @@ export default {
 	methods: {
 		refreshProfile() {
 		const publicProfile = readPublicProfile(this.pawId)
-		if (publicProfile.success && publicProfile.data && publicProfile.data.record) {
-			this.profileRecord = publicProfile.data.record
+		const publicRecord = publicProfile.data ? normalizePublicProfileRecord(publicProfile.data.record) : null
+		if (publicProfile.success && publicRecord) {
+			this.profileRecord = publicRecord
 			this.queryNickname = this.profileRecord.nickname || this.profileRecord.name || this.queryNickname
 			this.queryAvatar = this.profileRecord.avatar || this.queryAvatar
 			this.bio = this.profileRecord.bio || ''
 			this.profileTags = Array.isArray(this.profileRecord.tags) ? this.profileRecord.tags : this.profileTags
-			this.verified = this.profileRecord.verified === true || this.profileRecord.level > 0 || this.verified
-			if (this.profileRecord.stats && typeof this.profileRecord.stats === 'object') this.stats = { ...this.stats, ...this.profileRecord.stats }
+			this.verified = this.profileRecord.verified === true || (this.profileRecord.level ?? 0) > 0 || this.verified
+			if (this.profileRecord.stats) this.stats = normalizeProfileStats(this.profileRecord.stats, this.stats)
 		}
 			const own = readLocalProfile(this.pawId, { actorProvider: () => uni.getStorageSync('PAWHOME_ACTOR_SESSION') })
-			this.moreActionItems = this.moreActionItems.filter(item => item.key !== 'edit')
+			this.moreActionItems = this.moreActionItems.filter((item) => item.key !== 'edit')
 			if (own.success) this.moreActionItems.unshift({ key: 'edit', label: '编辑资料' })
 		},
 		onHeroImgError() {
@@ -553,23 +415,23 @@ export default {
 		closeMoreActionSheet() {
 			this.showMoreActionSheet = false
 		},
-		onMoreSheet(action) {
+		onMoreSheet(action: PawActionSheetItem) {
 			this.closeMoreActionSheet()
-			const actionKey = typeof action === 'string' ? action : action && action.key
+			const actionKey = resolveProfileActionKey(action)
 			if (actionKey === 'edit') {
 				const access = readLocalProfile(this.pawId, { actorProvider: () => uni.getStorageSync('PAWHOME_ACTOR_SESSION') })
 				if (access.success) uni.navigateTo({ url: buildRoute('account.profile.edit', { userId: this.pawId }) })
 				return
 			}
-			const map = {
+			const map: Partial<Record<ProfileActionKey, string>> = {
 				report: '举报',
 				share: '分享',
 				block: '拉黑',
 				remark: '备注'
 			}
-			uni.showToast({ title: map[actionKey] || '', icon: 'none' })
+			uni.showToast({ title: actionKey ? map[actionKey] || '' : '', icon: 'none' })
 		},
-		goFollowFansPage(tab) {
+		goFollowFansPage(tab: 'fans' | 'follow') {
 			if (!this.profileReady || !this.pawId) return
 			const t = tab === 'fans' ? 'fans' : 'follow'
 			const relationTab = t === 'fans' ? 'followers' : 'following'
@@ -601,10 +463,11 @@ export default {
 			this.showUnfollowConfirm = false
 			uni.showToast({ title: '已取消关注', icon: 'none' })
 		},
-		onFeedCardTap() {
+		onFeedCardTap(item: ProfileFeedItem) {
+			void item
 			uni.navigateTo({ url: '/packages/yard/pages/detail/index?yardId=1' })
 		},
-		toggleProfileFeedLike(idx) {
+		toggleProfileFeedLike(idx: number) {
 			const item = this.feedList[idx]
 			if (!item) return
 			if (item.liked) {
@@ -616,7 +479,7 @@ export default {
 			}
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

@@ -61,19 +61,28 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import SearchResultTabs from './components/SearchResultTabs.vue'
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawSearchBar from '@/components/navigation/PawSearchBar.vue'
 import PawTabs from '@/components/navigation/PawTabs.vue'
 import PawOverlay from '@/components/overlay/PawOverlay.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
-import { goBackSmart } from '@/utils/navBack.js'
+import { goBackSmart } from '@/utils/navBack.ts'
+import {
+	createDemoSearchHistory,
+	createSearchPageMetadata,
+	isSearchTabKey,
+	normalizeSearchHistory,
+	normalizeSearchRouteOptions,
+	type SearchPageState
+} from '@/packages/discovery/services/searchPageMetadata'
 
 const HISTORY_KEY = 'PAWHOME_SEARCH_HISTORY'
-const DEMO_HISTORY = ['狸花猫', '545876656', '幸福小区', '年糕', '朝阳小区喂猫小院', '喂猫日记', '阿平的喂猫日记']
 
-export default {
+export default defineComponent({
 	components: {
 		SearchResultTabs,
 		PawPageNav,
@@ -82,46 +91,33 @@ export default {
 		PawOverlay,
 		PawIcon
 	},
-	data() {
-		return {
-			pageState: '',
-			keyword: '',
-			latestSearchKeyword: '',
-			historyList: [],
-			editMode: false,
-			hasSearched: false,
-			showDeleteAllDialog: false,
-			activeTab: 'dynamic',
-			tabs: [
-				{ key: 'dynamic', label: '动态' },
-				{ key: 'yard', label: '小院' },
-				{ key: 'user', label: '用户' }
-			]
-		}
+	data(): SearchPageState {
+		return createSearchPageMetadata()
 	},
 	computed: {
-		hasSearchResult() {
-			const k = (this.latestSearchKeyword || '').trim()
+		hasSearchResult(): boolean {
+			const k = this.latestSearchKeyword.trim()
 			// 有关键词即展示结果区（当前为演示数据）；对接接口后仍以「有返回」为准即可
 			return this.hasSearched && !!k
 		}
 	},
-	onLoad(options = {}) {
-		this.pageState = options.state || ''
+	onLoad(options: unknown = {}) {
+		const route = normalizeSearchRouteOptions(options)
+		this.pageState = route.pageState
 		if (this.pageState === 'empty') {
 			this.keyword = '蓝金渐层'
 			this.latestSearchKeyword = ''
 			this.historyList = []
 			this.hasSearched = true
 		}
-		if (['dynamic', 'yard', 'user'].includes(this.pageState)) {
+		if (isSearchTabKey(this.pageState)) {
 			this.keyword = '蓝金渐层'
 			this.latestSearchKeyword = '蓝金渐层'
 			this.hasSearched = true
 			this.activeTab = this.pageState
 		}
 		if (this.pageState === 'deleting' || this.pageState === 'idle_delete') this.editMode = true
-		if (options.popup === 'delete') {
+		if (route.popup === 'delete') {
 			this.editMode = true
 			this.showDeleteAllDialog = true
 		}
@@ -131,12 +127,12 @@ export default {
 	},
 	methods: {
 		readHistory() {
-			const list = uni.getStorageSync(HISTORY_KEY)
+			const list: unknown = uni.getStorageSync(HISTORY_KEY)
 			if (Array.isArray(list)) {
-				this.historyList = list.filter(Boolean)
+				this.historyList = normalizeSearchHistory(list)
 				return
 			}
-			this.historyList = [...DEMO_HISTORY]
+			this.historyList = createDemoSearchHistory()
 			uni.setStorageSync(HISTORY_KEY, this.historyList)
 		},
 		saveHistory() {
@@ -158,7 +154,7 @@ export default {
 			}
 			this.hasSearched = true
 			this.editMode = false
-			const merged = [key, ...this.historyList.filter((x) => x !== key)].slice(0, 20)
+			const merged = [key, ...this.historyList.filter((entry) => entry !== key)].slice(0, 20)
 			this.historyList = merged
 			this.saveHistory()
 		},
@@ -168,11 +164,11 @@ export default {
 		finishEdit() {
 			this.editMode = false
 		},
-		removeHistoryItem(i) {
-			this.historyList.splice(i, 1)
+		removeHistoryItem(index: number) {
+			this.historyList.splice(index, 1)
 			this.saveHistory()
 		},
-		onHistoryTap(item) {
+		onHistoryTap(item: string) {
 			if (this.editMode) return
 			this.keyword = item
 			this.onSearch()
@@ -187,7 +183,7 @@ export default {
 			this.showDeleteAllDialog = false
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

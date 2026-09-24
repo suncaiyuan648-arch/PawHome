@@ -16,8 +16,8 @@ const {
   readViewBox
 } = require('./paw-icon-normalize.cjs')
 
-const REGISTRY_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-registry.js')
-const NAMES_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-names.js')
+const REGISTRY_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-registry.ts')
+const NAMES_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-names.ts')
 const COLOR_ROOT = path.join(ROOT, 'static/paw-icons/color')
 const BUSINESS_ROOTS = ['pages', 'components', 'packages', 'services', 'navigation', 'custom-tab-bar', 'App.vue']
 const CATEGORIES = new Set(['navigation', 'actions', 'status', 'common', 'badges', 'brand'])

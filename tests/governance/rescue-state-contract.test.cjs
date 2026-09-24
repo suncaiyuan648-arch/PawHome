@@ -8,14 +8,14 @@ const { pathToFileURL } = require('node:url')
 const { test, before, after } = require('node:test')
 
 const ROOT = path.resolve(__dirname, '../..')
-const sourcePath = path.join(ROOT, 'services/domainReads/rescue/stateContract.js')
+const sourcePath = path.join(ROOT, 'services/domainReads/rescue/stateContract.ts')
 let tempRoot
 let contract
 
 before(async () => {
 	tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-rescue-state-contract-'))
 	await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
-	const target = path.join(tempRoot, 'stateContract.js')
+	const target = path.join(tempRoot, 'stateContract.ts')
 	await fs.copyFile(sourcePath, target)
 	contract = await import(`${pathToFileURL(target).href}?test=${Date.now()}-${Math.random()}`)
 })

@@ -7,24 +7,45 @@
   </view>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
+export type PawTabKey = string | number
+export type PawTabItem = string | { key?: PawTabKey; label: string }
+export type PawTabIndicatorSize = 'none' | 'small' | 'medium' | 'large'
+
+interface NormalizedPawTabItem { key: PawTabKey; label: string }
+
+function isIndicatorSize(value: unknown): value is PawTabIndicatorSize {
+  return value === 'none' || value === 'small' || value === 'medium' || value === 'large'
+}
+
+export default defineComponent({
   name: 'PawTabs',
   props: {
     modelValue: { type: [String, Number], default: '' },
-    items: { type: Array, default: () => [] },
+    items: { type: Array as PropType<PawTabItem[]>, default: () => [] },
     variant: { type: String, default: 'text' },
-    indicatorSize: { type: String, default: 'small', validator: value => ['none', 'small', 'medium', 'large'].includes(value) }
+    indicatorSize: { type: String as PropType<PawTabIndicatorSize>, default: 'small', validator: isIndicatorSize }
   },
-  emits: ['update:modelValue', 'change'],
+  emits: {
+    'update:modelValue': eventContract<[key: PawTabKey]>(),
+    'change': eventContract<[key: PawTabKey]>(),
+  },
   computed: {
     value() { return this.modelValue },
-    normalizedItems() { return this.items.map((item, index) => typeof item === 'string' ? { key: item, label: item } : { key: item.key !== undefined ? item.key : index, label: item.label }) }
+    normalizedItems(): NormalizedPawTabItem[] {
+      return this.items.map((item, index) => typeof item === 'string'
+        ? { key: item, label: item }
+        : { key: item.key ?? index, label: item.label })
+    }
   },
   methods: {
-    select(key) { if (key === this.value) return; this.$emit('update:modelValue', key); this.$emit('change', key) }
+    select(key: PawTabKey) { if (key === this.value) return; this.$emit('update:modelValue', key); this.$emit('change', key) }
   }
-}
+})
 </script>
 
 <style scoped>

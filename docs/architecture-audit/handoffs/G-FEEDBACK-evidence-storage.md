@@ -6,13 +6,13 @@
 
 ## 交付范围
 
-新增 [`packages/feeding/services/feedbackEvidenceStorage.js`](../../../packages/feeding/services/feedbackEvidenceStorage.js)，作为反馈证据的 append-only 本地 storage seam：
+新增 [`packages/feeding/services/feedbackEvidenceStorage.ts`](../../../packages/feeding/services/feedbackEvidenceStorage.ts)，作为反馈证据的 append-only 本地 storage seam：
 
 - 唯一 key 为 `PAWHOME_FEEDBACK_EVIDENCE`，根结构必须是数组；JSON、根结构、重复 `evidenceId`、关联或策略错误均 fail-closed，拒绝覆盖原值。
 - 读取和追加都要求每次重新解析的可信 `actorProvider` 与显式 feedback policy；只返回当前 actor 的 canonical evidence，支持 `kind`、`dynamicId`、`orderId`、`animalId`、`yardId` 精确过滤。
 - 投粮证据由 canonical contract 校验订单、动物、小院三方关联；普通动态证据不会携带订单/动物字段，两个域不会交叉读取。
 - 业务键重复追加幂等返回且不重复写入；新的 `attemptKey` 才形成新的合法证据；写入异常不报告成功。
-- 仅保留 append/read；没有 delete、withdraw、correct 导出，`mutationIntent` 继续由 `feedbackContracts.js` 拒绝。返回模型保持 `readOnly:true`、`canWrite:false`，不接入真实反馈提交页面。
+- 仅保留 append/read；没有 delete、withdraw、correct 导出，`mutationIntent` 继续由 `feedbackContracts.ts` 拒绝。返回模型保持 `readOnly:true`、`canWrite:false`，不接入真实反馈提交页面。
 
 ## 反例证据
 
@@ -31,6 +31,6 @@
 
 ```text
 node --test tests/governance/feedback-evidence-storage.test.cjs  # 6/6 PASS
-node --check packages/feeding/services/feedbackEvidenceStorage.js # PASS
-git diff --check -- packages/feeding/services/feedbackEvidenceStorage.js tests/governance/feedback-evidence-storage.test.cjs # PASS
+node --check packages/feeding/services/feedbackEvidenceStorage.ts # PASS
+git diff --check -- packages/feeding/services/feedbackEvidenceStorage.ts tests/governance/feedback-evidence-storage.test.cjs # PASS
 ```

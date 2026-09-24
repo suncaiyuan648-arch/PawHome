@@ -12,7 +12,7 @@
     <view class="paw-fixed-action-bar__content">
       <button v-for="action in actions" :key="action.key" class="paw-fixed-action-bar__action"
         :class="{ 'paw-fixed-action-bar__action--disabled': action.disabled }" :data-qa="action.qa || null"
-        type="default" hover-class="paw-fixed-action-bar__action--pressed" @tap="onAction(action)">
+        hover-class="paw-fixed-action-bar__action--pressed" @tap="onAction(action)">
         <PawIcon v-if="action.iconName" class="paw-fixed-action-bar__paw-icon" :name="action.iconName"
           :size="action.iconSize || 21" :color="action.iconColor || '#222222'" :label="action.label" />
         <image v-else-if="action.image" class="paw-fixed-action-bar__icon" :src="action.image" mode="aspectFit" />
@@ -47,24 +47,48 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
 import PawButton from '@/components/base/PawButton.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
-export default {
+export interface PawFixedAction {
+  key: string
+  label: string
+  disabled?: boolean
+  loading?: boolean
+  qa?: string
+  iconName?: string
+  icon?: string
+  image?: string
+  iconSize?: number
+  iconColor?: string
+  tone?: string
+  size?: string
+  shape?: string
+}
+
+export default defineComponent({
   name: 'PawFixedActionBar',
   components: { PawButton, PawIcon },
   props: {
-    actions: { type: Array, default: () => [] },
-    secondaryAction: { type: Object, default: null },
-    primaryAction: { type: Object, default: null },
+    actions: { type: Array as PropType<PawFixedAction[]>, default: () => [] },
+    secondaryAction: { type: Object as PropType<PawFixedAction | null>, default: null },
+    primaryAction: { type: Object as PropType<PawFixedAction | null>, default: null },
     primaryWidth: { type: [Number, String], default: 188 },
     primaryEnd: { type: Boolean, default: false },
     safeArea: { type: Boolean, default: true },
     primaryFullWidth: { type: Boolean, default: false },
     stacked: { type: Boolean, default: false }
   },
-  emits: ['action', 'primary', 'secondary'],
+  emits: {
+    'action': eventContract<[action: PawFixedAction]>(),
+    'primary': eventContract<[action: PawFixedAction]>(),
+    'secondary': eventContract<[action: PawFixedAction]>(),
+  },
   computed: {
     secondaryStyle() {
       return this.secondaryAction && this.secondaryAction.shape === 'rounded'
@@ -73,7 +97,7 @@ export default {
     },
     primaryStyle() {
       if (!this.primaryAction) return {}
-      const style = {}
+      const style: Record<string, string> = {}
       if (!this.secondaryAction && !this.primaryFullWidth) {
         const width = Number(this.primaryWidth)
         if (Number.isFinite(width) && width > 0) {
@@ -87,11 +111,11 @@ export default {
     }
   },
   methods: {
-    onAction(action) {
+    onAction(action: PawFixedAction) {
       if (!action.disabled) this.$emit('action', action)
     }
   }
-}
+})
 </script>
 
 <style scoped>

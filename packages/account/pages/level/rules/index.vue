@@ -64,7 +64,8 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 
 const LEVEL_TABLE = [
@@ -78,14 +79,17 @@ const LEVEL_TABLE = [
 	{ lv: 'LV.8', req: '投喂 30001+斤', pri: ['投票无限', '领养无限', '语音无限'] }
 ]
 
-export default {
+interface LevelRuleRow { lv: string; req: string; pri: string[] }
+interface LevelRulesPageState { levelTable: LevelRuleRow[] }
+
+export default defineComponent({
 	components: { PawPageNav },
-	data() {
+	data(): LevelRulesPageState {
 		return {
 			levelTable: LEVEL_TABLE
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

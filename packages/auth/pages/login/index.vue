@@ -38,17 +38,26 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawPrimaryButton from './components/PawPrimaryButton.vue'
 import PawCheckbox from '@/components/base/PawCheckbox.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
-import { goBackSmart } from '@/utils/navBack.js'
-import { clearAuthContinuation, restoreStoredAuthContinuation } from '@/navigation/authContinuationStorage.js'
+import { goBackSmart } from '@/utils/navBack.ts'
+import { clearAuthContinuation, restoreStoredAuthContinuation } from '@/navigation/authContinuationStorage.ts'
 
-export default {
+interface LoginPageState {
+  brandLogo: string
+  agreed: boolean
+  showAgreementDialog: boolean
+  pendingAction: '' | 'wechat' | 'phone'
+}
+
+export default defineComponent({
   components: { PawPageNav, PawPrimaryButton, PawCheckbox, PawIcon },
-  data() { return { brandLogo: '/static/figma/brand-logo.png', agreed: false, showAgreementDialog: false, pendingAction: '' } },
+  data(): LoginPageState { return { brandLogo: '/static/figma/brand-logo.png', agreed: false, showAgreementDialog: false, pendingAction: '' } },
   methods: {
     toggleAgree() { this.agreed = !this.agreed },
     openPolicy() { this.showAgreementDialog = true },
@@ -60,7 +69,7 @@ export default {
       if (action === 'wechat') this.loginByWechat()
       if (action === 'phone') this.goPhoneLogin()
     },
-    requireAgreement(action) {
+    requireAgreement(action: 'wechat' | 'phone') {
       if (this.agreed) return true
       this.pendingAction = action
       this.showAgreementDialog = true
@@ -95,7 +104,7 @@ export default {
       uni.redirectTo({ url: restored.target.url, fail: () => uni.reLaunch({ url: '/pages/index/index' }) })
     }
   }
-}
+})
 </script>
 
 <style scoped>

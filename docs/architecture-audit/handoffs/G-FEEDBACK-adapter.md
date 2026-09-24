@@ -1,13 +1,13 @@
 # G-FEEDBACK-adapter：反馈任务只读 adapter 子批
 
-日期：2026-09-16  
-执行人：治理 coder（Luna / xhigh）  
-范围：`packages/feeding/services/feedbackAdapter.js`、反馈治理 focused tests  
+日期：2026-09-16<br>
+执行人：治理 coder（Luna / xhigh）<br>
+范围：`packages/feeding/services/feedbackAdapter.ts`、反馈治理 focused tests<br>
 状态：待总工程师验收；未暂存、未提交、未上传、未发布
 
 ## 交付结论
 
-本批新增反馈任务只读 adapter，统一复用 `navigation/feedbackContracts.js` 的 policy、证据、关联、时间窗、计数、幂等和可信 actor 规则。
+本批新增反馈任务只读 adapter，统一复用 `navigation/feedbackContracts.ts` 的 policy、证据、关联、时间窗、计数、幂等和可信 actor 规则。
 
 - `readFeedbackTaskList` / `getFeedbackTaskList`：读取一个明确 `kind`（`dynamic` 或 `feeding_evidence`）下的任务，并以显式 policy 与 `now` 生成任务摘要。
 - `readFeedbackTaskDetail` / `getFeedbackTaskDetail`：按 canonical contract 派生的稳定 `taskId` 精确读取，不使用首条、末条、其他用户或其他域任务兜底。
@@ -21,10 +21,10 @@
 
 | 文件 | 作用 |
 | --- | --- |
-| `packages/feeding/services/feedbackAdapter.js` | 投粮现有 reader 绑定、动态显式 reader seam、task list/detail、只读错误模型 |
+| `packages/feeding/services/feedbackAdapter.ts` | 投粮现有 reader 绑定、动态显式 reader seam、task list/detail、只读错误模型 |
 | `tests/governance/feedback-adapter.test.cjs` | 8 个 focused 测试，覆盖默认 reader、动态/投粮隔离、精确 taskId 和安全反例 |
 
-没有新增页面、组件、路由、storage key 或 writer；没有修改 `navigation/feedbackContracts.js`、投粮 reader 或任何业务写入函数。adapter 不接受生产 records 注入，也不接受异步 reader，以免不完整或未验证的结果进入读模型。
+没有新增页面、组件、路由、storage key 或 writer；没有修改 `navigation/feedbackContracts.ts`、投粮 reader 或任何业务写入函数。adapter 不接受生产 records 注入，也不接受异步 reader，以免不完整或未验证的结果进入读模型。
 
 ## 反例测试覆盖
 
@@ -44,7 +44,7 @@
 独立语法和差异检查：
 
 ```text
-node --check packages/feeding/services/feedbackAdapter.js
+node --check packages/feeding/services/feedbackAdapter.ts
 git diff --check
 ```
 

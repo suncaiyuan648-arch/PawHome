@@ -25,17 +25,55 @@
   </PawBottomSheet>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
+
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawButton from '@/components/base/PawButton.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
-export default {
+
+type SelectionValue = string | number
+
+interface SelectionItemMetadata {
+  key?: SelectionValue
+  label?: SelectionValue
+  value?: SelectionValue
+}
+
+type SelectionItem = SelectionValue | SelectionItemMetadata
+
+interface NormalizedSelectionItem {
+  key: SelectionValue
+  label: string
+}
+
+interface PawSelectionSheetState {
+  selected: SelectionValue
+}
+
+function isSelectionValue(value: unknown): value is SelectionValue {
+  return typeof value === 'string' || typeof value === 'number'
+}
+
+function selectionLabel(value: SelectionValue | undefined): string {
+  return value === undefined ? '' : String(value)
+}
+
+function normalizeSelectionItem(item: SelectionItem, index: number): NormalizedSelectionItem {
+  if (isSelectionValue(item)) return { key: item, label: String(item) }
+  return {
+    key: isSelectionValue(item.key) ? item.key : index,
+    label: selectionLabel(item.label) || selectionLabel(item.value)
+  }
+}
+
+export default defineComponent({
   name: 'PawSelectionSheet',
   components: { PawBottomSheet, PawButton, PawIcon },
   props: {
     modelValue: { type: Boolean, default: false },
     title: { type: String, default: '' },
-    items: { type: Array, default: () => [] },
+    items: { type: Array as PropType<SelectionItem[]>, default: () => [] },
     value: { type: [String, Number], default: '' },
     layout: { type: String, default: 'list' },
     variant: { type: String, default: 'selection' },
@@ -44,36 +82,39 @@ export default {
     safeArea: { type: Boolean, default: true },
     height: { type: [String, Number], default: '' }
   },
-  emits: ['update:modelValue', 'update:value', 'select', 'confirm'],
-  data() {
+  emits: {
+    'update:modelValue': (value: boolean) => typeof value === 'boolean',
+    'update:value': (value: SelectionValue) => isSelectionValue(value),
+    select: (value: SelectionValue) => isSelectionValue(value),
+    confirm: (value: SelectionValue) => isSelectionValue(value)
+  },
+  data(): PawSelectionSheetState {
     return { selected: this.value }
   },
   watch: {
-    value(value) {
+    value(value: SelectionValue) {
       this.selected = value
     }
   },
   computed: {
-    normalizedItems() {
-      return this.items.map((item, index) => typeof item === 'string' || typeof item === 'number'
-        ? { key: item, label: String(item) }
-        : { key: item.key !== undefined ? item.key : index, label: item.label || item.value || '' })
+    normalizedItems(): NormalizedSelectionItem[] {
+      return this.items.map((item, index) => normalizeSelectionItem(item, index))
     },
-    sheetHeight() {
+    sheetHeight(): string | number {
       if (this.height) return this.height
       return this.layout === 'cards' ? '315px' : '419px'
     },
     valueProxy: {
-      get() {
+      get(): boolean {
         return this.modelValue
       },
-      set(value) {
+      set(value: boolean) {
         this.$emit('update:modelValue', value)
       }
     }
   },
   methods: {
-    select(key) {
+    select(key: SelectionValue) {
       this.selected = key
       this.$emit('update:value', key)
       this.$emit('select', key)
@@ -87,7 +128,7 @@ export default {
       this.$emit('update:modelValue', false)
     }
   }
-}
+})
 </script>
 
 <style scoped>

@@ -9,7 +9,7 @@ const {
 } = require('./paw-icon-manifest.cjs')
 const { DESIGN_CANVAS, OPTICAL_SLOTS } = require('./paw-icon-normalize.cjs')
 
-const REGISTRY_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-registry.js')
+const REGISTRY_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-registry.ts')
 const REPORT_DIR = path.join(ROOT, '.artifacts/paw-icon-audit')
 const REPORT_FILE = path.join(REPORT_DIR, 'icon-design-audit.json')
 const MARKDOWN_FILE = path.join(REPORT_DIR, 'icon-design-audit.md')

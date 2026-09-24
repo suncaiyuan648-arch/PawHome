@@ -20,31 +20,88 @@
   </view>
 </template>
 
-<script>
-import PawPageNav from '@/components/PawPageNav.vue'
-import { readLocalYard, updateLocalYard } from '../../services/localManagementStorage.js'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
-export default {
+import PawPageNav from '@/components/PawPageNav.vue'
+import { readLocalYard, updateLocalYard } from '../../services/localManagementStorage.ts'
+
+interface YardEditorForm {
+  name: string
+  location: string
+  description: string
+  intro: string
+}
+
+type YardEditorField = keyof YardEditorForm
+
+interface YardEditorPageState {
+  yardId: string
+  blocked: boolean
+  errorCode: string
+  saving: boolean
+  form: YardEditorForm
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function readText(value: unknown): string {
+  return typeof value === 'string' ? value : ''
+}
+
+function eventValue(event: PawEvent): string {
+  const detail: unknown = event.detail
+  return isRecord(detail) ? readText(detail.value) : ''
+}
+
+export default defineComponent({
   name: 'YardEditorPage',
   components: { PawPageNav },
-  data() { return { yardId: '', blocked: true, errorCode: 'READER_MISSING', saving: false, form: { name: '', location: '', description: '', intro: '' } } },
-  onLoad(options = {}) {
-    this.yardId = typeof options.yardId === 'string' ? options.yardId : ''
+  data(): YardEditorPageState {
+    return {
+      yardId: '',
+      blocked: true,
+      errorCode: 'READER_MISSING',
+      saving: false,
+      form: { name: '', location: '', description: '', intro: '' }
+    }
+  },
+  onLoad(options: unknown = {}) {
+    const route = isRecord(options) ? options : {}
+    this.yardId = readText(route.yardId)
     const result = readLocalYard(this.yardId, { actorProvider: () => uni.getStorageSync('PAWHOME_ACTOR_SESSION') })
     this.blocked = !result.success
     this.errorCode = result.success ? '' : (result.error && result.error.code || 'READER_MISSING')
-    if (result.success) {
+    if (result.success && result.data) {
       const record = result.data.record || {}
-      this.form = { name: record.name || '', location: record.location || '', description: record.description || '', intro: record.intro || '' }
+      this.form = {
+        name: readText(record.name),
+        location: readText(record.location),
+        description: readText(record.description),
+        intro: readText(record.intro)
+      }
     }
   },
   methods: {
-    onInput(field, event) { this.form[field] = event && event.detail ? event.detail.value : '' },
+    onInput(field: YardEditorField, event: PawEvent) {
+      this.form[field] = eventValue(event)
+    },
     onSave() {
       if (this.blocked || this.saving) return
-      if (!String(this.form.name || '').trim()) { uni.showToast({ title: '请填写小院名', icon: 'none' }); return }
+      const name = this.form.name.trim()
+      if (!name) {
+        uni.showToast({ title: '请填写小院名', icon: 'none' })
+        return
+      }
       this.saving = true
-      const result = updateLocalYard(this.yardId, { name: String(this.form.name).trim(), location: this.form.location || '', description: this.form.description || '', intro: this.form.intro || '' }, { actorProvider: () => uni.getStorageSync('PAWHOME_ACTOR_SESSION') })
+      const result = updateLocalYard(this.yardId, {
+        name,
+        location: this.form.location,
+        description: this.form.description,
+        intro: this.form.intro
+      }, { actorProvider: () => uni.getStorageSync<unknown>('PAWHOME_ACTOR_SESSION') })
       this.saving = false
       if (!result.success) {
         this.errorCode = result.error && result.error.code || 'STORAGE_WRITE_FAILED'
@@ -53,9 +110,9 @@ export default {
       }
       uni.showToast({ title: '小院已更新', icon: 'none' })
       uni.navigateBack()
-    },
-  },
-}
+    }
+  }
+})
 </script>
 
 <style scoped>

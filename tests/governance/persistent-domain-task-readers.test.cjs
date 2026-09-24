@@ -18,11 +18,11 @@ before(async () => {
   await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'packages/feeding/services'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'packages/account/services'), { recursive: true })
-  await fs.copyFile(path.join(ROOT, 'packages/feeding/services/taskReader.js'), path.join(tempRoot, 'packages/feeding/services/taskReader.js'))
-  await fs.copyFile(path.join(ROOT, 'packages/account/services/tasksRuntime.js'), path.join(tempRoot, 'packages/account/services/tasksRuntime.js'))
+  await fs.copyFile(path.join(ROOT, 'packages/feeding/services/taskReader.ts'), path.join(tempRoot, 'packages/feeding/services/taskReader.ts'))
+  await fs.copyFile(path.join(ROOT, 'packages/account/services/tasksRuntime.ts'), path.join(tempRoot, 'packages/account/services/tasksRuntime.ts'))
   globalThis.uni = { getStorageSync(key) { return storage.get(key) }, setStorageSync() { throw new Error('reader must not write') } }
-  feeding = await import(`${pathToFileURL(path.join(tempRoot, 'packages/feeding/services/taskReader.js')).href}?test=${Date.now()}`)
-  accountTasks = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/tasksRuntime.js')).href}?test=${Date.now()}-dynamic`)
+  feeding = await import(`${pathToFileURL(path.join(tempRoot, 'packages/feeding/services/taskReader.ts')).href}?test=${Date.now()}`)
+  accountTasks = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/tasksRuntime.ts')).href}?test=${Date.now()}-dynamic`)
 })
 
 beforeEach(() => storage.clear())

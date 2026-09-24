@@ -17,7 +17,7 @@
           <text class="rescue-detail__description">{{ record.detail || record.description }}</text>
           <view v-if="media.length" class="rescue-detail__gallery">
             <PawImage v-for="(src, index) in media" :key="src + index" :src="src" display-mode="fixed" width="78" height="78"
-              radius="3" :preview="true" :preview-urls="media" :preview-index="index" />
+              radius="3" :preview="true" :preview-urls="media" :preview-index="Number(index)" />
           </view>
         </view>
 
@@ -58,7 +58,9 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawButton from '@/components/base/PawButton.vue'
@@ -66,22 +68,23 @@ import PawImage from '@/components/base/PawImage.vue'
 import PawAvatar from '@/components/identity/PawAvatar.vue'
 import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import PawStatusPill from '@/components/PawStatusPill.vue'
-import { SELF_PAW_ID } from '@/utils/profileNav.js'
-import { buildRoute } from '@/navigation/routeContracts.js'
-import { hasRescueProofByUser } from '@/utils/rescueStorage.js'
-import { proofCount } from '../services/proof.js'
+import { SELF_PAW_ID } from '@/utils/profileNav.ts'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import { hasRescueProofByUser, type RescueRecord } from '@/utils/rescueStorage.ts'
+import { type RescueDetailNavigationTarget, type RescueLoadState } from '../services/componentMetadata.ts'
+import { proofCount } from '../services/proof.ts'
 
-export default {
+export default defineComponent({
   name: 'RescueDetailView',
   components: { PawPageNav, PawIcon, PawButton, PawImage, PawAvatar, LevelBadge, PawStatusPill },
   props: {
-    record: { type: Object, default: null },
-    loadState: { type: String, default: 'idle' }
+    record: { type: Object as PropType<RescueRecord | null>, default: null },
+    loadState: { type: String as PropType<RescueLoadState>, default: 'idle' }
   },
   computed: {
     navBackground() { return 'linear-gradient(to bottom, #fffcdc 0%, #ffffff 100%)' },
     fallbackUrl() {
-      try { return buildRoute('rescue.fund', {}) } catch (error) { return '/pages/me/index' }
+      try { return buildRoute('rescue.fund', {}) } catch { return '/pages/me/index' }
     },
     emptyCopy() {
       if (this.loadState === 'missing-id') return '缺少救助单 ID'
@@ -89,8 +92,8 @@ export default {
       if (this.loadState === 'not-found') return '找不到这条救助记录'
       return '救助详情暂不可用'
     },
-    media() { return Array.isArray(this.record && this.record.mediaPaths) ? this.record.mediaPaths.slice(0, 6) : [] },
-    applicantRows() { return Array.isArray(this.record && this.record.applicantRows) ? this.record.applicantRows : [] },
+    media() { return this.record?.mediaPaths.slice(0, 6) ?? [] },
+    applicantRows() { return this.record?.applicantRows ?? [] },
     proofCount() { return proofCount(this.record) },
     alreadyProved() { return Boolean(this.record && hasRescueProofByUser(this.record, SELF_PAW_ID)) },
     // Only a trusted reviewer capability from a future backend may expose this
@@ -98,14 +101,25 @@ export default {
     canOpenReview() { return Boolean(this.record && this.record.reviewItemId && this.record.reviewerAuthorized === true) }
   },
   methods: {
-    navigate(routeName, params) {
-      try { uni.navigateTo({ url: buildRoute(routeName, params) }) } catch (error) { uni.showToast({ title: '页面暂不可用', icon: 'none' }) }
+    navigate(target: RescueDetailNavigationTarget) {
+      try { uni.navigateTo({ url: buildRoute(target.routeName, target.params) }) } catch { uni.showToast({ title: '页面暂不可用', icon: 'none' }) }
     },
-    openProofList() { if (this.record) this.navigate('rescue.proof.list', { rescueId: this.record.id }) },
-    openProofCreate() { if (this.record) this.navigate('rescue.proof.create', { rescueId: this.record.id }) },
-    openReview() { if (this.canOpenReview) this.navigate('rescue.review.detail', { reviewItemId: this.record.reviewItemId, businessType: 'rescue' }) }
+    openProofList() {
+      const record = this.record
+      if (record) this.navigate({ routeName: 'rescue.proof.list', params: { rescueId: record.id } })
+    },
+    openProofCreate() {
+      const record = this.record
+      if (record) this.navigate({ routeName: 'rescue.proof.create', params: { rescueId: record.id } })
+    },
+    openReview() {
+      const reviewItemId = this.record?.reviewItemId
+      if (this.canOpenReview && typeof reviewItemId === 'string') {
+        this.navigate({ routeName: 'rescue.review.detail', params: { reviewItemId, businessType: 'rescue' } })
+      }
+    }
   }
-}
+})
 </script>
 
 <style scoped>

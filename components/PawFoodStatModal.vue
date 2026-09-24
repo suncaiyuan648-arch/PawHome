@@ -21,9 +21,12 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+import { defineComponent } from 'vue'
+
 /** 已获粮：两行统计 + 「我知道了」 */
-export default {
+export default defineComponent({
   name: "PawFoodStatModal",
   props: {
     visible: { type: Boolean, default: false },
@@ -36,7 +39,10 @@ export default {
     unitTimes: { type: String, default: "次" },
     confirmText: { type: String, default: "我知道了" },
   },
-  emits: ["update:visible", "confirm"],
+  emits: {
+    'update:visible': eventContract<[value: boolean]>(),
+    'confirm': eventContract<[]>(),
+  },
   computed: {
     totalJinDisplay() {
       return `${this.totalJin}${this.unitJin}`;
@@ -52,7 +58,7 @@ export default {
       this.$emit("confirm");
     },
   },
-};
+});
 </script>
 
 <style lang="less" scoped>

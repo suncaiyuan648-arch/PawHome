@@ -8,18 +8,25 @@ const { pathToFileURL } = require('node:url')
 const { test, before, after } = require('node:test')
 
 const ROOT = path.resolve(__dirname, '../..')
+const LIST_METADATA_PATH = path.join(ROOT, 'packages/account/services/taskListMetadata.ts')
 let tempRoot
 let api
+let listMetadata
 
 before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-task-page-'))
   await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'packages/account/services'), { recursive: true })
   await fs.copyFile(
-    path.join(ROOT, 'packages/account/services/taskPageModel.js'),
-    path.join(tempRoot, 'packages/account/services/taskPageModel.js')
+    path.join(ROOT, 'packages/account/services/taskPageModel.ts'),
+    path.join(tempRoot, 'packages/account/services/taskPageModel.ts')
   )
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/taskPageModel.js')).href}?test=${Date.now()}`)
+  await fs.copyFile(
+    path.join(ROOT, 'packages/account/services/accountTaskContracts.ts'),
+    path.join(tempRoot, 'packages/account/services/accountTaskContracts.ts')
+  )
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/taskPageModel.ts')).href}?test=${Date.now()}`)
+  listMetadata = await import(`${pathToFileURL(LIST_METADATA_PATH).href}?test=${Date.now()}`)
 })
 
 after(async () => {
@@ -58,6 +65,7 @@ test('task page cards preserve canonical identity and expose frozen display meta
   })
   assert.equal(Object.isFrozen(card), true)
   assert.equal(Object.isFrozen(api.taskCards([task(), task({ status: 'processed' })])), true)
+  assert.equal(api.taskCardModel(task({ taskId: 42 })), null)
 })
 
 test('task page only returns registered detail targets with contract-owned IDs', () => {
@@ -121,8 +129,40 @@ test('task page only returns registered detail targets with contract-owned IDs',
   })
 })
 
+test('account task list state and tabs are typed metadata with isolated page copies', () => {
+  const reader = () => ({ all: [], pending: [], processed: [], diagnostics: { actorError: null, skipped: [] } })
+  const first = listMetadata.createAccountTaskPageState(reader)
+  const second = listMetadata.createAccountTaskPageState(reader)
+  assert.deepEqual(first.tabs, [
+    { key: 'pending', label: '待处理' },
+    { key: 'processed', label: '已处理' },
+  ])
+  assert.equal(first.activeTab, 'pending')
+  first.tabs[0].label = 'local'
+  assert.equal(second.tabs[0].label, '待处理')
+  assert.equal(first.adapter.read, reader)
+  assert.equal(second.adapter.read, reader)
+})
+
+test('account task list projections preserve status buckets and role/status metadata', () => {
+  const cards = api.taskCards([
+    task({ taskId: 'pending', status: 'pending' }),
+    task({ taskId: 'in-progress', status: 'in_progress' }),
+    task({ taskId: 'processed', status: 'completed' }),
+  ])
+  assert.deepEqual(listMetadata.filterAccountTaskCards(cards, 'pending').map((item) => item.taskId), ['pending', 'in-progress'])
+  assert.deepEqual(listMetadata.filterAccountTaskCards(cards, 'processed').map((item) => item.taskId), ['processed'])
+  assert.equal(listMetadata.getAccountTaskStatusTone('failed'), 'danger')
+  assert.equal(listMetadata.getAccountTaskStatusTone('completed'), 'success')
+  assert.equal(listMetadata.getAccountTaskStatusTone('in_progress'), 'brand')
+  assert.equal(listMetadata.getAccountTaskStatusTone('unknown'), 'warning')
+  assert.equal(listMetadata.getAccountTaskRoleLabel('cloud_parent'), '云家长')
+  assert.equal(listMetadata.getAccountTaskRoleLabel('forged'), '参与者')
+})
+
 test('task page source remains read-only and does not infer actor or fabricate detail paths', async () => {
   const source = await fs.readFile(path.join(ROOT, 'packages/account/pages/tasks/index.vue'), 'utf8')
+  const metadata = await fs.readFile(LIST_METADATA_PATH, 'utf8')
   assert.match(source, /createTaskAdapter/)
   assert.match(source, /createActorProvider/)
   assert.match(source, /createDomainTaskReaders/)
@@ -130,6 +170,10 @@ test('task page source remains read-only and does not infer actor or fabricate d
   assert.doesNotMatch(source, /setStorageSync|removeStorageSync/)
   assert.doesNotMatch(source, /statusBarHeight|getMenuButtonBoundingClientRect/)
   assert.doesNotMatch(source, /\/packages\/(?:feeding|dynamic)\/pages/)
+  assert.doesNotMatch(source, /\bany\b/)
+  assert.doesNotMatch(metadata, /\bany\b/)
+  assert.match(source, /data\(\):\s*AccountTaskPageState/)
+  assert.match(source, /filterAccountTaskCards\(this\.cards, this\.activeTab\)/)
 })
 
 test('account tasks has a stable existing entry from the account drawer', async () => {

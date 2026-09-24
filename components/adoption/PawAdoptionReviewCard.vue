@@ -28,24 +28,28 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">import { defineComponent, type PropType } from 'vue'
+
 import PawAvatar from '@/components/identity/PawAvatar.vue'
 import PawImage from '@/components/base/PawImage.vue'
 import PawStatusPill from '@/components/PawStatusPill.vue'
 import LevelBadge from '@/components/customBadge/LevelBadge.vue'
+import type { AdoptionReviewQueueCardMetadata } from '@/utils/adoptionReviewMetadata.ts'
 
-export default {
+export default defineComponent({
   name: 'PawAdoptionReviewCard',
   components: { PawAvatar, PawImage, PawStatusPill, LevelBadge },
   props: {
-    review: { type: Object, required: true },
+    review: { type: Object as PropType<AdoptionReviewQueueCardMetadata>, required: true },
     qa: { type: String, default: '' }
   },
-  emits: ['tap'],
+  emits: {
+    tap: (review: AdoptionReviewQueueCardMetadata) => Boolean(review),
+  },
   methods: {
     onTap() { this.$emit('tap', this.review) }
   }
-}
+})
 </script>
 
 <style scoped>

@@ -25,23 +25,46 @@
   </view>
 </template>
 
-<script>
-import PawPageNav from '@/components/PawPageNav.vue'
-import { findRegionOptions, REGION_TREE } from '@/utils/regionMock.js'
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
 
-export default {
+import PawPageNav from '@/components/PawPageNav.vue'
+import {
+  findRegionOptions,
+  normalizeRegionParts,
+  REGION_TREE,
+  type RegionChangePayload,
+  type RegionNode,
+  type RegionSelectionPayload
+} from '@/utils/regionMock.ts'
+
+interface PawRegionPickerState {
+  level: number
+  parts: string[]
+  currentOptions: RegionNode[]
+  selectedName: string
+}
+
+export default defineComponent({
   name: 'PawRegionPicker',
   components: { PawPageNav },
   props: {
     title: { type: String, default: '' },
     fallbackUrl: { type: String, default: '/packages/address/pages/list/index' },
-    initialParts: { type: Array, default: () => [] },
+    initialParts: { type: Array as PropType<string[]>, default: () => [] },
     maxLevel: { type: Number, default: 2 },
     startLevel: { type: Number, default: -1 },
-    tree: { type: Array, default: () => REGION_TREE }
+    tree: { type: Array as PropType<RegionNode[]>, default: () => REGION_TREE }
   },
-  emits: ['complete', 'cancel', 'change'],
-  data() {
+  emits: {
+    complete: (payload: RegionSelectionPayload) => Array.isArray(payload.parts)
+      && payload.parts.every(part => typeof part === 'string'),
+    cancel: () => true,
+    change: (payload: RegionChangePayload) => Number.isInteger(payload.level)
+      && Array.isArray(payload.parts)
+      && payload.parts.every(part => typeof part === 'string')
+  },
+  data(): PawRegionPickerState {
     return {
       level: 0,
       parts: ['', '', '', ''],
@@ -50,10 +73,10 @@ export default {
     }
   },
   computed: {
-    safeMaxLevel() {
+    safeMaxLevel(): number {
       return Math.max(0, Math.min(3, Number(this.maxLevel) || 0))
     },
-    crumbList() {
+    crumbList(): string[] {
       return this.parts.slice(0, this.safeMaxLevel + 1).map((part, index) => {
         if (part) return part
         return index <= this.level ? '请选择' : ''
@@ -63,7 +86,7 @@ export default {
   watch: {
     initialParts: {
       deep: true,
-      handler(value) { this.initialize(value) }
+      handler(value: string[]) { this.initialize(value) }
     },
     maxLevel() { this.initialize(this.initialParts) },
     startLevel() { this.initialize(this.initialParts) }
@@ -72,10 +95,10 @@ export default {
     this.initialize(this.initialParts)
   },
   methods: {
-    initialize(value = []) {
-      const parts = Array.isArray(value) ? value.slice(0, 4) : []
+    initialize(value: readonly string[] = []) {
+      const parts = normalizeRegionParts(value)
       while (parts.length < 4) parts.push('')
-      this.parts = parts.map(part => String(part || ''))
+      this.parts = parts
       const firstEmpty = this.parts.slice(0, this.safeMaxLevel + 1).findIndex(part => !part)
       const requestedLevel = Number(this.startLevel)
       this.level = requestedLevel >= 0
@@ -84,33 +107,35 @@ export default {
       this.selectedName = this.parts[this.level] || ''
       this.rebuildOptions()
     },
-    onCrumbTap(index) {
+    onCrumbTap(index: number) {
       if (index > this.level) return
       this.level = index
       this.selectedName = this.parts[index] || ''
       this.rebuildOptions()
-      this.$emit('change', { parts: this.parts.slice(0, this.safeMaxLevel + 1), level: this.level })
+      const payload: RegionChangePayload = { parts: this.parts.slice(0, this.safeMaxLevel + 1), level: this.level }
+      this.$emit('change', payload)
     },
-    onItemTap(item) {
+    onItemTap(item: RegionNode) {
       if (!item || !item.name) return
       this.selectedName = item.name
       this.parts[this.level] = item.name
       for (let current = this.level + 1; current <= 3; current += 1) this.parts[current] = ''
       if (this.level >= this.safeMaxLevel) {
-        const payload = { parts: this.parts.slice(0, this.safeMaxLevel + 1) }
+        const payload: RegionSelectionPayload = { parts: this.parts.slice(0, this.safeMaxLevel + 1) }
         this.$emit('complete', payload)
         return
       }
       this.level += 1
       this.selectedName = ''
       this.rebuildOptions()
-      this.$emit('change', { parts: this.parts.slice(0, this.safeMaxLevel + 1), level: this.level })
+      const payload: RegionChangePayload = { parts: this.parts.slice(0, this.safeMaxLevel + 1), level: this.level }
+      this.$emit('change', payload)
     },
     rebuildOptions() {
       this.currentOptions = findRegionOptions(this.parts, this.level, this.tree)
     }
   }
-}
+})
 </script>
 
 <style scoped>

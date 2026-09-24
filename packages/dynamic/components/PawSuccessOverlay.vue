@@ -19,25 +19,39 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent } from 'vue'
+
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawResultSheet from '@/components/feedback/PawResultSheet.vue'
 import PawButton from '@/components/base/PawButton.vue'
 import PawIconButton from '@/components/base/PawIconButton.vue'
 
-export default {
+export default defineComponent({
   name: 'PawSuccessOverlay',
   components: { PawBottomSheet, PawResultSheet, PawButton, PawIconButton },
-  props: { visible: { type: Boolean, default: false }, compact: Boolean, mode: { type: String, default: 'default' }, title: String, body: String, buttonText: String },
-  emits: ['close', 'action'],
+  props: {
+    visible: { type: Boolean, default: false },
+    compact: Boolean,
+    mode: { type: String, default: 'default' },
+    title: { type: String, default: '' },
+    body: { type: String, default: '' },
+    buttonText: { type: String, default: '' }
+  },
+  emits: {
+    'close': eventContract<[]>(),
+    'action': eventContract<[]>(),
+  },
   computed: {
     visibleProxy: {
       get() { return this.visible },
-      set(value) { if (!value) this.$emit('close') }
+      set(value: boolean) { if (!value) this.$emit('close') }
     }
   },
   methods: { close() { this.$emit('close') } }
-}
+})
 </script>
 
 <style scoped>

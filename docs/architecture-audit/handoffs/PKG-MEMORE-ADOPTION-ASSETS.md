@@ -22,7 +22,7 @@
 以下两个同目录资源未迁移，因为它们仍有主包或其他分包生产调用方：
 
 - `45f5fc6ea328c9e88cff7a4504824254458e9e7b.png`：领养流程组件之外，`pages/feature/index.vue` 与其他主包产物仍引用同内容资源；继续保留 `static/figma/adoption-flow/`。
-- `db5da0781d7667c3490af5cfa74dd2fc7cf1ac01.png`：`utils/juryMock.js`、`utils/rescueStorage.js` 等主包共享 mock/存储模块仍引用；继续保留根目录资源。
+- `db5da0781d7667c3490af5cfa74dd2fc7cf1ac01.png`：`utils/juryMock.ts`、`utils/rescueStorage.ts` 等主包共享 mock/存储模块仍引用；继续保留根目录资源。
 
 本批没有移动 `04a93fa17267335f49e6e818f8caa78dd3afc80b.png`、`b61b026ea991c01c6257c909021245fd64956837.png`、`e81f2c2074a7772e8fbca3d3828b3a751f5cb5bb.png`，它们被救助审核、领养申请或共享存储/流程使用。
 

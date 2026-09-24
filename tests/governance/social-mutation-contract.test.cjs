@@ -21,11 +21,11 @@ function record(overrides = {}) {
 
 before(async () => {
 	tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-social-contract-'))
-	await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+	await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
 	await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
-	await fs.copyFile(path.join(ROOT, 'navigation/actorCapabilities.js'), path.join(tempRoot, 'navigation/actorCapabilities.js'))
-	await fs.copyFile(path.join(ROOT, 'navigation/socialMutationContracts.js'), path.join(tempRoot, 'navigation/socialMutationContracts.js'))
-	api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/socialMutationContracts.js')).href}?test=${Date.now()}`)
+	await fs.copyFile(path.join(ROOT, 'navigation/actorCapabilities.ts'), path.join(tempRoot, 'navigation/actorCapabilities.ts'))
+	await fs.copyFile(path.join(ROOT, 'navigation/socialMutationContracts.ts'), path.join(tempRoot, 'navigation/socialMutationContracts.ts'))
+	api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/socialMutationContracts.ts')).href}?test=${Date.now()}`)
 })
 
 after(async () => {

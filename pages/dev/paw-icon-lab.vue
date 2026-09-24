@@ -188,16 +188,52 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
-import { PAW_ICON_DEFAULT_COLOR } from '@/components/PawIcon/PawIcon.tokens.js'
-import { PAW_ICON_NAMES } from '@/components/PawIcon/generated/icon-names.js'
-import { PAW_ICON_REGISTRY } from '@/components/PawIcon/generated/icon-registry.js'
-import { PAW_ICON_AUDIT_METRICS } from '@/components/PawIcon/generated/icon-metrics.js'
-import { resolvePawIconDimensions } from '@/components/PawIcon/PawIcon.utils.js'
+import { PAW_ICON_DEFAULT_COLOR } from '@/components/PawIcon/PawIcon.tokens.ts'
+import { PAW_ICON_NAMES } from '@/components/PawIcon/generated/icon-names.ts'
+import { PAW_ICON_REGISTRY } from '@/components/PawIcon/generated/icon-registry.ts'
+import { PAW_ICON_AUDIT_METRICS } from '@/components/PawIcon/generated/icon-metrics.ts'
+import { resolvePawIconDimensions } from '@/components/PawIcon/PawIcon.utils.ts'
+import type { PawIconFlip } from '@/components/PawIcon/PawIcon.types.ts'
+import { readPawEventNumber, readPawEventValue } from '@/utils/pawEventMetadata.ts'
 
-const CATEGORY_LABELS = {
+type IconName = keyof typeof PAW_ICON_REGISTRY
+type IconCategory = 'navigation' | 'actions' | 'status' | 'common' | 'badges' | 'brand'
+type IconLabMode = 'optical' | 'regression' | 'comparison' | 'fidelity' | 'uniform' | 'transform'
+type IconLabColorMode = 'optical' | 'actual'
+
+interface IconLabOption<Value extends string> { value: Value; label: string }
+interface IconLabCategory extends IconLabOption<'all' | IconCategory> {}
+interface IconLabGroup extends IconLabCategory { names: IconName[] }
+interface IconLabTransformCase { label: string; rotate: number; flip: PawIconFlip }
+interface PawIconLabState {
+  registry: typeof PAW_ICON_REGISTRY
+  metrics: typeof PAW_ICON_AUDIT_METRICS
+  names: IconName[]
+  mode: IconLabMode
+  currentSize: number
+  colorMode: IconLabColorMode
+  category: 'all' | IconCategory
+  search: string
+  showBounds: boolean
+  customSizeInput: string
+  customSize: number
+  transformName: IconName
+  modes: IconLabOption<IconLabMode>[]
+  sizes: number[]
+  comparisonSizes: number[]
+  colorModes: IconLabOption<IconLabColorMode>[]
+  categories: IconLabCategory[]
+  transformCases: IconLabTransformCase[]
+}
+
+const ICON_CATEGORIES: readonly IconCategory[] = ['navigation', 'actions', 'status', 'common', 'badges', 'brand']
+
+const CATEGORY_LABELS: Record<IconCategory, string> = {
   navigation: 'Navigation',
   actions: 'Actions',
   status: 'Status',
@@ -206,14 +242,29 @@ const CATEGORY_LABELS = {
   brand: 'Brand'
 }
 
-export default {
+function isIconName(value: string): value is IconName {
+  return Object.prototype.hasOwnProperty.call(PAW_ICON_REGISTRY, value)
+}
+
+function isIconCategory(value: string): value is IconCategory {
+  return ICON_CATEGORIES.some((category) => category === value)
+}
+
+interface IconAuditSizeMetric { widthRatio: number; heightRatio: number }
+
+function iconAuditMetric(name: IconName, size: number): IconAuditSizeMetric | undefined {
+  const sizes: Readonly<Record<string, IconAuditSizeMetric>> = PAW_ICON_AUDIT_METRICS[name].sizes
+  return sizes[String(size)] || sizes['24']
+}
+
+export default defineComponent({
   name: 'PawIconLab',
   components: { PawPageNav, PawIcon },
-  data() {
+  data(): PawIconLabState {
     return {
       registry: PAW_ICON_REGISTRY,
       metrics: PAW_ICON_AUDIT_METRICS,
-      names: PAW_ICON_NAMES,
+      names: PAW_ICON_NAMES.filter(isIconName),
       mode: 'optical',
       currentSize: 24,
       colorMode: 'optical',
@@ -222,7 +273,7 @@ export default {
       showBounds: true,
       customSizeInput: '36',
       customSize: 36,
-      transformName: PAW_ICON_NAMES.includes('navigation/chevron-right') ? 'navigation/chevron-right' : PAW_ICON_NAMES[0],
+      transformName: PAW_ICON_NAMES.includes('navigation/chevron-right') ? 'navigation/chevron-right' : 'navigation/back',
       modes: [
         { value: 'optical', label: 'Optical' },
         { value: 'regression', label: 'Size Regression' },
@@ -239,7 +290,7 @@ export default {
       ],
       categories: [
         { value: 'all', label: 'All' },
-        ...Object.entries(CATEGORY_LABELS).map(([value, label]) => ({ value, label }))
+        ...ICON_CATEGORIES.map((value) => ({ value, label: CATEGORY_LABELS[value] }))
       ],
       transformCases: [
         { label: 'Normal', rotate: 0, flip: 'none' },
@@ -266,34 +317,36 @@ export default {
       return { height: `${Math.max(minimum, this.renderSize + 8)}px` }
     },
     iconStageStyleFor() {
-      return name => {
+      return (name: IconName) => {
         const size = this.renderSizeFor(name)
         const minimum = this.mode === 'transform' ? 86 : 62
         return { height: `${Math.max(minimum, size + 8)}px` }
       }
     },
-    filteredNames() {
+    filteredNames(): IconName[] {
       const query = this.search.trim().toLowerCase()
-      return this.names.filter(name => {
+      return this.names.filter((name) => {
         const categoryMatch = this.category === 'all' || name.startsWith(`${this.category}/`)
         const searchMatch = !query || name.toLowerCase().includes(query)
         return categoryMatch && searchMatch
       })
     },
-    groupedIcons() {
-      const groups = this.categories.filter(item => item.value !== 'all').map(item => ({ ...item, names: [] }))
-      const byCategory = Object.fromEntries(groups.map(group => [group.value, group]))
-      this.filteredNames.forEach(name => {
+    groupedIcons(): IconLabGroup[] {
+      const groups: IconLabGroup[] = this.categories
+        .filter((item): item is IconLabCategory & { value: IconCategory } => item.value !== 'all')
+        .map((item) => ({ ...item, names: [] }))
+      const byCategory = new Map(groups.map((group) => [group.value, group]))
+      this.filteredNames.forEach((name) => {
         const category = name.split('/')[0]
-        if (byCategory[category]) byCategory[category].names.push(name)
+        if (isIconCategory(category)) byCategory.get(category)?.names.push(name)
       })
-      return groups.filter(group => group.names.length)
+      return groups.filter((group) => group.names.length)
     },
     filteredCount() {
       return this.filteredNames.length
     },
-    transformCandidates() {
-      const preferred = this.names.filter(name => /(?:arrow|chevron|edit|share|refresh|close|pet)/i.test(name))
+    transformCandidates(): IconName[] {
+      const preferred = this.names.filter((name) => /(?:arrow|chevron|edit|share|refresh|close|pet)/i.test(name))
       return preferred.length ? preferred : this.names
     },
     transformIndex() {
@@ -308,15 +361,15 @@ export default {
     }
   },
   methods: {
-    selectMode(mode) {
+    selectMode(mode: IconLabMode) {
       this.mode = mode
       if (mode === 'uniform' && ![20, 24, 28].includes(this.currentSize)) this.currentSize = 24
     },
-    selectSize(size) {
+    selectSize(size: number) {
       this.currentSize = size
     },
-    onCustomSizeInput(event) {
-      this.customSizeInput = event.detail.value
+    onCustomSizeInput(event: PawEvent) {
+      this.customSizeInput = readPawEventValue(event)
     },
     applyCustomSize() {
       const size = Number(String(this.customSizeInput).trim())
@@ -324,47 +377,46 @@ export default {
       this.customSize = size
       this.currentSize = size
     },
-    selectColorMode(mode) {
+    selectColorMode(mode: IconLabColorMode) {
       this.colorMode = mode
     },
-    selectCategory(category) {
+    selectCategory(category: 'all' | IconCategory) {
       this.category = category
     },
-    onSearch(event) {
-      this.search = event.detail.value
+    onSearch(event: PawEvent) {
+      this.search = readPawEventValue(event)
     },
-    onTransformPick(event) {
-      this.transformName = this.transformCandidates[Number(event.detail.value)] || this.transformCandidates[0]
+    onTransformPick(event: PawEvent) {
+      this.transformName = this.transformCandidates[readPawEventNumber(event, 'value')] || this.transformCandidates[0]
     },
-    iconColor(name) {
+    iconColor(name: IconName) {
       return this.registry[name].kind === 'mono'
         ? this.colorMode === 'actual' ? PAW_ICON_DEFAULT_COLOR : '#666666'
         : undefined
     },
-    renderSizeFor(name) {
+    renderSizeFor(name: IconName) {
       return this.mode === 'fidelity' ? this.registry[name].slot : this.renderSize
     },
-    dimensionsLabel(name) {
+    dimensionsLabel(name: IconName) {
       const definition = this.registry[name]
       const renderSize = this.renderSizeFor(name)
       const frame = definition.sourceFrame
       return `source ${frame.width} × ${frame.height}px · recommend ${definition.recommendedSlot} · final ${definition.slot} · canvas 24 × 24 · render ${renderSize}px`
     },
-    comparisonLabel(name, size) {
+    comparisonLabel(name: IconName, size: number) {
       const dimensions = resolvePawIconDimensions(size, this.registry[name])
       return `${dimensions.width} × ${dimensions.height}px · paint ${this.paintRatioLabel(name, size)}`
     },
-    paintRatioLabel(name, size) {
-      const sizes = this.metrics[name] && this.metrics[name].sizes
-      const metric = sizes && (sizes[String(size)] || sizes['24'])
+    paintRatioLabel(name: IconName, size: number) {
+      const metric = iconAuditMetric(name, size)
       if (!metric) return 'audit pending'
       return `${(metric.widthRatio * 100).toFixed(2)}% × ${(metric.heightRatio * 100).toFixed(2)}%`
     },
-    guideStyle(size) {
+    guideStyle(size: number) {
       return { width: `${size}px`, height: `${size}px` }
     }
   }
-}
+})
 </script>
 
 <style>

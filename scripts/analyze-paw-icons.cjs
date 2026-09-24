@@ -10,8 +10,8 @@ const {
 } = require('./paw-icon-manifest.cjs')
 const { DESIGN_CANVAS, OPTICAL_SLOTS } = require('./paw-icon-normalize.cjs')
 
-const REGISTRY_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-registry.js')
-const METRICS_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-metrics.js')
+const REGISTRY_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-registry.ts')
+const METRICS_FILE = path.join(ROOT, 'components/PawIcon/generated/icon-metrics.ts')
 const REPORT_DIR = path.join(ROOT, '.artifacts/paw-icon-v3')
 const REPORT_FILE = path.join(REPORT_DIR, 'optical-report.json')
 const DESIGN_CENTER = DESIGN_CANVAS / 2

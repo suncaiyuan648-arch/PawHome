@@ -11,8 +11,12 @@
   </button>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent } from 'vue'
+
+export default defineComponent({
   name: 'PawButton',
   props: {
     text: { type: String, default: '' },
@@ -27,14 +31,16 @@ export default {
     formType: { type: String, default: '' },
     qa: { type: String, default: '' }
   },
-  emits: ['click'],
+  emits: {
+    'click': eventContract<[event: PawEvent]>(),
+  },
   methods: {
-    onClick(event) {
+    onClick(event: PawEvent) {
       if (this.disabled || this.loading) return
       this.$emit('click', event)
     }
   }
-}
+})
 </script>
 
 <style scoped>

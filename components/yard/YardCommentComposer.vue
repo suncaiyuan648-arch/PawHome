@@ -12,10 +12,13 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+import { defineComponent } from 'vue'
+
 import CommentComposer from '@/components/dynamic/CommentComposer.vue'
 
-export default {
+export default defineComponent({
   name: 'YardCommentComposer',
   components: { CommentComposer },
   props: {
@@ -23,8 +26,13 @@ export default {
     avatarSrc: { type: String, default: '/static/user.png' },
     placeholder: { type: String, default: '有话要说，告诉她这条路并不孤单' }
   },
-  emits: ['input', 'send', 'voice', 'pick-image']
-}
+  emits: {
+    'input': eventContract<[text: string]>(),
+    'send': eventContract<[text: string]>(),
+    'voice': eventContract<[]>(),
+    'pick-image': eventContract<[]>(),
+  }
+})
 </script>
 
 <style scoped>

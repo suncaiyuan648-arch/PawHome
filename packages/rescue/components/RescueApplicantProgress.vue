@@ -61,26 +61,25 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">import { defineComponent, type PropType } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawStatusPill from '@/components/PawStatusPill.vue'
 import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import PawAdoptionPetsCard from '@/components/PawAdoptionPetsCard.vue'
-import { RESCUE_APPLICATION_STATUS_META } from '@/utils/rescueStorage.js'
+import { getRescueApplicationStatusPresentation, type RescueApplicantProgressRecord, type RescueApplicationStatusPresentation, type RescueLoadState } from '../services/componentMetadata.ts'
 
-export default {
+export default defineComponent({
   name: 'RescueApplicantProgress',
   components: { PawPageNav, PawIcon, PawStatusPill, LevelBadge, PawAdoptionPetsCard },
   props: {
-    record: { type: Object, default: null },
-    loadState: { type: String, default: 'idle' }
+    record: { type: Object as PropType<RescueApplicantProgressRecord | null>, default: null },
+    loadState: { type: String as PropType<RescueLoadState>, default: 'idle' }
   },
   computed: {
-    statusMeta() {
-      return this.record && RESCUE_APPLICATION_STATUS_META[this.record.applicationStatus]
-        ? RESCUE_APPLICATION_STATUS_META[this.record.applicationStatus]
-        : null
+    statusMeta(): RescueApplicationStatusPresentation | null {
+      return getRescueApplicationStatusPresentation(this.record?.applicationStatus)
     },
     isApproved() { return Boolean(this.record && this.record.applicationStatus === 'platform_approved') },
     isRejected() { return Boolean(this.record && this.record.applicationStatus === 'platform_rejected') },
@@ -107,7 +106,7 @@ export default {
       return '救助申请不存在'
     }
   }
-}
+})
 </script>
 
 <style scoped>

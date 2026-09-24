@@ -48,14 +48,35 @@
 	</view>
 </template>
 
-<script>
-import PawPageNav from '@/components/PawPageNav.vue'
-import { getMemberLevelTitle } from '@/utils/memberLevel.js'
-import { buildRoute } from '@/navigation/routeContracts.js'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
-export default {
+import PawPageNav from '@/components/PawPageNav.vue'
+import { getMemberLevelTitle } from '@/utils/memberLevel.ts'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+
+type LevelMenuKey = 'annual' | 'helped' | 'rules'
+interface LevelMenuRow { label: string; key: LevelMenuKey }
+interface LevelStats { grainJin: number; feedCatJin: number; daysOnPlatform: number }
+interface LevelPageState {
+	nickname: string
+	maxLevel: number
+	userLevel: number
+	progressCurrentJin: number
+	progressTargetJin: number
+	stats: LevelStats
+	menuRows: LevelMenuRow[]
+}
+
+function queryRecord(value: unknown): Record<string, unknown> {
+	return value !== null && typeof value === 'object' && !Array.isArray(value)
+		? value as Record<string, unknown>
+		: {}
+}
+
+export default defineComponent({
 	components: { PawPageNav },
-	data() {
+	data(): LevelPageState {
 		return {
 			nickname: '亮亮',
 			maxLevel: 8,
@@ -97,30 +118,31 @@ export default {
 			]
 		}
 	},
-	onLoad(query) {
-		if (query && String(query.variant) === '64') {
+	onLoad(query: unknown) {
+		const route = queryRecord(query)
+		if (String(route.variant ?? '') === '64') {
 			this.userLevel = 7
 			this.stats = { grainJin: 20001, feedCatJin: 432, daysOnPlatform: 734 }
 		}
-		if (query && String(query.variant) === '63') {
+		if (String(route.variant ?? '') === '63') {
 			this.userLevel = 8
 			this.stats = { grainJin: 30001, feedCatJin: 432, daysOnPlatform: 734 }
 		}
-		if (query && (query.max === '1' || query.max === 'true')) {
+		if (route.max === '1' || route.max === 'true') {
 			this.userLevel = this.maxLevel
 			this.stats = { grainJin: 30001, feedCatJin: 432, daysOnPlatform: 734 }
 		}
-		if (query && query.nickname) {
-			this.nickname = decodeURIComponent(query.nickname)
+		if (typeof route.nickname === 'string' && route.nickname) {
+			this.nickname = decodeURIComponent(route.nickname)
 		}
 	},
 	methods: {
-		formatComma(value) {
+		formatComma(value: number) {
 			const text = String(Math.round(Number(value) || 0))
 			return text.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 		},
-		onMenu(row) {
-			const routes = {
+		onMenu(row: LevelMenuRow) {
+			const routes: Record<LevelMenuKey, string> = {
 				annual: 'account.annualReport',
 				helped: 'account.helpedAnimals',
 				rules: 'account.level.rules'
@@ -133,7 +155,7 @@ export default {
 			uni.showToast({ title: row.label, icon: 'none' })
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

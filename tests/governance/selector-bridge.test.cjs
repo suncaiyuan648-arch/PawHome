@@ -14,14 +14,14 @@ let bridgeModule
 async function loadBridge() {
 	if (!tempEsmRoot) {
 		tempEsmRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-selector-bridge-'))
-		await fs.writeFile(path.join(tempEsmRoot, 'package.json'), '{"type":"module"}\n')
+		await fs.writeFile(path.join(tempEsmRoot, 'package.tson'), '{"type":"module"}\n')
 		await fs.mkdir(path.join(tempEsmRoot, 'navigation'), { recursive: true })
 		await fs.copyFile(
-			path.join(ROOT, 'navigation/selectorBridge.js'),
-			path.join(tempEsmRoot, 'navigation/selectorBridge.js')
+			path.join(ROOT, 'navigation/selectorBridge.ts'),
+			path.join(tempEsmRoot, 'navigation/selectorBridge.ts')
 		)
 	}
-	const fileUrl = pathToFileURL(path.join(tempEsmRoot, 'navigation/selectorBridge.js')).href
+	const fileUrl = pathToFileURL(path.join(tempEsmRoot, 'navigation/selectorBridge.ts')).href
 	return import(`${fileUrl}?test=${Date.now()}-${Math.random()}`)
 }
 

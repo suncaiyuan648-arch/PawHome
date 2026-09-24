@@ -14,9 +14,9 @@ let storage
 
 before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-auth-continuation-'))
-  await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+  await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
-  for (const file of ['actorCapabilities.js', 'routeContracts.js', 'deeplinkContracts.js', 'authContinuationStorage.js']) {
+  for (const file of ['actorCapabilities.ts', 'routeContracts.ts', 'deeplinkContracts.ts', 'authContinuationStorage.ts']) {
     await fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
   }
   storage = new Map()
@@ -25,7 +25,7 @@ before(async () => {
     setStorageSync(key, value) { storage.set(key, value) },
     removeStorageSync(key) { storage.delete(key) },
   }
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/authContinuationStorage.js')).href}?test=${Date.now()}`)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/authContinuationStorage.ts')).href}?test=${Date.now()}`)
 })
 
 beforeEach(() => storage.clear())
@@ -81,4 +81,18 @@ test('malformed, cross-domain, and message-without-ID continuations fail closed'
   assert.equal(api.saveAuthContinuation({ target: target() }).success, false)
   storage.set(api.AUTH_CONTINUATION_STORAGE_KEY, '{broken')
   assert.equal(api.restoreStoredAuthContinuation({ authenticated: true }).code, 'INVALID_STORAGE')
+})
+
+test('stored continuation envelopes reject non-numeric timestamps without asserting their shape', () => {
+  storage.set(api.AUTH_CONTINUATION_STORAGE_KEY, JSON.stringify({
+    version: 1,
+    createdAt: 'not-a-timestamp',
+    target: target(),
+    messageId: 'message-a',
+    category: 'interaction',
+  }))
+  const restored = api.restoreStoredAuthContinuation({ authenticated: true })
+  assert.equal(restored.status, 'empty')
+  assert.equal(restored.code, 'CONTINUATION_EXPIRED')
+  assert.equal(restored.canSubmit, false)
 })

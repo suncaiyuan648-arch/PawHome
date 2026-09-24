@@ -26,34 +26,60 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawPetRoster from '@/components/PawPetRoster.vue'
 import YardFeedPopup from '@/components/YardFeedPopup.vue'
-import { goBackSmart } from '@/utils/navBack.js'
-import { buildRoute } from '@/navigation/routeContracts.js'
-import { readLocalYard } from '../../../services/localManagementStorage.js'
+import { goBackSmart } from '@/utils/navBack.ts'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import { readLocalYard } from '../../../services/localManagementStorage.ts'
+import type { YardPet } from '@/utils/yardMock.ts'
 
 const SAFE_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/
 
-function readText(value) {
-  return value === undefined || value === null ? '' : String(value).trim()
+interface YardManagedAnimalsPageState {
+  yardId: string
+  yardName: string
+  yardAvatar: string
+  ready: boolean
+  returnHomeOnBack: boolean
+  message: string
+  feedPopupVisible: boolean
+  feedPetId: string
 }
 
-function readName(value) {
+interface YardRosterController {
+  loadRoster(): unknown
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function readText(value: unknown): string {
+  return typeof value === 'string' || typeof value === 'number' ? String(value).trim() : ''
+}
+
+function readName(value: unknown): string {
   const text = readText(value)
   if (!text) return ''
   try {
     return decodeURIComponent(text)
-  } catch (error) {
+  } catch {
     return text
   }
 }
 
-export default {
+function isYardRosterController(value: unknown): value is YardRosterController {
+  return isRecord(value) && typeof value.loadRoster === 'function'
+}
+
+export default defineComponent({
   name: 'YardManagedAnimalsPage',
   components: { PawPageNav, PawPetRoster, YardFeedPopup },
-  data() {
+  data(): YardManagedAnimalsPageState {
     return {
       yardId: '',
       yardName: '我的小院',
@@ -65,15 +91,16 @@ export default {
       feedPetId: ''
     }
   },
-  onLoad(options = {}) {
-    const queryYardId = readText(options.yardId)
+  onLoad(options: unknown = {}) {
+    const route = isRecord(options) ? options : {}
+    const queryYardId = readText(route.yardId)
     const storedYardId = readText(uni.getStorageSync('PAWHOME_ACTIVE_YARD_ID'))
     const yardId = queryYardId || storedYardId
     if (!SAFE_ID.test(yardId)) return
 
     this.yardId = yardId
-    this.yardName = readName(options.name || options.yardName) || this.yardName
-    this.returnHomeOnBack = readText(options.returnHome) === '1'
+    this.yardName = readName(route.name || route.yardName) || this.yardName
+    this.returnHomeOnBack = readText(route.returnHome) === '1'
     this.refreshManagement()
   },
   onShow() {
@@ -91,11 +118,14 @@ export default {
     }
     const record = result.data && result.data.record
     if (record) {
-      this.yardName = record.name || this.yardName
-      this.yardAvatar = record.avatar || this.yardAvatar
+      this.yardName = readText(record.name) || this.yardName
+      this.yardAvatar = readText(record.avatar) || this.yardAvatar
     }
     this.ready = true
-      this.$nextTick(() => { if (this.$refs.roster) this.$refs.roster.loadRoster() })
+      this.$nextTick(() => {
+        const roster: unknown = this.$refs.roster
+        if (isYardRosterController(roster)) void roster.loadRoster()
+      })
     },
     openYardEditor() {
       this.refreshManagement()
@@ -111,19 +141,21 @@ export default {
     onAddPet() {
       this.refreshManagement()
       if (!this.ready) return
-      uni.showActionSheet({ itemList: ['添加猫咪', '添加狗狗'], success: ({ tapIndex }) => {
-        uni.navigateTo({ url: `/packages/animal/pages/editor/index?species=${tapIndex === 1 ? 'dog' : 'cat'}&yardId=${encodeURIComponent(this.yardId)}&yardName=${encodeURIComponent(this.yardName)}` })
+      uni.showActionSheet({ itemList: ['添加猫咪', '添加狗狗'], success: ({ tapIndex }: UniNamespace.ShowActionSheetRes) => {
+        const species = tapIndex === 0 ? 'cat' : tapIndex === 1 ? 'dog' : ''
+        if (!species) return
+        uni.navigateTo({ url: `/packages/animal/pages/editor/index?species=${species}&yardId=${encodeURIComponent(this.yardId)}&yardName=${encodeURIComponent(this.yardName)}` })
       } })
     },
-    openPetDetail(pet) {
-      const petId = readText(pet && pet.id)
+    openPetDetail(pet: YardPet) {
+      const petId = readText(pet.id)
       if (!petId) return
       uni.navigateTo({
         url: `/packages/animal/pages/detail/index?animalId=${encodeURIComponent(petId)}&yardId=${encodeURIComponent(this.yardId)}&state=36`
       })
     },
-    openFeedPopup(pet) {
-      const petId = readText(pet && pet.id)
+    openFeedPopup(pet: YardPet) {
+      const petId = readText(pet.id)
       if (!petId) return
       this.feedPetId = petId
       this.feedPopupVisible = true
@@ -132,7 +164,7 @@ export default {
       uni.navigateTo({ url: buildRoute('feeding.yardOrders', { yardId: this.yardId }) })
     }
   }
-}
+})
 </script>
 
 <style scoped>

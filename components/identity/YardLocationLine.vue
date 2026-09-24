@@ -4,10 +4,11 @@
     </view>
 </template>
 
-<script>
+<script lang="ts">import { defineComponent } from 'vue'
+
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
-export default { name: 'YardLocationLine', components: { PawIcon }, props: { text: { type: String, default: '' } } }
+export default defineComponent({ name: 'YardLocationLine', components: { PawIcon }, props: { text: { type: String, default: '' } } })
 </script>
 
 <style scoped>

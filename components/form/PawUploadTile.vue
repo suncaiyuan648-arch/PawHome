@@ -5,15 +5,20 @@
   </view>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+import { defineComponent } from 'vue'
+
+export default defineComponent({
   name: 'PawUploadTile',
   props: {
     src: { type: String, default: '' },
     size: { type: [Number, String], default: 80 },
     radius: { type: [Number, String], default: 8 }
   },
-  emits: ['select'],
+  emits: {
+    'select': eventContract<[]>(),
+  },
   computed: {
     tileStyle() {
       const size = typeof this.size === 'number' ? `${this.size}px` : this.size
@@ -21,7 +26,7 @@ export default {
       return { width: size, height: size, borderRadius: radius }
     }
   }
-}
+})
 </script>
 
 <style scoped>

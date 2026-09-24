@@ -6,26 +6,36 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+import { defineComponent, type PropType } from 'vue'
+
 import PawChevron from '@/components/base/PawChevron.vue'
 
-export default {
+interface AccountOptionMetadata {
+  label?: string
+  value?: string
+}
+
+export default defineComponent({
   name: 'AccountOptionRow',
   components: { PawChevron },
   props: {
-    option: { type: Object, default: () => ({}) },
+    option: { type: Object as PropType<AccountOptionMetadata>, default: () => ({}) },
     label: { type: String, default: '' },
     value: { type: String, default: '' },
     height: { type: [Number, String], default: 48 }
   },
-  emits: ['click'],
+  emits: {
+    'click': eventContract<[option: AccountOptionMetadata]>(),
+  },
   computed: {
     rowStyle() {
       const height = Number(this.height) || 48
       return { height: `${height}px`, minHeight: `${height}px` }
     }
   }
-}
+})
 </script>
 
 <style scoped>

@@ -18,15 +18,16 @@
     </view>
   </view>
 </template>
-<script>
+<script lang="ts">import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
-export default {
+export default defineComponent({
   name: 'AccountMedalView',
   components: { PawPageNav },
   props: { variant: { type: String, default: 'list' } },
   computed: { title() { return this.variant === 'map' ? '勋章地图' : this.variant === 'achievement' ? '勋章成就' : '我的勋章' } },
   methods: { showReadOnly() { uni.showToast({ title: '勋章状态只读展示', icon: 'none' }) } }
-}
+})
 </script>
 <style scoped>
 .medal-page { display: flex; width: 100%; height: 100vh; min-height: 0; flex-direction: column; overflow: hidden; background: #f5f5f5; color: #222; }

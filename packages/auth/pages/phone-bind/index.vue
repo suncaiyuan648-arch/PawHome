@@ -27,12 +27,15 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 
-export default {
+interface PhoneBindPageState { phone: string; agreed: boolean }
+
+export default defineComponent({
 	components: { PawPageNav },
-	data() {
+	data(): PhoneBindPageState {
 		return {
 			phone: '19366660000',
 			agreed: true
@@ -50,7 +53,7 @@ export default {
 			uni.navigateTo({ url: '/packages/auth/pages/sms-verify/index?phone=' + p })
 		}
 	}
-}
+})
 </script>
 
 <style lang="less" scoped>

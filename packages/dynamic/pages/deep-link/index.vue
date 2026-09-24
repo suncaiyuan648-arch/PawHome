@@ -11,24 +11,34 @@
   </view>
 </template>
 
-<script>
-import PawPageNav from '@/components/PawPageNav.vue'
-import { readDynamicRecord } from '@/packages/dynamic/services/reader.js'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
-function actorProvider() {
-  try { return typeof uni !== 'undefined' && uni && typeof uni.getStorageSync === 'function' ? uni.getStorageSync('PAWHOME_ACTOR_SESSION') : null } catch (error) { return null }
+import PawPageNav from '@/components/PawPageNav.vue'
+import { readDynamicRecord, type DynamicReadCode } from '@/packages/dynamic/services/reader.ts'
+import { normalizeDynamicDetailRoute } from '@/packages/dynamic/services/detailMetadata.ts'
+
+interface DynamicDeepLinkPageState {
+  dynamicId: string
+  status: DynamicReadCode | 'loading' | 'ready' | 'empty'
 }
 
-export default {
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function actorProvider(): unknown {
+  try { return typeof uni !== 'undefined' && uni && typeof uni.getStorageSync === 'function' ? uni.getStorageSync('PAWHOME_ACTOR_SESSION') : null } catch { return null }
+}
+
+export default defineComponent({
   name: 'DynamicDeepLinkPage',
   components: { PawPageNav },
-  data() { return { dynamicId: '', status: 'loading' } },
-  onLoad(options = {}) {
-    this.dynamicId = typeof options.dynamicId === 'string' ? options.dynamicId : ''
-    const channel = typeof this.getOpenerEventChannel === 'function' ? this.getOpenerEventChannel() : null
-    if (channel && typeof channel.on === 'function') channel.on('pawhome.message.deep-link', () => {})
+  data(): DynamicDeepLinkPageState { return { dynamicId: '', status: 'loading' } },
+  onLoad(options: unknown = {}) {
+    this.dynamicId = normalizeDynamicDetailRoute(options).dynamicId
     const session = actorProvider()
-    const actor = session && session.actor ? session.actor : session
+    const actor = isRecord(session) && session.actor ? session.actor : session
     const result = readDynamicRecord(this.dynamicId, { actor, requireActor: true, allowPublic: true })
     if (!result.record) {
       this.status = result.code || 'empty'
@@ -38,7 +48,7 @@ export default {
     const query = `dynamicId=${encodeURIComponent(this.dynamicId)}`
     uni.redirectTo({ url: `/packages/dynamic/pages/detail/index?${query}` })
   },
-}
+})
 </script>
 
 <style scoped>

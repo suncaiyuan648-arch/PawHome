@@ -10,7 +10,7 @@ const BASELINE_PATH = path.join(ROOT, 'config', 'native-ui-legacy-baseline.json'
 // roots are intentionally ignored so small fixtures and partial checkouts stay
 // checkable.
 const SCAN_ROOTS = ['pages', 'components', 'utils', 'packages', 'services', 'navigation']
-const NATIVE_LAYOUT_OWNER = 'utils/navLayout.js'
+const NATIVE_LAYOUT_OWNER = 'utils/navLayout.ts'
 const EXTENSIONS = new Set(['.vue', '.js', '.cjs', '.mjs', '.ts', '.tsx', '.css', '.scss', '.less'])
 const STRICT = process.argv.includes('--strict')
 const WRITE_BASELINE = process.argv.includes('--write-baseline')
@@ -85,7 +85,7 @@ function collectFindings() {
     const rel = path.relative(ROOT, file).replaceAll(path.sep, '/')
     const text = fs.readFileSync(file, 'utf8')
 
-    // navLayout.js is the approved geometry reader. Its comments/options may
+    // navLayout.ts is the approved geometry reader. Its comments/options may
     // mention platform-owned concepts, but it must still be checked for
     // unauthorized direct readers below.
     if (rel !== NATIVE_LAYOUT_OWNER) {
@@ -107,7 +107,7 @@ function collectFindings() {
         index,
         {
           id: 'page-local-native-nav-layout',
-          message: 'Native capsule geometry must be centralized in utils/navLayout.js and consumed by PawPageNav.'
+          message: 'Native capsule geometry must be centralized in utils/navLayout.ts and consumed by PawPageNav.'
         },
         'getMenuButtonBoundingClientRect(...)'
       )

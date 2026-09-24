@@ -8,9 +8,9 @@ const { pathToFileURL } = require('node:url')
 const { test, before, after, beforeEach } = require('node:test')
 
 const ROOT = path.resolve(__dirname, '../..')
-const adapterPath = path.join(ROOT, 'packages/rescue/services/stateAdapter.js')
-const canonicalAdapterPath = path.join(ROOT, 'services/domainReads/rescue/stateAdapter.js')
-const storagePath = path.join(ROOT, 'utils/rescueStorage.js')
+const adapterPath = path.join(ROOT, 'packages/rescue/services/stateAdapter.ts')
+const canonicalAdapterPath = path.join(ROOT, 'services/domainReads/rescue/stateAdapter.ts')
+const storagePath = path.join(ROOT, 'utils/rescueStorage.ts')
 const RESCUE_KEY = 'PAWHOME_RESCUES'
 
 let tempRoot
@@ -19,19 +19,20 @@ let storage
 
 before(async () => {
 	tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-rescue-state-adapter-'))
-	await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+	await fs.cp(path.join(ROOT, 'contracts'), path.join(tempRoot, 'contracts'), { recursive: true })
+	await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
 	await fs.mkdir(path.join(tempRoot, 'packages/rescue/services'), { recursive: true })
 	await fs.mkdir(path.join(tempRoot, 'utils'), { recursive: true })
 	await fs.cp(path.join(ROOT, 'services/domainReads'), path.join(tempRoot, 'services/domainReads'), { recursive: true })
-	await fs.copyFile(storagePath, path.join(tempRoot, 'utils/rescueStorage.js'))
-	await fs.copyFile(adapterPath, path.join(tempRoot, 'packages/rescue/services/stateAdapter.js'))
+	await fs.copyFile(storagePath, path.join(tempRoot, 'utils/rescueStorage.ts'))
+	await fs.copyFile(adapterPath, path.join(tempRoot, 'packages/rescue/services/stateAdapter.ts'))
 	storage = new Map()
 	globalThis.uni = {
 		getStorageSync(key) { return storage.get(key) },
 		setStorageSync(key, value) { storage.set(key, value) },
 		removeStorageSync(key) { storage.delete(key) }
 	}
-	adapter = await import(`${pathToFileURL(path.join(tempRoot, 'packages/rescue/services/stateAdapter.js')).href}?test=${Date.now()}`)
+	adapter = await import(`${pathToFileURL(path.join(tempRoot, 'packages/rescue/services/stateAdapter.ts')).href}?test=${Date.now()}`)
 })
 
 beforeEach(() => storage.clear())

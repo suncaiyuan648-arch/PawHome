@@ -8,37 +8,31 @@
   </view>
 </template>
 
-<script>
-import { safeImgSrc } from '@/utils/safeImgSrc.js'
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
 
-function asCssSize(value) {
-  if (value === undefined || value === null || value === '') return ''
-  return typeof value === 'number' ? `${value}px` : String(value)
-}
+import {
+  asPawImageCssSize,
+  isPackagedPawImageUrl,
+  isPawImageEvent,
+  isPawImagePreviewPayload,
+  normalizePawImageDisplayMode,
+  readCompressedPawImageUrl,
+  readPawImageSourceUrl,
+  type PawImageDisplayMode,
+  type PawImageEvent,
+  type PawImagePreviewPayload,
+  type PawImagePreviewSource,
+} from '@/components/base/pawImageMetadata.ts'
+import { safeImgSrc } from '@/utils/safeImgSrc.ts'
 
-function normalizeUrl(value) {
-  if (typeof value !== 'string') return ''
-  const url = value.trim()
-  return /^(?:\/|https?:\/\/|wxfile:\/\/|cloud:\/\/)/i.test(url) ? url : ''
-}
-
-function sourceUrl(value) {
-  if (typeof value === 'string') return normalizeUrl(value)
-  if (!value || typeof value !== 'object') return ''
-  return normalizeUrl(value.src || value.url || value.path || value.image)
-}
-
-function isPackagedImageUrl(url) {
-  return /^\/static\//i.test(url)
-}
-
-function preparePreviewImageUrl(url) {
-  if (!isPackagedImageUrl(url) || typeof uni === 'undefined' || typeof uni.compressImage !== 'function') {
+function preparePreviewImageUrl(url: string): Promise<string> {
+  if (!isPackagedPawImageUrl(url) || typeof uni === 'undefined' || typeof uni.compressImage !== 'function') {
     return Promise.resolve(url)
   }
 
-  return new Promise((resolve) => {
-    const fallback = (error) => {
+  return new Promise<string>((resolve) => {
+    const fallback = (error: unknown) => {
       console.warn('[PawHome][PawImage] packaged preview image preparation failed, using source path', {
         url,
         error
@@ -50,62 +44,68 @@ function preparePreviewImageUrl(url) {
       uni.compressImage({
         src: url,
         compressedWidth: 1080,
-        success: (result) => resolve(normalizeUrl(result && result.tempFilePath) || url),
+        success: (result: UniNamespace.CompressImageSuccessResult) => resolve(readCompressedPawImageUrl(result) || url),
         fail: fallback
       })
-    } catch (error) {
+    } catch (error: unknown) {
       fallback(error)
     }
   })
 }
 
-export default {
+export default defineComponent({
   name: 'PawImage',
   props: {
     src: { type: String, default: '' },
     fallback: { type: String, default: '/static/home-feed-1.png' },
     // square: 由 size/width 生成等宽高；fixed: 使用传入的 width/height；original: 保持原比例宽度展示。
-    displayMode: { type: String, default: 'square' },
+    displayMode: { type: String as PropType<PawImageDisplayMode>, default: 'square' },
     size: { type: [Number, String], default: '' },
     width: { type: [Number, String], default: '' },
     height: { type: [Number, String], default: '' },
     radius: { type: [Number, String], default: '' },
     preview: { type: Boolean, default: true },
     clickable: { type: Boolean, default: false },
-    previewUrls: { type: Array, default: () => [] },
+    previewUrls: { type: Array as PropType<PawImagePreviewSource[]>, default: () => [] },
     previewIndex: { type: Number, default: 0 },
     lazyLoad: { type: Boolean, default: false }
   },
-  emits: ['click', 'preview', 'preview-opened', 'load', 'error'],
+  emits: {
+    click: (event: PawImageEvent) => isPawImageEvent(event),
+    preview: (payload: PawImagePreviewPayload) => isPawImagePreviewPayload(payload),
+    'preview-opened': (payload: PawImagePreviewPayload) => isPawImagePreviewPayload(payload),
+    load: (event: PawImageEvent) => isPawImageEvent(event),
+    error: (event: PawImageEvent) => isPawImageEvent(event),
+  },
   computed: {
     resolvedSrc() {
       return safeImgSrc(this.src, this.fallback)
     },
-    normalizedDisplayMode() {
-      return ['square', 'fixed', 'original'].includes(this.displayMode) ? this.displayMode : 'square'
+    normalizedDisplayMode(): PawImageDisplayMode {
+      return normalizePawImageDisplayMode(this.displayMode)
     },
     imageMode() {
       return this.normalizedDisplayMode === 'original' ? 'widthFix' : 'aspectFill'
     },
     containerStyle() {
-      const squareSize = asCssSize(this.size || this.width || this.height)
-      const width = asCssSize(this.normalizedDisplayMode === 'square' ? (this.size || this.width || this.height) : (this.width || this.size))
-      const height = asCssSize(this.normalizedDisplayMode === 'fixed' ? (this.height || this.size) : (this.normalizedDisplayMode === 'square' ? squareSize : ''))
-      const style = {}
+      const squareSize = asPawImageCssSize(this.size || this.width || this.height)
+      const width = asPawImageCssSize(this.normalizedDisplayMode === 'square' ? (this.size || this.width || this.height) : (this.width || this.size))
+      const height = asPawImageCssSize(this.normalizedDisplayMode === 'fixed' ? (this.height || this.size) : (this.normalizedDisplayMode === 'square' ? squareSize : ''))
+      const style: Record<string, string> = {}
       if (width) style.width = width
       if (height) style.height = height
-      if (this.radius !== '') style.borderRadius = asCssSize(this.radius)
+      if (this.radius !== '') style.borderRadius = asPawImageCssSize(this.radius)
       return style
     }
   },
   methods: {
-    onTap(event) {
+    onTap(event: PawEvent) {
       this.$emit('click', event)
       if (!this.preview) return
 
-      const current = sourceUrl(this.src) || sourceUrl(this.resolvedSrc)
+      const current = readPawImageSourceUrl(this.src) || readPawImageSourceUrl(this.resolvedSrc)
       const urls = Array.from(new Set([
-        ...this.previewUrls.map(sourceUrl).filter(Boolean),
+        ...this.previewUrls.map(readPawImageSourceUrl).filter(Boolean),
         current
       ].filter(Boolean)))
       if (!urls.length) {
@@ -126,7 +126,7 @@ export default {
               currentIndex: preparedCurrentIndex,
               urls: preparedUrls
             }),
-            fail: (error) => {
+            fail: (error: unknown) => {
               console.error('[PawHome][PawImage] previewImage failed', {
                 current: preparedUrls[preparedCurrentIndex],
                 currentIndex: preparedCurrentIndex,
@@ -136,16 +136,16 @@ export default {
               uni.showToast({ title: '图片预览失败，请稍后重试', icon: 'none' })
             }
           })
-        } catch (error) {
+        } catch (error: unknown) {
           console.error('[PawHome][PawImage] previewImage threw', error)
           uni.showToast({ title: '图片预览失败，请稍后重试', icon: 'none' })
         }
       })
     },
-    onLoad(event) { this.$emit('load', event) },
-    onError(event) { this.$emit('error', event) }
+    onLoad(event: PawEvent) { this.$emit('load', event) },
+    onError(event: PawEvent) { this.$emit('error', event) }
   }
-}
+})
 </script>
 
 <style scoped>

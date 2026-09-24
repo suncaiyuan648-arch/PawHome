@@ -60,29 +60,44 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
 import PawBadge from '@/components/base/PawBadge.vue'
 import PawImage from '@/components/base/PawImage.vue'
 import PawFeedingFeedbackTag from '@/components/feeding/PawFeedingFeedbackTag.vue'
 import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawFeedingOrderToolbar from './PawFeedingOrderToolbar.vue'
-import { getFeedingOrders, formatFeedbackTimeout } from '../services/orderMockApi.js'
+import { getFeedingOrders, type FeedingOrderVariant } from '../services/orderMockApi.ts'
+import {
+  createFeedingOrderListItems,
+  createFeedingOrderListPageState,
+  type FeedingOrderListItem,
+  type FeedingOrderListPageState,
+} from '../services/orderListMetadata.ts'
 
-export default {
+export default defineComponent({
   name: 'PawFeedingOrderList',
   components: { PawBadge, PawImage, PawFeedingFeedbackTag, LevelBadge, PawPageNav, PawFeedingOrderToolbar },
   props: {
-    variant: { type: String, default: 'mine' },
+    variant: { type: String as PropType<FeedingOrderVariant>, default: 'mine' },
     userPawId: { type: [String, Number], default: '' },
     yardOwnerId: { type: [String, Number], default: '' },
     yardId: { type: [String, Number], default: '1' },
     emptyState: { type: Boolean, default: false },
     emptyText: { type: String, default: '暂无投粮订单' }
   },
-  emits: ['back', 'detail', 'yard-click', 'user-click'],
-  data() {
-    return { items: [], keyword: '', sort: 'smart', loading: false }
+  emits: {
+    'back': eventContract<[]>(),
+    'detail': eventContract<[item: FeedingOrderListItem]>(),
+    'yard-click': eventContract<[item: FeedingOrderListItem]>(),
+    'user-click': eventContract<[item: FeedingOrderListItem]>(),
+  },
+  data(): FeedingOrderListPageState {
+    return createFeedingOrderListPageState()
   },
   computed: {
     pageTitle() { return this.variant === 'yard' ? '小院投粮' : '我的投粮' }
@@ -96,8 +111,8 @@ export default {
   },
   created() { this.loadOrders() },
   methods: {
-    onSearch(value) {
-      if (typeof value === 'string') this.keyword = value
+    onSearch(value: string) {
+      this.keyword = value
       this.loadOrders()
     },
     loadOrders() {
@@ -108,30 +123,24 @@ export default {
       this.loading = true
       getFeedingOrders({
         variant: this.variant,
-        userPawId: this.userPawId,
-        yardOwnerId: this.yardOwnerId,
-        yardId: this.yardId,
+        userPawId: String(this.userPawId || ''),
+        yardOwnerId: String(this.yardOwnerId || ''),
+        yardId: String(this.yardId || ''),
         keyword: this.keyword,
         sort: this.sort
-      }).then(result => {
-        const items = result && result.success && result.data ? result.data.items : []
-        this.items = items.map(item => ({
-          ...item,
-          orderCopy: this.variant === 'mine' && item.stateKey === 'cloud-active-timeout' && item.nextFeedbackAt
-            ? `反馈已超时${formatFeedbackTimeout(item.nextFeedbackAt)}，我们会尽快通知小院反馈`
-            : (item.orderCopy || item.progressText || '')
-        }))
+      }).then((result) => {
+        this.items = createFeedingOrderListItems(result.data.items, this.variant)
       }).finally(() => { this.loading = false })
     },
-    openDetail(item) { this.$emit('detail', item) },
-    onAvatarClick(item) {
+    openDetail(item: FeedingOrderListItem) { this.$emit('detail', item) },
+    onAvatarClick(item: FeedingOrderListItem) {
       if (this.variant === 'yard') this.openUser(item)
       else this.openDetail(item)
     },
-    openYard(item) { this.$emit('yard-click', item) },
-    openUser(item) { this.$emit('user-click', item) }
+    openYard(item: FeedingOrderListItem) { this.$emit('yard-click', item) },
+    openUser(item: FeedingOrderListItem) { this.$emit('user-click', item) }
   }
-}
+})
 </script>
 
 <style scoped>

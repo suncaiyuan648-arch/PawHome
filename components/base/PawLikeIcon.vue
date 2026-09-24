@@ -2,11 +2,12 @@
   <PawIcon :name="liked ? 'actions/like-filled' : 'actions/like'" :size="iconSize" :label="label" />
 </template>
 
-<script>
-import PawIcon from '@/components/PawIcon/PawIcon.vue'
-import { PAW_ICON_LIKE_SIZE } from '@/components/PawIcon/PawIcon.tokens.js'
+<script lang="ts">import { defineComponent } from 'vue'
 
-export default {
+import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import { PAW_ICON_LIKE_SIZE } from '@/components/PawIcon/PawIcon.tokens.ts'
+
+export default defineComponent({
   name: 'PawLikeIcon',
   components: { PawIcon },
   props: {
@@ -18,5 +19,5 @@ export default {
       return PAW_ICON_LIKE_SIZE
     }
   }
-}
+})
 </script>

@@ -5,19 +5,24 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+import { defineComponent, type PropType } from 'vue'
+
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
-export default {
+export default defineComponent({
   name: 'VoiceComment',
   components: { PawIcon },
   props: {
-    duration: { type: String, default: '2″' },
+    duration: { type: [String, Number], default: '2″' },
     playing: { type: Boolean, default: false },
-    bars: { type: Array, default: () => [6, 10, 5, 12, 7] }
+    bars: { type: Array as PropType<number[]>, default: () => [6, 10, 5, 12, 7] }
   },
-  emits: ['toggle']
-}
+  emits: {
+    'toggle': eventContract<[]>(),
+  }
+})
 </script>
 
 <style scoped>

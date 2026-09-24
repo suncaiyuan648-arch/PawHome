@@ -17,13 +17,23 @@
 	</view>
 </template>
 
-<script>
-import PawPageNav from '@/components/PawPageNav.vue'
-import { clearAuthContinuation, restoreStoredAuthContinuation } from '@/navigation/authContinuationStorage.js'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
-export default {
+import PawPageNav from '@/components/PawPageNav.vue'
+import { clearAuthContinuation, restoreStoredAuthContinuation } from '@/navigation/authContinuationStorage.ts'
+
+interface SmsVerifyPageState { phone: string; code: string }
+
+function queryRecord(options: unknown): Record<string, unknown> {
+	return options !== null && typeof options === 'object' && !Array.isArray(options)
+		? options as Record<string, unknown>
+		: {}
+}
+
+export default defineComponent({
 	components: { PawPageNav },
-	data() {
+	data(): SmsVerifyPageState {
 		return {
 			phone: '',
 			code: ''
@@ -38,8 +48,9 @@ export default {
 			return this.code.trim().length === 6
 		}
 	},
-	onLoad(options = {}) {
-		if (options.phone) this.phone = decodeURIComponent(options.phone)
+	onLoad(options: unknown = {}) {
+		const phone = queryRecord(options).phone
+		if (typeof phone === 'string' && phone) this.phone = decodeURIComponent(phone)
 	},
 	methods: {
 		verifyLogin() {
@@ -69,7 +80,7 @@ export default {
 			uni.redirectTo({ url: restored.target.url, fail: () => uni.reLaunch({ url: '/pages/index/index' }) })
 		}
 	}
-}
+})
 </script>
 
 <style lang="less" scoped>

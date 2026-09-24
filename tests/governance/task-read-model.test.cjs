@@ -13,13 +13,13 @@ let api
 
 before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-task-read-model-'))
-  await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+  await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await Promise.all([
-    'actorCapabilities.js',
-    'taskContracts.js',
-    'taskReadModel.js',
+    'actorCapabilities.ts',
+    'taskContracts.ts',
+    'taskReadModel.ts',
   ].map(file => fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, file))))
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'taskReadModel.js')).href}?test=${Date.now()}`)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'taskReadModel.ts')).href}?test=${Date.now()}`)
 })
 
 after(async () => {

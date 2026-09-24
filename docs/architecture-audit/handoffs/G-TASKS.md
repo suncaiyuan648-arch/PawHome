@@ -9,15 +9,15 @@ implementedCommit: 未提交（按任务要求交由总工验收）
 
 本子批是 **contract-only**，只新增纯 JavaScript 合同与反例测试：
 
-- `navigation/taskContracts.js`
+- `navigation/taskContracts.ts`
 - `tests/governance/task-contracts.test.cjs`
 - 本交接文档
 
-没有修改 `pages.json`、业务页面、`routeContracts`、`legacyRoutes`、actor 模块、storage、package scripts、package-lock、native baseline、设计文件或业务状态，也没有新增路由、DevTools 运行、真实 storage 写入、提交、暂存、上传或发布。
+没有修改 `pages.tson`、业务页面、`routeContracts`、`legacyRoutes`、actor 模块、storage、package scripts、package-lock、native baseline、设计文件或业务状态，也没有新增路由、DevTools 运行、真实 storage 写入、提交、暂存、上传或发布。
 
 ## 合同接口
 
-`navigation/taskContracts.js` 不依赖 Vue、uni-app、页面、分包、storage 或业务服务，导出：
+`navigation/taskContracts.ts` 不依赖 Vue、uni-app、页面、分包、storage 或业务服务，导出：
 
 - `normalizeTaskSummary` / `createTaskSummary`：校验并规范化冻结的任务摘要。
 - `taskIdFor`：按 `businessType + businessId + actionType（阶段） + actorId` 生成确定性唯一键；`actorRole` 与 `status` 不参与键计算。

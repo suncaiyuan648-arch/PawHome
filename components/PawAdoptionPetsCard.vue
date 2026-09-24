@@ -36,13 +36,19 @@
   </PawCard>
 </template>
 
-<script>
-import { adoptionPetAvatarSrc as petAvatarSrc } from '@/utils/adoptionPetDisplay.js'
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+import type { PawImageEvent } from '@/components/base/pawImageMetadata.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
+import type { AdoptionPetMetadata } from '@/utils/adoptionMockData.ts'
+import { adoptionPetAvatarSrc as petAvatarSrc } from '@/utils/adoptionPetDisplay.ts'
 import PawCard from '@/components/base/PawCard.vue'
 import YardBadge from '@/components/customBadge/YardBadge.vue'
 import PawImage from '@/components/base/PawImage.vue'
 
-export default {
+export default defineComponent({
   name: 'PawAdoptionPetsCard',
   components: { PawCard, YardBadge, PawImage },
   options: {
@@ -54,7 +60,7 @@ export default {
   },
   props: {
     title: { type: String, default: '申请领养的猫咪' },
-    pets: { type: Array, default: () => [] },
+    pets: { type: Array as PropType<AdoptionPetMetadata[]>, default: () => [] },
     yardName: { type: String, default: '我就是要喂猫' },
     yardId: { type: [Number, String], default: '' },
     yardAvatar: { type: String, default: '' },
@@ -68,13 +74,17 @@ export default {
     marginBottom: { type: [Number, String], default: 12 },
     qaPrefix: { type: String, default: '' }
   },
-  emits: ['add', 'pet-click', 'yard-click'],
+  emits: {
+    'add': eventContract<[]>(),
+    'pet-click': eventContract<[pet: AdoptionPetMetadata, index: number]>(),
+    'yard-click': eventContract<[event: PawImageEvent]>(),
+  },
   computed: {
     petList() {
       return Array.isArray(this.pets) ? this.pets : []
     },
     layoutStyle() {
-      const style = {}
+      const style: Record<string, string> = {}
       const minHeight = Number(this.minHeight)
       const marginBottom = Number(this.marginBottom)
       if (minHeight > 0) style.minHeight = `${minHeight}px`
@@ -87,14 +97,14 @@ export default {
     onAddTap() {
       this.$emit('add')
     },
-    onPetTap(pet, index) {
+    onPetTap(pet: AdoptionPetMetadata, index: number) {
       if (this.petClickable) this.$emit('pet-click', pet, index)
     },
-    onYardTap(event) {
+    onYardTap(event: PawImageEvent) {
       if (this.yardClickable) this.$emit('yard-click', event)
     }
   }
-}
+})
 </script>
 
 <style scoped>

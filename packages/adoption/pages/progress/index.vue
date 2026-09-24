@@ -20,34 +20,32 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawFixedActionBar from '@/components/layout/PawFixedActionBar.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
-import { decodeWeixinLoadOptions } from '@/navigation/weixinLoadOptions.js'
-import { buildRoute } from '@/navigation/routeContracts.js'
+import { buildRoute } from '@/navigation/routeContracts.ts'
 import AdoptionProgressView from '../../components/AdoptionProgressView.vue'
 import {
   beginReward,
-  createAdoptionSessionProvider,
-  normalizeProgressView,
   readAdoptionProgress,
   statusPresentation
-} from '../../services/progress.js'
+} from '../../services/progress.ts'
+import {
+  createAdoptionProgressPageState,
+  createAdoptionProgressPrimaryAction,
+  isAdoptionProgressPrimaryAction,
+  normalizeAdoptionProgressRecord,
+  resolveAdoptionProgressRoute,
+  type AdoptionProgressPageState
+} from '../../services/progressPageMetadata.ts'
 
-export default {
+export default defineComponent({
   name: 'AdoptionProgressPage',
   components: { PawPageNav, PawFixedActionBar, PawIcon, AdoptionProgressView },
-  data() {
-    return {
-      applicationId: '',
-      view: 'progress',
-      record: null,
-      loadError: '',
-      loading: false,
-      actorProvider: createAdoptionSessionProvider()
-    }
-  },
+  data(): AdoptionProgressPageState { return createAdoptionProgressPageState() },
   computed: {
     presentation() { return statusPresentation(this.record) },
     navTitle() {
@@ -61,37 +59,20 @@ export default {
         : 'linear-gradient(to bottom, #fffcdc 0%, #fff 13.225%, #f5f5f5 21.49%, #f5f5f5 100%)'
     },
     primaryAction() {
-      if (!this.record || this.view !== 'progress') return null
-      if (this.presentation.canConfirm) {
-        return { key: 'confirm-adoption', label: '确认领养领猫粮', qa: 'qa-adoption-progress-confirm' }
-      }
-      if (this.presentation.canClaimReward) {
-        return { key: 'claim-reward', label: '开始申请猫粮', qa: 'qa-adoption-progress-claim-reward' }
-      }
-      return null
+      return this.record ? createAdoptionProgressPrimaryAction(this.presentation, this.view) : null
     }
   },
-  onLoad(options = {}) {
-    let params = options
-    try {
-      // #ifdef MP-WEIXIN
-      params = decodeWeixinLoadOptions(options)
-      // #endif
-      // Route contracts reject unknown query keys, malformed IDs, arrays and
-      // unsupported views before a record is read.  The returned URL is not
-      // used for navigation; buildRoute is the shared validation boundary.
-      buildRoute('adoption.progress', params)
-      this.applicationId = String(params.applicationId || '').trim()
-      this.view = normalizeProgressView(params.view) || 'progress'
-    } catch (error) {
+  onLoad(options: unknown = {}) {
+    const route = resolveAdoptionProgressRoute(options)
+    if (!route.ok) {
       this.applicationId = ''
       this.view = 'progress'
-      this.loadError = error && error.code === 'MISSING_PARAMETER'
-        ? '缺少领养申请 ID'
-        : '领养申请链接无效'
+      this.loadError = route.message
       this.record = null
       return
     }
+    this.applicationId = route.applicationId
+    this.view = route.view
     this.loadRecord()
   },
   onShow() {
@@ -110,10 +91,10 @@ export default {
           : (result.error && result.error.message) || '找不到这条领养申请'
         return
       }
-      this.record = result.data
+      this.record = normalizeAdoptionProgressRecord(result.data)
     },
-    onPrimaryAction(action) {
-      if (!action || !this.record || !this.applicationId) return
+    onPrimaryAction(action: import('@/components/layout/PawFixedActionBar.vue').PawFixedAction) {
+      if (!isAdoptionProgressPrimaryAction(action) || !this.record || !this.applicationId) return
       if (action.key === 'confirm-adoption') {
         uni.navigateTo({
           url: buildRoute('adoption.confirmation', { applicationId: this.applicationId })
@@ -126,14 +107,14 @@ export default {
           uni.showToast({ title: result.error && result.error.message || '暂时无法领取奖励', icon: 'none' })
           return
         }
-        this.record = result.data
+        this.record = normalizeAdoptionProgressRecord(result.data)
         uni.navigateTo({
           url: `/packages/adoption/pages/reward/claim/index?applicationId=${encodeURIComponent(this.applicationId)}`
         })
       }
     }
   }
-}
+})
 </script>
 
 <style scoped>

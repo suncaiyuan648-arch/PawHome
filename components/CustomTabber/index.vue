@@ -29,12 +29,19 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawPublishSheetContent from '@/components/PawPublishSheetContent.vue'
-import { getTotalMessageUnreadCount } from '@/utils/messageUnread.js'
+import { getTotalMessageUnreadCount } from '@/utils/messageUnread.ts'
 
-export default {
+interface CustomTabberState {
+	activeItem: number
+	showPublishPanel: boolean
+}
+
+export default defineComponent({
 	name: "CustomBabber",
 	components: { PawBottomSheet, PawPublishSheetContent },
 	props: {
@@ -43,7 +50,7 @@ export default {
 			default: 0
 		}
 	},
-	data() {
+	data(): CustomTabberState {
 		return {
 			activeItem: 0,
 			showPublishPanel: false
@@ -57,19 +64,19 @@ export default {
 	watch: {
 		tabIndex: {
 			immediate: true,
-			handler(n) {
+			handler(n: number) {
 				this.activeItem = n
 			}
 		}
 	},
 	methods: {
-		formatUnreadCount(count) {
+		formatUnreadCount(count: number) {
 			return count > 99 ? '99+' : count
 		},
 		openPublishPanel() {
 			this.showPublishPanel = !this.showPublishPanel
 		},
-		setPublishPanelVisible(value) {
+		setPublishPanelVisible(value: boolean) {
 			this.showPublishPanel = value
 		},
 		closePublishPanel() {
@@ -87,7 +94,7 @@ export default {
 			this.closePublishPanel()
 			uni.navigateTo({ url: '/packages/rescue/pages/apply/index' })
 		},
-		changeTabber(index) {
+		changeTabber(index: number) {
 			const routes = [
 				'/pages/index/index',
 				'/pages/selfRun/index',
@@ -113,7 +120,7 @@ export default {
 			// #endif
 		},
 	}
-}
+})
 </script>
 
 <style lang="less" scoped>

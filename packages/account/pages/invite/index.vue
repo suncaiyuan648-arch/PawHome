@@ -21,13 +21,16 @@
   </view>
 </template>
 
-<script>
-import PawPageNav from '@/components/PawPageNav.vue'
-import { buildRoute } from '@/navigation/routeContracts.js'
+<script lang="ts">import { defineComponent } from 'vue'
 
-export default {
+import PawPageNav from '@/components/PawPageNav.vue'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+
+interface InvitePageState { fallbackUrl: string; inviteAvatars: string[] }
+
+export default defineComponent({
   components: { PawPageNav },
-  data() {
+  data(): InvitePageState {
     return {
       fallbackUrl: '/pages/index/index',
       inviteAvatars: [
@@ -43,10 +46,10 @@ export default {
   },
   methods: {
     openYard() {
-      try { uni.navigateTo({ url: buildRoute('yard.detail', { yardId: '1' }) }) } catch (error) { uni.showToast({ title: '小院暂不可用', icon: 'none' }) }
+      try { uni.navigateTo({ url: buildRoute('yard.detail', { yardId: '1' }) }) } catch { uni.showToast({ title: '小院暂不可用', icon: 'none' }) }
     }
   }
-}
+})
 </script>
 
 <style scoped>

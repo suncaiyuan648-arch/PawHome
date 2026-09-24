@@ -29,8 +29,8 @@ function session(id = 'reviewer-a', roles = ['reviewer']) {
 before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-rescue-review-action-'))
   await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
-  const target = path.join(tempRoot, 'reviewActionAdapter.js')
-  await fs.copyFile(path.join(ROOT, 'services/reviewActionAdapter.js'), target)
+  const target = path.join(tempRoot, 'reviewActionAdapter.ts')
+  await fs.copyFile(path.join(ROOT, 'services/reviewActionAdapter.ts'), target)
   api = await import(`${pathToFileURL(target).href}?test=${Date.now()}-${Math.random()}`)
 })
 
@@ -99,7 +99,7 @@ test('action identity and aliases cannot cross rescue domains or reviewer relati
 })
 
 test('adapter source stays package-local and exposes no payment or navigation writer', async () => {
-  const source = await fs.readFile(path.join(ROOT, 'services/reviewActionAdapter.js'), 'utf8')
+  const source = await fs.readFile(path.join(ROOT, 'services/reviewActionAdapter.ts'), 'utf8')
   assert.doesNotMatch(source, /(?:from\s+['"][^'"]*(?:navigation|utils\/rescueStorage)|require\s*\()/)
   assert.doesNotMatch(source, /(?:setStorageSync\([^)]*(?:PAYMENT|FUNDING)|transitionRescueFunding|createPayment|pay\s*\()/i)
   assert.match(source, /PAYMENT_ACTION_FORBIDDEN/)

@@ -51,79 +51,63 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import {
+	createCityPickerIndexLabels,
+	createCityPickerPageMetadata,
+	filterCityGroups,
+	normalizeCityPickerRoute,
+	type CityGroup,
+	type CityPickerPageState
+} from '@/packages/discovery/services/cityPickerMetadata'
 
-const CITY_GROUPS = [
-	{ letter: 'A', cities: ['阿坝', '阿坝', '阿坝', '阿坝', '阿坝', '阿坝', '阿坝', '阿坝', '阿坝'] },
-	{ letter: 'B', cities: ['北京', '保定', '包头', '北海', '蚌埠'] },
-	{ letter: 'C', cities: ['重庆', '成都', '长沙', '长春', '常州'] },
-	{ letter: 'D', cities: ['大连', '东莞', '大庆', '德州', '达州'] },
-	{ letter: 'E', cities: ['鄂尔多斯', '恩施'] },
-	{ letter: 'F', cities: ['福州', '佛山', '阜阳', '抚州'] },
-	{ letter: 'G', cities: ['广州', '贵阳', '桂林', '赣州', '贵港'] },
-	{ letter: 'H', cities: ['杭州', '合肥', '哈尔滨', '海口', '呼和浩特', '惠州'] },
-	{ letter: 'J', cities: ['济南', '嘉兴', '金华', '九江', '吉林'] },
-	{ letter: 'K', cities: ['昆明', '开封'] },
-	{ letter: 'L', cities: ['兰州', '洛阳', '临沂', '柳州', '廊坊'] },
-	{ letter: 'M', cities: ['绵阳', '茂名', '马鞍山'] },
-	{ letter: 'N', cities: ['南京', '宁波', '南昌', '南宁', '南通'] },
-	{ letter: 'P', cities: ['平顶山', '莆田', '濮阳', '攀枝花'] },
-	{ letter: 'Q', cities: ['青岛', '泉州', '秦皇岛', '齐齐哈尔'] },
-	{ letter: 'R', cities: ['日照', '日喀则'] },
-	{ letter: 'S', cities: ['上海', '深圳', '沈阳', '苏州', '石家庄', '三亚', '绍兴'] },
-	{ letter: 'T', cities: ['天津', '太原', '唐山', '台州', '泰州'] },
-	{ letter: 'W', cities: ['武汉', '无锡', '温州', '潍坊', '乌鲁木齐'] },
-	{ letter: 'X', cities: ['西安', '厦门', '徐州', '襄阳', '咸阳'] },
-	{ letter: 'Y', cities: ['银川', '烟台', '扬州', '宜昌', '岳阳'] },
-	{ letter: 'Z', cities: ['郑州', '珠海', '中山', '漳州', '淄博', '遵义'] }
-]
+type CitySelectionEventChannel = Pick<UniNamespace.EventChannel, 'emit'>
 
-export default {
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function getCitySelectionEventChannel(page: unknown): CitySelectionEventChannel | null {
+	if (!isRecord(page)) return null
+	const getChannel = page.getOpenerEventChannel
+	if (typeof getChannel !== 'function') return null
+	const channel: unknown = getChannel.call(page)
+	if (!isRecord(channel) || typeof channel.emit !== 'function') return null
+	const emit = channel.emit
+	return { emit: emit.bind(channel) }
+}
+
+export default defineComponent({
 	components: { PawPageNav, PawIcon },
-	data() {
-		return {
-			keyword: '',
-			selectedCity: '',
-			currentCity: '郑州市',
-			selectedIndex: 'A',
-			hotCities: ['北京', '上海', '广州', '深圳', '重庆', '成都', '武汉', '天津', '杭州', '郑州', '长沙', '合肥']
-		}
+	data(): CityPickerPageState {
+		return createCityPickerPageMetadata()
 	},
 	computed: {
-		filteredGroups() {
-			const key = (this.keyword || '').trim()
-			if (!key) return CITY_GROUPS
-			return CITY_GROUPS
-				.map((g) => ({
-					letter: g.letter,
-					cities: g.cities.filter((n) => n.includes(key))
-				}))
-				.filter((g) => g.cities.length)
+		filteredGroups(): CityGroup[] {
+			return filterCityGroups(this.keyword)
 		},
-		hasKeyword() {
-			return !!(this.keyword || '').trim()
+		hasKeyword(): boolean {
+			return !!this.keyword.trim()
 		},
-		sideLetters() {
-			return ['热门', ...CITY_GROUPS.map((x) => x.letter)]
+		sideLetters(): string[] {
+			return createCityPickerIndexLabels()
 		}
 	},
-	onLoad(query) {
-		const current = query && query.current ? decodeURIComponent(query.current) : ''
-		this.selectedCity = current || '郑州市'
+	onLoad(query: unknown) {
+		this.selectedCity = normalizeCityPickerRoute(query)
 		this.currentCity = this.selectedCity
 	},
 	methods: {
-		selectCity(city) {
+		selectCity(city: string) {
 			const normalized = city.endsWith('市') ? city : city + '市'
 			this.selectedCity = normalized
 			this.currentCity = normalized
 			uni.setStorageSync('selectedCity', normalized)
-			const ch = this.getOpenerEventChannel && this.getOpenerEventChannel()
-			if (ch && typeof ch.emit === 'function') {
-				ch.emit('citySelected', { city: normalized })
-			}
+			getCitySelectionEventChannel(this)?.emit('citySelected', { city: normalized })
 			uni.navigateBack()
 		},
 		resetLocation() {
@@ -133,7 +117,7 @@ export default {
 			uni.navigateBack()
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

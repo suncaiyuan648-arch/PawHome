@@ -19,12 +19,19 @@
   </PawBottomSheet>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent } from 'vue'
+
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawButton from '@/components/base/PawButton.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import { readPawEventValue } from '@/utils/pawEventMetadata.ts'
 
-export default {
+interface ReplyComposerState { text: string }
+
+export default defineComponent({
   name: 'ReplyComposerSheet',
   components: { PawBottomSheet, PawButton, PawIcon },
   props: {
@@ -32,23 +39,28 @@ export default {
     maxlength: { type: Number, default: 500 },
     replyToName: { type: String, default: '' }
   },
-  emits: ['update:visible', 'send', 'voice', 'pick-image'],
-  data() { return { text: '' } },
+  emits: {
+    'update:visible': eventContract<[value: boolean]>(),
+    'send': eventContract<[text: string]>(),
+    'voice': eventContract<[]>(),
+    'pick-image': eventContract<[]>(),
+  },
+  data(): ReplyComposerState { return { text: '' } },
   computed: {
     hasText() { return this.text.trim().length > 0 },
     placeholderText() { return this.replyToName ? `回复 @${this.replyToName}：` : '说点什么' },
     visibleProxy: {
       get() { return this.visible },
-      set(value) { this.$emit('update:visible', value) }
+      set(value: boolean) { this.$emit('update:visible', value) }
     }
   },
-  watch: { visible(value) { if (value) this.text = '' } },
+  watch: { visible(value: boolean) { if (value) this.text = '' } },
   methods: {
-    onInput(event) { this.text = event.detail.value || '' },
+    onInput(event: PawEvent) { this.text = readPawEventValue(event) },
     onSend() { const value = this.text.trim(); if (!value) return; this.$emit('send', value); this.$emit('update:visible', false) },
     onAfterClose() { this.text = '' }
   }
-}
+})
 </script>
 
 <style scoped>

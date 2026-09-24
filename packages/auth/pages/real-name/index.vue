@@ -54,15 +54,38 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawRealNamePrompt from '@/components/auth/PawRealNamePrompt.vue'
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
-import { setRealNameVerified } from '@/utils/realNameMock.js'
+import { setRealNameVerified } from '@/utils/realNameMock.ts'
+import { readPawEventValue } from '@/utils/pawEventMetadata.ts'
 
-export default {
+type RealNameNoticeType = '' | 'real-name' | 'privacy'
+type RealNameVerificationStatus = 'success' | 'fail'
+
+interface RealNameForm { name: string; idNo: string }
+interface RealNamePageState {
+	noticeType: RealNameNoticeType
+	verifyResultSheetVisible: boolean
+	form: RealNameForm
+}
+
+function queryRecord(value: unknown): Record<string, unknown> {
+	return value !== null && typeof value === 'object' && !Array.isArray(value)
+		? value as Record<string, unknown>
+		: {}
+}
+
+function eventText(event: PawEvent): string {
+	return readPawEventValue(event)
+}
+
+export default defineComponent({
 	components: { PawPageNav, PawRealNamePrompt, PawBottomSheet },
-	data() {
+	data(): RealNamePageState {
 		return {
 			noticeType: '',
 			verifyResultSheetVisible: false,
@@ -72,23 +95,23 @@ export default {
 			}
 		}
 	},
-	onLoad(options = {}) {
-		if (options.popup === 'real-name') this.noticeType = 'real-name'
-		if (options.popup === 'privacy') this.noticeType = 'privacy'
+	onLoad(options: unknown = {}) {
+		const popup = queryRecord(options).popup
+		if (popup === 'real-name' || popup === 'privacy') this.noticeType = popup
 	},
 	methods: {
 		goBack() {
 			uni.navigateBack()
 		},
-		onNameInput(e) {
-			this.form.name = (e.detail.value || '').trimStart()
+		onNameInput(e: PawEvent) {
+			this.form.name = eventText(e).trimStart()
 		},
-		onIdInput(e) {
-			const raw = (e.detail.value || '').replace(/[^0-9xX]/g, '')
+		onIdInput(e: PawEvent) {
+			const raw = eventText(e).replace(/[^0-9xX]/g, '')
 			this.form.idNo = raw.toUpperCase()
 		},
-		isIdCardValid(v) {
-			return /^\d{17}[\dX]$/.test((v || '').trim())
+		isIdCardValid(value: string) {
+			return /^\d{17}[\dX]$/.test(value.trim())
 		},
 		onVerify() {
 			if (!this.form.name.trim()) return uni.showToast({ title: '请输入姓名', icon: 'none' })
@@ -97,20 +120,20 @@ export default {
 			}
 			this.verifyResultSheetVisible = true
 		},
-		completeVerification(status) {
+		completeVerification(status: RealNameVerificationStatus) {
 			const normalizedStatus = status === 'success' ? 'success' : 'fail'
 			this.verifyResultSheetVisible = false
 			setRealNameVerified(normalizedStatus === 'success')
 			uni.navigateTo({ url: '/packages/auth/pages/verification-result/index?outcome=' + (normalizedStatus === 'success' ? 'success' : 'failure') })
 		},
-		onNoticeVisibleChange(value) {
+		onNoticeVisibleChange(value: boolean) {
 			if (!value) this.noticeType = ''
 		},
 		onNoticeConfirm() {
 			this.noticeType = ''
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

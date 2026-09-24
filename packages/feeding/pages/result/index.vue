@@ -2,18 +2,23 @@
   <PawFlowResult title="反馈发布成功" :body="body" button-text="查看动态" @back="goBack" @action="viewFeed" />
 </template>
 
-<script>
-import { goBackSmart } from '@/utils/navBack.js'
-import PawFlowResult from '@/components/PawFlowResult.vue'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
-export default {
+import { goBackSmart } from '@/utils/navBack.ts'
+import PawFlowResult from '@/components/PawFlowResult.vue'
+import {
+  createFeedingPublishResultPageState,
+  readFeedingRouteText,
+  type FeedingPublishResultPageState
+} from '../../services/orderListMetadata.ts'
+
+export default defineComponent({
   name: 'FeedingPublishResultPage',
   components: { PawFlowResult },
-  data() {
-    return { dynamicId: '', body: '' }
-  },
-  onLoad(options = {}) {
-    this.dynamicId = String(options.dynamicId || '').trim()
+  data(): FeedingPublishResultPageState { return createFeedingPublishResultPageState() },
+  onLoad(options: unknown = {}) {
+    this.dynamicId = readFeedingRouteText(options, 'dynamicId').trim()
     this.body = '动态已发布，感谢你为小院留下真实反馈。'
   },
   methods: {
@@ -30,5 +35,5 @@ export default {
       })
     }
   }
-}
+})
 </script>

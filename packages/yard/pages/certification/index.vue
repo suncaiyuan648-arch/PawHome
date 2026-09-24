@@ -108,48 +108,79 @@
 	</view>
 </template>
 
-<script>
-import PawPageNav from '@/components/PawPageNav.vue'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
-export default {
+import PawPageNav from '@/components/PawPageNav.vue'
+import {
+	createYardCertificationMetadata,
+	normalizeYardCertificationState,
+	type YardCertificationFigmaState,
+	type YardCertificationForm,
+	type YardCertificationPhotoIndex,
+	type YardCertificationPhotoPaths
+} from '../../services/yardCertificationMetadata.ts'
+
+interface YardCertificationPageState {
+	yardId: string
+	yardName: string
+	form: YardCertificationForm
+	photos: YardCertificationPhotoPaths
+	figmaState: YardCertificationFigmaState
+	certPhotos: YardCertificationPhotoPaths
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function readText(value: unknown): string {
+	return typeof value === 'string' ? value : ''
+}
+
+function eventValue(event: PawEvent): string {
+	const detail: unknown = event.detail
+	return isRecord(detail) ? readText(detail.value) : ''
+}
+
+export default defineComponent({
 	name: 'YardCertificationPage',
 	components: { PawPageNav },
-	data() {
+	data(): YardCertificationPageState {
+		const metadata = createYardCertificationMetadata()
 		return {
 			yardId: '',
 			yardName: '',
-			form: {
-				orgName: '小坏蛋',
-				orgAddress: '湖南省长沙市中意一路鼎丰前程国际'
-			},
+			form: metadata.form,
 			photos: ['', '', ''],
 			figmaState: 97,
-			certPhotos: [
-				'/static/figma/certify/ca69b21b61516589aa506613e5d3c587881cb57d.png',
-				'/static/figma/certify/286f32813e5e08a042caa281128bbd34461231c4.png',
-				'/static/figma/certify/a89546330447ad2d777eba860fde4020fa211487.png'
-			]
+			certPhotos: metadata.certPhotos
 		}
 	},
 	computed: {
-		canSubmit() {
-			return (
+		canSubmit(): boolean {
+			return Boolean(
 				(this.form.orgName || '').trim() &&
 				(this.form.orgAddress || '').trim() &&
 				(this.form.orgAddress || '').trim()
 			)
 		}
 	},
-	onLoad(query = {}) {
-		this.yardId = typeof query.yardId === 'string' ? query.yardId.trim() : ''
-		if (query && query.yardName) {
-			const y = decodeURIComponent(query.yardName)
-			if (y) this.yardName = y
+	onLoad(query: unknown = {}) {
+		const route = isRecord(query) ? query : {}
+		this.yardId = readText(route.yardId).trim()
+		const routeYardName = readText(route.yardName)
+		if (routeYardName) {
+			try {
+				this.yardName = decodeURIComponent(routeYardName)
+			} catch {
+				this.yardName = routeYardName
+			}
 		}
-		let state = Number(query && query.state) || 97
+		let state = normalizeYardCertificationState(route.state)
 		// #ifdef H5
 		const match = window.location.hash.match(/[?&]state=(\d+)/)
-		if (match) state = Number(match[1]) || state
+		if (match && Number(match[1])) state = normalizeYardCertificationState(match[1])
 		// #endif
 		this.figmaState = state
 	},
@@ -157,22 +188,22 @@ export default {
 		goBack() {
 			uni.navigateBack()
 		},
-		onNameInput(e) {
-			this.form.orgName = (e.detail.value || '').trimStart()
+		onNameInput(event: PawEvent) {
+			this.form.orgName = eventValue(event).trimStart()
 		},
-		onAddrInput(e) {
-			this.form.orgAddress = e.detail.value || ''
+		onAddrInput(event: PawEvent) {
+			this.form.orgAddress = eventValue(event)
 		},
-		pickPhoto(i) {
+		pickPhoto(index: YardCertificationPhotoIndex) {
 			uni.chooseImage({
 				count: 1,
 				sizeType: ['compressed'],
 				sourceType: ['album', 'camera'],
-				success: (res) => {
-					const p = res.tempFilePaths && res.tempFilePaths[0]
-					if (!p) return
-					const next = [...this.photos]
-					next[i] = p
+				success: (result: UniNamespace.ChooseImageSuccessCallbackResult) => {
+					const photoPath = result.tempFilePaths[0]
+					if (!photoPath) return
+					const next: YardCertificationPhotoPaths = [...this.photos]
+					next[index] = photoPath
 					this.photos = next
 				}
 			})
@@ -188,7 +219,7 @@ export default {
 			uni.showToast({ title: '认证提交暂不可用', icon: 'none' })
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

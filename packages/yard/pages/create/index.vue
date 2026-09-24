@@ -117,7 +117,9 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawSafeArea from '@/components/base/PawSafeArea.vue'
 import PawVoiceRecorderSheet from './components/voice/PawVoiceRecorderSheet.vue'
@@ -126,14 +128,68 @@ import PawImageCropper from './components/form/PawImageCropper.vue'
 import PawNoticeModal from '@/components/PawNoticeModal.vue'
 import PawRealNamePrompt from '@/components/auth/PawRealNamePrompt.vue'
 import PawAddressPickerCard from '@/components/address/PawAddressPickerCard.vue'
-import { isRealNameVerified } from '@/utils/realNameMock.js'
-import { PAW_MSG_VOICE_LEVEL, PAW_MSG_VOICE_DAY_LIMIT } from '@/utils/pawNoticeMessages.js'
-import { getAddressById, getAddressList } from '@/utils/addressMock.js'
+import { readPawEventValue } from '@/utils/pawEventMetadata.ts'
+import { isRealNameVerified } from '@/utils/realNameMock.ts'
+import { PAW_MSG_VOICE_LEVEL, PAW_MSG_VOICE_DAY_LIMIT } from '@/utils/pawNoticeMessages.ts'
+import { getAddressById, getAddressList } from '@/utils/addressMock.ts'
+import type { AddressRecord } from '@/utils/addressMock.ts'
+import { createYardCreateRecordedAddressMock, normalizeYardRecorderStopMetadata, type YardRecorderStopEvent } from '@/utils/yardCreateMetadata.ts'
+import type { LocationPlace } from '@/utils/locationService.ts'
 
-export default {
+type YardAnimalKind = 'cat' | 'dog'
+
+interface YardCreatePageState {
+	animalKind: YardAnimalKind
+	showVoiceNotice: boolean
+	showRealNamePrompt: boolean
+	voiceNoticeMessage: string
+	showVoicePopup: boolean
+	showLocationPicker: boolean
+	locationPickerCity: string
+	recording: boolean
+	recordSeconds: number
+	recordTimer: ReturnType<typeof setInterval> | null
+	recordStartAt: number
+	recorderManager: UniNamespace.RecorderManager | null
+	recorderStarted: boolean
+	recordStartRequested: boolean
+	recordStopRequested: boolean
+	recordSaveRequested: boolean
+	voiceFilePath: string
+	voiceSavedSeconds: number
+	introText: string
+	adoptMsg: string
+	yardName: string
+	yardContact: string
+	regionParts: string[]
+	locDetail: string
+	shippingPick: AddressRecord | null
+	shippingSelectedId: string
+	avatarPath: string
+	pendingAvatarPath: string
+	showAvatarCropper: boolean
+}
+
+interface YardCreateRouteOptions {
+	kind?: unknown
+	state?: unknown
+	popup?: unknown
+	auth?: unknown
+}
+
+interface CitySelectedPayload {
+	city?: unknown
+}
+
+function registerRecorderInterruption(manager: UniNamespace.RecorderManager, handler: () => void): void {
+	const register = Reflect.get(manager, 'onInterruptionBegin')
+	if (typeof register === 'function') Reflect.apply(register, manager, [handler])
+}
+
+export default defineComponent({
 	name: 'CreateCatYardPage',
 	components: { PawPageNav, PawSafeArea, PawVoiceRecorderSheet, PawLocationPickerSheet, PawImageCropper, PawNoticeModal, PawRealNamePrompt, PawAddressPickerCard },
-	data() {
+	data(): YardCreatePageState {
 		return {
 			animalKind: 'cat',
 			showVoiceNotice: false,
@@ -179,24 +235,21 @@ export default {
 			this.recordSaveRequested = false
 			try {
 				this.recorderManager.stop()
-			} catch (e) { }
+			} catch {
+				// Stop may race with native recorder teardown; page cleanup still proceeds.
+			}
 		}
 		this.clearRecordTimer()
 	},
-	onLoad(options = {}) {
+	onLoad(options: YardCreateRouteOptions = {}) {
 		this.initRecorderManager()
 		this.animalKind = options.kind === 'dog' ? 'dog' : 'cat'
 		this.locDetail = '湖南省长沙市雨花区中意一路167号鼎丰前城'
 		if (options.state === 'recorded') {
 			this.voiceSavedSeconds = 2
-			this.shippingPick = {
-				id: 'figma-recorded',
-				detail: '中意一路鼎丰前城2栋2单元18楼...',
-				name: '项子涵',
-				phone: '19878675365'
-			}
+			this.shippingPick = createYardCreateRecordedAddressMock()
 		} else {
-			this.shippingPick = getAddressList('shipping').find(row => row.isDefault) || null
+			this.shippingPick = getAddressList('shipping').find((row) => row.isDefault) || null
 		}
 		this.shippingSelectedId = this.shippingPick && this.shippingPick.id ? String(this.shippingPick.id) : ''
 		if (options.popup === 'voice-permission') {
@@ -216,24 +269,24 @@ export default {
 		if (address) this.shippingPick = address
 	},
 	methods: {
-		doTrim(value) {
-			return (value || '').trimStart()
+		doTrim(value: string): string {
+			return value.trimStart()
 		},
 		goRealName() {
 			this.showRealNamePrompt = false
 			uni.navigateTo({ url: '/packages/auth/pages/real-name/index' })
 		},
-		onIntroInput(e) {
-			this.introText = e.detail.value || ''
+		onIntroInput(e: PawEvent) {
+			this.introText = readPawEventValue(e)
 		},
-		onAdoptInput(e) {
-			this.adoptMsg = e.detail.value || ''
+		onAdoptInput(e: PawEvent) {
+			this.adoptMsg = readPawEventValue(e)
 		},
-		onYardNameInput(e) {
-			this.yardName = this.doTrim(e.detail.value)
+		onYardNameInput(e: PawEvent) {
+			this.yardName = this.doTrim(readPawEventValue(e))
 		},
-		onContactInput(e) {
-			this.yardContact = this.doTrim(e.detail.value)
+		onContactInput(e: PawEvent) {
+			this.yardContact = this.doTrim(readPawEventValue(e))
 		},
 		openAvatarPicker() {
 			if (typeof uni === 'undefined') return
@@ -244,14 +297,16 @@ export default {
 				count: 1,
 				sizeType: ['compressed'],
 				sourceType: ['album'],
-				success: result => {
-					const path = result && Array.isArray(result.tempFilePaths) ? result.tempFilePaths[0] : ''
+				success: (result: UniNamespace.ChooseImageSuccessCallbackResult) => {
+					const path = typeof result.tempFilePaths === 'string'
+						? result.tempFilePaths
+						: result.tempFilePaths[0] || ''
 					if (!path) return
 					uni.getImageInfo({
 						src: path,
-						success: info => {
-							const width = Number(info && info.width)
-							const height = Number(info && info.height)
+						success: (info: UniNamespace.GetImageInfoSuccessData) => {
+							const width = Number(info.width)
+							const height = Number(info.height)
 							if (width > 0 && height > 0 && Math.abs(width - height) < 0.5) {
 								this.avatarPath = path
 								this.pendingAvatarPath = ''
@@ -265,11 +320,11 @@ export default {
 				}
 			})
 		},
-		onAvatarCropperVisibleChange(value) {
+		onAvatarCropperVisibleChange(value: boolean) {
 			this.showAvatarCropper = value
 			if (!value) this.pendingAvatarPath = ''
 		},
-		onAvatarCropped(path) {
+		onAvatarCropped(path: string) {
 			if (!path) return
 			this.avatarPath = path
 			this.pendingAvatarPath = ''
@@ -281,19 +336,19 @@ export default {
 			this.locationPickerCity = this.regionParts[1] || this.regionParts[0] || uni.getStorageSync('selectedCity') || '长沙市'
 			this.showLocationPicker = true
 		},
-		onLocationPickerVisibleChange(value) {
+		onLocationPickerVisibleChange(value: boolean) {
 			this.showLocationPicker = value
 		},
-		onLocationPicked(item) {
-			const value = [item && item.name, item && item.address].filter(Boolean).join(' ').trim()
+		onLocationPicked(item: LocationPlace) {
+			const value = [item.name, item.address].filter(Boolean).join(' ').trim()
 			if (value) this.locDetail = value
 		},
 		openLocationCityPicker() {
 			uni.navigateTo({
 				url: '/packages/discovery/pages/city-picker/index?current=' + encodeURIComponent(this.locationPickerCity),
 				events: {
-					citySelected: (payload = {}) => {
-						const city = (payload.city || '').trim()
+					citySelected: (payload: CitySelectedPayload = {}) => {
+						const city = typeof payload.city === 'string' ? payload.city.trim() : ''
 						if (city) this.locationPickerCity = city
 					}
 				}
@@ -302,7 +357,7 @@ export default {
 		clearLocDetail() {
 			this.locDetail = ''
 		},
-		onShippingAddressSelected(address = {}) {
+		onShippingAddressSelected(address: AddressRecord) {
 			if (!address || !address.id) return
 			this.shippingSelectedId = String(address.id)
 			this.shippingPick = { ...address, id: String(address.id) }
@@ -316,7 +371,7 @@ export default {
 		openVoicePopup() {
 			this.showVoicePopup = true
 		},
-		onVoiceSheetVisibleChange(value) {
+		onVoiceSheetVisibleChange(value: boolean) {
 			this.showVoicePopup = value
 			if (!value && this.recording) this.endRecord(true)
 		},
@@ -335,9 +390,10 @@ export default {
 				}
 				this.startRecordTimer()
 			})
-			this.recorderManager.onStop((result = {}) => {
+			this.recorderManager.onStop((result: YardRecorderStopEvent = {}) => {
+				const metadata = normalizeYardRecorderStopMetadata(result)
 				const elapsed = Date.now() - this.recordStartAt
-				const durationMs = Number(result.duration) || elapsed
+				const durationMs = metadata.durationMs || elapsed
 				const seconds = Math.min(59, Math.max(0, Math.floor(durationMs / 1000)))
 				const shouldSave = this.recordSaveRequested
 				this.recorderStarted = false
@@ -347,7 +403,7 @@ export default {
 				this.clearRecordTimer()
 				if (shouldSave && seconds > 0) {
 					this.voiceSavedSeconds = seconds
-					this.voiceFilePath = result.tempFilePath || ''
+					this.voiceFilePath = metadata.tempFilePath
 					this.showVoicePopup = false
 				}
 			})
@@ -355,7 +411,7 @@ export default {
 				this.resetRecordState()
 				uni.showToast({ title: '录音失败，请重试', icon: 'none' })
 			})
-			this.recorderManager.onInterruptionBegin(() => {
+			registerRecorderInterruption(this.recorderManager, () => {
 				if (!this.recording && !this.recorderStarted) return
 				this.recordSaveRequested = false
 				this.endRecord(false)
@@ -380,17 +436,19 @@ export default {
 		},
 		requestRecordPermissionAndStart() {
 			// #ifdef MP-WEIXIN
+			const recorderManager = this.recorderManager
+			if (!recorderManager) return
 			const start = () => {
 				if (!this.recording || !this.recordStartRequested) return
 				try {
-					this.recorderManager.start({
+					recorderManager.start({
 						duration: 60000,
 						sampleRate: 16000,
 						numberOfChannels: 1,
 						encodeBitRate: 48000,
 						format: 'mp3'
 					})
-				} catch (e) {
+				} catch {
 					this.resetRecordState()
 					uni.showToast({ title: '录音失败，请重试', icon: 'none' })
 				}
@@ -400,8 +458,8 @@ export default {
 				return
 			}
 			uni.getSetting({
-				success: setting => {
-					const authSetting = setting && setting.authSetting ? setting.authSetting : {}
+				success: (setting: UniNamespace.GetSettingSuccessResult) => {
+					const authSetting = setting.authSetting
 					if (authSetting['scope.record'] === false) {
 						this.resetRecordState()
 						uni.showToast({ title: '请在设置中开启麦克风权限', icon: 'none' })
@@ -432,7 +490,7 @@ export default {
 				if (this.recordSeconds >= 59) this.endRecord(true)
 			}, 200)
 		},
-		endRecord(saveToForm = true) {
+		endRecord(saveToForm: boolean = true) {
 			if (!this.recording && !this.recordStartRequested && !this.recorderStarted) return
 			this.recordSaveRequested = saveToForm !== false
 			this.recordStopRequested = true
@@ -460,7 +518,7 @@ export default {
 			if (!this.recorderManager) return
 			try {
 				this.recorderManager.stop()
-			} catch (e) {
+			} catch {
 				this.resetRecordState()
 			}
 		},
@@ -482,7 +540,7 @@ export default {
 			this.recordTimer = null
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

@@ -39,7 +39,7 @@
 
     <scroll-view class="roster-scroll" scroll-y :show-scrollbar="false">
       <view v-if="variant === 'mine' && layoutMode === 'yard'" class="mine-yard-groups">
-        <view v-if="!visibleMineYardGroups.length" class="roster-empty">没有找到相关宠物</view>
+        <view v-if="!visibleMineYardGroups.length" class="roster-empty">{{ emptyMessage }}</view>
         <view v-for="group in visibleMineYardGroups" :key="group.yard.id" class="mine-yard-card">
           <view class="mine-yard-pets" @tap.stop="onMineYardPetsClick(group)">
             <view v-for="pet in group.pets" :key="pet.id" class="mine-yard-pet">
@@ -58,7 +58,7 @@
         </view>
       </view>
       <view v-else-if="layoutMode === 'status'" class="status-groups">
-        <view v-if="!visibleStatusGroups.length" class="roster-empty">没有找到相关宠物</view>
+        <view v-if="!visibleStatusGroups.length" class="roster-empty">{{ emptyMessage }}</view>
         <view v-for="group in visibleStatusGroups" :key="group.key" class="status-group"
           :class="'status-group--' + group.key">
           <text class="status-label" :class="'status-label--' + group.key">{{ group.label }}</text>
@@ -78,7 +78,7 @@
 
       <view v-else-if="variant === 'yard' || variant === 'mine'" class="yard-card-list"
         :class="{ 'yard-card-list--mine': variant === 'mine' }">
-        <view v-if="!visiblePets.length" class="roster-empty">没有找到相关宠物</view>
+        <view v-if="!visiblePets.length" class="roster-empty">{{ emptyMessage }}</view>
         <view v-for="(pet, index) in visiblePets" :key="pet.id" class="yard-pet-card" :class="['yard-pet-card--' + pet.state, {
           'yard-pet-card--mine': variant === 'mine',
           'yard-pet-card--mine-tail': isMineTail(pet, index)
@@ -143,7 +143,7 @@
         </view>
       </view>
       <view v-else class="pet-list">
-        <view v-if="!visiblePets.length" class="roster-empty">没有找到相关宠物</view>
+        <view v-if="!visiblePets.length" class="roster-empty">{{ emptyMessage }}</view>
         <view v-for="(pet, index) in visiblePets" :key="pet.id" class="pet-card">
           <view class="pet-head">
             <image :src="pet.avatar" mode="aspectFill" />
@@ -161,7 +161,7 @@
           </view>
           <text class="pet-quote">“云家长寄语：寄语寄语寄语寄语寄语寄语...”</text>
           <view class="pet-meta">
-            <view v-if="variant === 'yard'" class="yard-owner">
+            <view v-if="isYardVariant" class="yard-owner">
               <image
                 :src="index === 0 ? '/static/figma/home/yard-avatar.png' : '/static/figma/interaction-avatar-1.jpg'"
                 mode="aspectFill" />
@@ -179,19 +179,70 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawSearchBar from '@/components/navigation/PawSearchBar.vue'
 import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import YardBadge from '@/components/customBadge/YardBadge.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
-import { getPetRoster } from '@/utils/petRosterMockApi.js'
+import { getPetRoster } from '@/utils/petRosterMockApi.ts'
+import {
+  PET_ROSTER_ASSIGNED_OWNER_MOCK,
+  PET_ROSTER_PENDING_OWNER_MOCK,
+  type PetRosterCardOwner,
+  type PetRosterFilterCounts,
+  type PetRosterSpecies,
+  type PetRosterStatusGroup,
+  type PetRosterYardGroup,
+  type PetRosterYardInfo
+} from '@/utils/petRosterMockApi.ts'
+import type { YardPet, YardPetState } from '@/utils/yardMock.ts'
 
-export default {
+type PetRosterLayoutMode = 'list' | 'status' | 'yard'
+
+interface PawPetRosterState {
+  layoutMode: PetRosterLayoutMode
+  inputKeyword: string
+  keyword: string
+  speciesFilter: PetRosterSpecies
+  yardOwnerAvatar: string
+  yardOwnerPlaceholder: string
+  statusCatAvatar: string
+  statusDogAvatar: string
+  pets: YardPet[]
+  statusGroups: PetRosterStatusGroup[]
+  yardGroups: PetRosterYardGroup[]
+  filterCountsFromApi: PetRosterFilterCounts
+  loading: boolean
+  errorMessage: string
+  requestSerial: number
+}
+
+const PET_STATE_LABELS: Record<YardPetState, string> = {
+  pending: '待云养',
+  cloud: '已云养',
+  adopted: '已领养',
+  missing: '失踪',
+  dead: '死亡'
+}
+
+const PET_ACTION_LABELS: Record<YardPetState, string> = {
+  pending: '前往云养',
+  cloud: '云养中',
+  adopted: '已领养',
+  missing: '已失踪',
+  dead: '已死亡'
+}
+
+export default defineComponent({
   name: 'PawPetRoster',
   components: { PawPageNav, PawSearchBar, LevelBadge, YardBadge, PawIcon },
   props: {
-    variant: { type: String, default: 'yard' },
+    variant: { type: String as PropType<import('@/utils/petRosterMockApi.ts').PetRosterVariant>, default: 'yard' },
     userPawId: { type: String, default: '' },
     yardId: { type: String, default: '' },
     ownerPawId: { type: String, default: '' },
@@ -200,8 +251,17 @@ export default {
     yardName: { type: String, default: '小院成员' },
     yardAvatar: { type: String, default: '/static/figma/yard-cover-exact.png' }
   },
-  emits: ['back', 'add-pet', 'pet-click', 'owner-click', 'yard-click', 'yard-pets-click', 'feed-click'],
-  data() {
+  emits: {
+    'back': eventContract<[]>(),
+    'add-pet': eventContract<[]>(),
+    'edit-yard': eventContract<[]>(),
+    'pet-click': eventContract<[pet: YardPet]>(),
+    'owner-click': eventContract<[owner: PetRosterCardOwner]>(),
+    'yard-click': eventContract<[yard: PetRosterYardInfo]>(),
+    'yard-pets-click': eventContract<[yard: PetRosterYardInfo]>(),
+    'feed-click': eventContract<[pet: YardPet]>(),
+  },
+  data(): PawPetRosterState {
     const statusCatAvatar = '/static/figma/pets/pet-orange.png'
     const statusDogAvatar = '/static/figma/pets/pet-dog.png'
     return {
@@ -218,10 +278,12 @@ export default {
       yardGroups: [],
       filterCountsFromApi: { all: 0, cat: 0, dog: 0 },
       loading: false,
+      errorMessage: '',
       requestSerial: 0
     }
   },
   computed: {
+    isYardVariant(): boolean { return this.variant === 'yard' },
     filterCountAll() {
       return this.filterCountsFromApi.all
     },
@@ -230,6 +292,9 @@ export default {
     },
     filterCountDog() {
       return this.filterCountsFromApi.dog
+    },
+    emptyMessage(): string {
+      return this.errorMessage || '没有找到相关宠物'
     },
     visiblePets() {
       return this.pets
@@ -259,41 +324,52 @@ export default {
     async loadRoster() {
       const requestSerial = ++this.requestSerial
       this.loading = true
-      const response = await getPetRoster({
-        variant: this.variant,
-        userPawId: this.userPawId,
-        yardId: this.yardId,
-        managed: this.managed,
-        species: this.speciesFilter,
-        keyword: this.keyword
-      })
-      if (requestSerial !== this.requestSerial) return
-      if (!response || !response.success) {
+      this.errorMessage = ''
+      try {
+        const response = await getPetRoster({
+          variant: this.variant,
+          userPawId: this.userPawId,
+          yardId: this.yardId,
+          managed: this.managed,
+          species: this.speciesFilter,
+          keyword: this.keyword
+        })
+        if (requestSerial !== this.requestSerial) return
+        if (!response.success) {
+          this.pets = []
+          this.statusGroups = []
+          this.yardGroups = []
+          this.filterCountsFromApi = { all: 0, cat: 0, dog: 0 }
+          this.errorMessage = response.error.message || '宠物列表加载失败，请稍后重试'
+          return
+        }
+        const { data } = response
+        this.pets = data.items
+        this.statusGroups = data.statusGroups
+        this.yardGroups = data.yardGroups
+        this.filterCountsFromApi = data.filterCounts
+        if (data.yardOwner.avatar) this.yardOwnerAvatar = data.yardOwner.avatar
+      } catch {
+        if (requestSerial !== this.requestSerial) return
         this.pets = []
         this.statusGroups = []
         this.yardGroups = []
         this.filterCountsFromApi = { all: 0, cat: 0, dog: 0 }
-        this.loading = false
-        return
+        this.errorMessage = '宠物列表加载失败，请稍后重试'
+      } finally {
+        if (requestSerial === this.requestSerial) this.loading = false
       }
-      const data = response.data || {}
-      this.pets = Array.isArray(data.items) ? data.items : []
-      this.statusGroups = Array.isArray(data.statusGroups) ? data.statusGroups : []
-      this.yardGroups = Array.isArray(data.yardGroups) ? data.yardGroups : []
-      this.filterCountsFromApi = data.filterCounts || { all: 0, cat: 0, dog: 0 }
-      if (data.yardOwner && data.yardOwner.avatar) this.yardOwnerAvatar = data.yardOwner.avatar
-      this.loading = false
     },
-    statusPetAvatar(pet) {
+    statusPetAvatar(pet: YardPet): string {
       return pet.species === 'dog' ? this.statusDogAvatar : this.statusCatAvatar
     },
-    statusPetName(pet) {
-      const name = String((pet && pet.name) || '')
+    statusPetName(pet: YardPet): string {
+      const name = pet.name
       const characters = Array.from(name)
       return characters.length > 3 ? `${characters.slice(0, 2).join('')}…` : name
     },
-    onSearch(value) {
-      this.keyword = String(value || '').trim()
+    onSearch(value: string) {
+      this.keyword = value.trim()
       this.loadRoster()
     },
     toggleLayout() {
@@ -303,53 +379,52 @@ export default {
       }
       this.layoutMode = this.layoutMode === 'list' ? 'status' : 'list'
     },
-    selectSpecies(filter) {
+    selectSpecies(filter: PetRosterSpecies) {
       this.speciesFilter = filter
       this.loadRoster()
     },
-    cardStatusLabel(pet) {
-      const labels = { pending: '待云养', cloud: '已云养', adopted: '已领养', missing: '失踪', dead: '死亡' }
-      return labels[pet.state] || '待云养'
+    cardStatusLabel(pet: YardPet): string {
+      return PET_STATE_LABELS[pet.state]
     },
-    cardActionLabel(pet) {
-      const labels = { pending: '前往云养', cloud: '云养中', adopted: '已领养', missing: '已失踪', dead: '已死亡' }
-      return labels[pet.state] || '云养中'
+    cardActionLabel(pet: YardPet): string {
+      return PET_ACTION_LABELS[pet.state]
     },
-    cardOwner(pet, index) {
+    cardOwner(pet: YardPet, index: number): PetRosterCardOwner {
+      void index
       if (pet.state === 'pending') {
-        return { name: '虚位以待', avatar: this.yardOwnerPlaceholder }
+        return { ...PET_ROSTER_PENDING_OWNER_MOCK, avatar: this.yardOwnerPlaceholder }
       }
-      return { pawId: this.ownerPawId, name: '姜栋', avatar: this.yardOwnerAvatar, level: 1 }
+      return { ...PET_ROSTER_ASSIGNED_OWNER_MOCK, pawId: this.ownerPawId, avatar: this.yardOwnerAvatar }
     },
-    onOwnerClick(owner) {
+    onOwnerClick(owner: PetRosterCardOwner) {
       if (!owner || !owner.pawId) return
       this.$emit('owner-click', owner)
     },
-    onCardAction(pet) {
+    onCardAction(pet: YardPet) {
       if (!pet || pet.state !== 'pending' || !pet.id) return
       this.$emit('feed-click', pet)
     },
-    onMineYardPetsClick(group) {
+    onMineYardPetsClick(group: PetRosterYardGroup) {
       if (!group || !group.yard || !group.yard.id) return
       this.$emit('yard-pets-click', group.yard)
     },
-    onYardClick(yard) {
+    onYardClick(yard: PetRosterYardInfo) {
       if (!yard || !yard.id) return
       this.$emit('yard-click', yard)
     },
-    isMineTail(pet, index) {
+    isMineTail(pet: YardPet, index: number): boolean {
       return Boolean(pet && this.variant === 'mine' && index === this.visiblePets.length - 1)
     },
-    cardOwnerTag(pet) {
+    cardOwnerTag(pet: YardPet): string {
       return pet.state === 'cloud' || pet.state === 'adopted' ? '小毛毛球的第3任云家长' : ''
     },
-    yardTagClass(tag) {
+    yardTagClass(tag: string): string {
       if (tag === '极度饥饿') return 'yard-tag--hungry'
       if (tag === '非常亲人') return 'yard-tag--friendly'
       return 'yard-tag--neutral'
     }
   }
-}
+})
 </script>
 
 <style scoped>

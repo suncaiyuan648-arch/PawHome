@@ -101,7 +101,7 @@
                     mode="aspectFill" />
                 </view>
                 <view class="post-time">
-                  <view class="post-time-info"><text>昨天 20:45　江西</text><text class="post-reply">回复</text></view>
+                  <view class="post-time-info"><text>昨天 20:45&#12288;江西</text><text class="post-reply">回复</text></view>
                   <view class="post-like">
                     <PawLikeIcon :liked="false" /><text>32</text>
                   </view>
@@ -124,8 +124,14 @@
   </view>
 </template>
 
-<script>
-import { goBackSmart } from '@/utils/navBack.js'
+<script lang="ts">
+import { commentProfileIdentity, findCommentById, type CommentItemRecord } from '@/components/dynamic/commentMetadata.ts'
+
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
+import { goBackSmart } from '@/utils/navBack.ts'
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawAnnouncementMarquee from '@/components/PawAnnouncementMarquee.vue'
 import PawAvatar from '@/components/identity/PawAvatar.vue'
@@ -141,18 +147,73 @@ import PawTabs from '@/components/navigation/PawTabs.vue'
 import ReplyComposerSheet from '@/components/ReplyComposerSheet.vue'
 import ShareActionSheet from '@/components/ShareActionSheet.vue'
 import PawLikeIcon from '@/components/base/PawLikeIcon.vue'
-import { openUserProfile } from '@/utils/profileNav.js'
-import { getPawHomeYardMock } from '@/utils/yardMock.js'
+import { openUserProfile } from '@/utils/profileNav.ts'
+import { getPawHomeYardMock } from '@/utils/yardMock.ts'
+import type {
+  YardAnnouncementItem,
+  YardComment,
+  YardDetailState,
+  YardFeeder,
+  YardMock,
+  YardOwner,
+  YardPet,
+  YardRankItem,
+} from '@/utils/yardMock.ts'
 
-export default {
+interface YardDetailPetPreview {
+  id: string
+  name: string
+  avatar: string
+}
+
+interface YardDetailFooterAction {
+  key: 'share' | 'join' | 'adopt'
+  label: string
+  image: string
+  qa?: string
+}
+
+interface YardDetailTab {
+  key: 'dynamic' | 'feeding'
+  label: string
+}
+
+interface YardDetailData {
+  activeState: YardDetailState
+  expandedIntro: boolean
+  joined: boolean
+  tabContentMinHeight: number
+  shareSheetVisible: boolean
+  replySheetVisible: boolean
+  replySheetTarget: YardComment | null
+  announcementItems: YardAnnouncementItem[]
+  detailTabs: YardDetailTab[]
+  owner: YardOwner
+  yard: YardMock
+  petItems: YardDetailPetPreview[]
+  postFeeders: YardFeeder[]
+  rankItems: YardRankItem[]
+}
+
+export default defineComponent({
   name: 'PawYardDetailFigma',
   components: { PawPageNav, PawAnnouncementMarquee, PawAvatar, PawOwnerBadge, PawVerifiedBadge, YardLocationLine, LevelBadge, FeedingSourceRow, YardFeedRankStrip, PawFixedActionBar, CommentThread, PawTabs, ReplyComposerSheet, ShareActionSheet, PawLikeIcon },
   props: {
-    state: { type: String, default: 'dynamic' },
-    yardData: { type: Object, default: () => getPawHomeYardMock() }
+    state: { type: String as PropType<YardDetailState>, default: 'dynamic' },
+    yardData: { type: Object as PropType<YardMock>, default: () => getPawHomeYardMock() }
   },
-  emits: ['yard-click', 'leaderboard', 'rank-user', 'pet-click', 'pet-list-click', 'adopt', 'comment-user', 'comment-reply', 'comment-like'],
-  data() {
+  emits: {
+    'yard-click': eventContract<[yard: YardMock]>(),
+    'leaderboard': eventContract<[]>(),
+    'rank-user': eventContract<[user: import('@/utils/yardMock.ts').YardRankItem]>(),
+    'pet-click': eventContract<[pet: YardDetailPetPreview]>(),
+    'pet-list-click': eventContract<[]>(),
+    'adopt': eventContract<[]>(),
+    'comment-user': eventContract<[comment: CommentItemRecord]>(),
+    'comment-reply': eventContract<[comment: CommentItemRecord]>(),
+    'comment-like': eventContract<[comment: CommentItemRecord]>(),
+  },
+  data(): YardDetailData {
     const yardMock = { ...getPawHomeYardMock(), ...this.yardData }
     return {
       activeState: this.state,
@@ -166,7 +227,7 @@ export default {
       detailTabs: [{ key: 'dynamic', label: '动态' }, { key: 'feeding', label: '投粮记录' }],
       owner: yardMock.owner,
       yard: yardMock,
-      petItems: yardMock.pets.slice(0, 6).map(pet => ({ id: pet.id, name: pet.name, avatar: pet.avatar })),
+      petItems: yardMock.pets.slice(0, 6).map((pet: YardPet) => ({ id: pet.id, name: pet.name, avatar: pet.avatar })),
       postFeeders: yardMock.postFeeders,
       rankItems: yardMock.rankItems
     }
@@ -182,13 +243,13 @@ export default {
     },
     postCount() { return this.activeState === 'dynamic-expanded' ? 2 : 2 }
     , postCopy() {
-      const base = '哎 又忍不住开始书写小作文　　此时的弟弟应该刚下自习不到20分钟 又忍不住开始书写小作文　　此时的弟弟应该刚下自习不到20分钟 又忍不住开始书写小作文...'
+      const base = '哎 又忍不住开始书写小作文\u3000\u3000此时的弟弟应该刚下自习不到20分钟 又忍不住开始书写小作文\u3000\u3000此时的弟弟应该刚下自习不到20分钟 又忍不住开始书写小作文...'
       return this.activeState === 'dynamic-expanded' ? base + base : base
     }
     , commentCount() { return this.activeState === 'dynamic-expanded' ? 4 : 3 }
     , yardComments() { return this.yard.comments || [] }
     , gridCount() { return this.activeState === 'dynamic-expanded' ? 3 : 9 }
-    , footerActions() { return [{ key: 'share', label: '分享', image: '/static/fenxiang.png' }, { key: 'join', label: this.joined ? '已入驻' : '入驻', image: this.joined ? '/static/yard-joined-checked.png' : '/static/ruzhu.png' }, { key: 'adopt', label: '领养', image: '/static/lingyang.png', qa: 'qa-yard-detail-adopt' }] }
+    , footerActions(): YardDetailFooterAction[] { return [{ key: 'share', label: '分享', image: '/static/fenxiang.png' }, { key: 'join', label: this.joined ? '已入驻' : '入驻', image: this.joined ? '/static/yard-joined-checked.png' : '/static/ruzhu.png' }, { key: 'adopt', label: '领养', image: '/static/lingyang.png', qa: 'qa-yard-detail-adopt' }] }
     , primaryAction() { return { key: 'feed', label: '云养一只', iconName: 'actions/feed', iconSize: 32, size: 'md' } }
     , replyTargetName() {
       const target = this.replySheetTarget
@@ -197,7 +258,7 @@ export default {
     }
   },
   watch: {
-    state(next) { this.activeState = next; this.expandedIntro = next === 'dynamic-expanded' }
+    state(next: YardDetailState) { this.activeState = next; this.expandedIntro = next === 'dynamic-expanded' }
   },
   mounted() {
     this.$nextTick(() => this.captureTabContentHeight())
@@ -209,10 +270,14 @@ export default {
     },
     captureTabContentHeight() {
       uni.createSelectorQuery().in(this).select('.yard-tabs-content').boundingClientRect(rect => {
-        if (rect && rect.height > this.tabContentMinHeight) this.tabContentMinHeight = rect.height
+        if (!rect || Array.isArray(rect)) return
+        if (typeof rect.height === 'number' && rect.height > this.tabContentMinHeight) {
+          this.tabContentMinHeight = rect.height
+        }
       }).exec()
     },
-    switchState(next) {
+    switchState(next: import('@/components/navigation/PawTabs.vue').PawTabKey) {
+      if (next !== 'dynamic' && next !== 'dynamic-empty' && next !== 'feeding' && next !== 'dynamic-expanded') return
       this.activeState = next
       this.expandedIntro = false
       this.$nextTick(() => this.captureTabContentHeight())
@@ -220,24 +285,28 @@ export default {
     toggleJoin() { this.joined = !this.joined },
     share() { this.shareSheetVisible = true },
     showRemind() { uni.showToast({ title: '已提醒院主', icon: 'none' }) },
-    openPetDetail(pet) { this.$emit('pet-click', pet) },
+    openPetDetail(pet: YardDetailPetPreview) { this.$emit('pet-click', pet) },
     openPetList() { this.$emit('pet-list-click') },
-    openReplySheet(comment) {
-      this.replySheetTarget = comment && comment.author ? comment : null
+    openReplySheet(comment: CommentItemRecord) {
+      this.replySheetTarget = findCommentById(this.yard.comments, comment.id)
       this.replySheetVisible = true
       this.$emit('comment-reply', comment)
     },
     onReplySend() { uni.showToast({ title: '已发送', icon: 'none' }) },
     onComposerVoice() { uni.showToast({ title: '语音输入敬请期待', icon: 'none' }) },
     onComposerPickImage() { uni.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] }) },
-    openCommentUser(comment) {
+    openCommentUser(comment: CommentItemRecord) {
       this.$emit('comment-user', comment)
-      const author = comment && (comment.author || comment)
-      if (author) openUserProfile({ pawId: author.pawId || comment.id, nickname: author.name, avatar: author.avatar })
+      const author = commentProfileIdentity(comment)
+      openUserProfile({
+        pawId: author.pawId,
+        nickname: author.name,
+        avatar: author.avatar
+      })
     },
-    onFooterAction(action) { if (action.key === 'share') this.share(); if (action.key === 'join') this.toggleJoin(); if (action.key === 'adopt') this.$emit('adopt') }
+    onFooterAction(action: import('@/components/layout/PawFixedActionBar.vue').PawFixedAction) { if (action.key === 'share') this.share(); if (action.key === 'join') this.toggleJoin(); if (action.key === 'adopt') this.$emit('adopt') }
   }
-}
+})
 </script>
 
 <style scoped>

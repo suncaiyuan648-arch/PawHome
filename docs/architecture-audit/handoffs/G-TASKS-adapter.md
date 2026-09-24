@@ -2,7 +2,7 @@
 
 ## 交付范围
 
-新增 [`packages/account/services/taskAdapter.js`](../../../packages/account/services/taskAdapter.js)，作为 account 待办聚合入口的只读绑定层。它复用 [`navigation/taskContracts.js`](../../../navigation/taskContracts.js) 的域、阶段、状态和摘要合同，并通过 [`navigation/taskReadModel.js`](../../../navigation/taskReadModel.js) 完成可信 actor 读取、跨域校验、去重、冲突丢弃、状态分桶和异步 resolver 拒绝。
+新增 [`packages/account/services/taskAdapter.ts`](../../../packages/account/services/taskAdapter.ts)，作为 account 待办聚合入口的只读绑定层。它复用 [`navigation/taskContracts.ts`](../../../navigation/taskContracts.ts) 的域、阶段、状态和摘要合同，并通过 [`navigation/taskReadModel.ts`](../../../navigation/taskReadModel.ts) 完成可信 actor 读取、跨域校验、去重、冲突丢弃、状态分桶和异步 resolver 拒绝。
 
 本批没有新增页面、路由、分包、storage key、fixture、写服务或提交入口，也没有复制 adoption、rescue、feeding 的业务数据。适配器只接收调用方已经完成安全读取的 domain reader；reader 的结果必须是 canonical task summary 数组，或包含 `items` 的只读列表 envelope。每条摘要必须显式提供：
 
@@ -35,7 +35,7 @@ canWrite: false
 
 ## 现有域接入边界
 
-本批没有把现有业务 adapter 的原始 record 直接解释成任务。`packages/rescue/services/lists.js` 当前输出的是救助列表模型，`packages/feeding/services/orderAdapter.js` 当前包含异步订单读取，adoption 当前只有按 ID 的进度读取；它们都不能未经域内映射直接冒充 canonical task reader。后续接入必须由各域 adapter 在自己的安全边界中：
+本批没有把现有业务 adapter 的原始 record 直接解释成任务。`packages/rescue/services/lists.ts` 当前输出的是救助列表模型，`packages/feeding/services/orderAdapter.ts` 当前包含异步订单读取，adoption 当前只有按 ID 的进度读取；它们都不能未经域内映射直接冒充 canonical task reader。后续接入必须由各域 adapter 在自己的安全边界中：
 
 1. 从真实持久来源读取并排除 demo/fixture；
 2. 用可信 actor 做关系筛选，并显式产生 `businessType/businessId/actorId/actionType/status`；

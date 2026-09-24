@@ -7,9 +7,14 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+import { defineComponent } from 'vue'
+
 import PawButton from '@/components/base/PawButton.vue'
-export default { name: 'PawEmptyState', components: { PawButton }, props: { image: { type: String, default: '' }, title: { type: String, default: '' }, description: { type: String, default: '' }, actionText: { type: String, default: '' }, compact: { type: Boolean, default: false } }, emits: ['action'] }
+export default defineComponent({ name: 'PawEmptyState', components: { PawButton }, props: { image: { type: String, default: '' }, title: { type: String, default: '' }, description: { type: String, default: '' }, actionText: { type: String, default: '' }, compact: { type: Boolean, default: false } }, emits: {
+    'action': eventContract<[]>(),
+  } })
 </script>
 
 <style scoped>

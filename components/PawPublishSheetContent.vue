@@ -40,14 +40,22 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+import { defineComponent } from 'vue'
+
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
-export default {
+export default defineComponent({
   name: 'PawPublishSheetContent',
   components: { PawIcon },
-  emits: ['post', 'create-yard', 'create-help', 'close']
-}
+  emits: {
+    'post': eventContract<[]>(),
+    'create-yard': eventContract<[]>(),
+    'create-help': eventContract<[]>(),
+    'close': eventContract<[]>(),
+  }
+})
 </script>
 
 <style scoped>

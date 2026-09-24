@@ -17,11 +17,18 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent } from 'vue'
+
 import PawAvatar from '@/components/identity/PawAvatar.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import { readPawEventValue } from '@/utils/pawEventMetadata.ts'
 
-export default {
+interface CommentComposerState { draft: string }
+
+export default defineComponent({
   name: 'CommentComposer',
   components: { PawAvatar, PawIcon },
   props: {
@@ -31,15 +38,21 @@ export default {
     fluid: { type: Boolean, default: false },
     value: { type: String, default: '' }
   },
-  emits: ['input', 'send', 'voice', 'pick-image', 'click'],
-  data() { return { draft: this.value } },
-  watch: { value(value) { this.draft = value } },
+  emits: {
+    'input': eventContract<[text: string]>(),
+    'send': eventContract<[text: string]>(),
+    'voice': eventContract<[]>(),
+    'pick-image': eventContract<[]>(),
+    'click': eventContract<[event: PawEvent]>(),
+  },
+  data(): CommentComposerState { return { draft: this.value } },
+  watch: { value(value: string) { this.draft = value } },
   methods: {
-    onTap(event) { this.$emit('click', event) },
-    onInput(event) { this.draft = event.detail.value || ''; this.$emit('input', this.draft) },
+    onTap(event: PawEvent) { this.$emit('click', event) },
+    onInput(event: PawEvent) { this.draft = readPawEventValue(event); this.$emit('input', this.draft) },
     onSend() { const text = this.draft.trim(); if (text) this.$emit('send', text) }
   }
-}
+})
 </script>
 
 <style scoped>

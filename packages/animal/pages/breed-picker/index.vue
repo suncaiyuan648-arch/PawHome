@@ -42,27 +42,42 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawDialog from '@/components/overlay/PawDialog.vue'
+import {
+	createBreedPickerBaseList,
+	createBreedPickerList,
+	createBreedPickerPageState,
+	normalizeBreedPickerInitPayload,
+	normalizeBreedPickerRoute,
+	readBreedPickerInputValue,
+	type BreedPickerPageState,
+} from '@/packages/animal/services/breedPickerMetadata.ts'
 
-const BASE_CAT = ['白猫', '橘猫', '狸花猫', '三花猫', '简州猫', '奶牛猫', '英短', '美短']
-const BASE_DOG = ['中华田园犬', '比熊', '哈士奇', '阿拉斯加', '萨摩耶', '泰迪', '柴犬', '柯基']
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
 
-export default {
+function isBreedPickerEventChannel(value: unknown): value is UniNamespace.EventChannel {
+	return isRecord(value) && typeof value.on === 'function' && typeof value.emit === 'function'
+}
+
+function readOpenerEventChannel(instance: unknown): UniNamespace.EventChannel | null {
+	if (!isRecord(instance)) return null
+	const getChannel = instance.getOpenerEventChannel
+	if (typeof getChannel !== 'function') return null
+	const channel: unknown = Reflect.apply(getChannel, instance, [])
+	return isBreedPickerEventChannel(channel) ? channel : null
+}
+
+export default defineComponent({
 	components: { PawPageNav, PawIcon, PawDialog },
-	data() {
-		return {
-			kind: 'cat',
-			searchKey: '',
-			customList: [],
-			selected: '',
-			showSup: false,
-			supInput: '',
-			showSupResult: false,
-			pendingSupBreed: ''
-		}
+	data(): BreedPickerPageState {
+		return createBreedPickerPageState()
 	},
 	computed: {
 		supInputTrim() {
@@ -75,44 +90,43 @@ export default {
 			return this.kind === 'dog' ? '补充狗狗品种' : '补充猫咪品种'
 		},
 		allBreeds() {
-			const base = this.kind === 'dog' ? [...BASE_DOG] : [...BASE_CAT]
-			const merged = [...base, ...this.customList]
-			return [...new Set(merged)]
+			return createBreedPickerList(this.kind, this.customList)
 		},
 		filteredBreeds() {
 			const q = (this.searchKey || '').trim()
 			if (!q) return this.allBreeds
-			return this.allBreeds.filter((b) => b.includes(q))
+			return this.allBreeds.filter((breed) => breed.includes(q))
 		}
 	},
-	onLoad(query) {
-		this.kind = query && (query.species === 'dog' || query.kind === 'dog') ? 'dog' : 'cat'
-		const ch = this.getOpenerEventChannel && this.getOpenerEventChannel()
-		if (ch && typeof ch.on === 'function') {
-			ch.on('initBreed', (payload = {}) => {
-				const b = (payload.breed || '').trim()
-				if (!b) return
-				this.selected = b
-				const base = this.kind === 'dog' ? BASE_DOG : BASE_CAT
-				if (base.indexOf(b) === -1 && this.customList.indexOf(b) === -1) {
-					this.customList = [b, ...this.customList]
+	onLoad(query: unknown) {
+		const route = normalizeBreedPickerRoute(query)
+		this.kind = route.kind
+		const ch = readOpenerEventChannel(this)
+		if (ch) {
+			ch.on('initBreed', (payload: unknown = {}) => {
+				const breed = normalizeBreedPickerInitPayload(payload)
+				if (!breed) return
+				this.selected = breed
+				const base = createBreedPickerBaseList(this.kind)
+				if (!base.includes(breed) && !this.customList.includes(breed)) {
+					this.customList = [breed, ...this.customList]
 				}
 			})
 		}
-		if (query && query.popup === 'supplement') {
+		if (route.popup === 'supplement') {
 			this.supInput = '非洲猫'
 			this.showSup = true
 		}
-		if (query && query.popup === 'supplement-input') {
+		if (route.popup === 'supplement-input') {
 			this.supInput = ''
 			this.showSup = true
 		}
-		if (query && query.popup === 'supplement-success') this.showSupResult = true
+		if (route.popup === 'supplement-success') this.showSupResult = true
 	},
 	methods: {
-		emitPick(breed) {
-			const ch = this.getOpenerEventChannel && this.getOpenerEventChannel()
-			if (ch && typeof ch.emit === 'function') {
+		emitPick(breed: string) {
+			const ch = readOpenerEventChannel(this)
+			if (ch) {
 				ch.emit('breedPicked', { breed })
 			}
 			uni.navigateBack()
@@ -120,15 +134,15 @@ export default {
 		goBack() {
 			uni.navigateBack()
 		},
-		onSearchInput(e) {
-			this.searchKey = e.detail.value || ''
+		onSearchInput(event: PawEvent) {
+			this.searchKey = readBreedPickerInputValue(event)
 		},
-		onSupInput(e) {
-			this.supInput = e.detail.value || ''
+		onSupInput(event: PawEvent) {
+			this.supInput = readBreedPickerInputValue(event)
 		},
-		selectBreed(b) {
-			this.selected = b
-			this.emitPick(b)
+		selectBreed(breed: string) {
+			this.selected = breed
+			this.emitPick(breed)
 		},
 		openSupplement() {
 			this.supInput = ''
@@ -153,7 +167,7 @@ export default {
 			if (this.customList.indexOf(v) === -1) this.customList.push(v)
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

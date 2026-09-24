@@ -6,7 +6,7 @@
 
 ## 交付范围
 
-新增 [`navigation/feedbackContracts.js`](../../../navigation/feedbackContracts.js)，保持纯 JavaScript、只读合同。文件不依赖 Vue、uni-app、页面、分包、storage、mock 或网络，也不提供真实写入。调用方必须注入已解析的订单/动物关联、显式反馈策略和当前时间；任务汇总与私密读权限还必须传入每次重新读取的 `actorProvider`，不能把页面/query 中的普通 actor 当凭证。
+新增 [`navigation/feedbackContracts.ts`](../../../navigation/feedbackContracts.ts)，保持纯 JavaScript、只读合同。文件不依赖 Vue、uni-app、页面、分包、storage、mock 或网络，也不提供真实写入。调用方必须注入已解析的订单/动物关联、显式反馈策略和当前时间；任务汇总与私密读权限还必须传入每次重新读取的 `actorProvider`，不能把页面/query 中的普通 actor 当凭证。
 
 合同冻结以下边界：
 
@@ -37,8 +37,8 @@
 
 ```text
 node --test tests/governance/feedback-contracts.test.cjs  # 11/11 PASS
-node --check navigation/feedbackContracts.js              # PASS
-git diff --check -- navigation/feedbackContracts.js tests/governance/feedback-contracts.test.cjs  # PASS
+node --check navigation/feedbackContracts.ts              # PASS
+git diff --check -- navigation/feedbackContracts.ts tests/governance/feedback-contracts.test.cjs  # PASS
 ```
 
 ## 验收边界与后续接入

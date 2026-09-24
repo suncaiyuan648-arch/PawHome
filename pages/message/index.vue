@@ -37,15 +37,33 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import CustomTabber from '@/components/CustomTabber/index.vue'
-import { goBackSmart } from '@/utils/navBack.js'
-import { getMessageUnreadCount } from '@/utils/messageUnread.js'
+import { goBackSmart } from '@/utils/navBack.ts'
+import { getMessageUnreadCount, type MessageCategory } from '@/utils/messageUnread.ts'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
-export default {
+interface MessageRow {
+	title: string
+	preview: string
+	time: string
+	iconBackground: string
+	iconName: string
+	iconSize: number
+	type: MessageCategory
+}
+
+interface MessagePageState {
+	statusBarHeight: number
+	menuRightWidth: number
+	messageRows: MessageRow[]
+}
+
+export default defineComponent({
 	components: { CustomTabber, PawIcon },
-	data() {
+	data(): MessagePageState {
 		return {
 			statusBarHeight: 20,
 			menuRightWidth: 87,
@@ -116,24 +134,24 @@ export default {
 			if (mb && mb.left) {
 				this.menuRightWidth = Math.max(sys.windowWidth - mb.left, 87)
 			}
-		} catch (e) { }
+		} catch { }
 		// #endif
 	},
 	methods: {
-		getUnreadCount(type) {
+		getUnreadCount(type: MessageCategory) {
 			return getMessageUnreadCount(type)
 		},
-		formatUnreadCount(count) {
+		formatUnreadCount(count: number) {
 			return count > 99 ? '99+' : count
 		},
 		goBack() {
 			goBackSmart({ fallbackUrl: '/pages/index/index' })
 		},
-		onRowTap(row) {
+		onRowTap(row: MessageRow) {
 			uni.navigateTo({ url: '/packages/message/pages/list/index?category=' + encodeURIComponent(row.type) })
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

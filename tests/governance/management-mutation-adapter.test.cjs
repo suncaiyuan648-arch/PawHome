@@ -24,16 +24,16 @@ function animal(overrides = {}) { return { animalId: 'animal-a', yardId: 'yard-a
 
 before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-management-mutation-'))
-  await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+  await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'packages/account/services'), { recursive: true })
-  for (const file of ['actorCapabilities.js', 'managementContracts.js']) {
+  for (const file of ['actorCapabilities.ts', 'managementContracts.ts']) {
     await fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
   }
-  for (const file of ['managementAdapter.js', 'managementMutationAdapter.js']) {
+  for (const file of ['managementAdapter.ts', 'managementMutationAdapter.ts']) {
     await fs.copyFile(path.join(ROOT, 'packages/account/services', file), path.join(tempRoot, 'packages/account/services', file))
   }
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/managementMutationAdapter.js')).href}?test=${Date.now()}`)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/managementMutationAdapter.ts')).href}?test=${Date.now()}`)
 })
 
 after(async () => { if (tempRoot) await fs.rm(tempRoot, { recursive: true, force: true }) })
@@ -80,4 +80,16 @@ test('untrusted fields, ownership changes, and non-owner actors never write', ()
   const denied = api.updateYard('yard-a', { name: 'Nope' }, { actorProvider: actor('other-owner', ['yard_owner']), policy: POLICY, reader: () => yard(), writer })
   assert.equal(denied.error.code, 'FORBIDDEN')
   assert.equal(called, 0)
+})
+
+test('writer acknowledgements reject unsupported primitive values', () => {
+  const result = api.updateProfile('user-a', { nickname: 'New' }, {
+    actorProvider: actor('user-a'),
+    policy: POLICY,
+    reader: () => profile(),
+    writer: () => 'saved',
+  })
+  assert.equal(result.success, false)
+  assert.equal(result.error.code, 'INVALID_WRITER_RESULT')
+  assert.equal(result.canWrite, false)
 })

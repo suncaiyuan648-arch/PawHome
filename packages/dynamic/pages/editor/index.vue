@@ -91,38 +91,80 @@
 	</view>
 </template>
 
-<script>
-import { goBackSmart } from '@/utils/navBack.js'
-import { openUserProfile } from '@/utils/profileNav.js'
-import { getPawHomeYardMock } from '@/utils/yardMock.js'
-import { animalIdsOfOrder } from '../../services/orderAssociation.js'
-import { getFeedingOrders } from '../../services/orderPicker.js'
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+import { readPawEventValue } from '@/utils/pawEventMetadata.ts'
+import { goBackSmart } from '@/utils/navBack.ts'
+import { openUserProfile } from '@/utils/profileNav.ts'
+import { animalIdsOfOrder } from '../../services/orderAssociation.ts'
+import { getFeedingOrders } from '../../services/orderPicker.ts'
+import {
+	buildPublishEditorAnimals,
+	createPublishEditorMocks,
+	normalizePublishEditorOrder,
+	normalizePublishEditorPet,
+	publishEditorPetBelongsToYard,
+	type PublishEditorAnimal,
+	type PublishEditorOrder,
+	type PublishEditorPet,
+	type PublishEditorPickedCat,
+} from '../../services/publishEditorMetadata.ts'
 import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawUploadTile from '@/components/form/PawUploadTile.vue'
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawOrderSelectSheet from '../../components/PawOrderSelectSheet.vue'
 import PawPetSelectSheet from '../../components/PawPetSelectSheet.vue'
-import { publishLocalDynamic, publishLocalFeedback, readLocalFeedbackSummary } from '../../services/feedbackPublisher.js'
+import { publishLocalDynamic, publishLocalFeedback, readLocalFeedbackSummary } from '../../services/feedbackPublisher.ts'
 
-export default {
+type FeedbackReadData = Extract<ReturnType<typeof readLocalFeedbackSummary>, { success: true }>['data']
+
+interface FeedbackSummaryView {
+	completedCount: number
+	maximumCount: number
+}
+
+interface DynamicEditorState {
+	content: string
+	mediaList: string[]
+	selectedOrder: PublishEditorOrder | null
+	showOrderSheet: boolean
+	selectedOrderIds: string[]
+	tempOrderIds: string[]
+	showPetSheet: boolean
+	selectedPetIds: string[]
+	tempPetIds: string[]
+	mockOrders: PublishEditorOrder[]
+	animalOptions: PublishEditorAnimal[]
+	yardPets: PublishEditorPet[]
+	pickedCats: PublishEditorPickedCat[]
+	alternateMode: boolean
+	feedbackSummary: FeedbackSummaryView | null
+	feedbackAttemptKey: string
+	feedbackErrorCode: string
+	scene: 'post' | 'feeding-feedback'
+	publishAttemptKey: string
+}
+
+function optionText(options: Record<string, unknown>, key: string): string {
+	const value = options[key]
+	return typeof value === 'string' || typeof value === 'number' ? String(value) : ''
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function firstFeedbackSummary(data: FeedbackReadData): FeedbackSummaryView | null {
+	const summary = Array.isArray(data) ? data[0] : data
+	return summary ? { completedCount: summary.completedCount, maximumCount: summary.maximumCount } : null
+}
+
+export default defineComponent({
 	components: { PawPageNav, LevelBadge, PawIcon, PawUploadTile, PawOrderSelectSheet, PawPetSelectSheet },
-	data() {
-		const yard = getPawHomeYardMock()
-		const mockOrders = yard.feedingOrders.map(order => ({ ...order, avatar: order.userAvatar }))
-		const animalOptions = yard.pets
-			.filter(pet => pet.state === 'cloud')
-			.map(pet => {
-				const order = mockOrders.find(item => item.petIds.some(petId => String(petId) === String(pet.id)))
-				return {
-					...pet,
-					...(order || {}),
-					id: pet.id,
-					name: pet.name,
-					avatar: pet.avatar,
-					orderId: order ? order.id : ''
-				}
-			})
+	data(): DynamicEditorState {
+		const mocks = createPublishEditorMocks()
 		return {
 			content: '',
 			mediaList: ['/static/figma/adoption-flow/pet-owner.png', '/static/figma/adoption-flow/apply-room.png'],
@@ -133,9 +175,9 @@ export default {
 			showPetSheet: false,
 			selectedPetIds: [],
 			tempPetIds: [],
-			mockOrders,
-			animalOptions,
-			yardPets: yard.pets,
+			mockOrders: mocks.orders,
+			animalOptions: mocks.animals,
+			yardPets: mocks.pets,
 			pickedCats: [],
 			alternateMode: false,
 			feedbackSummary: null,
@@ -146,25 +188,25 @@ export default {
 		}
 	},
 	computed: {
-		contentLen() {
-			return (this.content || '').length
+		contentLen(): number {
+			return this.content.length
 		},
-		orderSelectionLabel() {
+		orderSelectionLabel(): string {
 			return this.selectedOrderIds.length ? `已选择${this.selectedOrderIds.length}个订单` : '选择投粮订单'
 		},
-		feedbackTagText() {
+		feedbackTagText(): string {
 			if (this.feedbackSummary) return `已反馈${this.feedbackSummary.completedCount}/${this.feedbackSummary.maximumCount}次`
 			return this.selectedOrder && this.selectedOrder.feedbackTag ? this.selectedOrder.feedbackTag : '待反馈'
 		},
-		isFeedbackScene() {
+		isFeedbackScene(): boolean {
 			return this.scene === 'feeding-feedback'
 		}
 	},
-		onLoad(options = {}) {
+	onLoad(options: Record<string, unknown> = {}) {
 		this.scene = options.scene === 'feeding-feedback' || options.type === 'yard-owner' || options.state === 'feeding'
 			? 'feeding-feedback'
 			: 'post'
-		if (this.isFeedbackScene) this.hydratePersistentAnimals(options.yardId || '')
+		if (this.isFeedbackScene) this.hydratePersistentAnimals(optionText(options, 'yardId'))
 		if (options.state === 'alternate') {
 			this.scene = 'feeding-feedback'
 			this.alternateMode = true
@@ -173,8 +215,8 @@ export default {
 			this.tempOrderIds = [...this.selectedOrderIds]
 			this.applyOrderSelection()
 		}
-		const orderId = options.orderId || options.id
-		if (orderId) this.selectOrderById(orderId, options.yardId, options.yardOwnerId)
+		const orderId = optionText(options, 'orderId') || optionText(options, 'id')
+		if (orderId) this.selectOrderById(orderId, optionText(options, 'yardId'), optionText(options, 'yardOwnerId'))
 		// The former postFeedOrder page was only a route-shaped wrapper around
 		// this sheet. Keep its Figma/legacy state reachable through the canonical
 		// editor while avoiding a second production page.
@@ -183,64 +225,29 @@ export default {
 	methods: {
 		hydratePersistentAnimals(yardId = '') {
 			try {
-				const raw = uni.getStorageSync('PAWHOME_ANIMAL_RECORDS')
-				const rows = typeof raw === 'string' ? JSON.parse(raw) : raw
-				if (!Array.isArray(rows)) return
-				const targetYardId = String(yardId || (rows.find(item => item && item.yardId) || {}).yardId || '')
-				const persisted = rows.filter(item => item && typeof item === 'object' && (!targetYardId || String(item.yardId || '') === targetYardId))
-				if (!persisted.length) return
-				this.yardPets = persisted.map(item => ({
-					...item,
-					id: item.animalId || item.id,
-					name: item.name || '猫咪',
-					avatar: item.avatar || item.image || '/static/figma/yard-cats/cat-avatar.png',
-					state: item.state || 'cloud',
-				}))
-				this.animalOptions = this.yardPets.map(pet => {
-					const order = this.mockOrders.find(item => this.orderPetIds(item).includes(String(pet.id)))
-					return { ...pet, ...(order || {}), id: pet.id, name: pet.name, avatar: pet.avatar, orderId: order ? order.id : '' }
-				})
-			} catch (error) {
+				const stored: unknown = uni.getStorageSync('PAWHOME_ANIMAL_RECORDS')
+				const parsed: unknown = typeof stored === 'string' ? JSON.parse(stored) : stored
+				if (!Array.isArray(parsed)) return
+				const rows: unknown[] = parsed
+				const firstYardRow = rows.find((row): row is Record<string, unknown> =>
+					isRecord(row) && Boolean(row.yardId),
+				)
+				const targetYardId = optionText({ yardId }, 'yardId') || optionText(firstYardRow || {}, 'yardId')
+				const persisted = rows
+					.filter(row => publishEditorPetBelongsToYard(row, targetYardId))
+					.map(normalizePublishEditorPet)
+					.filter((pet): pet is PublishEditorPet => pet !== null)
+				if (persisted.length === 0) return
+				this.yardPets = persisted
+				this.animalOptions = buildPublishEditorAnimals(this.yardPets, this.mockOrders)
+			} catch {
 				// A malformed optional list must not turn the editor into a fixture.
 			}
 		},
-		normalizeOrderForPublish(order) {
-			if (!order) return null
-			const aliases = []
-			for (const field of ['animalId', 'petId']) {
-				if (!Object.prototype.hasOwnProperty.call(order, field)) continue
-				const value = order[field]
-				if (typeof value !== 'string' || !value.trim()) return null
-				aliases.push(value.trim())
-			}
-			const readAliasSet = field => {
-				if (!Object.prototype.hasOwnProperty.call(order, field)) return null
-				if (!Array.isArray(order[field]) || !order[field].length) return null
-				if (order[field].some(value => typeof value !== 'string' || !value.trim())) return null
-				return [...new Set(order[field].map(value => value.trim()))].sort()
-			}
-			const animalIds = readAliasSet('animalIds')
-			const petIdsAlias = readAliasSet('petIds')
-			if (Object.prototype.hasOwnProperty.call(order, 'animalIds') && !animalIds) return null
-			if (Object.prototype.hasOwnProperty.call(order, 'petIds') && !petIdsAlias) return null
-			if (animalIds && petIdsAlias && animalIds.join('|') !== petIdsAlias.join('|')) return null
-			const plural = animalIds || petIdsAlias || []
-			const petIds = [...new Set([...aliases, ...plural])]
-			if (!petIds.length || (aliases.length > 1 && new Set(aliases).size > 1)) return null
-			if (aliases.some(id => plural.length && !plural.includes(id))) return null
-			return {
-				...order,
-				userName: order.userName || order.name || '平安是福',
-				userAvatar: order.userAvatar || order.yardAvatar || order.avatar || '/static/figma/publish/order-avatar.png',
-				kg: order.kg || 4,
-				feedbackTag: order.feedbackTag || order.topText || '待反馈',
-				petIds
-			}
-		},
-		selectOrderById(orderId, yardId, yardOwnerId) {
+		selectOrderById(orderId: string, yardId = '', yardOwnerId = '') {
 			const id = String(orderId || '')
 			if (!id) return
-			const local = this.mockOrders.find(order => String(order.id) === id)
+			const local = this.mockOrders.find(order => order.id === id)
 			if (local && !this.isFeedbackScene) {
 				this.selectedOrderIds = [id]
 				this.tempOrderIds = [id]
@@ -248,11 +255,9 @@ export default {
 				this.refreshFeedbackSummary()
 				return
 			}
-			getFeedingOrders({ variant: 'yard', yardOwnerId: yardOwnerId || '', yardId: yardId || '1' }).then(result => {
-				const item = result && result.success && result.data
-					? result.data.items.find(order => String(order.id) === id)
-					: null
-				const normalized = this.normalizeOrderForPublish(item)
+			getFeedingOrders({ variant: 'yard', yardOwnerId: optionText({ yardOwnerId }, 'yardOwnerId'), yardId: optionText({ yardId }, 'yardId') || '1' }).then(result => {
+				const item = result.success ? result.data.items.find(order => String(order.id) === id) : null
+				const normalized = normalizePublishEditorOrder(item)
 				if (!normalized) {
 					if (!local) return
 					this.selectedOrderIds = [id]
@@ -260,7 +265,7 @@ export default {
 					this.applyOrderSelection()
 					return
 				}
-				this.mockOrders = this.mockOrders.filter(order => String(order.id) !== id).concat(normalized)
+				this.mockOrders = this.mockOrders.filter(order => order.id !== id).concat(normalized)
 				this.selectedOrderIds = [id]
 				this.tempOrderIds = [id]
 				this.applyOrderSelection()
@@ -270,29 +275,30 @@ export default {
 		goBack() {
 			goBackSmart({ fallbackUrl: '/pages/index/index' })
 		},
-		openOrderUser(o) {
-			if (!o) return
+		openOrderUser(order: PublishEditorOrder) {
 			openUserProfile({
-				pawId: o.pawId || 'order-' + o.id,
-				nickname: o.userName,
-				avatar: ''
+				pawId: order.pawId || `order-${order.id}`,
+				nickname: order.userName,
+				avatar: '',
 			})
 		},
-		onContentInput(e) {
-			this.content = e.detail.value || ''
+		onContentInput(e: PawEvent) {
+			this.content = readPawEventValue(e)
 		},
 		pickMedia() {
 			uni.chooseImage({
 				count: 9,
 				sizeType: ['compressed'],
 				sourceType: ['album', 'camera'],
-				success: (res) => {
-					const arr = res.tempFilePaths || []
+				success: res => {
+					const arr = Array.isArray(res.tempFilePaths)
+						? res.tempFilePaths.filter((path): path is string => typeof path === 'string')
+						: []
 					this.mediaList = (this.mediaList || []).concat(arr).slice(0, 9)
 				}
 			})
 		},
-		removeMedia(index) {
+		removeMedia(index: number) {
 			if (!Array.isArray(this.mediaList) || index < 0 || index >= this.mediaList.length) return
 			// mediaList is also the page's album-selection source of truth. Removing
 			// here clears the preview and the corresponding selected media together.
@@ -304,15 +310,15 @@ export default {
 				: []
 			this.showOrderSheet = true
 		},
-		setOrderSheetVisible(value) {
+		setOrderSheetVisible(value: boolean) {
 			if (!value) this.applyOrderSelection()
 			this.showOrderSheet = value
 		},
 		applyOrderSelection() {
-			const ids = (this.tempOrderIds || []).map(id => String(id))
+			const ids = [...new Set(this.tempOrderIds.map(id => String(id)))]
 			this.selectedOrderIds = ids
 			const petIds = [...new Set(this.mockOrders
-				.filter(order => ids.includes(String(order.id)))
+				.filter(order => ids.includes(order.id))
 				.flatMap(order => this.orderPetIds(order)))]
 			this.selectedPetIds = petIds
 			this.tempPetIds = [...petIds]
@@ -325,15 +331,15 @@ export default {
 			this.tempPetIds = [...this.selectedPetIds]
 			this.showPetSheet = true
 		},
-		setPetSheetVisible(value) {
+		setPetSheetVisible(value: boolean) {
 			if (!value) this.applyPetSelection()
 			this.showPetSheet = value
 		},
 		applyPetSelection() {
-			const petIds = (this.tempPetIds || []).map(id => String(id))
+			const petIds = [...new Set(this.tempPetIds.map(id => String(id)))]
 			const orderIds = this.mockOrders
-				.filter(order => this.orderPetIds(order).some(petId => petIds.includes(String(petId))))
-				.map(order => String(order.id))
+				.filter(order => this.orderPetIds(order).some(petId => petIds.includes(petId)))
+				.map(order => order.id)
 			this.selectedPetIds = petIds
 			this.selectedOrderIds = orderIds
 			this.tempOrderIds = [...orderIds]
@@ -342,18 +348,17 @@ export default {
 			this.feedbackAttemptKey = ''
 			this.refreshFeedbackSummary()
 		},
-		orderPetIds(order) {
-			return animalIdsOfOrder(order || {}).values
+		orderPetIds(order: PublishEditorOrder): string[] {
+			return animalIdsOfOrder(order).values
 		},
-		syncPickedCats(petIds) {
-			const ids = (petIds || []).map(id => String(id))
+		syncPickedCats(petIds: readonly string[]) {
+			const ids = petIds.map(id => String(id))
 			this.pickedCats = this.yardPets
-				.filter(pet => ids.includes(String(pet.id)))
+				.filter(pet => ids.includes(pet.id))
 				.map(pet => ({ id: pet.id, name: pet.name, avatar: pet.avatar }))
 		},
-		updateSelectedOrderSummary(orderIds) {
-			const ids = (orderIds || []).map(id => String(id))
-			const first = this.mockOrders.find(order => String(order.id) === ids[0])
+		updateSelectedOrderSummary(orderIds: readonly string[]) {
+			const first = this.mockOrders.find(order => order.id === orderIds[0])
 			this.selectedOrder = first ? { ...first } : null
 			if (this.selectedOrder && this.selectedOrder.id === 'yard-order-1') {
 				this.selectedOrder.timedOut = true
@@ -374,8 +379,8 @@ export default {
 				actorProvider: () => uni.getStorageSync('PAWHOME_ACTOR_SESSION'),
 				requirePersistedAssociation: true
 			})
-			this.feedbackSummary = result && result.success ? result.data : null
-			this.feedbackErrorCode = result && result.error ? result.error.code : ''
+			this.feedbackSummary = result.success ? firstFeedbackSummary(result.data) : null
+			this.feedbackErrorCode = result.success ? '' : result.error.code
 		},
 		onAddCats() {
 			this.openPetSheet()
@@ -388,13 +393,15 @@ export default {
 					mediaList: this.mediaList,
 					actorProvider: () => uni.getStorageSync('PAWHOME_ACTOR_SESSION'),
 					attemptKey: this.publishAttemptKey,
-					storage: uni
+					storage: uni,
 				})
-				if (!result || !result.success) {
+				if (!result.success) {
 					uni.showToast({ title: '动态未保存，请登录后重试', icon: 'none' })
 					return
 				}
-				uni.navigateTo({ url: `/packages/dynamic/pages/result/index?outcome=published&dynamicId=${encodeURIComponent(result.data.dynamicId)}` })
+				uni.navigateTo({
+					url: `/packages/dynamic/pages/result/index?outcome=published&dynamicId=${encodeURIComponent(result.data.dynamicId)}`,
+				})
 				return
 			}
 			const order = this.selectedOrder
@@ -405,24 +412,30 @@ export default {
 			}
 			if (!this.feedbackAttemptKey) this.feedbackAttemptKey = `attempt-${Date.now()}`
 			const result = publishLocalFeedback({
-				orders: this.selectedOrderIds.map(id => ({ orderId: id })),
-				animals: this.selectedPetIds.map(id => ({ animalId: id })),
+				orders: this.selectedOrderIds.map(orderId => ({ orderId })),
+				animals: this.selectedPetIds.map(animalId => ({ animalId })),
 				content: this.content,
 				mediaList: this.mediaList,
 				actorProvider: () => uni.getStorageSync('PAWHOME_ACTOR_SESSION'),
 				attemptKey: this.feedbackAttemptKey,
 				storage: uni,
 			})
-			if (!result || !result.success) {
-				this.feedbackErrorCode = result && result.error ? result.error.code : 'FEEDBACK_WRITE_FAILED'
+			if (!result.success) {
+				this.feedbackErrorCode = result.error.code || 'FEEDBACK_WRITE_FAILED'
 				uni.showToast({ title: '反馈未保存，请先登录后重试', icon: 'none' })
 				return
 			}
-			this.feedbackSummary = result.data
-			uni.navigateTo({ url: `/packages/feeding/pages/result/index?outcome=feedback-published&dynamicId=${encodeURIComponent(result.data.dynamicId)}&orderId=${encodeURIComponent(order.id)}` })
+			const summary = result.data.summaries[0]
+			this.feedbackSummary = {
+				completedCount: result.data.completedCount ?? summary?.completedCount ?? 0,
+				maximumCount: result.data.maximumCount ?? summary?.maximumCount ?? 0,
+			}
+			uni.navigateTo({
+				url: `/packages/feeding/pages/result/index?outcome=feedback-published&dynamicId=${encodeURIComponent(result.data.dynamicId)}&orderId=${encodeURIComponent(order.id)}`,
+			})
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

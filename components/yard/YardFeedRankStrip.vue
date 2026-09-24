@@ -1,8 +1,8 @@
 <template>
   <view class="yard-feed-rank-strip">
     <view class="detail-rank__top">
-      <SeamlessScroll class="detail-rank__scroll" :items="seamlessItems.length ? seamlessItems : null"
-        :rank-title="seamlessRankTitle" @user-click="$emit('rank-user', $event)" />
+      <SeamlessScroll class="detail-rank__scroll" :items="seamlessItems.length ? seamlessItems : []"
+        :rank-title="seamlessRankTitle" @user-click="onRankUser" />
     </view>
     <view class="detail-rank__bottom">
       <text class="detail-rank__summary">{{ feedSummary }}</text>
@@ -13,11 +13,13 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">import { defineComponent, type PropType } from 'vue'
+
 import SeamlessScroll from "@/components/SeamlessScroll.vue";
 import PawChevron from "@/components/base/PawChevron.vue";
+import { isYardRankItem, type YardRankItem, type YardRankScrollItem } from "@/utils/yardMock.ts";
 
-export default {
+export default defineComponent({
   name: "YardFeedRankStrip",
   components: { SeamlessScroll, PawChevron },
   props: {
@@ -27,7 +29,7 @@ export default {
     },
     /** 传给 SeamlessScroll；空数组时不使用演示数据 */
     seamlessItems: {
-      type: Array,
+      type: Array as PropType<YardRankItem[]>,
       default: () => [],
     },
     seamlessRankTitle: {
@@ -35,12 +37,19 @@ export default {
       default: "小院投喂第一名",
     },
   },
+  emits: {
+    "rank-user": (item: YardRankItem) => isYardRankItem(item),
+    leaderboard: () => true,
+  },
   methods: {
+    onRankUser(item: YardRankScrollItem) {
+      if (isYardRankItem(item)) this.$emit("rank-user", item);
+    },
     onLeaderboardTap() {
       this.$emit("leaderboard");
     },
   },
-};
+});
 </script>
 
 <style lang="less" scoped>

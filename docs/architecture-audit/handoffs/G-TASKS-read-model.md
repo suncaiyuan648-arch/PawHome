@@ -2,9 +2,9 @@
 
 ## 范围
 
-本子批只冻结跨域 task read-model 合同，供后续 `account.tasks` 聚合入口和既有评审队列消费。新增 [`navigation/taskReadModel.js`](../../../navigation/taskReadModel.js) 只接收调用方注入的 trusted actor provider 与四个域 resolver：`adoption`、`rescue`、`feeding`、`dynamic`。
+本子批只冻结跨域 task read-model 合同，供后续 `account.tasks` 聚合入口和既有评审队列消费。新增 [`navigation/taskReadModel.ts`](../../../navigation/taskReadModel.ts) 只接收调用方注入的 trusted actor provider 与四个域 resolver：`adoption`、`rescue`、`feeding`、`dynamic`。
 
-resolver 每次读取只收到新解析出的 `{ actor }`，不能从 query、路由、URL 或页面状态生成身份；必须返回本域 task candidate 数组。模块使用 [`navigation/taskContracts.js`](../../../navigation/taskContracts.js) 规范化摘要，强制 resolver 域与 `businessType` 一致、`actorId` 与当前 actor 一致，并跳过未知字段、未知状态/角色、URL、别名字段、跨域 ID、异步 resolver、异常 resolver 和错误返回。
+resolver 每次读取只收到新解析出的 `{ actor }`，不能从 query、路由、URL 或页面状态生成身份；必须返回本域 task candidate 数组。模块使用 [`navigation/taskContracts.ts`](../../../navigation/taskContracts.ts) 规范化摘要，强制 resolver 域与 `businessType` 一致、`actorId` 与当前 actor 一致，并跳过未知字段、未知状态/角色、URL、别名字段、跨域 ID、异步 resolver、异常 resolver 和错误返回。
 
 ## 读取与去重语义
 
@@ -20,4 +20,4 @@ resolver 每次读取只收到新解析出的 `{ actor }`，不能从 query、�
 
 ## 集成边界
 
-此交付为 `CONTRACT_SUB_BATCH_COMPLETE`。未注册 `account.tasks`，未修改 `pages.json`、页面、storage 或现有评审队列；聚合列表 UI、深链分发、域内 resolver 的真实接入、运行时和 Figma 视觉验收仍由后续 W2b/W4a/C9 批次完成，不能将 A03 或 G-TASKS 标记为完整 DONE。
+此交付为 `CONTRACT_SUB_BATCH_COMPLETE`。未注册 `account.tasks`，未修改 `pages.tson`、页面、storage 或现有评审队列；聚合列表 UI、深链分发、域内 resolver 的真实接入、运行时和 Figma 视觉验收仍由后续 W2b/W4a/C9 批次完成，不能将 A03 或 G-TASKS 标记为完整 DONE。

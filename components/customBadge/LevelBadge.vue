@@ -3,10 +3,11 @@
     text-color="var(--paw-level-text, #f6e1b8)" />
 </template>
 
-<script>
+<script lang="ts">import { defineComponent } from 'vue'
+
 import PawBadge from '@/components/base/PawBadge.vue'
 
-export default {
+export default defineComponent({
   name: 'LevelBadge',
   components: { PawBadge },
   options: {
@@ -26,5 +27,5 @@ export default {
       return Number.isFinite(level) && level > 0 ? Math.floor(level) : 1
     }
   }
-}
+})
 </script>

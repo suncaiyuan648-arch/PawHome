@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "noEmit": true,
+    "allowJs": false,
+    "checkJs": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "types": ["vite/client", "@dcloudio/types", "node"]
+  },
+  "include": [
+    "env.d.ts",
+    "shims-uni.d.ts",
+    "App.vue",
+    "main.ts",
+    "vite.config.ts",
+    "pages/**/*.vue",
+    "components/**/*",
+    "packages/**/*",
+    "services/**/*",
+    "navigation/**/*",
+    "utils/**/*",
+    "custom-tab-bar/**/*",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": ["node_modules", "unpackage", "dist", "coverage", ".artifacts", "uni_modules"]
+}

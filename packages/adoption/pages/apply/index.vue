@@ -83,16 +83,24 @@
 	</view>
 </template>
 
-<script>
-import { goBackSmart } from '@/utils/navBack.js'
-import { buildRoute } from '@/navigation/routeContracts.js'
-import { openYardDetail } from '@/utils/profileNav.js'
+<script lang="ts">
+import { defineComponent } from 'vue'
+import { readPawEventValue } from '@/utils/pawEventMetadata.ts'
+import { createAdoptionApplicationPetMocks } from '@/utils/adoptionMockData.ts'
+import type { AdoptionPetMetadata } from '@/utils/adoptionMockData.ts'
+import { createRescueApplicationHelpFieldMocks, type RescueApplicationHelpFieldMetadata } from '@/utils/rescueApplicationMockData.ts'
+import type { WechatNavLayout } from '@/utils/navLayout.ts'
+import type { ChooseImageSuccessMetadata, ChooseMediaSuccessMetadata } from '@/utils/mediaPickerMetadata.ts'
+
+import { goBackSmart } from '@/utils/navBack.ts'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import { openYardDetail } from '@/utils/profileNav.ts'
 import {
 	getAdoptionPick,
 	setLastAdoptionId,
 	clearAdoptionPick
-} from '@/utils/adoptionStorage.js'
-import { createApplication } from '@/utils/applicationMockApi.js'
+} from '@/utils/adoptionStorage.ts'
+import { createApplication } from '@/utils/applicationMockApi.ts'
 import AdoptPickCatsSheet from '@/components/AdoptPickCatsSheet.vue'
 import PawAdoptionPetsCard from '@/components/PawAdoptionPetsCard.vue'
 import PawPageNav from '@/components/PawPageNav.vue'
@@ -102,7 +110,7 @@ import PawImage from '@/components/base/PawImage.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawUploadTile from '@/components/form/PawUploadTile.vue'
 
-export default {
+export default defineComponent({
 	components: {
 		AdoptPickCatsSheet,
 		PawAdoptionPetsCard,
@@ -116,10 +124,7 @@ export default {
 	data() {
 		return {
 			applyText: '',
-			pets: [
-				{ id: 'pet-orange', name: '奥利奥', avatar: '/static/figma/adoption-flow/pet-orange.png' },
-				{ id: 'pet-dog', name: '呗呗', avatar: '/static/figma/adoption-flow/apply-dog.png' }
-			],
+			pets: createAdoptionApplicationPetMocks(),
 			yardName: '我就是要喂猫',
 			yardId: '1',
 			yardAvatar: '/static/avatar.png',
@@ -131,21 +136,14 @@ export default {
 			pickerOnly: false,
 			pickerRouteHandled: false,
 			designApplied: false,
-			helpFormRows: [
-				{ key: 'amount', label: '求助金额', value: '', placeholder: '￥0.00', inputType: 'digit', amount: true },
-				{ key: 'receiver', label: '收款微信账户', value: '13900000000', inputType: 'number' },
-				{ key: 'name', label: '发起人姓名', value: '马冬梅' },
-				{ key: 'age', label: '发起人年龄', value: '20', inputType: 'number' },
-				{ key: 'identity', label: '发起人身份', value: '学生' },
-				{ key: 'location', label: '发起人所在地', value: '安徽省合肥市蜀山区海恒社区' }
-			],
+			helpFormRows: createRescueApplicationHelpFieldMocks(),
 			adoptPickSheetVisible: false,
 			agreementChecked: false,
 			activeHelpField: '',
 			navHeight: 64
 		}
 	},
-	onLoad(query = {}) {
+	onLoad(query: Record<string, unknown> = {}) {
 		this.longMode = false
 		this.rescueMode = false
 		this.pickerOnly = query.state === 'pick-cats' || query.mode === 'pick-cats'
@@ -181,7 +179,7 @@ export default {
 		}
 	},
 	methods: {
-		onNavLayout(layout = {}) {
+		onNavLayout(layout: Partial<WechatNavLayout> = {}) {
 			if (layout.totalHeight) this.navHeight = Number(layout.totalHeight)
 		},
 		applyDesignState() {
@@ -189,22 +187,16 @@ export default {
 			this.designApplied = true
 			this.mediaPaths = ['/static/figma/adoption-flow/04a93fa17267335f49e6e818f8caa78dd3afc80b.png', '/static/figma/adoption-flow/b61b026ea991c01c6257c909021245fd64956837.png']
 			this.yardAvatar = '/static/figma/home/yard-avatar.png'
-			this.pets = [
-				{ id: 'pet-orange', name: '奥利奥', avatar: '/static/figma/adoption-flow/pet-orange.png' },
-				{ id: 'pet-dog', name: '呗呗', avatar: '/static/figma/adoption-flow/apply-dog.png' }
-			]
+			this.pets = createAdoptionApplicationPetMocks()
 			if (this.longMode) {
-				this.pets = [
-					{ id: 'pet-orange', name: '奥利奥', avatar: '/static/figma/adoption-flow/pet-orange.png' },
-					{ id: 'pet-dog', name: '呗呗', avatar: '/static/figma/adoption-flow/apply-dog.png' }
-				]
+				this.pets = createAdoptionApplicationPetMocks()
 				this.yardAvatar = '/static/figma/adoption-flow/pet-owner.png'
 			}
 		},
 		syncPick() {
 			const pick = getAdoptionPick()
 			if (pick.pets && pick.pets.length) {
-				this.pets = pick.pets.map((pet) => ({ ...pet }))
+				this.pets = pick.pets.map(pet => ({ ...pet }))
 				this.yardName = pick.yardName || pick.ownerName || this.yardName
 				this.yardAvatar = pick.ownerAvatar || this.yardAvatar
 				if (pick.yardId) this.yardId = pick.yardId
@@ -217,15 +209,15 @@ export default {
 		openYardDetailPage() {
 			openYardDetail({ yardId: this.yardId || '1', yardName: this.yardName })
 		},
-		openPetDetail(pet, index) {
+		openPetDetail(pet: AdoptionPetMetadata, index: number) {
 			if (!pet) return
 			const petId = pet.id || pet.petId || ''
 			uni.navigateTo({
 				url: `/packages/animal/pages/detail/index?animalId=${encodeURIComponent(petId)}&yardId=${encodeURIComponent(this.yardId || '1')}&idx=${encodeURIComponent(index)}&yardName=${encodeURIComponent(this.yardName || '')}`
 			})
 		},
-		previewMedia(index) {
-			const urls = this.mediaPaths.filter((u) => /\.(png|jpe?g|gif|webp|bmp)$/i.test(u || ''))
+		previewMedia(index: number) {
+			const urls = this.mediaPaths.filter(u => /\.(png|jpe?g|gif|webp|bmp)$/i.test(u || ''))
 			if (!urls.length) {
 				uni.showToast({ title: '视频请在相册中查看', icon: 'none' })
 				return
@@ -237,7 +229,7 @@ export default {
 				urls
 			})
 		},
-		removeMedia(index) {
+		removeMedia(index: number) {
 			this.mediaPaths.splice(index, 1)
 		},
 		onPickMedia() {
@@ -246,7 +238,7 @@ export default {
 				uni.showToast({ title: '最多上传' + this.maxMedia + '个文件', icon: 'none' })
 				return
 			}
-			const onOk = (paths) => {
+			const onOk = (paths: string[]) => {
 				this.mediaPaths = this.mediaPaths.concat(paths).slice(0, this.maxMedia)
 				if (paths.length) uni.showToast({ title: '已添加', icon: 'none' })
 			}
@@ -255,8 +247,8 @@ export default {
 				count: Math.min(remain, 9),
 				mediaType: ['image', 'video'],
 				sourceType: ['album', 'camera'],
-				success: (res) => {
-					const paths = (res.tempFiles || []).map((f) => f.tempFilePath)
+				success: (res: ChooseMediaSuccessMetadata) => {
+					const paths = res.tempFiles.map(file => file.tempFilePath)
 					onOk(paths)
 				},
 				fail: () => { }
@@ -266,15 +258,20 @@ export default {
 			uni.chooseImage({
 				count: Math.min(remain, 9),
 				sourceType: ['album', 'camera'],
-				success: (res) => onOk(res.tempFilePaths || [])
+				success: (res: ChooseImageSuccessMetadata) => {
+					const paths = Array.isArray(res.tempFilePaths)
+						? res.tempFilePaths
+						: res.tempFilePaths ? [res.tempFilePaths] : []
+					onOk(paths)
+				}
 			})
 			// #endif
 		},
 		addMoreCats() {
 			this.adoptPickSheetVisible = true
 		},
-		onPickRouteConfirmed(payload) {
-			this.syncPick(payload)
+		onPickRouteConfirmed() {
+			this.syncPick()
 			if (this.pickerOnly) {
 				this.pickerRouteHandled = true
 				uni.navigateTo({ url: `/packages/adoption/pages/apply/index?state=pick-cats&yardId=${encodeURIComponent(this.yardId || '1')}` })
@@ -286,10 +283,10 @@ export default {
 		toggleAgreement() {
 			this.agreementChecked = !this.agreementChecked
 		},
-		onHelpRowTap(row) {
+		onHelpRowTap(row: RescueApplicationHelpFieldMetadata) {
 			this.focusHelpField(row)
 		},
-		focusHelpField(row) {
+		focusHelpField(row: RescueApplicationHelpFieldMetadata) {
 			const key = row && row.key
 			if (!key) return
 			if (this.activeHelpField === key) return
@@ -298,17 +295,17 @@ export default {
 				this.activeHelpField = key
 			})
 		},
-		onHelpBlur(row) {
+		onHelpBlur(row: RescueApplicationHelpFieldMetadata) {
 			if (row && this.activeHelpField === row.key) this.activeHelpField = ''
 		},
-		onHelpInput(row, event) {
+		onHelpInput(row: RescueApplicationHelpFieldMetadata, event: PawEvent) {
 			if (!row) return
-			row.value = event && event.detail ? event.detail.value || '' : ''
+			row.value = readPawEventValue(event)
 		},
-		hasHelpValue(row) {
+		hasHelpValue(row: RescueApplicationHelpFieldMetadata) {
 			return Boolean(row && String(row.value || '').trim())
 		},
-		clearHelpField(row) {
+		clearHelpField(row: RescueApplicationHelpFieldMetadata) {
 			if (!row) return
 			row.value = ''
 			if (this.activeHelpField === row.key) this.activeHelpField = ''
@@ -327,12 +324,12 @@ export default {
 				uni.showToast({ title: '请先阅读并同意相关协议', icon: 'none' })
 				return
 			}
-			const cloudPet = this.pets.find((pet) => pet && (pet.cloudFed || pet.isCloudFed || pet.managed === true))
-			const rec = {
-				status: this.pets.some((pet) => pet && (pet.cloudFed || pet.isCloudFed || pet.managed === true))
+			const cloudPet = this.pets.find(pet => pet.cloudFed || pet.isCloudFed || pet.managed === true)
+			const rec: import('@/contracts/applications.ts').AdoptionApplicationInput = {
+				status: this.pets.some(pet => pet.cloudFed || pet.isCloudFed || pet.managed === true)
 					? 'cloud_pending'
 					: 'pending',
-				cloudParentRequired: this.pets.some((pet) => pet && (pet.cloudFed || pet.isCloudFed || pet.managed === true)),
+				cloudParentRequired: this.pets.some(pet => pet.cloudFed || pet.isCloudFed || pet.managed === true),
 				cloudParentPawId: cloudPet && (cloudPet.cloudParentPawId || cloudPet.cloudParentId || cloudPet.ownerPawId) || '',
 				applyText: t,
 				mediaPaths: [...this.mediaPaths],
@@ -369,7 +366,7 @@ export default {
 			})
 		}
 	}
-}
+})
 </script>
 
 <style lang="less" scoped>

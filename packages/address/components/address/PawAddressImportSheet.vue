@@ -39,39 +39,48 @@
   </PawBottomSheet>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import type { AddressRecord } from '@/utils/addressMock.ts'
 
-export default {
+export default defineComponent({
   name: 'PawAddressImportSheet',
   components: { PawBottomSheet, PawIcon },
   props: {
     visible: { type: Boolean, default: false },
     mode: { type: String, default: 'service' },
-    addresses: { type: Array, default: () => [] }
+    addresses: { type: Array as PropType<AddressRecord[]>, default: () => [] }
   },
-  emits: ['update:visible', 'select', 'request-wechat'],
+  emits: {
+    'update:visible': eventContract<[value: boolean]>(),
+    'select': eventContract<[address: AddressRecord]>(),
+    'request-wechat': eventContract<[]>(),
+  },
   computed: {
     visibleProxy: {
       get() { return this.visible },
-      set(value) { this.$emit('update:visible', value) }
+      set(value: boolean) { this.$emit('update:visible', value) }
     },
     sheetHeight() {
       return this.mode === 'service' ? '420px' : '260px'
     },
-    normalizedAddresses() {
+    normalizedAddresses(): AddressRecord[] {
       return Array.isArray(this.addresses) ? this.addresses : []
     }
   },
   methods: {
-    formatDetail(address = {}) {
+    formatDetail(address: AddressRecord) {
       return [...(address.regionParts || []), address.detail || ''].filter(Boolean).join(' ')
     },
     close() {
       this.visibleProxy = false
     },
-    selectServiceAddress(address) {
+    selectServiceAddress(address: AddressRecord) {
       this.$emit('select', address)
       this.visibleProxy = false
     },
@@ -79,7 +88,7 @@ export default {
       this.$emit('request-wechat')
     }
   }
-}
+})
 </script>
 
 <style scoped>

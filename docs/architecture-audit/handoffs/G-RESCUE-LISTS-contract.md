@@ -6,7 +6,7 @@
 
 ## 交付范围
 
-新增 [`navigation/rescueListContract.js`](../../../navigation/rescueListContract.js)，提供两个只读列表边界：
+新增 [`navigation/rescueListContract.ts`](../../../navigation/rescueListContract.ts)，提供两个只读列表边界：
 
 - `readRescueMine` / `getRescueMine`：只读取当前可信 actor 作为申请人的救助记录。申请人关系只接受明确的 `applicantId`、`applicantUserId` 或 `applicant.id`/`applicant.pawId`；通用 `userId`、查询参数、`managed`、`role` 和 `state` 不会制造归属。
 - `readRescueReviewList` / `getRescueReviewList`：只读取当前可信 actor 被明确列入 `reviewerId`/`reviewerIds` 的救助评审记录；每条记录必须同时具备一致的 `rescueId` 与 `reviewItemId`，不能由救助单号推导评审项。
@@ -42,14 +42,14 @@
 
 ```text
 node --test tests/governance/rescue-list-contract.test.cjs  # 13/13 PASS
-node --check navigation/rescueListContract.js                # PASS
+node --check navigation/rescueListContract.ts                # PASS
 git diff --check                                             # PASS
 ```
 
 ## 后续 adapter 边界
 
-接入 C1/C0 时必须由领域 adapter 先从可信会话重新读取 actor，再从 `utils/rescueStorage.js` 精确读取真实记录；不能把 `getRescueRecords()` 的公开 demo、基金池统计、proofList 或评审静态样例直接喂给 `rescue.mine`。adapter 必须明确把领域记录投影为申请人关系或评审资格，检查真实 `reviewItemId`、状态轴、院主/评审授权及 tombstone/版本，然后再交给本合同。
+接入 C1/C0 时必须由领域 adapter 先从可信会话重新读取 actor，再从 `utils/rescueStorage.ts` 精确读取真实记录；不能把 `getRescueRecords()` 的公开 demo、基金池统计、proofList 或评审静态样例直接喂给 `rescue.mine`。adapter 必须明确把领域记录投影为申请人关系或评审资格，检查真实 `reviewItemId`、状态轴、院主/评审授权及 tombstone/版本，然后再交给本合同。
 
 `rescue.mine` 与 `rescue.review.list` 是列表读模型，不能替代已有 `rescue.detail`、`rescue.progress`、`rescue.review.detail`，也不注册新路由。待后续页面/路由批次具备精确 Figma 节点和批准组件后，才可接入列表 UI、待处理→已处理刷新、详情返回和 DevTools 六项运行验收。
 
-本子批未修改 `pages.json`、页面、storage、mock、package scripts、lockfile、包预算或 native UI 基线；未执行真实救助申请、证实、投票、审核、打款、上传或发布，也未暂存/提交。
+本子批未修改 `pages.tson`、页面、storage、mock、package scripts、lockfile、包预算或 native UI 基线；未执行真实救助申请、证实、投票、审核、打款、上传或发布，也未暂存/提交。

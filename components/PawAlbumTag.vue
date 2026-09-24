@@ -2,14 +2,15 @@
   <view class="paw-album-tag" :class="{ 'paw-album-tag--hidden': tone === 'hidden' }"><text>{{ text }}</text></view>
 </template>
 
-<script>
-export default {
+<script lang="ts">import { defineComponent } from 'vue'
+
+export default defineComponent({
   name: 'PawAlbumTag',
   props: {
     text: { type: String, default: '置顶' },
     tone: { type: String, default: 'pinned' },
   },
-}
+})
 </script>
 
 <style scoped>

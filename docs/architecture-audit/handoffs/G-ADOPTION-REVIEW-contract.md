@@ -6,7 +6,7 @@
 
 新增：
 
-- `navigation/adoptionReviewContract.js`
+- `navigation/adoptionReviewContract.ts`
 - `tests/governance/adoption-review-contract.test.cjs`
 
 合同导出 `readAdoptionReviewList` / `getAdoptionReviewList` 与 `readAdoptionReviewDetail` / `getAdoptionReviewDetail`。调用方注入已经从领养域读取的记录，或注入 resolver；合同不 import Vue、uni-app、页面、分包、storage、mock、network，也没有写 API。
@@ -49,7 +49,7 @@
 
 本子批通过后，C2 adapter 仍需：
 
-- 仅从 `utils/adoptionStorage.js` 读取，并把旧 `id/recordId` 显式映射为 `applicationId`；不得把公开样本直接喂给私密审核列表；
+- 仅从 `utils/adoptionStorage.ts` 读取，并把旧 `id/recordId` 显式映射为 `applicationId`；不得把公开样本直接喂给私密审核列表；
 - 为现有审核 mock 的 owner/cloud-parent/jury 配置生成含 `reviewItemId`、`phase`、`reviewerRole`、`reviewerId`、`review.status` 的真实 metadata；不得用页面 query 补齐这些字段；
 - 重读当前申请 status、云家长条件和 reviewer 能力后再进入列表/详情页面；写动作另走状态转换和 capability adapter；
 - 继续保留补材料/重新审批关闭决策（`ADOPTION_REAPPROVAL_ENABLED=false`）；院主确认不能绕过评审团；
@@ -59,7 +59,7 @@
 
 ```text
 node --test tests/governance/adoption-review-contract.test.cjs  # 15/15 PASS
-node --check navigation/adoptionReviewContract.js                # PASS
+node --check navigation/adoptionReviewContract.ts                # PASS
 git diff --check                                                  # PASS
 ```
 

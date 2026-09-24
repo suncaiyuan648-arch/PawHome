@@ -43,26 +43,43 @@
   </PawOverlay>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawButton from '@/components/base/PawButton.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawOverlay from '@/components/overlay/PawOverlay.vue'
+import type { PawEventTouchPoint } from '@/utils/pawEventMetadata.ts'
+import {
+  createPawImageCropperState,
+  normalizePawImageCropperInfo,
+  normalizePawImageCropperPath,
+  type PawImageCropperRect,
+  type PawImageCropperState,
+} from '@/packages/yard/services/imageCropperMetadata.ts'
 
-const clamp = (value, min, max) => Math.min(max, Math.max(min, value))
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 
-const touchPoint = touch => ({
-  x: Number(touch && (touch.clientX !== undefined ? touch.clientX : touch.pageX)) || 0,
-  y: Number(touch && (touch.clientY !== undefined ? touch.clientY : touch.pageY)) || 0
-})
+function touchPoint(touch: PawEventTouchPoint | undefined): { x: number; y: number } {
+  if (!touch) return { x: 0, y: 0 }
+  return {
+    x: Number(touch.clientX !== undefined ? touch.clientX : touch.pageX) || 0,
+    y: Number(touch.clientY !== undefined ? touch.clientY : touch.pageY) || 0,
+  }
+}
 
-const touchDistance = touches => {
+function eventTouches(event: PawEvent): PawEventTouchPoint[] {
+  return Array.isArray(event.touches) ? event.touches : []
+}
+
+function touchDistance(touches: readonly PawEventTouchPoint[]): number {
   if (!touches || touches.length < 2) return 0
   const first = touchPoint(touches[0])
   const second = touchPoint(touches[1])
   return Math.sqrt(Math.pow(second.x - first.x, 2) + Math.pow(second.y - first.y, 2))
 }
 
-export default {
+export default defineComponent({
   name: 'PawImageCropper',
   components: { PawButton, PawIcon, PawOverlay },
   props: {
@@ -71,24 +88,18 @@ export default {
     cropSize: { type: [Number, String], default: 260 },
     maxScale: { type: Number, default: 3 }
   },
-  emits: ['update:visible', 'confirm', 'cancel'],
-  data() {
-    return {
-      imagePath: '',
-      imageInfo: null,
-      baseWidth: 0,
-      baseHeight: 0,
-      offsetX: 0,
-      offsetY: 0,
-      scaleValue: 1,
-      loading: false,
-      touchState: null
-    }
+  emits: {
+    'update:visible': (value: boolean) => typeof value === 'boolean',
+    confirm: (path: string) => typeof path === 'string',
+    cancel: () => true,
+  },
+  data(): PawImageCropperState {
+    return createPawImageCropperState()
   },
   computed: {
     visibleProxy: {
       get() { return this.visible },
-      set(value) { this.$emit('update:visible', value) }
+      set(value: boolean) { this.$emit('update:visible', value) }
     },
     cropSizePx() {
       const value = Number(this.cropSize)
@@ -120,11 +131,11 @@ export default {
     }
   },
   watch: {
-    visible(value) {
+    visible(value: boolean) {
       if (value) this.prepareImage()
       else this.resetState()
     },
-    src(value) {
+    src(value: string) {
       if (this.visible && value) this.prepareImage()
     }
   },
@@ -143,15 +154,14 @@ export default {
 
       uni.getImageInfo({
         src: source,
-        success: result => {
+        success: (result) => {
           if (!this.visible || this.imagePath !== source) return
-          const width = Number(result && result.width)
-          const height = Number(result && result.height)
-          if (!width || !height) return this.onImageError()
-          const coverScale = Math.max(this.cropSizePx / width, this.cropSizePx / height)
-          this.imageInfo = { width, height }
-          this.baseWidth = width * coverScale
-          this.baseHeight = height * coverScale
+          const imageInfo = normalizePawImageCropperInfo(result)
+          if (!imageInfo) return this.onImageError()
+          const coverScale = Math.max(this.cropSizePx / imageInfo.width, this.cropSizePx / imageInfo.height)
+          this.imageInfo = imageInfo
+          this.baseWidth = imageInfo.width * coverScale
+          this.baseHeight = imageInfo.height * coverScale
         },
         fail: () => this.onImageError()
       })
@@ -171,14 +181,14 @@ export default {
       this.offsetX = clamp(this.offsetX, -maxX, maxX)
       this.offsetY = clamp(this.offsetY, -maxY, maxY)
     },
-    adjustScale(delta) {
+    adjustScale(delta: number) {
       if (!this.imageReady) return
       this.scaleValue = clamp(Number((this.scaleValue + delta).toFixed(2)), 1, this.maxScaleValue)
       this.clampOffset()
     },
-    onTouchStart(event) {
+    onTouchStart(event: PawEvent) {
       if (!this.imageReady) return
-      const touches = event && event.touches ? event.touches : []
+      const touches = eventTouches(event)
       if (touches.length >= 2) {
         this.touchState = {
           type: 'pinch',
@@ -197,9 +207,9 @@ export default {
         offsetY: this.offsetY
       }
     },
-    onTouchMove(event) {
+    onTouchMove(event: PawEvent) {
       if (!this.imageReady || !this.touchState) return
-      const touches = event && event.touches ? event.touches : []
+      const touches = eventTouches(event)
       if (touches.length >= 2) {
         if (this.touchState.type !== 'pinch') return
         const distance = touchDistance(touches)
@@ -217,16 +227,18 @@ export default {
     onTouchEnd() {
       this.touchState = null
     },
-    getCropRect() {
+    getCropRect(): PawImageCropperRect | null {
+      const imageInfo = this.imageInfo
+      if (!imageInfo) return null
       const scaledWidth = this.baseWidth * this.scaleValue
       const scaledHeight = this.baseHeight * this.scaleValue
       const visualLeft = (this.cropSizePx - scaledWidth) / 2 + this.offsetX
       const visualTop = (this.cropSizePx - scaledHeight) / 2 + this.offsetY
-      const sourceWidth = this.imageInfo.width * this.cropSizePx / scaledWidth
-      const sourceHeight = this.imageInfo.height * this.cropSizePx / scaledHeight
+      const sourceWidth = imageInfo.width * this.cropSizePx / scaledWidth
+      const sourceHeight = imageInfo.height * this.cropSizePx / scaledHeight
       return {
-        x: clamp(-visualLeft / scaledWidth * this.imageInfo.width, 0, this.imageInfo.width - sourceWidth),
-        y: clamp(-visualTop / scaledHeight * this.imageInfo.height, 0, this.imageInfo.height - sourceHeight),
+        x: clamp(-visualLeft / scaledWidth * imageInfo.width, 0, imageInfo.width - sourceWidth),
+        y: clamp(-visualTop / scaledHeight * imageInfo.height, 0, imageInfo.height - sourceHeight),
         width: sourceWidth,
         height: sourceHeight
       }
@@ -241,6 +253,7 @@ export default {
       }
       this.loading = true
       const rect = this.getCropRect()
+      if (!rect) return this.onCropError()
       const context = uni.createCanvasContext('paw-image-cropper-canvas', this)
       context.clearRect(0, 0, this.cropSizePx, this.cropSizePx)
       context.drawImage(this.imagePath, rect.x, rect.y, rect.width, rect.height, 0, 0, this.cropSizePx, this.cropSizePx)
@@ -255,10 +268,11 @@ export default {
           destHeight: this.cropSizePx,
           fileType: 'png',
           quality: 1,
-          success: result => {
+          success: (result) => {
             this.loading = false
-            if (!result || !result.tempFilePath) return this.onCropError()
-            this.$emit('confirm', result.tempFilePath)
+            const path = normalizePawImageCropperPath(result && result.tempFilePath)
+            if (!path) return this.onCropError()
+            this.$emit('confirm', path)
             this.visibleProxy = false
           },
           fail: () => this.onCropError()
@@ -275,7 +289,7 @@ export default {
       this.visibleProxy = false
     }
   }
-}
+})
 </script>
 
 <style scoped>

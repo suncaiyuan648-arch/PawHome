@@ -15,19 +15,19 @@
 </template>
 
 <script lang="ts" setup>
-import {ref, reactive, withDefaults, watchEffect} from "vue";
-import { safeImgSrc } from "@/utils/safeImgSrc.js";
+import { reactive, ref, watchEffect } from 'vue'
+import { safeImgSrc } from "@/utils/safeImgSrc.ts";
 
 interface Props {
-  NineGridList: string[];
-  GridSpace: number;
-  OneChildHeight: number;
-  BorderRadiusSize: number | string;
-  IsPreview: boolean;
-  FailurePlaceholder: string;
-  LazyLoad: boolean;
-  FadeShow: boolean;
-  containerWidth: number
+  NineGridList?: string[];
+  GridSpace?: number;
+  OneChildHeight?: number;
+  BorderRadiusSize?: number | string;
+  IsPreview?: boolean;
+  FailurePlaceholder?: string;
+  LazyLoad?: boolean;
+  FadeShow?: boolean;
+  containerWidth?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -71,8 +71,8 @@ watchEffect(() => {
   setChildSize()
 });
 
-function gridItemSrc(item: unknown): string {
-  const raw = typeof item === "string" ? item : "";
+function gridItemSrc(item: string): string {
+  const raw = item;
   const fb = safeImgSrc(typeof props.FailurePlaceholder === "string" ? props.FailurePlaceholder : "");
   return safeImgSrc(raw, fb);
 }
@@ -89,13 +89,6 @@ function getImageStyle(index: number) {
     bottom: itemStyle.bottom + 'px',
     borderRadius: props.BorderRadiusSize + 'rpx'
   };
-}
-
-/**
- * 图片加载失败
- */
-function onImageError(index: number) {
-  props.NineGridList.splice(index, 1, props.FailurePlaceholder as any)
 }
 
 /**

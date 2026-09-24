@@ -1,5 +1,5 @@
-// The application is JavaScript-based; the runtime registry and generated name
-// list remain the source of truth for the JavaScript implementation.
+// The runtime registry and generated name list remain the source of truth for
+// the icon implementation while the application migrates to TypeScript.
 export type PawIconName = string
 
 export type PawIconSize = 'xs' | 'sm' | 'md' | 'base' | 'lg' | number | `${number}`

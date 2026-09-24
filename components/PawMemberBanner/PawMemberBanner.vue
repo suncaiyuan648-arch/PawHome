@@ -13,10 +13,13 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+import { defineComponent } from 'vue'
+
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
-export default {
+export default defineComponent({
 	name: 'PawMemberBanner',
 	components: { PawIcon },
 	props: {
@@ -24,13 +27,15 @@ export default {
 		progressText: { type: String, required: true },
 		clickable: { type: Boolean, default: true }
 	},
-	emits: ['click'],
+	emits: {
+    'click': eventContract<[]>(),
+  },
 	methods: {
 		handleClick() {
 			if (this.clickable) this.$emit('click')
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

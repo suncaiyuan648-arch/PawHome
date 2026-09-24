@@ -1,7 +1,8 @@
 <template><view class="paw-verified-badge"><text>已实名</text></view></template>
 
-<script>
-export default { name: 'PawVerifiedBadge' }
+<script lang="ts">import { defineComponent } from 'vue'
+
+export default defineComponent({ name: 'PawVerifiedBadge' })
 </script>
 
 <style scoped>

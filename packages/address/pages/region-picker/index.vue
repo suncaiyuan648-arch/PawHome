@@ -3,14 +3,49 @@
     fallback-url="/packages/address/pages/editor/index?kind=shipping" @complete="onComplete" @cancel="goBack" />
 </template>
 
-<script>
-import PawRegionPicker from '../../components/address/PawRegionPicker.vue'
-import { goBackSmart } from '@/utils/navBack.js'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
-export default {
+import PawRegionPicker from '../../components/address/PawRegionPicker.vue'
+import { goBackSmart } from '@/utils/navBack.ts'
+import {
+  createRegionPickerDemoMetadata,
+  normalizeRegionSelectionPayload,
+  type RegionSelectionPayload
+} from '@/utils/regionMock.ts'
+
+interface RegionSelectorPageState {
+  initialParts: string[]
+  maxLevel: number
+  startLevel: number
+  cityMode: boolean
+}
+
+type RegionEventChannel = Pick<UniNamespace.EventChannel, 'on' | 'emit'>
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value))
+}
+
+function getRegionEventChannel(page: unknown): RegionEventChannel | null {
+  if (!isRecord(page)) return null
+  const getChannel = page.getOpenerEventChannel
+  if (typeof getChannel !== 'function') return null
+  const channel: unknown = getChannel.call(page)
+  if (!isRecord(channel)) return null
+  const on = channel.on
+  const emit = channel.emit
+  if (typeof on !== 'function' || typeof emit !== 'function') return null
+  return {
+    on: on.bind(channel),
+    emit: emit.bind(channel)
+  }
+}
+
+export default defineComponent({
   name: 'RegionSelectorPage',
   components: { PawRegionPicker },
-  data() {
+  data(): RegionSelectorPageState {
     return {
       initialParts: [],
       maxLevel: 2,
@@ -18,38 +53,35 @@ export default {
       cityMode: false
     }
   },
-  onLoad(query = {}) {
-    this.cityMode = query.mode === 'city'
+  onLoad(query: unknown = {}) {
+    const route = isRecord(query) ? query : {}
+    this.cityMode = route.mode === 'city'
     this.maxLevel = this.cityMode ? 1 : 2
+    this.startLevel = -1
+    this.initialParts = []
 
-    if (query.state === 'back') {
-      this.maxLevel = 3
-      this.startLevel = 0
-      this.initialParts = ['安徽省', '滁州市', '南谯区', '']
-    } else if (query.state === 'street') {
-      this.maxLevel = 3
-      this.startLevel = 3
-      this.initialParts = ['安徽省', '滁州市', '南谯区', '']
-    } else if (query.state === 'city') {
-      this.maxLevel = 1
-      this.startLevel = 1
-      this.initialParts = ['安徽省', '', '', '']
+    const demo = createRegionPickerDemoMetadata(route.state)
+    if (demo) {
+      this.maxLevel = demo.maxLevel
+      this.startLevel = demo.startLevel
+      this.initialParts = demo.initialParts
     }
 
-    const channel = this.getOpenerEventChannel && this.getOpenerEventChannel()
-    if (channel && typeof channel.on === 'function') {
-      channel.on('initRegion', (payload = {}) => {
-        if (!Array.isArray(payload.parts)) return
+    const channel = getRegionEventChannel(this)
+    if (channel) {
+      channel.on('initRegion', (payload: unknown) => {
+        const initial = normalizeRegionSelectionPayload(payload)
+        if (!initial) return
         this.startLevel = -1
-        this.initialParts = payload.parts.slice(0, 4)
+        this.initialParts = initial.parts
       })
     }
   },
   methods: {
-    onComplete(payload = {}) {
-      const parts = Array.isArray(payload.parts) ? payload.parts.filter(Boolean) : []
-      const channel = this.getOpenerEventChannel && this.getOpenerEventChannel()
-      if (channel && typeof channel.emit === 'function') channel.emit('regionSelected', { parts })
+    onComplete(payload: RegionSelectionPayload) {
+      const channel = getRegionEventChannel(this)
+      if (channel) channel.emit('regionSelected', payload)
+      const parts = payload.parts.filter(Boolean)
       if (this.cityMode && parts.length) uni.setStorageSync('selectedCity', parts[parts.length - 1])
       goBackSmart({ fallbackUrl: '/packages/address/pages/editor/index?kind=shipping', fallbackLaunch: 'redirectTo' })
     },
@@ -57,5 +89,5 @@ export default {
       goBackSmart({ fallbackUrl: '/packages/address/pages/editor/index?kind=shipping', fallbackLaunch: 'redirectTo' })
     }
   }
-}
+})
 </script>

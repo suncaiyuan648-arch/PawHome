@@ -2,8 +2,9 @@
 	<view class="paw-owner-badge"><text>院主</text></view>
 </template>
 
-<script>
-export default { name: 'PawOwnerBadge' }
+<script lang="ts">import { defineComponent } from 'vue'
+
+export default defineComponent({ name: 'PawOwnerBadge' })
 </script>
 
 <style scoped>

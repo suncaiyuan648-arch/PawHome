@@ -1,13 +1,13 @@
 # G-ADOPTION-review-adapter：领养审核只读 adapter 子批
 
-日期：2026-09-16  
-执行人：治理 coder（Luna / xhigh）  
-范围：`packages/adoption/services/reviewAdapter.js`、领养审核治理测试  
+日期：2026-09-16<br>
+执行人：治理 coder（Luna / xhigh）<br>
+范围：`packages/adoption/services/reviewAdapter.ts`、领养审核治理测试<br>
 状态：待总工程师验收；未暂存、未提交、未上传、未发布
 
 ## 交付结论
 
-本批新增领养审核只读 adapter，将现有 `navigation/adoptionReviewContract.js` 绑定到 `utils/adoptionStorage.js` 的 `PAWHOME_ADOPTIONS` 读取边界：
+本批新增领养审核只读 adapter，将现有 `navigation/adoptionReviewContract.ts` 绑定到 `utils/adoptionStorage.ts` 的 `PAWHOME_ADOPTIONS` 读取边界：
 
 - `readAdoptionReviewList` / `getAdoptionReviewList`：从真实持久化记录读取审核队列，支持明确的 `reviewerRole`（`owner`、`cloud_parent`、`reviewer`）和审核状态筛选。
 - `readAdoptionReviewDetail` / `getAdoptionReviewDetail`：按 `reviewItemId` 精确定位，传入 `applicationId` 时同时要求应用 ID 精确匹配；没有首条、末条、申请人或演示数据兜底。
@@ -20,10 +20,10 @@
 
 | 文件 | 作用 |
 | --- | --- |
-| `packages/adoption/services/reviewAdapter.js` | 真实 `PAWHOME_ADOPTIONS` 读取绑定、reviewer role 选择、精确 ID 查找、只读错误模型 |
+| `packages/adoption/services/reviewAdapter.ts` | 真实 `PAWHOME_ADOPTIONS` 读取绑定、reviewer role 选择、精确 ID 查找、只读错误模型 |
 | `tests/governance/adoption-review-adapter.test.cjs` | 8 个 focused 测试，覆盖正向读取和授权/数据边界反例 |
 
-没有新增页面、组件、路由、分包入口或 storage key；没有改动 `adoptionReviewContract.js`、`adoptionStorage.js` 的状态机和写入函数。adapter 不接受外部 records/resolver，避免测试 seam 变成生产提权入口。
+没有新增页面、组件、路由、分包入口或 storage key；没有改动 `adoptionReviewContract.ts`、`adoptionStorage.ts` 的状态机和写入函数。adapter 不接受外部 records/resolver，避免测试 seam 变成生产提权入口。
 
 ## 反例测试覆盖
 
@@ -43,7 +43,7 @@
 独立语法检查：
 
 ```text
-node --check packages/adoption/services/reviewAdapter.js
+node --check packages/adoption/services/reviewAdapter.ts
 ```
 
 结果：PASS。`git diff --check`：PASS。

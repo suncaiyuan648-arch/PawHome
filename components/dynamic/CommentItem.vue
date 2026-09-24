@@ -24,9 +24,9 @@
       </view>
       <view v-if="comment.children && comment.children.length" class="comment-item__children">
         <view v-for="child in visibleReplies" :key="child.id" class="comment-item comment-item--reply">
-          <PawUserIdentity class="comment-item__identity" :avatar="child.author.avatar" :name="child.author.name"
-            :avatar-size="33" :level="child.author.level" :owner="child.author.owner || child.owner"
-            :tag="child.author.tag || child.authorTag || ''" block @avatar-click="onUserAvatarClick(child)"
+          <PawUserIdentity class="comment-item__identity" :avatar="replyAuthor(child).avatar" :name="replyAuthor(child).name"
+            :avatar-size="33" :level="replyAuthor(child).level" :owner="replyAuthor(child).owner || child.owner"
+            :tag="replyAuthor(child).tag || child.authorTag || ''" block @avatar-click="onUserAvatarClick(child)"
             @name-click="onUserNameClick(child)" @membership-click="onMembershipClick" @badge-click="onBadgeClick">
             <VoiceComment v-if="child.kind === 'voice'" :duration="child.duration" :playing="playing"
               :bars="child.voiceBars" @toggle="$emit('voice-play', child)" />
@@ -58,35 +58,60 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
 import PawUserIdentity from '@/components/identity/PawUserIdentity.vue'
 import VoiceComment from '@/components/dynamic/VoiceComment.vue'
 import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import PawLikeIcon from '@/components/base/PawLikeIcon.vue'
 import PawDivider from '@/components/base/PawDivider.vue'
+import type { CommentItemRecord, CommentItemState } from './commentMetadata.ts'
 
-export default {
+export default defineComponent({
   name: 'CommentItem',
   components: { PawUserIdentity, VoiceComment, LevelBadge, PawLikeIcon, PawDivider },
   props: {
-    comment: { type: Object, default: () => ({}) },
+    comment: {
+      type: Object as PropType<CommentItemRecord>,
+      default: (): CommentItemRecord => ({
+        id: '', author: { name: '', avatar: '' }, copy: '', meta: '', likes: 0, liked: false, children: []
+      })
+    },
     readonly: { type: Boolean, default: false },
     playing: { type: Boolean, default: false },
     replyPreviewCount: { type: Number, default: 1 }
   },
-  emits: ['user-click', 'reply', 'like', 'voice-play', 'expand-replies'],
-  data() { return { repliesExpanded: false } },
+  emits: {
+    'user-click': eventContract<[comment: CommentItemRecord]>(),
+    'reply': eventContract<[comment: CommentItemRecord]>(),
+    'like': eventContract<[comment: CommentItemRecord]>(),
+    'voice-play': eventContract<[comment: CommentItemRecord]>(),
+    'expand-replies': eventContract<[payload: { comment: CommentItemRecord; expanded: boolean }]>(),
+  },
+  data(): CommentItemState { return { repliesExpanded: false } },
   computed: {
-    author() { return this.comment.author || this.comment },
+    author() { return this.replyAuthor(this.comment) },
     replies() { return this.comment.children || [] },
     visibleReplies() { return this.repliesExpanded ? this.replies : this.replies.slice(0, this.replyPreviewCount) },
     hiddenReplyCount() { return Math.max(0, this.replies.length - this.replyPreviewCount) },
     hasHiddenReplies() { return this.hiddenReplyCount > 0 }
   },
   methods: {
-    onUserAvatarClick(comment) { this.$emit('user-click', comment) },
-    onUserNameClick(comment) { this.$emit('user-click', comment) },
-    onReplyTap(comment) {
+    replyAuthor(comment: CommentItemRecord) {
+      return comment.author || {
+        name: comment.name || '',
+        avatar: comment.avatar || '',
+        level: comment.level,
+        owner: comment.owner,
+        tag: comment.authorTag
+      }
+    },
+    onUserAvatarClick(comment: CommentItemRecord) { this.$emit('user-click', comment) },
+    onUserNameClick(comment: CommentItemRecord) { this.$emit('user-click', comment) },
+    onReplyTap(comment: CommentItemRecord) {
       if (!this.readonly) this.$emit('reply', comment)
     },
     onMembershipClick() { },
@@ -96,7 +121,7 @@ export default {
       this.$emit('expand-replies', { comment: this.comment, expanded: this.repliesExpanded })
     }
   }
-}
+})
 </script>
 
 <style scoped>

@@ -7,7 +7,7 @@
 
 ## 交付结论
 
-新增 `packages/rescue/services/stateContract.js`，作为救助状态三轴的轻量纯 JS 合同模块。模块无 Vue、uni、页面、路由和 storage 依赖；只接收记录或 JSON，并返回冻结的只读投影。没有状态迁移函数、资金写入函数或普通 actor 的打款能力。
+新增 `packages/rescue/services/stateContract.ts`，作为救助状态三轴的轻量纯 JS 合同模块。模块无 Vue、uni、页面、路由和 storage 依赖；只接收记录或 JSON，并返回冻结的只读投影。没有状态迁移函数、资金写入函数或普通 actor 的打款能力。
 
 新增 `tests/governance/rescue-state-contract.test.cjs`，覆盖缺失、未知、冲突、旧字段兼容、查询参数伪造和资金权限反例。
 
@@ -21,7 +21,7 @@
 
 字段字典由 `RESCUE_STATE_FIELD_DICTIONARY` 导出。未知或冲突轴的状态归一化为 `unknown`，并在 `errors` 记录 `UNKNOWN_STATUS` 或 `CONFLICTING_STATUS`；缺字段保持 `unknown`，不从其他轴推断。
 
-`status` 是 `utils/rescueStorage.js` 的历史复合字段：旧 `pending/rejected` 只读作评审状态，旧 `unpaid/paid` 只读作资金状态。合同绝不使用资金状态改写 `applicationStatus` 或原始 `status`，也不新增 storage key。
+`status` 是 `utils/rescueStorage.ts` 的历史复合字段：旧 `pending/rejected` 只读作评审状态，旧 `unpaid/paid` 只读作资金状态。合同绝不使用资金状态改写 `applicationStatus` 或原始 `status`，也不新增 storage key。
 
 ## 只读投影与 fail-closed 规则
 
@@ -53,6 +53,6 @@ VISUAL: NOT RUN
 
 ## 限制与后续接入
 
-本合同尚未接入 `rescueStorage.js`、救助审核详情、基金列表、投票任务或打款 UI；未改变现有救助状态转换，也未开放真实审核、打款或支付。后续 C1/C0 接入时必须在数据读取边界调用本合同，按可信记录读取审核/评审/资金字段，并由独立 actor/capability 合同决定任何写操作；不能把投影中的 `paid` 或 query/role/outcome 当作写权限。
+本合同尚未接入 `rescueStorage.ts`、救助审核详情、基金列表、投票任务或打款 UI；未改变现有救助状态转换，也未开放真实审核、打款或支付。后续 C1/C0 接入时必须在数据读取边界调用本合同，按可信记录读取审核/评审/资金字段，并由独立 actor/capability 合同决定任何写操作；不能把投影中的 `paid` 或 query/role/outcome 当作写权限。
 
 回滚单位为新增合同模块、对应治理测试和本 handoff；不涉及页面、路由、存储迁移或业务数据。

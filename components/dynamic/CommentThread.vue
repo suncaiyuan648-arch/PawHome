@@ -25,16 +25,21 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
 import CommentItem from '@/components/dynamic/CommentItem.vue'
 import PawEmptyState from '@/components/feedback/PawEmptyState.vue'
 import PawDivider from '@/components/base/PawDivider.vue'
+import type { CommentItemRecord, CommentThreadState } from './commentMetadata.ts'
 
-export default {
+export default defineComponent({
   name: 'CommentThread',
   components: { CommentItem, PawEmptyState, PawDivider },
   props: {
-    comments: { type: Array, default: () => [] },
+    comments: { type: Array as PropType<CommentItemRecord[]>, default: () => [] },
     total: { type: String, default: '' },
     titleCount: { type: [String, Number], default: '' },
     empty: { type: Boolean, default: false },
@@ -42,8 +47,15 @@ export default {
     commentPreviewCount: { type: Number, default: 3 },
     replyPreviewCount: { type: Number, default: 1 }
   },
-  emits: ['user-click', 'reply', 'like', 'voice-play', 'expand-comments', 'empty-action'],
-  data() { return { commentsExpanded: false, playingId: null } },
+  emits: {
+    'user-click': eventContract<[comment: CommentItemRecord]>(),
+    'reply': eventContract<[comment: CommentItemRecord]>(),
+    'like': eventContract<[comment: CommentItemRecord]>(),
+    'voice-play': eventContract<[comment: CommentItemRecord]>(),
+    'expand-comments': eventContract<[expanded: boolean]>(),
+    'empty-action': eventContract<[]>(),
+  },
+  data(): CommentThreadState { return { commentsExpanded: false, playingId: null } },
   computed: {
     visibleComments() { return this.commentsExpanded ? this.comments : this.comments.slice(0, this.commentPreviewCount) },
     hiddenCommentCount() { return Math.max(0, this.comments.length - this.commentPreviewCount) }
@@ -53,12 +65,12 @@ export default {
       this.commentsExpanded = !this.commentsExpanded
       this.$emit('expand-comments', this.commentsExpanded)
     },
-    onVoicePlay(comment) {
+    onVoicePlay(comment: CommentItemRecord) {
       this.playingId = this.playingId === comment.id ? null : comment.id
       this.$emit('voice-play', comment)
     }
   }
-}
+})
 </script>
 
 <style scoped>

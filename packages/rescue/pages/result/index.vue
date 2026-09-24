@@ -15,36 +15,39 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawButton from '@/components/base/PawButton.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
-import { goBackSmart } from '@/utils/navBack.js'
-import { getRescueById } from '@/utils/rescueStorage.js'
-import { buildRoute } from '@/navigation/routeContracts.js'
+import { goBackSmart } from '@/utils/navBack.ts'
+import { getRescueById } from '@/utils/rescueStorage.ts'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import { createRescueResultPageState, rescueResultIdFromOptions } from '../../services/componentMetadata.ts'
 
-export default {
+export default defineComponent({
   components: { PawPageNav, PawButton, PawIcon },
-  data() { return { rescueId: '' } },
-  onLoad(options = {}) {
-    const rescueId = String(options.rescueId || '').trim()
+  data() { return createRescueResultPageState() },
+  onLoad(options: unknown = {}) {
+    const rescueId = rescueResultIdFromOptions(options)
     if (!rescueId || !getRescueById(rescueId, { includeDemo: false })) return
     try {
       buildRoute('rescue.result', { rescueId, outcome: 'application-submitted' })
       this.rescueId = rescueId
-    } catch (error) { this.rescueId = '' }
+    } catch { this.rescueId = '' }
   },
   methods: {
     goBack() { goBackSmart({ fallbackUrl: buildRoute('rescue.fund', {}), fallbackLaunch: 'redirectTo' }) },
     goProgress() {
       if (!this.rescueId) {
-        try { uni.redirectTo({ url: buildRoute('rescue.fund', {}) }) } catch (error) { this.goBack() }
+        try { uni.redirectTo({ url: buildRoute('rescue.fund', {}) }) } catch { this.goBack() }
         return
       }
-      try { uni.redirectTo({ url: buildRoute('rescue.progress', { rescueId: this.rescueId }) }) } catch (error) { this.goBack() }
+      try { uni.redirectTo({ url: buildRoute('rescue.progress', { rescueId: this.rescueId }) }) } catch { this.goBack() }
     }
   }
-}
+})
 </script>
 
 <style scoped>

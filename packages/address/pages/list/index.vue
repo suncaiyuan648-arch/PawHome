@@ -30,30 +30,55 @@
 	</view>
 </template>
 
-<script>
-import { goBackSmart } from '@/utils/navBack.js'
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+import { goBackSmart } from '@/utils/navBack.ts'
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawAddressCard from '../../components/form/PawAddressCard.vue'
 import PawEmptyState from '@/components/feedback/PawEmptyState.vue'
 import PawDialog from '@/components/overlay/PawDialog.vue'
-import { deleteAddress, getAddressList, setDefaultAddress } from '@/utils/addressMock.js'
-import { buildRoute } from '@/navigation/routeContracts.js'
+import { deleteAddress, getAddressList, setDefaultAddress, toAddressPickedPayload, type AddressKind, type AddressRecord } from '@/utils/addressMock.ts'
+import { buildRoute } from '@/navigation/routeContracts.ts'
 
-const mockShipping = () => {
-	const detail = '湖南省 长沙市 雨花区 中意一路167号 乐盈前城2栋2单元18楼天台'
-	const base = { name: '项子涵', phone: '13366669999', detail }
-	return [0, 1, 2, 3].map((i) => ({ id: String(i + 1), ...base, isDefault: i === 0 }))
+interface AddressListPageState {
+	activeKind: AddressKind
+	manageMode: boolean
+	shippingList: AddressRecord[]
+	serviceList: AddressRecord[]
+	showDeleteDialog: boolean
+	pendingDeleteId: string | null
+	pickMode: boolean
+	stateOverride: string
+	selectedAddressId: string
+	returnUrl: string
 }
 
-const mockService = () => [
-	{ id: 's-1', name: '李阿姨', phone: '13800001111', detail: '雨花区 中意一路167号 2栋天台喂养点', isDefault: true },
-	{ id: 's-2', name: '何师傅', phone: '13900002222', detail: '天心区 芙蓉中路三段 领养服务站', isDefault: false },
-	{ id: 's-3', name: '王站长', phone: '13700003333', detail: '岳麓区 银杉路 城市流浪动物救助点', isDefault: false }
-]
+type AddressPickedEventChannel = Pick<UniNamespace.EventChannel, 'emit'>
 
-export default {
+const DEFAULT_RETURN_URL = '/packages/account/pages/settings/index'
+
+function readRouteText(value: unknown): string {
+	return value === undefined || value === null ? '' : String(value)
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return Boolean(value && typeof value === 'object' && !Array.isArray(value))
+}
+
+function getAddressEventChannel(page: unknown): AddressPickedEventChannel | null {
+	if (!isRecord(page)) return null
+	const getChannel = page.getOpenerEventChannel
+	if (typeof getChannel !== 'function') return null
+	const channel: unknown = getChannel.call(page)
+	if (!isRecord(channel) || typeof channel.emit !== 'function') return null
+	const emit = channel.emit
+	return { emit: (eventName, payload) => { emit.call(channel, eventName, payload) } }
+}
+
+export default defineComponent({
 	components: { PawPageNav, PawAddressCard, PawEmptyState, PawDialog },
-	data() {
+	data(): AddressListPageState {
 		return {
 			activeKind: 'shipping',
 			manageMode: false,
@@ -68,22 +93,22 @@ export default {
 		}
 	},
 	computed: {
-		currentList() {
+		currentList(): AddressRecord[] {
 			return this.activeKind === 'shipping' ? this.shippingList : this.serviceList
 		}
 	},
-	onLoad(options = {}) {
+	onLoad(options: Record<string, unknown> = {}) {
 		this.pickMode = options.pick === '1' || options.pick === 1 || options.intent === 'select' || options.state === 'pick'
 		this.activeKind = options.kind === 'service' ? 'service' : 'shipping'
 		this.selectedAddressId = String(options.selectedId || options.addressId || '')
-		this.returnUrl = this.decodeReturnUrl(options.returnUrl) || '/packages/account/pages/settings/index'
-		this.stateOverride = options.state || ''
+		this.returnUrl = this.decodeReturnUrl(options.returnUrl) || DEFAULT_RETURN_URL
+		this.stateOverride = readRouteText(options.state)
 		this.loadAddresses()
 		if (this.stateOverride === 'empty') this.shippingList = []
-		if (options.state === 'manage') this.manageMode = true
-		if (options.state === 'delete') {
+		if (this.stateOverride === 'manage') this.manageMode = true
+		if (this.stateOverride === 'delete') {
 			this.manageMode = true
-			this.pendingDeleteId = this.currentList[0] && this.currentList[0].id
+			this.pendingDeleteId = this.currentList[0]?.id || null
 			this.showDeleteDialog = true
 		}
 	},
@@ -91,9 +116,10 @@ export default {
 		if (this.stateOverride !== 'empty') this.loadAddresses()
 	},
 	methods: {
-		decodeReturnUrl(value) {
-			if (!value) return ''
-			try { return decodeURIComponent(String(value)) || '' } catch (error) { return String(value) }
+		decodeReturnUrl(value: unknown): string {
+			const text = readRouteText(value)
+			if (!text) return ''
+			try { return decodeURIComponent(text) || '' } catch { return text }
 		},
 		loadAddresses() {
 			this.shippingList = getAddressList('shipping')
@@ -101,23 +127,14 @@ export default {
 		},
 		onPageBack() {
 			if (!this.pickMode || !this.selectedAddressId) return
-			const selected = this.currentList.find(item => String(item.id) === this.selectedAddressId)
+			const selected = this.currentList.find(item => item.id === this.selectedAddressId)
 			if (selected) this.emitAddressPicked(selected)
 		},
-		emitAddressPicked(row) {
-			const channel = this.getOpenerEventChannel && this.getOpenerEventChannel()
-			if (channel && channel.emit) {
-				channel.emit('addressPicked', {
-					id: row.id,
-					name: row.name,
-					phone: row.phone,
-					regionParts: row.regionParts || [],
-					detail: row.detail,
-					isDefault: row.isDefault === true
-				})
-			}
+		emitAddressPicked(row: AddressRecord) {
+			const channel = getAddressEventChannel(this)
+			if (channel) channel.emit('addressPicked', toAddressPickedPayload(row))
 		},
-		onAddrBodyTap(row) {
+		onAddrBodyTap(row: AddressRecord) {
 			if (this.manageMode) return
 			if (this.pickMode) {
 				this.emitAddressPicked(row)
@@ -129,22 +146,22 @@ export default {
 			}
 			this.onEdit(row)
 		},
-		onSelectAddress(row) {
+		onSelectAddress(row: AddressRecord | null | undefined) {
 			if (row) this.onAddrBodyTap(row)
 		},
-		onEdit(row) {
+		onEdit(row: AddressRecord) {
 			if (this.manageMode) return
 			this.openAddressPage(row)
 		},
 		onManage() {
 			this.manageMode = !this.manageMode
 		},
-		onSetDefault(id) {
+		onSetDefault(id: string) {
 			const list = setDefaultAddress(id, this.activeKind)
 			if (this.activeKind === 'shipping') this.shippingList = list
 			else this.serviceList = list
 		},
-		onDelete(id) {
+		onDelete(id: string) {
 			if (this.currentList.length <= 1) {
 				uni.showToast({ title: '至少保留一个地址', icon: 'none' })
 				return
@@ -168,13 +185,13 @@ export default {
 			else this.serviceList = next
 			this.closeDeleteDialog()
 		},
-		openAddressPage(row = null) {
-			const params = { kind: this.activeKind }
+		openAddressPage(row: AddressRecord | null = null) {
+			const params: Record<string, string> = { kind: this.activeKind }
 			if (row && row.id) params.addressId = String(row.id)
 			uni.navigateTo({
 				url: buildRoute('address.editor', params),
 				events: {
-					addressSaved: (payload = {}) => this.onAddressPageSaved(payload)
+					addressSaved: () => this.onAddressPageSaved()
 				}
 			})
 		},
@@ -185,7 +202,7 @@ export default {
 			this.openAddressPage()
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

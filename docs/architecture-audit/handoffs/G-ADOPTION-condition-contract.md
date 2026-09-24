@@ -6,11 +6,11 @@
 
 ## 交付范围
 
-新增 [`navigation/adoptionConditionContract.js`](../../../navigation/adoptionConditionContract.js)。该文件是纯 JavaScript 合同，不依赖 Vue、uni-app、页面、分包、storage、mock、网络或现有业务服务，也不提供写入函数。
+新增 [`navigation/adoptionConditionContract.ts`](../../../navigation/adoptionConditionContract.ts)。该文件是纯 JavaScript 合同，不依赖 Vue、uni-app、页面、分包、storage、mock、网络或现有业务服务，也不提供写入函数。
 
 合同由调用方注入真实的状态转换边界和必要的云家长评审解析器：
 
-- `createAdoptionTransitionContract(transitions)` 只冻结调用方传入的转换表快照，不复制 `ADOPTION_TRANSITIONS`，也不创建第二套状态枚举。接入时必须传入 `utils/adoptionStorage.js` 的 `ADOPTION_TRANSITIONS`，或由等价 adapter 暴露其 `canTransition` 语义。
+- `createAdoptionTransitionContract(transitions)` 只冻结调用方传入的转换表快照，不复制 `ADOPTION_TRANSITIONS`，也不创建第二套状态枚举。接入时必须传入 `utils/adoptionStorage.ts` 的 `ADOPTION_TRANSITIONS`，或由等价 adapter 暴露其 `canTransition` 语义。
 - `evaluateCloudParentCondition({ record, policy, reviewResolver })` 读取 `cloudParentIds`/`cloudParentPawId` 与现有 `cloudParentApprovals`。0 个云家长返回 `skip` 并允许继续；1 个云家长没有批准时保持 `pending`，只有现有批准记录能证明 `approved`。
 - `cloudParentRequired` 必须与权威 ID 集合一致：`false + 有 ID`、`true + 无 ID`、非布尔值和单/列表 ID 冲突都返回 `decision_required`；审批与拒绝列表同时包含同一云家长也 fail-closed。
 - 多个云家长没有显式 policy 时返回 `decision_required` 并禁止继续，不猜测全员或任一规则。policy 必须显式提供 `selection: any|all|specific`、完整 `legalStates` 和 pending/approved/rejected 的一一映射；`specific` 还必须提供 `specificIds` 及其 `any|all` 聚合规则。
@@ -38,13 +38,13 @@
 
 ```text
 node --test tests/governance/adoption-condition-contract.test.cjs  # 13/13 PASS
-node --check navigation/adoptionConditionContract.js              # PASS
-git diff --check -- navigation/adoptionConditionContract.js tests/governance/adoption-condition-contract.test.cjs  # PASS
+node --check navigation/adoptionConditionContract.ts              # PASS
+git diff --check -- navigation/adoptionConditionContract.ts tests/governance/adoption-condition-contract.test.cjs  # PASS
 ```
 
 ## 现有数据限制与 DECISION_REQUIRED
 
-当前 `utils/adoptionStorage.js` 已有 `cloudParentRequired`、`cloudParentIds`、`cloudParentPawId`、`cloudParentApprovals` 和 `ADOPTION_TRANSITIONS`，因此 0/1 家长兼容读取与合法状态边界可由 adapter 接入。
+当前 `utils/adoptionStorage.ts` 已有 `cloudParentRequired`、`cloudParentIds`、`cloudParentPawId`、`cloudParentApprovals` 和 `ADOPTION_TRANSITIONS`，因此 0/1 家长兼容读取与合法状态边界可由 adapter 接入。
 
 当前记录没有稳定的 `applicantId`/`applicantUserId` 私密归属字段，不能安全地从 `applicantName` 或通用 `userId` 推导申请人视角。接入必须从可信会话和后端/adapter 注入申请人归属；在此之前申请人私密读取保持关闭。
 

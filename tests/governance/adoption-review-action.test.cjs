@@ -56,21 +56,22 @@ function reset() {
 
 before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-adoption-review-action-'))
-  await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+  await fs.cp(path.join(ROOT, 'contracts'), path.join(tempRoot, 'contracts'), { recursive: true })
+  await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'packages/adoption/services'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'services/domainReads/adoption'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'utils'), { recursive: true })
-  await fs.copyFile(path.join(ROOT, 'packages/adoption/services/reviewActionAdapter.js'), path.join(tempRoot, 'packages/adoption/services/reviewActionAdapter.js'))
-  await fs.copyFile(path.join(ROOT, 'packages/adoption/services/reviewAdapter.js'), path.join(tempRoot, 'packages/adoption/services/reviewAdapter.js'))
-  await fs.copyFile(path.join(ROOT, 'services/domainReads/adoption/reviewAdapter.js'), path.join(tempRoot, 'services/domainReads/adoption/reviewAdapter.js'))
-  for (const file of ['actorCapabilities.js', 'adoptionConditionContract.js', 'adoptionReviewContract.js']) {
+  await fs.copyFile(path.join(ROOT, 'packages/adoption/services/reviewActionAdapter.ts'), path.join(tempRoot, 'packages/adoption/services/reviewActionAdapter.ts'))
+  await fs.copyFile(path.join(ROOT, 'packages/adoption/services/reviewAdapter.ts'), path.join(tempRoot, 'packages/adoption/services/reviewAdapter.ts'))
+  await fs.copyFile(path.join(ROOT, 'services/domainReads/adoption/reviewAdapter.ts'), path.join(tempRoot, 'services/domainReads/adoption/reviewAdapter.ts'))
+  for (const file of ['actorCapabilities.ts', 'adoptionConditionContract.ts', 'adoptionReviewContract.ts']) {
     await fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
   }
-  await fs.copyFile(path.join(ROOT, 'utils/adoptionStorage.js'), path.join(tempRoot, 'utils/adoptionStorage.js'))
+  await fs.copyFile(path.join(ROOT, 'utils/adoptionStorage.ts'), path.join(tempRoot, 'utils/adoptionStorage.ts'))
   storage = new Map()
   reset()
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/adoption/services/reviewActionAdapter.js')).href}?test=${Date.now()}`)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/adoption/services/reviewActionAdapter.ts')).href}?test=${Date.now()}`)
 })
 
 beforeEach(reset)

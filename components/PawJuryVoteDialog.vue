@@ -29,26 +29,32 @@
   </PawDialog>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
 import PawDialog from '@/components/overlay/PawDialog.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawVoteRatioBar from '@/components/PawVoteRatioBar.vue'
 
-function clampPercent(value, fallback) {
+interface JuryVoteDialogState { pendingCloseReason: string }
+
+function clampPercent(value: number, fallback: number): number {
   const number = Number(value)
   if (!Number.isFinite(number)) return fallback
   return Math.max(0, Math.min(100, number))
 }
 
-export default {
+export default defineComponent({
   name: 'PawJuryVoteDialog',
   components: { PawDialog, PawIcon, PawVoteRatioBar },
   props: {
     modelValue: { type: Boolean, default: false },
     selectedVote: {
-      type: String,
+      type: String as PropType<'real' | 'fake'>,
       default: 'real',
-      validator: value => ['real', 'fake'].includes(value)
+      validator: (value: unknown) => value === 'real' || value === 'fake'
     },
     realPercent: { type: Number, default: 50 },
     fakePercent: { type: Number, default: 50 },
@@ -61,8 +67,15 @@ export default {
     height: { type: [String, Number], default: 'calc(266px + env(safe-area-inset-bottom))' },
     zIndex: { type: [String, Number], default: 10020 }
   },
-  emits: ['update:modelValue', 'close', 'back', 'next', 'after-open', 'after-close'],
-  data() {
+  emits: {
+    'update:modelValue': eventContract<[value: boolean]>(),
+    'close': eventContract<[result: { vote: 'real' | 'fake'; realPercent: number; fakePercent: number; realVoteCount: number | string; fakeVoteCount: number | string } & { reason: string }]>(),
+    'back': eventContract<[result: { vote: 'real' | 'fake'; realPercent: number; fakePercent: number; realVoteCount: number | string; fakeVoteCount: number | string }]>(),
+    'next': eventContract<[result: { vote: 'real' | 'fake'; realPercent: number; fakePercent: number; realVoteCount: number | string; fakeVoteCount: number | string }]>(),
+    'after-open': eventContract<[]>(),
+    'after-close': eventContract<[]>(),
+  },
+  data(): JuryVoteDialogState {
     return { pendingCloseReason: '' }
   },
   computed: {
@@ -96,7 +109,7 @@ export default {
     }
   },
   methods: {
-    onDialogValueChange(value) {
+    onDialogValueChange(value: boolean) {
       this.$emit('update:modelValue', value)
       if (!value) {
         const reason = this.pendingCloseReason || 'mask'
@@ -114,7 +127,7 @@ export default {
       this.$emit('close', { reason: 'next', ...this.resultPayload })
     }
   }
-}
+})
 </script>
 
 <style scoped>

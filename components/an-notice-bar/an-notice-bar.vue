@@ -12,7 +12,7 @@
 					<swiper-item v-for="(text, index) in list" :key="index" :item-id="index" class="an-notice-content-item">
 						<view class="swiper-item">
 							<text class="an-notice-content-item-text" :style="'color: '+color+';'">
-								<text v-if="list.length > 1 || showSerial">{{index+1+'. '}}</text>
+								<text v-if="list.length > 1 || showSerial || showSerialLocal">{{Number(index)+1+'. '}}</text>
 								{{text}}
 							</text>
 						</view>
@@ -35,9 +35,11 @@
 	</view>
 </template>
 
-<script>
+<script lang="ts">import { defineComponent } from 'vue'
+	import { createAnNoticeBarState, splitAnNoticeText, type AnNoticeBarState } from './noticeMetadata.ts'
+
 	import uniIcons from '@/uni_modules/uni-icons/components/uni-icons/uni-icons.vue'
-	export default {
+	export default defineComponent({
 		components: {
 			uniIcons
 		},
@@ -45,7 +47,7 @@
 			text: {
 				type: String,
 				default: '暂无未读消息'
-			}, 
+			},
 			color: {
 				type: String,
 				default: '#de8c17'
@@ -63,19 +65,17 @@
 				default: false
 			}
 		},
-		data() {
-			return {
-				number: 0,
-				list: [],
-				copyText: '',
-				show: '',
-			};
+		emits: {
+			more: () => true,
+		},
+		data(): AnNoticeBarState {
+			return createAnNoticeBarState()
 		},
 		mounted() {
-			this.list = this.text.split('|');
+			this.list = splitAnNoticeText(this.text);
 			console.log(this.list.length)
 			if(this.list.length > 1){
-				this.showSerial = true;
+					this.showSerialLocal = true;
 			}
 			this.show = true;
 			/* this.number = 0;
@@ -86,17 +86,17 @@
 				this.show = true;
 				if(this.text != this.copyText){
 					this.copyText = this.text;
-					this.list = this.text.split('|');
+					this.list = splitAnNoticeText(this.text);
 					console.log(JSON.stringify(this.list))
 					if(this.list.length > 1){
-						this.showSerial = true;
+						this.showSerialLocal = true;
 					}
 				}
 				/* this.number = 0;
 				this.startMove(); */
 			}
 		},
-		methods: {			
+		methods: {
 			/* startMove () {
 			  // eslint-disable-next-line
 			  let timer = setTimeout(() => {
@@ -113,7 +113,7 @@
 				this.$emit('more')
 			}
 		}
-	}
+	})
 </script>
 
 <style>
@@ -121,47 +121,47 @@
 		height: 60upx!important;
 	}
 	.an-notice-box{
-		width: 100%; 
-		height: 60upx; 
-		padding: 0 10upx; 
-		overflow: hidden; 
-		margin: 20upx 0; 
-		display: flex; 
+		width: 100%;
+		height: 60upx;
+		padding: 0 10upx;
+		overflow: hidden;
+		margin: 20upx 0;
+		display: flex;
 		justify-content: flex-start;
 	}
 	.an-notice-icon{
-		width: 60upx; 
-		height: 60upx; 
-		line-height: 50upx; 
-		text-align: center; 
+		width: 60upx;
+		height: 60upx;
+		line-height: 50upx;
+		text-align: center;
 		position: relative;
 	}
 	.an-notice-content{
-		width: calc(100% - 220upx); 
-		position: relative; 
+		width: calc(100% - 220upx);
+		position: relative;
 		font-size: 14px;
 	}
 	.an-notice-content-item{
-		width: 100%; 
-		height: 60upx; 
-		text-align: left; 
+		width: 100%;
+		height: 60upx;
+		text-align: left;
 		line-height: 60upx;
 	}
 	.an-notice-content-item-text{
-		display: block; 
-		white-space: nowrap; 
-		text-overflow: ellipsis; 
+		display: block;
+		white-space: nowrap;
+		text-overflow: ellipsis;
 		overflow: hidden;
 	}
 	.an-notice-more{
-		width: 130upx; 
-		height: 60upx; 
-		font-size: 12px; 
-		line-height: 60upx; 
-		text-align: right; 
+		width: 130upx;
+		height: 60upx;
+		font-size: 12px;
+		line-height: 60upx;
+		text-align: right;
 		color: #999;
 	}
-	
+
 	@keyframes anotice {
 		 0%  {transform: translateY(100%);}
 	    30%  {transform: translateY(0);}

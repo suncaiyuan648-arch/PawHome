@@ -143,7 +143,7 @@
 			<scroll-view class="drawer-scroll" scroll-y :show-scrollbar="false">
 				<view class="drawer-pad">
 					<view v-for="(section, si) in menuSections" :key="si" class="menu-section"
-						:class="`menu-section--${si + 1}`">
+						:class="`menu-section--${Number(si) + 1}`">
 						<view v-for="(label, ri) in section" :key="ri" class="menu-row"
 							:data-qa="label === '领养评审' ? 'qa-me-menu-adoption-review' : ''"
 							@tap.stop="onMenuRow(label)">
@@ -182,8 +182,10 @@
 	</view>
 </template>
 
-<script>
-import { buildRoute } from '@/navigation/routeContracts.js'
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+import { buildRoute } from '@/navigation/routeContracts.ts'
 import CustomTabber from '@/components/CustomTabber/index.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawBadge from '@/components/base/PawBadge.vue'
@@ -194,51 +196,27 @@ import PawMemberBanner from '@/components/PawMemberBanner/PawMemberBanner.vue'
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawVoteRatioBar from '@/components/PawVoteRatioBar.vue'
-import { getMemberLevelTitle } from '@/utils/memberLevel.js'
-import { SELF_PAW_ID } from '@/utils/profileNav.js'
+import { SELF_PAW_ID } from '@/utils/profileNav.ts'
+import {
+	createMePageState,
+	firstTempImagePath,
+	normalizeMePageMode,
+	type MeMenuItem,
+	type MePageState,
+	type MeReviewType,
+} from '@/utils/mePageMetadata.ts'
 
-export default {
+function queryRecord(options: unknown): Record<string, unknown> {
+	return options !== null && typeof options === 'object' && !Array.isArray(options)
+		? options as Record<string, unknown>
+		: {}
+}
+
+export default defineComponent({
 	components: { CustomTabber, PawIcon, PawBadge, LevelBadge, PawChevron, PawImage, PawMemberBanner, PawBottomSheet, PawPageNav, PawVoteRatioBar },
-	data() {
-		return {
-			pageState: 'default',
-			avatarSheetVisible: false,
-			profileAvatar: '/static/figma/me-avatar.png',
-			membership: {
-				level: 8,
-				title: getMemberLevelTitle(8),
-				remainingExp: 6376
-			},
-			authChecked: false,
-			reviewText:
-				'今天不做课间操了，开一个紧急例会，就在昨天，发生了一件骇人听闻的学生袭击老师事件，主犯夏洛...',
-			orderEntries: [
-				{ label: '全部', iconName: 'actions/order-all', badge: 0 },
-				{ label: '待付款', iconName: 'actions/order-pay', badge: 7 },
-				{ label: '待发货', iconName: 'actions/order-ship', badge: 7 },
-				{ label: '待收货', iconName: 'actions/order-receive', badge: 7 },
-				{ label: '待评价', iconName: 'actions/order-review', badge: 7 }
-			],
-			reviewCards: [
-				{ title: '求助评审', question: 'Ta的求助是真的吗？', reviewType: 'rescue', realPercent: 92, fakePercent: 8 },
-				{ title: '领养评审', question: 'Ta的领养是真的吗？', reviewType: 'adoption', realPercent: 92, fakePercent: 8 }
-			],
-			drawerOpen: false,
-			drawerAnim: false,
-			drawerEnterTimer: null,
-			drawerCloseTimer: null,
-			menuSections: [
-				['我的宠物', '我的云养宠物', '我的任务'],
-				['我的小院', '小院宠物', '投喂订单', '领养审核'],
-				['红包卡券', '我的收藏', '历史浏览'],
-				['我的投喂订单', '我入驻的小院', '我申请的领养'],
-				['领养评审', '我参与过的评审'],
-				['入驻宠托师']
-			]
-		}
-	},
-	onLoad(options = {}) {
-		this.pageState = String(options.state || 'default')
+	data(): MePageState { return createMePageState() },
+	onLoad(options: unknown = {}) {
+		this.pageState = normalizeMePageMode(queryRecord(options).state)
 		if (this.pageState === 'drawer') {
 			this.openDrawer()
 		}
@@ -319,8 +297,8 @@ export default {
 			uni.chooseImage({
 				count: 1,
 				sourceType: ['album'],
-				success: (result) => {
-					const path = result && result.tempFilePaths && result.tempFilePaths[0]
+				success: (result: unknown) => {
+					const path = firstTempImagePath(result)
 					if (path) this.profileAvatar = path
 					this.closeProfileUpload()
 				}
@@ -330,14 +308,14 @@ export default {
 			uni.chooseImage({
 				count: 1,
 				sourceType: ['camera'],
-				success: (result) => {
-					const path = result && result.tempFilePaths && result.tempFilePaths[0]
+				success: (result: unknown) => {
+					const path = firstTempImagePath(result)
 					if (path) this.profileAvatar = path
 					this.closeProfileUpload()
 				}
 			})
 		},
-			onMenuRow(label) {
+		onMenuRow(label: MeMenuItem) {
 			this.closeDrawer()
 			if (label === '我的任务') {
 				// Canonical route contract: buildRoute('account.tasks', {})
@@ -443,7 +421,7 @@ export default {
 		goAdoptionAudit() {
 			uni.navigateTo({ url: buildRoute('adoption.review.list', {}) })
 		},
-		goJuryPanel(reviewType = '') {
+		goJuryPanel(reviewType: MeReviewType | '' = '') {
 			if (reviewType === 'rescue') {
 				uni.navigateTo({ url: buildRoute('rescue.review.list', {}) })
 				return
@@ -457,7 +435,7 @@ export default {
 				url: buildRoute('account.level', {}) + '?nickname=' + encodeURIComponent(name)
 			})
 		},
-		toast(t) {
+		toast(t: string) {
 			if (t === '领养审核') {
 				this.goAdoptionAudit()
 				return
@@ -465,7 +443,7 @@ export default {
 			uni.showToast({ title: t, icon: 'none' })
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

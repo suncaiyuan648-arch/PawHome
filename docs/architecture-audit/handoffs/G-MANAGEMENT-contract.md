@@ -6,7 +6,7 @@
 
 ## 交付范围
 
-新增 [`navigation/managementContracts.js`](../../../navigation/managementContracts.js)。合同只依赖现有 [`navigation/actorCapabilities.js`](../../../navigation/actorCapabilities.js) 的 `resolveTrustedActor` 与 `ACTOR_ROLES`，没有 Vue、uni-app、页面、路由、storage、mock、网络或写入 adapter 依赖，也没有修改 actor contract 的公共语义。
+新增 [`navigation/managementContracts.ts`](../../../navigation/managementContracts.ts)。合同只依赖现有 [`navigation/actorCapabilities.ts`](../../../navigation/actorCapabilities.ts) 的 `resolveTrustedActor` 与 `ACTOR_ROLES`，没有 Vue、uni-app、页面、路由、storage、mock、网络或写入 adapter 依赖，也没有修改 actor contract 的公共语义。
 
 `evaluateManagementCapabilities`（别名 `readManagementCapabilities`、`resolveManagementAccess`、`getManagementCapabilities`）接收调用方已读取的 `profile`、`yard`、`animal`，以及每次重新读取的 `actorProvider` 和显式状态 policy，返回冻结的 public read、private/management read、edit 能力与拒绝原因。`canManagementCapability`、`assertManagementCapability` 和 `createManagementEvaluator` 只查询或断言能力；本模块没有 writer/save/mutation API。
 
@@ -31,12 +31,12 @@
 
 ```text
 node --test tests/governance/management-contract.test.cjs  # 13/13 PASS
-node --check navigation/managementContracts.js              # PASS
-git diff --check -- navigation/managementContracts.js tests/governance/management-contract.test.cjs docs/architecture-audit/handoffs/G-MANAGEMENT-contract.md  # PASS
+node --check navigation/managementContracts.ts              # PASS
+git diff --check -- navigation/managementContracts.ts tests/governance/management-contract.test.cjs docs/architecture-audit/handoffs/G-MANAGEMENT-contract.md  # PASS
 ```
 
 ## 接入边界与未决项
 
-本子批未接入 `packages/account`、`packages/yard`、`packages/animal` 或任何现有 adapter、页面、路由、storage/mock/network；未注册 `account.profile.edit`、`yard.manage`、`yard.edit` 等提案路由，未修改 `pages.json`、`package.json`、lockfile、UI 或 native 规则。未提供设计节点或 Figma live 验证：资料 editor 与管理/编辑页仍受 11 号计划的精确节点/批准组件组合门禁；小院四态节点与动物 detail/editor 节点只作为后续 UI 批次的设计来源，本合同没有宣称视觉验收。
+本子批未接入 `packages/account`、`packages/yard`、`packages/animal` 或任何现有 adapter、页面、路由、storage/mock/network；未注册 `account.profile.edit`、`yard.manage`、`yard.edit` 等提案路由，未修改 `pages.tson`、`package.tson`、lockfile、UI 或 native 规则。未提供设计节点或 Figma live 验证：资料 editor 与管理/编辑页仍受 11 号计划的精确节点/批准组件组合门禁；小院四态节点与动物 detail/editor 节点只作为后续 UI 批次的设计来源，本合同没有宣称视觉验收。
 
 后续 C3/C4/C6 adapter 必须从可信会话与当前对象重读后调用合同，分别映射 `userId`、`yardId`、`animalId` 和实际关系字段，再在自己的写入边界执行二次能力检查。取消、失败、返回列表刷新和真实 UI/运行时证据属于后续 adapter/UI/QA 批次；本合同不决定状态迁移、产品编辑字段或任何设计布局。

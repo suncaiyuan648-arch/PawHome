@@ -10,24 +10,24 @@
 
 本批已将组件从根 `components/` 下沉到既有 `pages/meMore/components/`，并把调用方改为 `./components/PawAdoptionFlowFigma.vue`。下沉阶段未改动模板、脚本、样式、props、事件、业务状态、路由 URL 和数据读写。
 
-领养流程素材没有强行物理迁出根 `static/`。审计发现其中多项被主包组件、`utils/adoptionStorage.js`、领养审核/申请页面或同内容别名使用；`e81f2c...png` 还被 `pages/yard/adoptionAudit.vue` 和 `utils/adoptionStorage.js` 直接使用。把这些文件改成 `pages/meMore/static` 会造成跨包私有资源引用或复制整组高字节原图，违反现有资源归属约束。生产后处理和资源门禁已确认它们继续由主包根静态资源提供，组件分包向主包读取共享资源，边界合法。
+领养流程素材没有强行物理迁出根 `static/`。审计发现其中多项被主包组件、`utils/adoptionStorage.ts`、领养审核/申请页面或同内容别名使用；`e81f2c...png` 还被 `pages/yard/adoptionAudit.vue` 和 `utils/adoptionStorage.ts` 直接使用。把这些文件改成 `pages/meMore/static` 会造成跨包私有资源引用或复制整组高字节原图，违反现有资源归属约束。生产后处理和资源门禁已确认它们继续由主包根静态资源提供，组件分包向主包读取共享资源，边界合法。
 
 ## 依赖与边界
 
-组件只由 `pages/meMore/adoptionFlow.vue` 注册。它依赖以下既有主包共享模块/组件：`PawPageNav`、`PawFixedActionBar`、`PawDialog`、`PawOwnerBadge`、`PawIcon`、`PawAdoptionPetsCard`、`PawAdoptionRejectReason`、`PawImage`、`PawRewardOrderSheet`，以及 `utils/navBack.js`、`utils/adoptionPetDisplay.js`、`utils/profileNav.js`、`utils/adoptionStorage.js`、`utils/applicationMockApi.js`。这些是分包向主包的依赖，`check:boundaries` 的 production/source 两侧均通过；没有新增主包→`pages/meMore` 或兄弟分包私有引用。
+组件只由 `pages/meMore/adoptionFlow.vue` 注册。它依赖以下既有主包共享模块/组件：`PawPageNav`、`PawFixedActionBar`、`PawDialog`、`PawOwnerBadge`、`PawIcon`、`PawAdoptionPetsCard`、`PawAdoptionRejectReason`、`PawImage`、`PawRewardOrderSheet`，以及 `utils/navBack.ts`、`utils/adoptionPetDisplay.ts`、`utils/profileNav.ts`、`utils/adoptionStorage.ts`、`utils/applicationMockApi.ts`。这些是分包向主包的依赖，`check:boundaries` 的 production/source 两侧均通过；没有新增主包→`pages/meMore` 或兄弟分包私有引用。
 
 素材审计结果：
 
 - `04a93...png`、`b61b026...png`：同时被领养申请/审核页面使用。
 - `e435a...png`、`06034d...png`：路径只在该组件出现，但内容分别与 `pet-orange`、`apply-dog` 及首页/动物域别名相同，主包仍需保留 canonical 内容。
 - `45f5fc...png`、`db5da...png`、`07acee...png`：路径只在该组件出现，但内容分别与首页/feature、profile/jury、yard-detail 素材重复，不能按组件路径误判为私有。
-- `e81f2...png`：组件、`pages/yard/adoptionAudit.vue`、`utils/adoptionStorage.js` 共同使用。
+- `e81f2...png`：组件、`pages/yard/adoptionAudit.vue`、`utils/adoptionStorage.ts` 共同使用。
 
 没有移动或复制上述源素材，也没有修改 `prepare-mp-weixin-package.cjs`、共享资源路径或资源质量；构建产物中的组件位于 `unpackage/dist/build/mp-weixin/pages/meMore/components/`，资源仍位于主包 `static/figma/adoption-flow/`，避免了跨包路径和视觉资产变化。
 
 ## 包体证据
 
-基线采用上一批 `PKG-TRIM` 生产构建报告（2026-09-15），本次采用同一工具链重建后的 `.artifacts/package-audit/package-size.json`：
+基线采用上一批 `PKG-TRIM` 生产构建报告（2026-09-15），本次采用同一工具链重建后的 `.artifacts/package-audit/package-size.tson`：
 
 | 指标 | 调整前 | 调整后 | 变化 |
 |---|---:|---:|---:|
@@ -45,7 +45,7 @@
 - `npm run test:governance`：79/79 PASS。
 - `npm run check:routes`：65/65 PASS。
 - `npm run check:ui`：PASS；图标尺寸、图标用法、字体、UI 治理和 native UI 均通过。
-- `npm run check:native-ui`：PASS，214 个源码文件扫描，35 项历史冻结项未增加；没有更新 `config/native-ui-legacy-baseline.json`。
+- `npm run check:native-ui`：PASS，214 个源码文件扫描，35 项历史冻结项未增加；没有更新 `config/native-ui-legacy-baseline.tson`。
 - `npm run check:package`：PASS；package size、assets、boundaries 全部通过。
 - `git diff --check`：PASS。
 
@@ -64,8 +64,8 @@
 
 ## 风险与回滚
 
-主要风险是 uni-app 编译器对分包内 Vue 组件及其主包共享依赖的输出路径处理。真实生产构建已确认 `adoptionFlow.json` 使用 `./components/PawAdoptionFlowFigma`，组件产物和共享 `usingComponents` 路径均可解析，资源/边界门禁通过。
+主要风险是 uni-app 编译器对分包内 Vue 组件及其主包共享依赖的输出路径处理。真实生产构建已确认 `adoptionFlow.tson` 使用 `./components/PawAdoptionFlowFigma`，组件产物和共享 `usingComponents` 路径均可解析，资源/边界门禁通过。
 
-回滚单位为组件文件和单个调用方 import：把 `pages/meMore/components/PawAdoptionFlowFigma.vue` 移回 `components/PawAdoptionFlowFigma.vue`，将 `pages/meMore/adoptionFlow.vue` 的 import 恢复为 `@/components/PawAdoptionFlowFigma.vue`，然后重新执行生产构建和治理门禁。回滚不涉及 `pages.json`、路由 URL、storage、业务记录、共享组件默认值或静态素材。
+回滚单位为组件文件和单个调用方 import：把 `pages/meMore/components/PawAdoptionFlowFigma.vue` 移回 `components/PawAdoptionFlowFigma.vue`，将 `pages/meMore/adoptionFlow.vue` 的 import 恢复为 `@/components/PawAdoptionFlowFigma.vue`，然后重新执行生产构建和治理门禁。回滚不涉及 `pages.tson`、路由 URL、storage、业务记录、共享组件默认值或静态素材。
 
 本批未提交、未上传、未发布，也未进行真实领养/救助业务提交。

@@ -34,12 +34,12 @@ function throwsCode(fn, code) {
 
 before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-deeplink-contract-'))
-  await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+  await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
-  for (const file of ['routeContracts.js', 'actorCapabilities.js', 'deeplinkContracts.js']) {
+  for (const file of ['routeContracts.ts', 'actorCapabilities.ts', 'deeplinkContracts.ts']) {
     await fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
   }
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/deeplinkContracts.js')).href}?test=${Date.now()}-${Math.random()}`)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/deeplinkContracts.ts')).href}?test=${Date.now()}-${Math.random()}`)
 })
 
 after(async () => {
@@ -47,7 +47,7 @@ after(async () => {
 })
 
 test('deep-link contract is pure and exposes no write or navigation side effect', async () => {
-  const source = await fs.readFile(path.join(ROOT, 'navigation/deeplinkContracts.js'), 'utf8')
+  const source = await fs.readFile(path.join(ROOT, 'navigation/deeplinkContracts.ts'), 'utf8')
   assert.doesNotMatch(source, /(?:from|import)\s+['"][^'"]*(?:vue|uni|storage|mock|network)[^'"]*['"]/i)
   assert.doesNotMatch(source, /(?:uni\.|setStorage|removeStorage|submit\s*\()/i)
   assert.equal(Object.keys(api).some(key => /write|submit|navigate|storage|delete|update/i.test(key)), false)

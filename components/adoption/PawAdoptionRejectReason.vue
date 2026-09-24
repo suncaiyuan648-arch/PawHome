@@ -23,19 +23,29 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">import { defineComponent, type PropType } from 'vue'
+
 import PawImage from '@/components/base/PawImage.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 
-export default {
+interface AdoptionRejector {
+  name?: string
+  avatar?: string
+  level?: number | string
+  role?: string
+}
+
+interface AdoptionRejectReasonState { expanded: boolean }
+
+export default defineComponent({
   name: 'PawAdoptionRejectReason',
   components: { PawImage, PawIcon, LevelBadge },
   props: {
-    rejector: { type: Object, default: () => ({}) },
+    rejector: { type: Object as PropType<AdoptionRejector>, default: () => ({}) },
     note: { type: String, default: '' }
   },
-  data() {
+  data(): AdoptionRejectReasonState {
     return { expanded: false }
   },
   computed: {
@@ -51,7 +61,7 @@ export default {
   methods: {
     toggle() { this.expanded = !this.expanded }
   }
-}
+})
 </script>
 
 <style scoped>

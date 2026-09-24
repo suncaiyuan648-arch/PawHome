@@ -26,25 +26,33 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent } from 'vue'
+
 import PawButton from '@/components/base/PawButton.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawVoteRatioBar from '@/components/PawVoteRatioBar.vue'
 
-export default {
+export default defineComponent({
   name: 'PawJuryActionBar',
   components: { PawButton, PawIcon, PawVoteRatioBar },
   props: {
     voted: { type: Boolean, default: false },
     nextLabel: { type: String, default: '下一条（1/1）' }
   },
-  emits: ['share', 'vote', 'next'],
+  emits: {
+    'share': eventContract<[]>(),
+    'vote': eventContract<[vote: 'real' | 'fake']>(),
+    'next': eventContract<[]>(),
+  },
   methods: {
-    onVoteSegment(segment) {
+    onVoteSegment(segment: 'real' | 'fake') {
       this.$emit('vote', segment)
     }
   }
-}
+})
 </script>
 
 <style scoped>

@@ -13,8 +13,8 @@
         <text class="pet-desc">流浪的时候经常去小卖店偷吃火腿肠<br />被打导致有点怕人</text>
         <view class="pet-tags"><text>极度饥饿</text><text>非常亲人</text><text>男娃</text><text>已绝育</text></view>
       </view>
-      <view class="pet-meta"><text>云养天数：　　云养30天/投粮4斤</text><text>下单时间：　　2026-2-5
-          13:23:56</text><text>剩余云养天数：　3/3天</text><text class="blue">订单编号：{{ orderId || 'YCQ092182' }}</text>
+      <view class="pet-meta"><text>云养天数：{{ '\u3000\u3000' }}云养30天/投粮4斤</text><text>下单时间：{{ '\u3000\u3000' }}2026-2-5
+          13:23:56</text><text>剩余云养天数：{{ '\u3000' }}3/3天</text><text class="blue">订单编号：{{ orderId || 'YCQ092182' }}</text>
         <view class="pet-status-line"
           :class="isRewardReceived ? 'pet-status-line--signed' : 'pet-status-line--shipping'">
           <text class="pet-status-tag">{{ isRewardReceived ? `领养生效中 ${deliveryProgress}` : '待领养生效' }}</text>
@@ -82,7 +82,7 @@
           <view class="order-top">
             <view class="order-identity">
               <text class="order-name">{{ detailView.userName || detailView.yardName || '平安是福' }}</text>
-              <LevelBadge :level="detailView.ownerLevel || detailView.level || 1" />
+              <LevelBadge :level="detailView.ownerLevel || 1" />
             </view>
             <view class="order-right">
               <PawFeedingFeedbackTag :text="feedbackTagText" tone="progress" />
@@ -146,7 +146,9 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
+
 import PawImage from '@/components/base/PawImage.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawToast from './feedback/PawToast.vue'
@@ -154,30 +156,55 @@ import PawFeedingFeedbackTag from '@/components/feeding/PawFeedingFeedbackTag.vu
 import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import PawFixedActionBar from '@/components/layout/PawFixedActionBar.vue'
 import PawPageNav from '@/components/PawPageNav.vue'
-import { goBackSmart } from '@/utils/navBack.js'
+import { goBackSmart } from '@/utils/navBack.ts'
+import type { FeedingOrderDetail, FeedingLogisticsEntry } from '../services/orderMockApi.ts'
+import {
+  createEmptyFeedingOrderDetail,
+  createFeedingDetailFigmaState,
+  createFeedingTimelineFallback,
+  type FeedingCloudOrderSummary,
+  type FeedingCloudPetSummary,
+  type FeedingDetailFigmaState,
+  type FeedingFeedbackAction,
+  type FeedingTimelineRow,
+} from '../services/detailMetadata.ts'
 
-const FALLBACK_TIMELINE_DAYS = ['23', '22', '21']
-export default {
+type ClipboardApi = Pick<typeof uni, 'setClipboardData' | 'hideToast'>
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isClipboardApi(value: unknown): value is ClipboardApi {
+  return isRecord(value) && typeof value.setClipboardData === 'function'
+}
+
+function showToastRef(value: unknown, message: string): void {
+  if (!isRecord(value)) return
+  const show = value.show
+  if (typeof show === 'function') show.call(value, message)
+}
+
+export default defineComponent({
   name: 'PawFeedingDetailFigma',
   components: { PawImage, PawIcon, PawToast, PawFeedingFeedbackTag, LevelBadge, PawFixedActionBar, PawPageNav },
-  emits: ['feedback'],
   props: {
     variant: { type: Number, default: 90 },
     orderId: { type: String, default: '' },
     recordId: { type: String, default: '' },
     deliveryStatus: { type: String, default: 'shipping' },
     deliveryProgress: { type: String, default: '0/3' },
-    orderDetail: { type: Object, default: null },
+    orderDetail: { type: Object as PropType<FeedingOrderDetail | null>, default: null },
     perspective: { type: String, default: '' },
     showFeedback: { type: Boolean, default: true }
   },
-  data() {
-    const feedImgs = ["/static/figma/feeding/2aa0d5e4a47ba5a30dfbda447d2b0e0acab9c94f.png", "/static/figma/feeding/663a44c6cdee9de9df233539fac35f7f3f908376.png", "/static/figma/feeding/f575bdfc31f25882d8cc6f35223e98ec2b1c1bf2.png", "/static/figma/feeding/2e4db61734b5d15cca204e0947d81a871ea9a8b6.png", "/static/figma/feeding/d81342748c84fc1068ceb0af9525bc465f5517e8.png", "/static/figma/feeding/badf7f54fe66571722f8b3aa5742e6abbb479c44.png", "/static/figma/feeding/409928f32c3a7f2126933ffbfe038b58d6dd26cc.png", "/static/figma/feeding/1472957ded35cdc32a413c0d8aeffd67d583a54a.png"]
-    return { avatarImgs: feedImgs.slice(0, 4), photoImgs: feedImgs.slice(4, 7) }
+  emits: { feedback: (detail: FeedingOrderDetail) => detail !== null && typeof detail === 'object' },
+  data(): FeedingDetailFigmaState {
+    return createFeedingDetailFigmaState()
   },
   computed: {
-    detailView() {
-      return this.orderDetail || {}
+    detailView(): FeedingOrderDetail {
+      return this.orderDetail || createEmptyFeedingOrderDetail()
     },
     isYardPerspective() {
       return this.perspective === 'yard-owner' || this.variant === 91
@@ -185,7 +212,7 @@ export default {
     isCloudParent() {
       return !this.isYardPerspective && this.variant !== 92
     },
-    cloudPet() {
+    cloudPet(): FeedingCloudPetSummary {
       const detail = this.detailView
       return {
         id: detail.petId || 'roster-cat-2',
@@ -194,10 +221,10 @@ export default {
         status: detail.petStatus || '已云养',
         continuousDays: detail.petContinuousDays || 25,
         description: detail.petDescription || '流浪的时候经常去小卖店偷吃火腿肠被打导致有点怕人',
-        tags: Array.isArray(detail.petTags) && detail.petTags.length ? detail.petTags : ['极度饥饿', '非常亲人', '男娃', '已绝育']
+        tags: detail.petTags.length ? detail.petTags : ['极度饥饿', '非常亲人', '男娃', '已绝育']
       }
     },
-    cloudOrder() {
+    cloudOrder(): FeedingCloudOrderSummary {
       const detail = this.detailView
       return {
         cloudDays: detail.cloudDaysText || '云养30天/投粮4斤',
@@ -212,20 +239,20 @@ export default {
     shouldShowFeedback() {
       return this.showFeedback && this.isYardPerspective
     },
-    timelineRows() {
-      return Array.isArray(this.detailView.timeline) && this.detailView.timeline.length
+    timelineRows(): FeedingTimelineRow[] {
+      return this.detailView.timeline.length
         ? this.detailView.timeline
-        : FALLBACK_TIMELINE_DAYS.map((day, i) => ({ day, month: '6月', indexText: `${3 - i}/5` }))
+        : createFeedingTimelineFallback()
     },
-    logisticsRows() {
-      return Array.isArray(this.detailView.logistics) && this.detailView.logistics.length
+    logisticsRows(): FeedingLogisticsEntry[] {
+      return this.detailView.logistics.length
         ? this.detailView.logistics
         : []
     },
     isRewardReceived() {
       return ['signed', 'received', 'delivered'].includes(String(this.deliveryStatus).toLowerCase())
     },
-    feedbackAction() {
+    feedbackAction(): FeedingFeedbackAction {
       return { key: 'feedback', label: '反馈', qa: 'qa-feeding-detail-feedback', size: 'md', shape: 'pill' }
     },
     feedbackTagText() {
@@ -256,7 +283,7 @@ export default {
       }
       uni.showToast({ title: '反馈', icon: 'none' })
     },
-    openTimelineDynamic(row) {
+    openTimelineDynamic(row: FeedingTimelineRow) {
       const dynamicId = `${this.orderId || 'feeding'}-feedback-${row.indexText.charAt(0)}`
       const yardId = this.detailView.yardId || '1'
       const query = `yardId=${encodeURIComponent(yardId)}&dynamicId=${encodeURIComponent(dynamicId)}`
@@ -270,21 +297,23 @@ export default {
         url: `/packages/animal/pages/detail/index?animalId=${encodeURIComponent(petId)}&yardId=${encodeURIComponent(yardId)}&state=35`
       })
     },
-    copyOrderNumber(orderNo) {
+    copyOrderNumber(orderNo: string) {
       const value = String(orderNo || '').trim()
       if (!value) return
-      const clipboardApi = typeof wx !== 'undefined' ? wx : uni
+      const clipboardApi: unknown = typeof wx !== 'undefined' ? wx : uni
+      if (!isClipboardApi(clipboardApi)) return
       clipboardApi.setClipboardData({
         data: value,
         showToast: false,
         success: () => {
           if (typeof clipboardApi.hideToast === 'function') clipboardApi.hideToast()
-          if (this.$refs.toast) this.$refs.toast.show('已复制')
+          const toast: unknown = this.$refs.toast
+          showToastRef(toast, '已复制')
         }
       })
     }
   },
-}
+})
 </script>
 
 <style scoped>

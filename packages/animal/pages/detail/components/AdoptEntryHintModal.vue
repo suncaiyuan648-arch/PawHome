@@ -8,10 +8,13 @@
   />
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+import { defineComponent } from 'vue'
+
 import PawNoticeModal from "@/components/PawNoticeModal.vue";
 
-export default {
+export default defineComponent({
   name: "AdoptEntryHintModal",
   components: { PawNoticeModal },
   props: {
@@ -28,6 +31,9 @@ export default {
       default: "我知道了",
     },
   },
-  emits: ["update:visible", "confirm"],
-};
+  emits: {
+    'update:visible': eventContract<[value: boolean]>(),
+    'confirm': eventContract<[]>(),
+  },
+});
 </script>

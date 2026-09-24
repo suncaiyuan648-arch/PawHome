@@ -22,77 +22,125 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawAlbumTag from '@/components/PawAlbumTag.vue'
-import { buildRoute } from '@/navigation/routeContracts.js'
+import type { PawEventTouchPoint } from '@/utils/pawEventMetadata.ts'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import {
+  createAnimalAlbumFilters,
+  createAnimalAlbumItems,
+  createAnimalAlbumMenuActions,
+  type AnimalAlbumFilterKey,
+  type AnimalAlbumItem,
+  type AnimalAlbumMenuActionKey,
+  type AnimalAlbumPageState,
+} from '../../services/albumMetadata.ts'
 
-const ALBUM_ITEMS = [
-  { id: 'album-01', src: '/static/figma/feature/album-original-01.jpeg', kind: 'image', categories: ['image', 'daily'], pinned: true, favorite: true },
-  { id: 'album-02', src: '/static/figma/feature/album-original-02.jpeg', kind: 'image', categories: ['image', 'daily'], pinned: true, favorite: false },
-  { id: 'album-03', src: '/static/figma/feature/album-original-03.png', kind: 'image', categories: ['image', 'feeding'], pinned: true, favorite: true },
-  { id: 'album-04', src: '/static/figma/feature/album-original-04.jpeg', kind: 'image', categories: ['image', 'daily'], pinned: true, favorite: false },
-  { id: 'album-05', src: '/static/figma/feature/album-original-05.jpeg', kind: 'image', categories: ['image', 'feeding'], pinned: false, favorite: false },
-  { id: 'album-06', src: '/static/figma/feature/album-original-06.jpeg', kind: 'image', categories: ['image', 'daily'], pinned: false, favorite: true },
-  { id: 'album-07', src: '/static/figma/feature/album-original-07.png', kind: 'image', categories: ['image', 'feeding'], pinned: false, favorite: false },
-  { id: 'album-08', src: '/static/figma/feature/album-original-08.jpeg', kind: 'image', categories: ['image', 'daily'], pinned: false, favorite: false, hidden: true },
-  { id: 'album-09', src: '/static/figma/feature/album-original-09.jpeg', kind: 'image', categories: ['image', 'feeding'], pinned: false, favorite: true },
-  { id: 'album-10', src: '/static/figma/feature/album-original-10.jpeg', kind: 'image', categories: ['image', 'daily'], pinned: false, favorite: false },
-  { id: 'album-11', src: '/static/figma/feature/album-original-11.jpeg', kind: 'image', categories: ['image', 'feeding'], pinned: false, favorite: false },
-  { id: 'album-12', src: '/static/figma/feature/album-original-12.jpeg', kind: 'image', categories: ['image', 'daily'], pinned: false, favorite: false },
-  { id: 'album-13', src: '/static/figma/feature/album-original-13.jpeg', kind: 'image', categories: ['image', 'feeding'], pinned: false, favorite: true },
-  { id: 'album-14', src: '/static/figma/feature/album-original-14.jpeg', kind: 'image', categories: ['image', 'daily'], pinned: false, favorite: false }
-]
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
 
-export default {
+function routeString(options: unknown, keys: string[], fallback = ''): string {
+  if (!isRecord(options)) return fallback
+  for (const key of keys) {
+    const value = options[key]
+    if ((typeof value === 'string' || typeof value === 'number') && value) return String(value)
+  }
+  return fallback
+}
+
+function firstTouch(value: TouchList | PawEventTouchPoint[] | undefined): PawEventTouchPoint | null {
+  if (!value?.length) return null
+  const touch = value[0]
+  if (!touch) return null
+  return {
+    clientX: touch.clientX,
+    clientY: touch.clientY,
+    pageX: touch.pageX,
+    pageY: touch.pageY,
+  }
+}
+
+function coordinateValue(value: unknown): number | undefined {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : undefined
+}
+
+function coordinate(primary: number | undefined, secondary: number | undefined, detail: number | undefined, fallback: number): number {
+  for (const value of [primary, secondary, detail]) {
+    if (typeof value === 'number' && Number.isFinite(value)) return value
+  }
+  return fallback
+}
+
+export default defineComponent({
   components: { PawPageNav, PawIcon, PawAlbumTag },
-  data() {
+  data(): AnimalAlbumPageState {
     return {
       animalId: '', yardId: '', albumPetName: '动物', invalid: true, canManage: false,
-      albumFilter: 'all', albumSort: 'default', albumMenuVisible: false, albumMenuPosition: { left: 15, top: 150 }, selectedAlbumId: '', albumItems: ALBUM_ITEMS.map((item) => ({ ...item }))
+      albumFilter: 'all', albumSort: 'default', albumMenuVisible: false, albumMenuPosition: { left: 15, top: 150 }, selectedAlbumId: '', albumItems: createAnimalAlbumItems()
     }
   },
   computed: {
     emptyCopy() { return this.animalId ? '该动物暂无可用相册' : '缺少动物 ID' },
-    albumFilters() { return [{ key: 'all', label: '全部' }, { key: 'favorite', label: '收藏' }, { key: 'image', label: '图片' }, { key: 'video', label: '视频' }, { key: 'feeding', label: '投喂' }, { key: 'daily', label: '日常' }] },
-    filteredAlbumItems() {
-      const items = this.albumItems.filter((item) => this.albumFilter === 'favorite' ? item.favorite : this.albumFilter === 'video' ? item.kind === 'video' : this.albumFilter === 'all' ? true : item.kind === this.albumFilter || item.categories.includes(this.albumFilter))
+    albumFilters() { return createAnimalAlbumFilters() },
+    filteredAlbumItems(): AnimalAlbumItem[] {
+      const filter = this.albumFilter
+      const items = this.albumItems.filter((item) => {
+        if (filter === 'favorite') return item.favorite
+        if (filter === 'video') return item.kind === 'video'
+        if (filter === 'all') return true
+        return item.kind === filter || item.categories.includes(filter)
+      })
       return this.albumSort === 'pinned' ? [...items].sort((a, b) => Number(b.pinned) - Number(a.pinned)) : items
     },
     albumMenuStyle() { return { left: `${this.albumMenuPosition.left}px`, top: `${this.albumMenuPosition.top}px` } },
     albumMenuActions() {
       if (!this.canManage) return []
-      return [{ key: 'pin', label: '置顶/取消置顶', iconName: 'actions/pin' }, { key: 'favorite', label: '收藏/取消收藏', iconName: 'actions/heart' }, { key: 'hide', label: '隐藏/取消隐藏', iconName: 'actions/eye-off' }, { key: 'delete', label: '删除', iconName: 'actions/delete' }]
+      return createAnimalAlbumMenuActions()
     }
   },
-  onLoad(options = {}) {
-    this.animalId = String(options.animalId || options.petId || '').trim()
-    this.yardId = String(options.yardId || '').trim()
-    this.albumPetName = String(options.animalName || options.petName || '动物')
+  onLoad(options: unknown = {}) {
+    this.animalId = routeString(options, ['animalId', 'petId']).trim()
+    this.yardId = routeString(options, ['yardId']).trim()
+    this.albumPetName = routeString(options, ['animalName', 'petName'], '动物')
     this.invalid = !this.animalId
     // Local QA fixtures identify managed animals; a query flag never grants write capability.
     this.canManage = ['pet-orange', 'pet-dog', 'roster-cat-1', 'roster-dog-1'].includes(this.animalId)
-    try { if (this.animalId) buildRoute('animal.album', this.yardId ? { animalId: this.animalId, yardId: this.yardId } : { animalId: this.animalId }) } catch (error) { this.invalid = true }
+    try { if (this.animalId) buildRoute('animal.album', this.yardId ? { animalId: this.animalId, yardId: this.yardId } : { animalId: this.animalId }) } catch { this.invalid = true }
   },
   methods: {
-    selectAlbumFilter(filter) { this.albumFilter = filter; this.closeAlbumMenu() },
+    selectAlbumFilter(filter: AnimalAlbumFilterKey) { this.albumFilter = filter; this.closeAlbumMenu() },
     toggleAlbumSort() { this.albumSort = this.albumSort === 'default' ? 'pinned' : 'default' },
-    previewAlbumImage(item) { if (this.albumMenuVisible || !item) return; const urls = this.filteredAlbumItems.map((entry) => entry.src); if (urls.length) uni.previewImage({ current: item.src, urls }) },
-    openAlbumMenu(item, event) {
+    previewAlbumImage(item: AnimalAlbumItem) { if (this.albumMenuVisible || !item) return; const urls = this.filteredAlbumItems.map((entry) => entry.src); if (urls.length) uni.previewImage({ current: item.src, urls }) },
+    openAlbumMenu(item: AnimalAlbumItem, event: PawEvent) {
       if (!this.canManage || !item) return
       this.selectedAlbumId = item.id
-      const touch = event && (event.changedTouches && event.changedTouches[0] || event.touches && event.touches[0]); const detail = event && event.detail || {}; const info = typeof uni !== 'undefined' && uni.getSystemInfoSync ? uni.getSystemInfoSync() : {}; const width = Number(info.windowWidth) || 375; const height = Number(info.windowHeight) || 667; const x = Number(touch && (touch.clientX || touch.pageX) || detail.x || width / 2); const y = Number(touch && (touch.clientY || touch.pageY) || detail.y || height / 2)
-      this.albumMenuPosition = { left: Math.max(0, Math.min(x, width - 149)), top: Math.max(0, Math.min(y, height - 148)) }; this.albumMenuVisible = true
+      const changedTouches = event.changedTouches
+      const touches = event.touches
+      const eventDetail: unknown = event.detail
+      const touch = firstTouch(changedTouches) || firstTouch(touches)
+      const detail = isRecord(eventDetail) ? eventDetail : {}
+      const info = typeof uni !== 'undefined' && uni.getSystemInfoSync ? uni.getSystemInfoSync() : undefined
+      const width = Number(info?.windowWidth) || 375
+      const height = Number(info?.windowHeight) || 667
+      const x = coordinate(touch?.clientX, touch?.pageX, coordinateValue(detail.x), width / 2)
+      const y = coordinate(touch?.clientY, touch?.pageY, coordinateValue(detail.y), height / 2)
+      this.albumMenuPosition = { left: Math.max(0, Math.min(x, width - 149)), top: Math.max(0, Math.min(y, height - 148)) }
+      this.albumMenuVisible = true
     },
     closeAlbumMenu() { this.albumMenuVisible = false; this.selectedAlbumId = '' },
-    handleAlbumMenuAction(key) {
+    handleAlbumMenuAction(key: AnimalAlbumMenuActionKey) {
       const item = this.albumItems.find((entry) => entry.id === this.selectedAlbumId); if (!item || !this.canManage) return this.closeAlbumMenu()
       if (key === 'pin') item.pinned = !item.pinned; if (key === 'favorite') item.favorite = !item.favorite; if (key === 'hide') item.hidden = !item.hidden; if (key === 'delete') this.albumItems = this.albumItems.filter((entry) => entry.id !== item.id)
       this.closeAlbumMenu(); uni.showToast({ title: key === 'delete' ? '已删除' : '已更新', icon: 'none' })
     }
   }
-}
+})
 </script>
 
 <style scoped>

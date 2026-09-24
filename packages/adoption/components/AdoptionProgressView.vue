@@ -78,19 +78,25 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawImage from '@/components/base/PawImage.vue'
 import PawOwnerBadge from '@/components/identity/PawOwnerBadge.vue'
 import AdoptionProgressTimeline from './AdoptionProgressTimeline.vue'
+import type {
+  AdoptionProgressRecordView,
+  AdoptionProgressViewMode
+} from '../services/progressPageMetadata.ts'
+import type { AdoptionProgressStatusPresentation as StatusPresentation } from '../services/progress.ts'
 
-export default {
+export default defineComponent({
   name: 'AdoptionProgressView',
   components: { PawIcon, PawImage, PawOwnerBadge, AdoptionProgressTimeline },
   props: {
-    record: { type: Object, required: true },
-    view: { type: String, default: 'progress' },
-    presentation: { type: Object, required: true }
+    record: { type: Object as PropType<AdoptionProgressRecordView>, required: true },
+    view: { type: String as PropType<AdoptionProgressViewMode>, default: 'progress' },
+    presentation: { type: Object as PropType<StatusPresentation>, required: true }
   },
   computed: {
     statusIcon() {
@@ -115,7 +121,7 @@ export default {
     ownerMessage() { return this.record.ownerMessage || '' },
     isCompleted() { return ['adoption_confirmed', 'reward', 'reward_done'].includes(this.presentation.status) }
   }
-}
+})
 </script>
 
 <style scoped>

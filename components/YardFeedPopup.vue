@@ -35,7 +35,7 @@
 
         <view class="yfp-rules">
           <text class="yfp-rules-title">云养300天权益：</text>
-          <text v-for="(right, index) in feedRights" :key="index" class="yfp-rule-line">{{ index + 1 }}.{{ right
+          <text v-for="(right, index) in feedRights" :key="index" class="yfp-rule-line">{{ Number(index) + 1 }}.{{ right
             }}</text>
         </view>
 
@@ -61,56 +61,64 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
+
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawResultSheet from '@/components/feedback/PawResultSheet.vue'
 import PawButton from '@/components/base/PawButton.vue'
 import PawCheckbox from '@/components/base/PawCheckbox.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import {
+  createYardFeedPopupState,
+  isYardFeedAgreement,
+  isYardFeedPaymentPayload,
+  readYardFeedPaymentParams,
+  toYardFeedUniPaymentParams,
+  type YardFeedAgreement,
+  type YardFeedPackageKey,
+  type YardFeedPackageOption,
+  type YardFeedPaymentParams,
+  type YardFeedPaymentPayload,
+  type YardFeedPopupState,
+} from '@/components/yard/yardFeedPopupMetadata.ts'
 
-export default {
+export default defineComponent({
   name: 'YardFeedPopup',
   components: { PawBottomSheet, PawResultSheet, PawButton, PawCheckbox, PawIcon },
   props: {
     visible: { type: Boolean, default: false },
     petId: { type: String, default: '' },
     heroCount: { type: Number, default: 1199999 },
-    paymentParams: { type: Object, default: null }
+    paymentParams: { type: Object as PropType<YardFeedPaymentParams | null>, default: null }
   },
-  emits: ['update:visible', 'pay', 'payment-success', 'learn-food', 'agreement', 'feed-order'],
-  data() {
+  emits: {
+    'update:visible': (visible: boolean) => typeof visible === 'boolean',
+    pay: (payload: YardFeedPaymentPayload) => isYardFeedPaymentPayload(payload),
+    'payment-success': (payload: YardFeedPaymentPayload) => isYardFeedPaymentPayload(payload),
+    'learn-food': () => true,
+    agreement: (which: YardFeedAgreement) => isYardFeedAgreement(which),
+    'feed-order': () => true,
+  },
+  data(): YardFeedPopupState {
     return {
-      successVisible: false,
-      paymentPending: false,
-      selectedKey: 'c',
-      agreed: true,
-      feedRights: [
-        '您购买的15斤猫粮将寄往小院；',
-        '院主将会在接下来300天用这15斤猫粮喂“豆豆”；',
-        '每周至少反馈1次“豆豆”的投喂视频图片，尽量做到一天一反馈，由于恶劣天气、院主临时有事等各种因素无法保证每天反馈；',
-        '院主及时更新“豆豆”的情况；',
-        '您获得豆豆的优先领养权；',
-        '云领养期间，申请领养需要您的同意才会发送给院主审核；'
-      ],
-      packages: [
-        { key: 'a', jin: 0.4, weightLabel: '0.4斤', price: 6.9, priceLabel: '6.9元', feedback: '云养3天', payPriceLabel: '6.9', payJinLabel: '0.4斤', iconName: 'brand/feed-kibble', iconSize: 20 },
-        { key: 'b', jin: 4, weightLabel: '4斤', price: 29.9, priceLabel: '29.9元', feedback: '云养30天', payPriceLabel: '29.9', payJinLabel: '4斤', iconName: 'brand/feed-bowl', iconSize: 32 },
-        { key: 'c', jin: 40, weightLabel: '40斤', price: 299.9, priceLabel: '299.9元', feedback: '云养300天', payPriceLabel: '119.9', payJinLabel: '15斤', iconName: 'brand/feed-bag', iconSize: 43 }
-      ]
+      ...createYardFeedPopupState(),
     }
   },
   computed: {
     visibleProxy: {
       get() { return this.visible },
-      set(value) { this.$emit('update:visible', value) }
+      set(value: boolean) { this.$emit('update:visible', value) }
     },
     heroFormatted() {
-      try { return Number(this.heroCount).toLocaleString('zh-CN') } catch (error) { return String(this.heroCount) }
+      try { return Number(this.heroCount).toLocaleString('zh-CN') } catch { return String(this.heroCount) }
     },
-    selectedPkg() { return this.packages.find(pkg => pkg.key === this.selectedKey) || this.packages[2] }
+    selectedPkg(): YardFeedPackageOption {
+      return this.packages.find(pkg => pkg.key === this.selectedKey) || this.packages[this.packages.length - 1]
+    }
   },
   watch: {
-    visible(value) {
+    visible(value: boolean) {
       if (value) {
         this.agreed = true
         this.successVisible = false
@@ -120,9 +128,9 @@ export default {
   },
   methods: {
     close() { this.$emit('update:visible', false) },
-    selectKey(key) { if (!this.paymentPending) this.selectedKey = key },
+    selectKey(key: YardFeedPackageKey) { if (!this.paymentPending) this.selectedKey = key },
     onLearnFood() { this.$emit('learn-food') },
-    openAgreement(which) { this.$emit('agreement', which) },
+    openAgreement(which: Exclude<YardFeedAgreement, 'required'>) { this.$emit('agreement', which) },
     onPay() {
       if (this.paymentPending) return
       if (!this.agreed) {
@@ -131,7 +139,7 @@ export default {
       }
 
       const pkg = this.selectedPkg
-      const payload = {
+      const payload: YardFeedPaymentPayload = {
         petId: this.petId,
         key: pkg.key,
         jin: pkg.jin,
@@ -140,29 +148,30 @@ export default {
       }
       this.$emit('pay', payload)
 
-      const params = this.paymentParams || {}
-      const required = ['timeStamp', 'nonceStr', 'package', 'signType', 'paySign']
-      if (!required.every(key => params[key])) {
+      const params = readYardFeedPaymentParams(this.paymentParams)
+      if (!params) {
         uni.showToast({ title: '支付服务暂未配置', icon: 'none' })
         return
       }
 
       this.paymentPending = true
       const done = () => this.onPaymentSuccess(payload)
-      const failed = error => {
+      const failed = (error: unknown) => {
         this.paymentPending = false
-        if (!error || error.errMsg !== 'requestPayment:fail cancel') uni.showToast({ title: '支付未完成', icon: 'none' })
+        const isCancellation = error !== null && typeof error === 'object'
+          && 'errMsg' in error && error.errMsg === 'requestPayment:fail cancel'
+        if (!isCancellation) uni.showToast({ title: '支付未完成', icon: 'none' })
       }
       if (typeof wx !== 'undefined' && typeof wx.requestPayment === 'function') {
         wx.requestPayment({ ...params, success: done, fail: failed })
       } else if (typeof uni !== 'undefined' && typeof uni.requestPayment === 'function') {
-        uni.requestPayment({ ...params, success: done, fail: failed })
+        uni.requestPayment({ ...toYardFeedUniPaymentParams(params), success: done, fail: failed })
       } else {
         this.paymentPending = false
         uni.showToast({ title: '当前环境不支持支付', icon: 'none' })
       }
     },
-    onPaymentSuccess(payload) {
+    onPaymentSuccess(payload: YardFeedPaymentPayload) {
       this.paymentPending = false
       this.$emit('update:visible', false)
       this.successVisible = true
@@ -173,7 +182,7 @@ export default {
       this.$emit('feed-order')
     }
   }
-}
+})
 </script>
 
 <style lang="less" scoped>

@@ -11,28 +11,55 @@
   </view>
 </template>
 
-<script>
-import { safeImgSrc } from '@/utils/safeImgSrc.js'
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
 
-export default {
+import { safeImgSrc } from '@/utils/safeImgSrc.ts'
+import {
+  createDynamicMediaPreviewPayload,
+  createDynamicMediaViewerItems,
+  readDynamicMediaIndex,
+  type DynamicMediaInput,
+  type DynamicMediaPreviewPayload,
+  type DynamicMediaViewerItem,
+} from '@/utils/dynamicMediaMetadata.ts'
+
+interface DynamicMediaViewerState {
+  current: number
+}
+
+export default defineComponent({
   name: 'DynamicMediaViewer',
   props: {
-    items: { type: Array, default: () => [] },
+    items: { type: Array as PropType<DynamicMediaInput[]>, default: () => [] },
     currentIndex: { type: Number, default: 0 },
     fallback: { type: String, default: '/static/figma/feature/d81342748c84fc1068ceb0af9525bc465f5517e8.png' }
   },
-  emits: ['change', 'tap', 'preview'],
-  data() { return { current: this.currentIndex } },
-  computed: {
-    mediaItems() { return this.items.length ? this.items : [this.fallback] }
+  emits: {
+    change: (index: number) => Number.isInteger(index) && index >= 0,
+    tap: (payload: DynamicMediaPreviewPayload) => payload !== null && typeof payload === 'object',
+    preview: (payload: DynamicMediaPreviewPayload) => payload !== null && typeof payload === 'object',
   },
-  watch: { currentIndex(value) { this.current = value } },
+  data(): DynamicMediaViewerState { return { current: this.currentIndex } },
+  computed: {
+    mediaItems(): DynamicMediaViewerItem[] {
+      return createDynamicMediaViewerItems(this.items, this.fallback)
+    }
+  },
+  watch: { currentIndex(value: number) { this.current = value } },
   methods: {
-    resolveSrc(item) { return safeImgSrc(typeof item === 'string' ? item : item && (item.src || item.url), this.fallback) },
-    onChange(event) { this.current = event.detail.current; this.$emit('change', this.current) },
-    onPreview(item, index) { this.$emit('tap', { item, index }); this.$emit('preview', { item, index }) }
+    resolveSrc(item: DynamicMediaViewerItem) { return safeImgSrc(item.src, this.fallback) },
+    onChange(event: PawEvent) {
+      this.current = readDynamicMediaIndex(event, this.mediaItems.length)
+      this.$emit('change', this.current)
+    },
+    onPreview(item: DynamicMediaViewerItem, index: number) {
+      const payload = createDynamicMediaPreviewPayload(item, index)
+      this.$emit('tap', payload)
+      this.$emit('preview', payload)
+    }
   }
-}
+})
 </script>
 
 <style scoped>

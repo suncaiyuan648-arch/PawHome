@@ -2,12 +2,14 @@
   <view class="paw-divider" :style="dividerStyle" aria-hidden="true" />
 </template>
 
-<script>
-function cssLength(value) {
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+function cssLength(value: string | number) {
   return typeof value === 'number' ? `${value}px` : String(value)
 }
 
-export default {
+export default defineComponent({
   name: 'PawDivider',
   props: {
     width: { type: [Number, String], default: 34 },
@@ -23,7 +25,7 @@ export default {
       }
     }
   }
-}
+})
 </script>
 
 <style scoped>

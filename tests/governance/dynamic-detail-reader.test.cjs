@@ -17,14 +17,14 @@ before(async () => {
   await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'packages/dynamic/services'), { recursive: true })
   await fs.copyFile(
-    path.join(ROOT, 'packages/dynamic/services/reader.js'),
-    path.join(tempRoot, 'packages/dynamic/services/reader.js'),
+    path.join(ROOT, 'packages/dynamic/services/reader.ts'),
+    path.join(tempRoot, 'packages/dynamic/services/reader.ts'),
   )
   globalThis.uni = {
     getStorageSync(key) { return storage.get(key) },
     setStorageSync() { throw new Error('reader must not write') },
   }
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/dynamic/services/reader.js')).href}?test=${Date.now()}`)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/dynamic/services/reader.ts')).href}?test=${Date.now()}`)
 })
 
 beforeEach(() => storage.clear())
@@ -59,6 +59,21 @@ test('dynamic detail reads one persisted record and normalizes every rendered fi
   assert.deepEqual(model.mediaItems, ['/media.png'])
   assert.equal(model.likes, 7)
   assert.equal(model.commentsTotal, 1)
+})
+
+test('dynamic media reader returns only usable string sources from persisted metadata', () => {
+  const model = api.normalizeDynamicRecord({
+    id: 'dynamic-media-1',
+    mediaItems: [
+      '/one.png',
+      { url: '/two.png' },
+      { url: 12, src: '/three.png' },
+      { path: '/four.png' },
+      null,
+      { url: false },
+    ],
+  })
+  assert.deepEqual(model.mediaItems, ['/one.png', '/two.png', '/three.png', '/four.png'])
 })
 
 test('public records are readable without an actor while private records stay actor scoped', () => {

@@ -48,34 +48,34 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawStatusPill from '@/components/PawStatusPill.vue'
 import PawDialog from '@/components/overlay/PawDialog.vue'
-import { buildRoute } from '@/navigation/routeContracts.js'
-export default {
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import { createAdoptionQuotaPageState, getAdoptionQuotaTitle, resolveAdoptionQuotaRouteState } from '../../services/quotaMetadata.ts'
+
+export default defineComponent({
   components: { PawPageNav, PawStatusPill, PawDialog },
-  data() {
-    return {
-      mode: 'support', recordId: '', invalid: false, supportList: [
-        { id: 1, name: '小白', avatar: '/static/figma/feature/f4348f6f415792a279a216f5422aabc6f064ce25.jpg' }, { id: 2, name: '小苹果', avatar: '/static/figma/feature/a7e819e25e2ebbe3e40d655a2ccedfb5b6dd4e52.jpg' }, { id: 3, name: '小苹果', avatar: '/static/figma/feature/a7e819e25e2ebbe3e40d655a2ccedfb5b6dd4e52.jpg' }
-      ], ledger: [
-        { id: 1, name: '云养3天豆豆', amount: '' }, { id: 2, name: '领养菠萝', amount: '-100' }, { id: 3, name: '云养7天豆豆', amount: '+300' }, { id: 4, name: '领养小黑失败-额度返还', amount: '+100' }, { id: 5, name: '领养小黑', amount: '-100' }
-      ], showInsufficient: false, detailRows: [
-        { label: '交易方式', value: '投喂云养获得' }, { label: '交易时间', value: '2026-01-30 13:53:12' }, { label: '交易场景', value: '领养额度' }, { label: '交易单号', value: '76465456563563453563653' }
-      ]
-    }
+  data() { return createAdoptionQuotaPageState('quota') },
+  computed: { title() { return getAdoptionQuotaTitle(this.mode) } },
+  onLoad(options: unknown = {}) {
+    const route = resolveAdoptionQuotaRouteState(options, 'quota')
+    this.mode = 'quota'
+    this.recordId = route.recordId
+    this.invalid = route.invalid
+    this.showInsufficient = route.showInsufficient
   },
-  computed: { title() { return { support: '助力领养', quota: '领养额度', 'quota-detail': '明细详情' }[this.mode] || '领养' } },
-  onLoad(options = {}) { this.mode = 'quota'; this.recordId = String(options.quotaId || options.id || options.recordId || ''); this.invalid = false; this.showInsufficient = options.popup === 'insufficient' },
   methods: {
     openDetail() {
     const quotaId = String(this.recordId || 'quota-demo-1')
-    try { uni.navigateTo({ url: buildRoute('adoption.quota.detail', { quotaId }) }) } catch (error) { uni.showToast({ title: '额度明细暂不可用', icon: 'none' }) }
+    try { uni.navigateTo({ url: buildRoute('adoption.quota.detail', { quotaId }) }) } catch { uni.showToast({ title: '额度明细暂不可用', icon: 'none' }) }
   },
     openHelpedAnimals() { uni.navigateTo({ url: '/packages/account/pages/helped-animals/index' + (this.recordId ? `?id=${encodeURIComponent(this.recordId)}` : '') }) }
   }
-}
+})
 </script>
 
 <style scoped>

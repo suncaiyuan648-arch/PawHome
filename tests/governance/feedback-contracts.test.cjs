@@ -13,9 +13,9 @@ let api
 
 before(async () => {
 	tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-feedback-contract-'))
-	await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
-	const sourcePath = path.join(ROOT, 'navigation/feedbackContracts.js')
-	const targetPath = path.join(tempRoot, 'feedbackContracts.js')
+	await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
+	const sourcePath = path.join(ROOT, 'navigation/feedbackContracts.ts')
+	const targetPath = path.join(tempRoot, 'feedbackContracts.ts')
 	await fs.copyFile(sourcePath, targetPath)
 	api = await import(`${pathToFileURL(targetPath).href}?test=${Date.now()}-${Math.random()}`)
 })
@@ -82,7 +82,7 @@ function throwsCode(callback, code) {
 }
 
 test('contract is pure and separates ordinary dynamics from feeding evidence', async () => {
-	const source = await fs.readFile(path.join(ROOT, 'navigation/feedbackContracts.js'), 'utf8')
+	const source = await fs.readFile(path.join(ROOT, 'navigation/feedbackContracts.ts'), 'utf8')
 	assert.doesNotMatch(source, /(?:from\s+['"][^'"]*(?:vue|uni|pages|storage|mock)|require\s*\([^)]*(?:vue|uni|pages|storage|mock)|uni\.)/i)
 	const dynamic = api.normalizeFeedbackEvidence(dynamicEvidence(), policy)
 	assert.equal(dynamic.kind, api.FEEDBACK_KINDS.DYNAMIC)

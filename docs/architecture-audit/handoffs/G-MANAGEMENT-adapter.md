@@ -4,17 +4,17 @@
 
 - taskId：`G-MANAGEMENT-adapter`
 - owner：`/root/management_adapter`
-- 关联合同：`navigation/managementContracts.js`、`navigation/actorCapabilities.js`
+- 关联合同：`navigation/managementContracts.ts`、`navigation/actorCapabilities.ts`
 - 关联计划：`docs/architecture-audit/11-采纳建议治理增补计划.md` 的 G-MANAGEMENT/A08；`docs/architecture-audit/08-治理执行与总工验收台账.md`
 - 本交付只包含读模型 binding、focused 反例测试和本 handoff；没有页面、路由、组件、Figma 节点或 storage key 变更。
 
 ## 实现
 
-新增 `packages/account/services/managementAdapter.js`，提供：
+新增 `packages/account/services/managementAdapter.ts`，提供：
 
 - profile 的 public/private 读取；yard 的 public/management 读取；animal 的 public/management 读取；以及显式 `resourceType + ID` 的通用入口。
 - `createManagementAdapter({ actorProvider, policy, readers })` 固定可信 actor、状态策略和域 reader，并在每次 `read` 重新解析 actor 与记录。
-- 当前仓库没有 profile/yard/animal 的持久化 reader。默认不导入 `utils/yardMock.js`、`utils/petRosterMockApi.js` 或页面 fixture；缺 reader 返回 `READER_MISSING`。`readManagementResourceWithReader` 是同步 reader seam，供未来真实存储/传输绑定和测试使用。
+- 当前仓库没有 profile/yard/animal 的持久化 reader。默认不导入 `utils/yardMock.ts`、`utils/petRosterMockApi.ts` 或页面 fixture；缺 reader 返回 `READER_MISSING`。`readManagementResourceWithReader` 是同步 reader seam，供未来真实存储/传输绑定和测试使用。
 - reader 只收到冻结的单一 ID 对象（`{ userId }`、`{ yardId }` 或 `{ animalId }`）。不会转发 query、role、managed、state、status、outcome 或调用方 record。
 - 所有结果恒包含 `readOnly: true`、`canWrite: false`；没有 writer、save、setStorageSync 或其他写 API。取消 intent 在调用 reader 前结束并返回只读结果。
 - 由 canonical management contract 计算 actor/关系/状态/visibility capability。云家长没有动物管理关系时不会被提权；动物管理需要当前 parent yard context 或明确 manager/child owner relation。
@@ -38,7 +38,7 @@
 执行结果：
 
 ```text
-node --check packages/account/services/managementAdapter.js       PASS
+node --check packages/account/services/managementAdapter.ts       PASS
 node --test tests/governance/management-adapter.test.cjs          10/10 PASS
 git diff --check                                                   PASS
 ```
@@ -51,4 +51,4 @@ git diff --check                                                   PASS
 
 ## 回滚
 
-删除本 handoff、`packages/account/services/managementAdapter.js` 与 `tests/governance/management-adapter.test.cjs` 即可回滚本子批；未发生 storage 数据变更。
+删除本 handoff、`packages/account/services/managementAdapter.ts` 与 `tests/governance/management-adapter.test.cjs` 即可回滚本子批；未发生 storage 数据变更。

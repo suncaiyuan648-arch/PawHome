@@ -100,92 +100,50 @@
 	</view>
 </template>
 
-<script>
-import { openUserProfile, openYardDetail } from '@/utils/profileNav.js'
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent } from 'vue'
+
+import { openUserProfile, openYardDetail } from '@/utils/profileNav.ts'
 import PawAvatar from '@/components/identity/PawAvatar.vue'
 import PawVerifiedBadge from '@/components/identity/PawVerifiedBadge.vue'
 import PawTabs from '@/components/navigation/PawTabs.vue'
 import PawLikeIcon from '@/components/base/PawLikeIcon.vue'
+import {
+	createSearchResultTabsMetadata,
+	splitSearchDynamicColumns,
+	type SearchDynamicColumnEntry,
+	type SearchDynamicResult,
+	type SearchResultTabsState,
+	type SearchUserResult,
+	type SearchYardResult
+} from '@/packages/discovery/services/searchResultMetadata'
 
-export default {
+export default defineComponent({
 	name: 'SearchResultTabs',
 	components: { PawAvatar, PawVerifiedBadge, PawTabs, PawLikeIcon },
-	emits: ['update:modelValue', 'change'],
+	emits: {
+    'update:modelValue': eventContract<[key: import('@/components/navigation/PawTabs.vue').PawTabKey]>(),
+    'change': eventContract<[key: import('@/components/navigation/PawTabs.vue').PawTabKey]>(),
+  },
 	props: {
 		modelValue: {
 			type: String,
 			default: 'dynamic'
 		}
 	},
-	data() {
-		const cat1 = '/static/figma/home/feed-cat.jpg'
-		const cat2 = '/static/figma/home/feed-food.png'
-		const av = '/static/figma/home/feed-avatar.png'
-		return {
-			tabs: [
-				{ key: 'dynamic', label: '动态' },
-				{ key: 'yard', label: '小院' },
-				{ key: 'user', label: '用户' }
-			],
-			dynamicList: [
-				{ cover: '/static/figma/search/dynamic-left-1.png', embeddedLocation: true, title: '小猫吃的好开心', avatar: av, name: '朝阳小区猫猫队', pawId: 'search-feed-1', likes: 37, liked: false, distance: '3.2km', district: '金水区' },
-				{ cover: '/static/figma/search/dynamic-right-1.png', embeddedLocation: true, title: '小猫吃的好开心呢呢呢呢呢呢呢啊啊啊啊啊啊啊啊啊啊', avatar: av, name: '朝阳小区猫猫队', pawId: 'search-feed-2', likes: 32, liked: true, distance: '3.2km', district: '金水区' },
-				{ cover: '/static/figma/search/dynamic-left-2.png', embeddedLocation: true, title: '小猫吃的好开心', avatar: av, name: '朝阳小区猫猫队', pawId: 'search-feed-3', likes: 37, liked: false, distance: '3.2km', district: '金水区' },
-				{ cover: '/static/figma/search/dynamic-right-2.png', embeddedLocation: true, title: '小猫吃的好开心', avatar: av, name: '朝阳小区猫猫队', pawId: 'search-feed-4', likes: 37, liked: false, distance: '3.2km', district: '金水区' }
-			],
-			yardList: [
-				{
-					yardId: '1',
-					avatar: '/static/figma/search/yard-avatar-exact.png',
-					name: '我就是要喂猫',
-					verified: true,
-					variant: 'badges',
-					badges: ['剩6只/共32只', '已成立2个月', '入驻4人'],
-					distance: '3.2km 金水区',
-					desc: '春去秋来二十年的救助流浪猫时间匆匆而去，在此希望每个毛孩子都被温柔相待。',
-					gallery: [
-						{ img: '/static/figma/search/yard-gallery-exact.png', caption: '开饭了开饭了开饭' },
-						{ img: '/static/figma/search/yard-gallery-exact.png', caption: '开饭了开饭了开饭' },
-						{ img: '/static/figma/search/yard-gallery-exact.png', caption: '开饭了开饭了开饭' },
-						{ img: '/static/figma/search/yard-gallery-exact.png', caption: '开饭了开饭了开饭' }
-					]
-				},
-				{
-					yardId: '2',
-					avatar: '/static/figma/search/yard-avatar-exact.png',
-					name: '我就是要喂猫',
-					verified: true,
-					variant: 'org',
-					orgName: '合肥市希望流浪动物基地',
-					distance: '3.2km 金水区',
-					desc: '春去秋来二十年的救助流浪猫时间匆匆而去，在此希望每个毛孩子都被温柔相待。',
-					gallery: [
-						{ img: '/static/figma/search/yard-gallery-exact.png', caption: '开饭了开饭了开饭' },
-						{ img: '/static/figma/search/yard-gallery-exact.png', caption: '开饭了开饭了开饭' },
-						{ img: '/static/figma/search/yard-gallery-exact.png', caption: '开饭了开饭了开饭' },
-						{ img: '/static/figma/search/yard-gallery-exact.png', caption: '开饭了开饭了开饭' }
-					]
-				}
-			],
-			userList: Array.from({ length: 5 }).map((_, idx) => ({
-				avatar: '/static/figma/search-user-avatar.png',
-				name: 'Q',
-				fans: 315,
-				pawLabel: idx === 0 ? '小红书号：' : '逢猫号：',
-				pawId: idx === 0 ? '' : '23456789'
-			}))
-		}
+	data(): SearchResultTabsState {
+		return createSearchResultTabsMetadata()
 	},
 	computed: {
-		dynamicColumns() {
-			return [0, 1].map(columnIndex => this.dynamicList
-				.map((item, index) => ({ item, index }))
-				.filter(entry => entry.index % 2 === columnIndex))
+		dynamicColumns(): SearchDynamicColumnEntry[][] {
+			return splitSearchDynamicColumns(this.dynamicList)
 		}
 	},
 	methods: {
-		toggleDynamicLike(i) {
-			const item = this.dynamicList[i]
+		toggleDynamicLike(index: number) {
+			const item = this.dynamicList[index]
 			if (!item) return
 			if (item.liked) {
 				item.liked = false
@@ -195,17 +153,17 @@ export default {
 				item.likes += 1
 			}
 		},
-		openDynamicAuthor(item) {
+		openDynamicAuthor(item: SearchDynamicResult) {
 			openUserProfile({
 				pawId: item.pawId || 'search-author',
 				nickname: item.name,
 				avatar: item.avatar
 			})
 		},
-		openYardCard(yard) {
+		openYardCard(yard: SearchYardResult) {
 			openYardDetail({ yardId: yard.yardId || '1', yardName: yard.name })
 		},
-		openUserRow(u) {
+		openUserRow(u: SearchUserResult) {
 			openUserProfile({
 				pawId: u.pawId,
 				nickname: u.name,
@@ -213,7 +171,7 @@ export default {
 			})
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

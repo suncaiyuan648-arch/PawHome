@@ -3,7 +3,7 @@
 > 生成时间：2026-08-26
 > 对照对象：Figma 文件「逢猫投喂流浪猫板块」与当前 `pages/` 前端源码
 
-> **当前路由覆盖（2026-09-19）**：本页的 Figma 画板统计保留原始生成口径；路由映射以 `docs/design/figma-map.yaml` 和最新 C0 批次为准。认证页面现位于 `packages/auth`，账户设置、个人主页、关系列表、浏览记录、等级、年度报告、帮助动物、勋章页面现位于 `packages/account`；我的领养、领养审核现位于 `packages/adoption`；我的投喂/小院投喂订单和订单详情现位于 `packages/feeding`；动态详情与深链现位于 `packages/dynamic`；动物名册/我的宠物/云养宠物现位于 `packages/animal` 与 `packages/yard`。90/91/92 作为订单 canonical 页的本地/mock `variant` 承载，发布选订单由 `packages/dynamic/pages/editor/index.vue?state=select-order` 承载，领养选猫由 `packages/adoption/pages/apply/index.vue?state=pick-cats` 承载，救助基金/救助审核列表与个人救助页由 `packages/rescue` 承载。旧生产页已从 `pages.json` 和源码移除；历史审计文档中的旧路径仅作追溯。
+> **当前路由覆盖（2026-09-19）**：本页的 Figma 画板统计保留原始生成口径；路由映射以 `docs/design/figma-map.yaml` 和最新 C0 批次为准。认证页面现位于 `packages/auth`，账户设置、个人主页、关系列表、浏览记录、等级、年度报告、帮助动物、勋章页面现位于 `packages/account`；我的领养、领养审核现位于 `packages/adoption`；我的投喂/小院投喂订单和订单详情现位于 `packages/feeding`；动态详情与深链现位于 `packages/dynamic`；动物名册/我的宠物/云养宠物现位于 `packages/animal` 与 `packages/yard`。90/91/92 作为订单 canonical 页的本地/mock `variant` 承载，发布选订单由 `packages/dynamic/pages/editor/index.vue?state=select-order` 承载，领养选猫由 `packages/adoption/pages/apply/index.vue?state=pick-cats` 承载，救助基金/救助审核列表与个人救助页由 `packages/rescue` 承载。旧生产页已从 `pages.tson` 和源码移除；历史审计文档中的旧路径仅作追溯。
 
 ## 结论
 
@@ -69,7 +69,7 @@
 | `62:31044` 领养申请；`62:31158` 领养申请（长表单） | `packages/adoption/pages/apply/index.vue` 与 `packages/rescue/pages/apply/index.vue`：业务域固定表单 | 已实现（同一路由多模式） |
 | `62:31384`、`62:31484` 领养申请-等待审核；`62:31597` 院主-等待院主审核；`62:31711` 院主-等待云家长审核；`62:31825` 领养-领养信息-查看；`62:31908` 领养-申请内容-查看；`62:32023` 院主-待申请人领养；`62:32153` 领养审核-待院主确认领养；`62:32305` 领养审核-驳回成功；`62:32483` 领养-领养成功；`62:32651` 领养申请-已同意；`62:32789` 领养进度-待院主确认；`62:32983` 领养进度-待评审团确认；`62:33198` 领养进度-获得奖励 | `packages/adoption/pages/progress/index.vue` + `PawAdoptionFlowFigma`：`frame=44–57`；领养信息和申请内容分别由 `frame=48/49` 承载；救助长流程使用 `packages/rescue/pages/progress/index.vue` | 已实现（按业务域拆分 canonical 流程页） |
 | `62:33410` 待投票；`62:34304` 评审团 | `packages/jury/pages/queue/index.vue`：待投票/已结束列表与评审团入口 | 已实现 |
-| `62:33657` 救助详情；`62:34421` 救助评审列表（原救助基金池） | `packages/rescue/pages/detail/index.vue`、`packages/rescue/pages/fund/index.vue` + `utils/rescueStorage.js` | 救助本地链路已实现，已完成运行时全链路验收（RESCUE-009）；生产接口和鉴权仍待接入 |
+| `62:33657` 救助详情；`62:34421` 救助评审列表（原救助基金池） | `packages/rescue/pages/detail/index.vue`、`packages/rescue/pages/fund/index.vue` + `utils/rescueStorage.ts` | 救助本地链路已实现，已完成运行时全链路验收（RESCUE-009）；生产接口和鉴权仍待接入 |
 | `62:34054` 已投票 | `packages/adoption/pages/jury/detail/index.vue`：由已关闭的 adoption jury fixture 派生已投票状态 | 已实现（领养评审详情独立） |
 | `62:32789`、`62:32983`、`62:33198` 领养进度状态 | `packages/adoption/pages/progress/index.vue`：`frame=55/56/57`，并由 `PawAdoptionFlowFigma` 渲染进度条 | 已实现（共享流程状态） |
 | `62:35297` 确认领养；`62:35393` 救助证实列表详情 | `packages/adoption/pages/confirmation/index.vue`、`packages/rescue/pages/proof/list/index.vue`、`packages/adoption/components/PawAdoptionEvidence.vue` | 领养确认已实现；救助证实列表已独立接入并完成运行时验收 |

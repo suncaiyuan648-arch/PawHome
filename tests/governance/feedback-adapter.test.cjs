@@ -94,21 +94,21 @@ function feedingTask(overrides = {}) {
 
 before(async () => {
 	tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-feedback-adapter-'))
-	await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+	await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
 	await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
 	await fs.mkdir(path.join(tempRoot, 'utils'), { recursive: true })
 	await fs.mkdir(path.join(tempRoot, 'packages/feeding/services'), { recursive: true })
-	for (const file of ['feedbackContracts.js', 'actorCapabilities.js']) {
+	for (const file of ['feedbackContracts.ts', 'actorCapabilities.ts']) {
 		await fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
 	}
-	await fs.copyFile(path.join(ROOT, 'utils/profileNav.js'), path.join(tempRoot, 'utils/profileNav.js'))
-	const feedingSource = await fs.readFile(path.join(ROOT, 'packages/feeding/services/orderMockApi.js'), 'utf8')
-	await fs.writeFile(path.join(tempRoot, 'packages/feeding/services/orderMockApi.js'), feedingSource.replace("'@/utils/profileNav.js'", "'../../../utils/profileNav.js'"))
+	await fs.copyFile(path.join(ROOT, 'utils/profileNav.ts'), path.join(tempRoot, 'utils/profileNav.ts'))
+	const feedingSource = await fs.readFile(path.join(ROOT, 'packages/feeding/services/orderMockApi.ts'), 'utf8')
+	await fs.writeFile(path.join(tempRoot, 'packages/feeding/services/orderMockApi.ts'), feedingSource.replace("'@/utils/profileNav.ts'", "'../../../utils/profileNav.ts'"))
 	await fs.copyFile(
-		path.join(ROOT, 'packages/feeding/services/feedbackAdapter.js'),
-		path.join(tempRoot, 'packages/feeding/services/feedbackAdapter.js')
+		path.join(ROOT, 'packages/feeding/services/feedbackAdapter.ts'),
+		path.join(tempRoot, 'packages/feeding/services/feedbackAdapter.ts')
 	)
-	api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/feeding/services/feedbackAdapter.js')).href}?test=${Date.now()}`)
+	api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/feeding/services/feedbackAdapter.ts')).href}?test=${Date.now()}`)
 })
 
 after(async () => {
@@ -116,9 +116,9 @@ after(async () => {
 })
 
 test('adapter uses the canonical feedback contract and exposes no write or storage surface', async () => {
-	const source = await fs.readFile(path.join(ROOT, 'packages/feeding/services/feedbackAdapter.js'), 'utf8')
-	assert.match(source, /feedbackContracts\.js/)
-	assert.match(source, /orderMockApi\.js/)
+	const source = await fs.readFile(path.join(ROOT, 'packages/feeding/services/feedbackAdapter.ts'), 'utf8')
+	assert.match(source, /feedbackContracts\.ts/)
+	assert.match(source, /orderMockApi\.ts/)
 	assert.match(source, /summarizeFeedbackTask/)
 	assert.doesNotMatch(source, /setStorageSync|removeStorageSync|\b(?:save|update|remove|delete)Storage|submitFeedback|writeFeedback/i)
 	assert.equal(typeof api.readFeedbackTaskList, 'function')

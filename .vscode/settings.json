@@ -1,6 +1,7 @@
 {
   "editor.formatOnSave": true,
   "eslint.useFlatConfig": true,
+  "typescript.tsdk": "node_modules/typescript/lib",
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact", "vue"],
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"

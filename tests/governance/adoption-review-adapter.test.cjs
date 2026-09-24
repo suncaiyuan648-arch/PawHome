@@ -81,18 +81,19 @@ function reset() {
 
 before(async () => {
 	tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-adoption-review-adapter-'))
-	await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+	await fs.cp(path.join(ROOT, 'contracts'), path.join(tempRoot, 'contracts'), { recursive: true })
+	await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
 	await fs.cp(path.join(ROOT, 'services/domainReads'), path.join(tempRoot, 'services/domainReads'), { recursive: true })
 	await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
 	await fs.mkdir(path.join(tempRoot, 'utils'), { recursive: true })
 	await fs.mkdir(path.join(tempRoot, 'packages/adoption/services'), { recursive: true })
-	for (const file of ['actorCapabilities.js', 'adoptionConditionContract.js', 'adoptionReviewContract.js']) {
+	for (const file of ['actorCapabilities.ts', 'adoptionConditionContract.ts', 'adoptionReviewContract.ts']) {
 		await fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
 	}
-	await fs.copyFile(path.join(ROOT, 'utils/adoptionStorage.js'), path.join(tempRoot, 'utils/adoptionStorage.js'))
+	await fs.copyFile(path.join(ROOT, 'utils/adoptionStorage.ts'), path.join(tempRoot, 'utils/adoptionStorage.ts'))
 	await fs.copyFile(
-		path.join(ROOT, 'packages/adoption/services/reviewAdapter.js'),
-		path.join(tempRoot, 'packages/adoption/services/reviewAdapter.js')
+		path.join(ROOT, 'packages/adoption/services/reviewAdapter.ts'),
+		path.join(tempRoot, 'packages/adoption/services/reviewAdapter.ts')
 	)
 	storage = new Map()
 	globalThis.uni = {
@@ -110,7 +111,7 @@ before(async () => {
 			storage.delete(key)
 		},
 	}
-	api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/adoption/services/reviewAdapter.js')).href}?test=${Date.now()}`)
+	api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/adoption/services/reviewAdapter.ts')).href}?test=${Date.now()}`)
 })
 
 beforeEach(reset)
@@ -121,9 +122,9 @@ after(async () => {
 })
 
 test('adapter binds the canonical contract and existing storage with no write surface', async () => {
-	const source = await fs.readFile(path.join(ROOT, 'services/domainReads/adoption/reviewAdapter.js'), 'utf8')
-	assert.match(source, /adoptionReviewContract\.js/)
-	assert.match(source, /adoptionStorage\.js/)
+	const source = await fs.readFile(path.join(ROOT, 'services/domainReads/adoption/reviewAdapter.ts'), 'utf8')
+	assert.match(source, /adoptionReviewContract\.ts/)
+	assert.match(source, /adoptionStorage\.ts/)
 	assert.match(source, /includeDemo: false/)
 	assert.doesNotMatch(source, /setStorageSync|removeStorageSync|saveAdoption|addAdoption|updateAdoption|transitionAdoption/i)
 	assert.equal(typeof api.readAdoptionReviewList, 'function')

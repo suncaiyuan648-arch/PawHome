@@ -91,96 +91,124 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { type CommentItemRecord } from '@/components/dynamic/commentMetadata.ts'
+
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawFixedActionBar from '@/components/layout/PawFixedActionBar.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawCarouselDots from './PawCarouselDots.vue'
 import CommentThread from '@/components/dynamic/CommentThread.vue'
 import ReplyComposerSheet from '@/components/ReplyComposerSheet.vue'
-import { getWechatNavLayout } from '@/utils/navLayout.js'
-import { getPawHomeYardMock } from '@/utils/yardMock.js'
+import { getWechatNavLayout } from '@/utils/navLayout.ts'
+import { getPawHomeYardMock } from '@/utils/yardMock.ts'
+import { readPawEventNumber } from '@/utils/pawEventMetadata.ts'
+import type { WechatNavLayout } from '@/utils/navLayout.ts'
+import type { YardComment, YardMock, YardPet } from '@/utils/yardMock.ts'
+import {
+  createPetDetailFallbackMock,
+  createPetDetailStripMocks,
+  type PetDetailDisplayMetadata,
+  type PetDetailFooterActionMetadata,
+  type PetDetailManagementAction,
+  type PetDetailMockMetadata,
+  type PetDetailPrimaryActionMetadata,
+  type PetDetailStripItemMetadata,
+} from '@/utils/petDetailMetadata.ts'
 
-function cloneComments(comments) {
-  return JSON.parse(JSON.stringify(Array.isArray(comments) ? comments : []))
+interface PetDetailData {
+  navOverlayOffset: number
+  messageComments: YardComment[]
+  replySheetVisible: boolean
+  replySheetTargetId: string
+  heroIndex: number
 }
 
-export default {
+function cloneComments(comments: readonly YardComment[]): YardComment[] {
+  return comments.map(comment => ({
+    ...comment,
+    author: { ...comment.author },
+    ...(comment.replyTo ? { replyTo: { ...comment.replyTo } } : {}),
+    ...(comment.children ? { children: cloneComments(comment.children) } : {}),
+  }))
+}
+
+export default defineComponent({
   name: 'PawPetDetailFigma',
   components: { PawPageNav, PawFixedActionBar, PawIcon, PawCarouselDots, CommentThread, ReplyComposerSheet },
-  emits: ['back', 'album', 'preview-image', 'select-pet', 'footer-action', 'footer-primary', 'message-user-click'],
+  emits: {
+    'back': eventContract<[]>(),
+    'album': eventContract<[]>(),
+    'preview-image': eventContract<[payload: { current: string; urls: string[] }]>(),
+    'select-pet': eventContract<[index: number]>(),
+    'footer-action': eventContract<[action: PetDetailFooterActionMetadata | { key: PetDetailManagementAction }]>(),
+    'footer-primary': eventContract<[action: PetDetailPrimaryActionMetadata]>(),
+    'message-user-click': eventContract<[comment: YardComment]>(),
+  },
   props: {
     variant: { type: Number, default: 35 },
-    pet: { type: Object, default: () => ({}) },
-    pets: { type: Array, default: () => [] },
+    pet: { type: Object as PropType<PetDetailMockMetadata>, default: () => ({}) },
+    pets: { type: Array as PropType<YardPet[]>, default: () => [] },
     petIndex: { type: Number, default: 3 },
     petTotal: { type: Number, default: 12 },
     joined: { type: Boolean, default: false },
-    yard: { type: Object, default: () => getPawHomeYardMock() },
+    yard: { type: Object as PropType<YardMock>, default: () => getPawHomeYardMock() },
     managed: { type: Boolean, default: false },
   },
-  data() {
-    const yardComments = this.yard && Array.isArray(this.yard.comments)
-      ? this.yard.comments
-      : getPawHomeYardMock().comments;
+  data(): PetDetailData {
     return {
       navOverlayOffset: getWechatNavLayout().totalHeight,
-      messageComments: cloneComments(yardComments),
+      messageComments: cloneComments(this.yard.comments),
       replySheetVisible: false,
       replySheetTargetId: '',
       heroIndex: 0,
     };
   },
   computed: {
-    heroGallery() {
-      const gallery = Array.isArray(this.displayPet.gallery)
-        ? this.displayPet.gallery
-          .map((item) => typeof item === 'string' ? item : item && (item.src || item.url))
-          .filter(Boolean)
-        : [];
+    heroGallery(): string[] {
+      const gallery = (this.displayPet.gallery || [])
+        .map(item => typeof item === 'string' ? item : item.src || item.url)
+        .filter((source): source is string => typeof source === 'string' && source.length > 0);
       return gallery.length ? gallery : [this.displayPet.avatar || '/static/figma/adoption-flow/pet-hero.png'];
     },
-    heroSource() {
-      return this.heroGallery[0];
+    heroSource(): string {
+      return this.heroGallery[0] || '/static/figma/adoption-flow/pet-hero.png';
     },
-    stripItems() {
-      const fallback = Array.from({ length: 8 }, (_, index) => ({
-        id: `pet-strip-${index + 1}`,
-        avatar: '/static/figma/pet-detail/strip-orange.png',
-      }));
-      const source = this.pets.length ? this.pets : fallback;
-      return Array.from({ length: Math.max(8, source.length) }, (_, index) => source[index] || fallback[index % fallback.length]);
+    stripItems(): PetDetailStripItemMetadata[] {
+      const fallback = createPetDetailStripMocks();
+      const source: PetDetailStripItemMetadata[] = this.pets.length ? this.pets : fallback;
+      return Array.from(
+        { length: Math.max(8, source.length) },
+        (_, index) => source[index] || fallback[index % fallback.length],
+      );
     },
-    displayPet() {
-      return {
-        name: '小黄',
-        statusLabel: '已云养',
-        tags: ['中华田园犬', '男生', '已绝育', '2岁3个月'],
-        desc: '小黄是我见过最乖最帅最萌的小猫，饭量很大，希望可以多多投喂猫粮给它',
-        ...this.pet,
-      };
+    displayPet(): PetDetailDisplayMetadata {
+      return { ...createPetDetailFallbackMock(), ...this.pet };
     },
-    displayYard() {
+    displayYard(): YardMock {
       return { ...getPawHomeYardMock(), ...this.yard };
     },
-    footerActions() {
+    footerActions(): PetDetailFooterActionMetadata[] {
       return [
         { key: 'share', label: '分享', image: '/static/fenxiang.png' },
         { key: 'join', label: this.joined ? '已入驻' : '入驻', image: this.joined ? '/static/yard-joined-checked.png' : '/static/ruzhu.png' },
         { key: 'adopt', label: '领养', image: '/static/lingyang.png' },
       ];
     },
-    primaryAction() {
+    primaryAction(): PetDetailPrimaryActionMetadata {
       return { key: 'feed', label: '云养一只', iconName: 'actions/feed', iconSize: 32, size: 'md' };
     },
-    canManage() {
+    canManage(): boolean {
       // `variant=36` is a visual state only. Management actions require the
       // parent page to prove the current actor's yard/animal relation.
       return this.managed === true;
     },
-    messageCommentsForDisplay() {
-      const comments = this.messageComments || [];
-      return comments.slice(0, 1).map((comment) => ({
+    messageCommentsForDisplay(): YardComment[] {
+      return this.messageComments.slice(0, 1).map(comment => ({
         ...comment,
         author: {
           ...(comment.author || {}),
@@ -192,7 +220,7 @@ export default {
         },
       }));
     },
-    replyTargetName() {
+    replyTargetName(): string {
       const target = this.findMessageComment(this.replySheetTargetId);
       return target && target.author ? target.author.name || '' : '';
     },
@@ -203,12 +231,13 @@ export default {
     },
   },
   methods: {
-    onHeroChange(event) {
-      const index = Number(event && event.detail && event.detail.current);
+    onHeroChange(event: PawEvent) {
+      const index = readPawEventNumber(event, 'current');
       if (Number.isInteger(index) && index >= 0 && index < this.heroGallery.length) this.heroIndex = index;
     },
-    onHeroTap(index = this.heroIndex) {
-      const currentIndex = Number.isInteger(index) && index >= 0 && index < this.heroGallery.length ? index : 0;
+    onHeroTap(index?: number) {
+      const current = index === undefined ? this.heroIndex : index;
+      const currentIndex = Number.isInteger(current) && current >= 0 && current < this.heroGallery.length ? current : 0;
       this.$emit('preview-image', {
         current: this.heroGallery[currentIndex] || this.heroSource,
         urls: this.heroGallery,
@@ -217,45 +246,49 @@ export default {
     onAlbumTap() {
       if (this.canManage) this.$emit('album');
     },
-    emitManageAction(key) {
+    emitManageAction(key: PetDetailManagementAction) {
       if (this.canManage) this.$emit('footer-action', { key });
     },
-    onStripTap(index) {
+    onStripTap(index: number) {
       if (index !== this.petIndex) this.$emit('select-pet', index);
     },
-    onNavLayout(layout) {
+    onNavLayout(layout: Partial<WechatNavLayout>) {
       if (layout && Number.isFinite(Number(layout.totalHeight))) this.navOverlayOffset = Number(layout.totalHeight);
     },
-    onFooterAction(action) {
-      this.$emit('footer-action', action);
+    onFooterAction(action: import('@/components/layout/PawFixedActionBar.vue').PawFixedAction) {
+      const selected = this.footerActions.find(item => item.key === action.key);
+      if (selected) this.$emit('footer-action', selected);
     },
-    onFooterPrimary(action) {
-      this.$emit('footer-primary', action);
+    onFooterPrimary(action: import('@/components/layout/PawFixedActionBar.vue').PawFixedAction) {
+      if (action.key === this.primaryAction.key) this.$emit('footer-primary', this.primaryAction);
     },
-    findMessageComment(id, comments = this.messageComments) {
-      if (!id || !Array.isArray(comments)) return null;
-      for (const comment of comments) {
-        if (String(comment.id) === String(id)) return comment;
-        const nested = this.findMessageComment(id, comment.children);
+    findMessageComment(id: string, comments?: YardComment[]): YardComment | null {
+      const targetId = String(id || '').trim();
+      if (!targetId) return null;
+      const source = comments || this.messageComments;
+      for (const comment of source) {
+        if (comment.id === targetId) return comment;
+        const nested = this.findMessageComment(targetId, comment.children || []);
         if (nested) return nested;
       }
       return null;
     },
-    onMessageUserClick(comment) {
-      this.$emit('message-user-click', comment);
+    onMessageUserClick(comment: CommentItemRecord) {
+      const selected = this.findMessageComment(comment.id);
+      if (selected) this.$emit('message-user-click', selected);
     },
-    onMessageReply(comment) {
-      if (!comment || !comment.id) return;
+    onMessageReply(comment: CommentItemRecord) {
+      if (!comment.id) return;
       this.replySheetTargetId = String(comment.id);
       this.replySheetVisible = true;
     },
-    onMessageLike(comment) {
-      const target = this.findMessageComment(comment && comment.id);
+    onMessageLike(comment: CommentItemRecord) {
+      const target = this.findMessageComment(comment.id);
       if (!target) return;
       target.liked = !target.liked;
       target.likes = Math.max(0, Number(target.likes) + (target.liked ? 1 : -1));
     },
-    onReplySheetSend(text) {
+    onReplySheetSend(text: string) {
       const target = this.findMessageComment(this.replySheetTargetId);
       const value = String(text || '').trim();
       if (!target || !value) return;
@@ -280,7 +313,7 @@ export default {
       uni.showToast({ title: '暂不支持图片回复', icon: 'none' });
     },
   },
-};
+});
 </script>
 
 <style lang="less" scoped>

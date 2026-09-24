@@ -17,11 +17,25 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+import { defineComponent, type PropType } from 'vue'
+
 import PawAvatar from '@/components/identity/PawAvatar.vue'
 import PawLikeIcon from '@/components/base/PawLikeIcon.vue'
 import FeedCardLocation from '@/components/dynamic/FeedCardLocation.vue'
-export default { name: 'FeedCard', components: { PawAvatar, PawLikeIcon, FeedCardLocation }, props: { item: { type: Object, default: () => ({}) } }, emits: ['click', 'user-click', 'like'] }
+import type { HomeFeedCardMetadata } from '@/utils/homeFeedMockData.ts'
+
+export default defineComponent({
+	name: 'FeedCard',
+	components: { PawAvatar, PawLikeIcon, FeedCardLocation },
+	props: { item: { type: Object as PropType<HomeFeedCardMetadata>, required: true } },
+	emits: {
+    'click': eventContract<[item: HomeFeedCardMetadata]>(),
+    'user-click': eventContract<[item: HomeFeedCardMetadata]>(),
+    'like': eventContract<[item: HomeFeedCardMetadata]>(),
+  },
+})
 </script>
 
 <style scoped>

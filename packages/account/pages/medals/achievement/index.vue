@@ -1,5 +1,6 @@
 <template><AccountMedalView variant="achievement" /></template>
-<script>
+<script lang="ts">import { defineComponent } from 'vue'
+
 import AccountMedalView from '../../../components/AccountMedalView.vue'
-export default { name: 'AccountMedalAchievementPage', components: { AccountMedalView } }
+export default defineComponent({ name: 'AccountMedalAchievementPage', components: { AccountMedalView } })
 </script>

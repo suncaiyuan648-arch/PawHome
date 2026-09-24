@@ -23,10 +23,11 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">import { defineComponent } from 'vue'
+
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
-export default {
+export default defineComponent({
   name: 'AdoptionProgressTimeline',
   components: { PawIcon },
   props: {
@@ -42,7 +43,7 @@ export default {
       ]
     }
   }
-}
+})
 </script>
 
 <style scoped>

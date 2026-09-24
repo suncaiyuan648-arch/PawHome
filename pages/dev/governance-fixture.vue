@@ -42,7 +42,9 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 
 const ACTOR_KEY = 'PAWHOME_ACTOR_SESSION'
@@ -52,13 +54,27 @@ const PROFILE_KEY = 'PAWHOME_PROFILE_RECORDS'
 const YARD_KEY = 'PAWHOME_YARD_RECORDS'
 const ANIMAL_KEY = 'PAWHOME_ANIMAL_RECORDS'
 
-const ACTORS = Object.freeze({
+type FixtureActorRole = 'owner' | 'cloud_parent' | 'reviewer'
+type FixtureAdoptionPhase = 'owner' | 'cloud_parent' | 'jury'
+type FixtureEditorKind = 'profile' | 'yard' | 'animal'
+
+interface FixtureActor { id: string; roles: string[] }
+interface GovernanceFixturePageState { statusText: string }
+
+const ACTORS: Record<FixtureActorRole, FixtureActor> = Object.freeze({
   owner: Object.freeze({ id: 'qa-owner', roles: ['owner', 'yard_owner', 'animal_manager'] }),
   cloud_parent: Object.freeze({ id: 'qa-cloud', roles: ['cloud_parent'] }),
   reviewer: Object.freeze({ id: 'qa-reviewer', roles: ['reviewer'] }),
 })
 
-function adoptionRecord(applicationId, reviewItemId, phase, reviewerRole, reviewerId, status) {
+function adoptionRecord(
+  applicationId: string,
+  reviewItemId: string,
+  phase: FixtureAdoptionPhase,
+  reviewerRole: FixtureActorRole,
+  reviewerId: string,
+  status: string
+) {
   return {
     id: `qa-${applicationId}`,
     applicationType: 'adoption',
@@ -120,13 +136,13 @@ function managementRecords() {
   }
 }
 
-export default {
+export default defineComponent({
   name: 'GovernanceFixturePage',
   components: { PawPageNav },
-  data() { return { statusText: '尚未生成夹具' } },
+  data(): GovernanceFixturePageState { return { statusText: '尚未生成夹具' } },
   onShow() { this.refreshStatus() },
   methods: {
-    setActor(actor) { uni.setStorageSync(ACTOR_KEY, { sessionId: `qa-session-${actor.id}`, actor }) },
+    setActor(actor: FixtureActor) { uni.setStorageSync(ACTOR_KEY, { sessionId: `qa-session-${actor.id}`, actor }) },
     seedAdoption() {
       uni.setStorageSync(ADOPTION_KEY, [
         adoptionRecord('qa-application-owner', 'qa-review-owner', 'owner', 'owner', 'qa-owner', 'pending'),
@@ -146,7 +162,7 @@ export default {
       this.seedRescue()
       this.seedManagement()
     },
-    openAdoption(role) {
+    openAdoption(role: FixtureActorRole) {
       this.seedAll()
       this.setActor(ACTORS[role])
       this.statusText = `领养审核：${role}`
@@ -158,10 +174,10 @@ export default {
       this.statusText = '救助审核：reviewer'
       uni.navigateTo({ url: '/packages/rescue/pages/review/list/index' })
     },
-    openEditor(kind) {
+    openEditor(kind: FixtureEditorKind) {
       this.seedAll()
       this.setActor(ACTORS.owner)
-      const routes = {
+      const routes: Record<string, string> = {
         profile: '/packages/account/pages/profile/editor/index?userId=qa-owner',
         yard: '/packages/yard/pages/editor/index?yardId=qa-yard',
         animal: '/packages/animal/pages/editor/index?animalId=qa-animal&yardId=qa-yard',
@@ -170,7 +186,7 @@ export default {
       uni.navigateTo({ url: routes[kind] })
     },
     clearFixture() {
-      ;[ACTOR_KEY, ADOPTION_KEY, RESCUE_KEY, PROFILE_KEY, YARD_KEY, ANIMAL_KEY].forEach(key => uni.removeStorageSync(key))
+      ;[ACTOR_KEY, ADOPTION_KEY, RESCUE_KEY, PROFILE_KEY, YARD_KEY, ANIMAL_KEY].forEach((key: string) => uni.removeStorageSync(key))
       this.statusText = '已清空治理夹具'
     },
     refreshStatus() {
@@ -183,7 +199,7 @@ export default {
         : '尚未生成夹具'
     },
   },
-}
+})
 </script>
 
 <style scoped>

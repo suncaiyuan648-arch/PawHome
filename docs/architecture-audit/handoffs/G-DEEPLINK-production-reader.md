@@ -8,7 +8,7 @@
 
 本批新增：
 
-- [`navigation/productionDeepLinkResolver.js`](../../../navigation/productionDeepLinkResolver.js)
+- [`navigation/productionDeepLinkResolver.ts`](../../../navigation/productionDeepLinkResolver.ts)
 - [`tests/governance/production-deeplink-resolver.test.cjs`](../../../tests/governance/production-deeplink-resolver.test.cjs)
 
 `createProductionDeepLinkResolver` 固定真实持久 reader：
@@ -46,7 +46,7 @@
 本地验证：
 
 ```text
-node --check navigation/productionDeepLinkResolver.js       # PASS
+node --check navigation/productionDeepLinkResolver.ts       # PASS
 node --test tests/governance/production-deeplink-resolver.test.cjs  # 3/3 PASS
 ```
 
@@ -55,7 +55,7 @@ node --test tests/governance/production-deeplink-resolver.test.cjs  # 3/3 PASS
 消息生产者仍需在消息记录中保存 `businessType` 与对应稳定
 `businessId`/`reviewItemId`，页面或 eventChannel 调用本 resolver 后再执行已注册的语义
 路由；不能继续只保存展示文案或旧状态。消息列表持久化、消息生产者、eventChannel
-及页面运行/视觉验收仍由后续 C6/C8 批次负责。本批没有修改 `pages.json`、路由表或任何
+及页面运行/视觉验收仍由后续 C6/C8 批次负责。本批没有修改 `pages.tson`、路由表或任何
 业务写入行为。
 
 

@@ -59,27 +59,28 @@ function rescue(overrides = {}) {
 
 before(async () => {
 	tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-task-domain-readers-'))
-	await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+	await fs.cp(path.join(ROOT, 'contracts'), path.join(tempRoot, 'contracts'), { recursive: true })
+	await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
 	await fs.cp(path.join(ROOT, 'services/domainReads'), path.join(tempRoot, 'services/domainReads'), { recursive: true })
 	for (const dir of [
 		'navigation', 'utils', 'packages/account/services',
 		'packages/adoption/services', 'packages/rescue/services',
 	]) await fs.mkdir(path.join(tempRoot, dir), { recursive: true })
-	for (const file of ['actorCapabilities.js', 'taskContracts.js', 'taskReadModel.js', 'adoptionConditionContract.js', 'adoptionReviewContract.js', 'rescueListContract.js']) {
+	for (const file of ['actorCapabilities.ts', 'taskContracts.ts', 'taskReadModel.ts', 'adoptionConditionContract.ts', 'adoptionReviewContract.ts', 'rescueListContract.ts']) {
 		await fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
 	}
-	for (const file of ['adoptionStorage.js', 'rescueStorage.js']) {
+	for (const file of ['adoptionStorage.ts', 'adoptionMockData.ts', 'rescueStorage.ts']) {
 		await fs.copyFile(path.join(ROOT, 'utils', file), path.join(tempRoot, 'utils', file))
 	}
-	await fs.copyFile(path.join(ROOT, 'packages/account/services/taskAdapter.js'), path.join(tempRoot, 'packages/account/services/taskAdapter.js'))
-	await fs.copyFile(path.join(ROOT, 'packages/account/services/domainTaskReaders.js'), path.join(tempRoot, 'packages/account/services/domainTaskReaders.js'))
-	await fs.copyFile(path.join(ROOT, 'packages/adoption/services/applicationAdapter.js'), path.join(tempRoot, 'packages/adoption/services/applicationAdapter.js'))
-	await fs.copyFile(path.join(ROOT, 'packages/adoption/services/actorCapabilities.js'), path.join(tempRoot, 'packages/adoption/services/actorCapabilities.js'))
-	await fs.copyFile(path.join(ROOT, 'packages/adoption/services/adoptionConditionContract.js'), path.join(tempRoot, 'packages/adoption/services/adoptionConditionContract.js'))
-	await fs.copyFile(path.join(ROOT, 'packages/adoption/services/reviewAdapter.js'), path.join(tempRoot, 'packages/adoption/services/reviewAdapter.js'))
-	await fs.copyFile(path.join(ROOT, 'packages/rescue/services/lists.js'), path.join(tempRoot, 'packages/rescue/services/lists.js'))
-	await fs.copyFile(path.join(ROOT, 'packages/rescue/services/stateContract.js'), path.join(tempRoot, 'packages/rescue/services/stateContract.js'))
-	await fs.copyFile(path.join(ROOT, 'packages/rescue/services/stateAdapter.js'), path.join(tempRoot, 'packages/rescue/services/stateAdapter.js'))
+	await fs.copyFile(path.join(ROOT, 'packages/account/services/taskAdapter.ts'), path.join(tempRoot, 'packages/account/services/taskAdapter.ts'))
+	await fs.copyFile(path.join(ROOT, 'packages/account/services/domainTaskReaders.ts'), path.join(tempRoot, 'packages/account/services/domainTaskReaders.ts'))
+	await fs.copyFile(path.join(ROOT, 'packages/adoption/services/applicationAdapter.ts'), path.join(tempRoot, 'packages/adoption/services/applicationAdapter.ts'))
+	await fs.copyFile(path.join(ROOT, 'packages/adoption/services/actorCapabilities.ts'), path.join(tempRoot, 'packages/adoption/services/actorCapabilities.ts'))
+	await fs.copyFile(path.join(ROOT, 'packages/adoption/services/adoptionConditionContract.ts'), path.join(tempRoot, 'packages/adoption/services/adoptionConditionContract.ts'))
+	await fs.copyFile(path.join(ROOT, 'packages/adoption/services/reviewAdapter.ts'), path.join(tempRoot, 'packages/adoption/services/reviewAdapter.ts'))
+	await fs.copyFile(path.join(ROOT, 'packages/rescue/services/lists.ts'), path.join(tempRoot, 'packages/rescue/services/lists.ts'))
+	await fs.copyFile(path.join(ROOT, 'packages/rescue/services/stateContract.ts'), path.join(tempRoot, 'packages/rescue/services/stateContract.ts'))
+	await fs.copyFile(path.join(ROOT, 'packages/rescue/services/stateAdapter.ts'), path.join(tempRoot, 'packages/rescue/services/stateAdapter.ts'))
 
 	storage = new Map()
 	writes = []
@@ -88,8 +89,8 @@ before(async () => {
 		setStorageSync(key, value) { writes.push({ key, value }); storage.set(key, value) },
 		removeStorageSync(key) { storage.delete(key) },
 	}
-	api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/taskAdapter.js')).href}?test=${Date.now()}-${Math.random()}`)
-	readersApi = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/domainTaskReaders.js')).href}?test=${Date.now()}-${Math.random()}`)
+	api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/taskAdapter.ts')).href}?test=${Date.now()}-${Math.random()}`)
+	readersApi = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/domainTaskReaders.ts')).href}?test=${Date.now()}-${Math.random()}`)
 })
 
 beforeEach(() => {

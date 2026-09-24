@@ -1,14 +1,23 @@
 <template>
   <view class="paw-form-field" :class="{ 'paw-form-field--bare': bare, 'paw-form-field--focused': focused, 'paw-form-field--error': error, 'paw-form-field--disabled': disabled }">
     <text v-if="label" class="paw-form-field__label">{{ label }}</text>
-    <input v-if="type !== 'textarea'" class="paw-form-field__input" :value="modelValue" :maxlength="maxlength" :placeholder="placeholder" :disabled="disabled" placeholder-class="paw-form-field__placeholder" @focus="focused = true" @blur="focused = false" @input="$emit('update:modelValue', $event.detail.value || '')" />
-    <textarea v-else class="paw-form-field__textarea" :value="modelValue" :maxlength="maxlength" :placeholder="placeholder" :disabled="disabled" placeholder-class="paw-form-field__placeholder" @focus="focused = true" @blur="focused = false" @input="$emit('update:modelValue', $event.detail.value || '')" />
+    <input v-if="type !== 'textarea'" class="paw-form-field__input" :value="modelValue" :maxlength="maxlength" :placeholder="placeholder" :disabled="disabled" placeholder-class="paw-form-field__placeholder" @focus="focused = true" @blur="focused = false" @input="onInput" />
+    <textarea v-else class="paw-form-field__textarea" :value="modelValue" :maxlength="maxlength" :placeholder="placeholder" :disabled="disabled" placeholder-class="paw-form-field__placeholder" @focus="focused = true" @blur="focused = false" @input="onInput" />
     <text v-if="error" class="paw-form-field__error">{{ error }}</text>
   </view>
 </template>
 
-<script>
-export default { name: 'PawFormField', props: { modelValue: { type: String, default: '' }, label: { type: String, default: '' }, placeholder: { type: String, default: '' }, type: { type: String, default: 'text' }, maxlength: { type: [Number, String], default: -1 }, error: { type: String, default: '' }, disabled: { type: Boolean, default: false }, bare: { type: Boolean, default: false } }, emits: ['update:modelValue'], data() { return { focused: false } } }
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+import { defineComponent } from 'vue'
+
+import { readPawEventValue } from '@/utils/pawEventMetadata.ts'
+
+interface PawFormFieldState { focused: boolean }
+
+export default defineComponent({ name: 'PawFormField', props: { modelValue: { type: String, default: '' }, label: { type: String, default: '' }, placeholder: { type: String, default: '' }, type: { type: String, default: 'text' }, maxlength: { type: [Number, String], default: -1 }, error: { type: String, default: '' }, disabled: { type: Boolean, default: false }, bare: { type: Boolean, default: false } }, emits: {
+    'update:modelValue': eventContract<[value: string]>(),
+  }, data(): PawFormFieldState { return { focused: false } }, methods: { onInput(event: Event) { this.$emit('update:modelValue', readPawEventValue(event)) } } })
 </script>
 
 <style scoped>

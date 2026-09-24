@@ -27,28 +27,42 @@
   </PawBottomSheet>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawAddressPickerCard from '@/components/address/PawAddressPickerCard.vue'
-import { advanceApplication, createRewardOrder, getApplication } from '@/utils/applicationMockApi.js'
-import { buildRoute } from '@/navigation/routeContracts.js'
+import type { AddressRecord } from '@/utils/addressMock.ts'
+import { advanceApplication, createRewardOrder, getApplication } from '@/utils/applicationMockApi.ts'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import {
+  createRewardOrderSheetState,
+  isRewardOrderSubmittedPayload,
+  normalizeRewardOrderAddress,
+  type RewardOrderSheetState,
+  type RewardOrderSubmittedPayload,
+} from '@/utils/rewardOrderMetadata.ts'
 
-export default {
+export default defineComponent({
   name: 'PawRewardOrderSheet',
   components: { PawBottomSheet, PawIcon, PawAddressPickerCard },
   props: {
     modelValue: { type: Boolean, default: false },
     recordId: { type: String, default: '' }
   },
-  emits: ['update:modelValue', 'submitted', 'closed'],
-  data() {
-    return { selectedAddress: null, selectedAddressId: '', submitting: false }
+  emits: {
+    'update:modelValue': (value: boolean) => typeof value === 'boolean',
+    submitted: (payload: RewardOrderSubmittedPayload) => isRewardOrderSubmittedPayload(payload),
+    closed: () => true,
+  },
+  data(): RewardOrderSheetState {
+    return createRewardOrderSheetState()
   },
   computed: {
     visibleProxy: {
       get() { return this.modelValue },
-      set(value) { this.$emit('update:modelValue', value) }
+      set(value: boolean) { this.$emit('update:modelValue', value) }
     },
     resolvedRecordId() { return String(this.recordId || '') },
     returnUrl() {
@@ -63,7 +77,7 @@ export default {
     }
   },
   watch: {
-    modelValue(value) {
+    modelValue(value: boolean) {
       if (value) this.loadAddress()
     },
     recordId() { this.loadAddress() }
@@ -71,26 +85,27 @@ export default {
   created() { this.loadAddress() },
   methods: {
     actorProvider() {
-      try { return typeof uni !== 'undefined' && uni && typeof uni.getStorageSync === 'function' ? uni.getStorageSync('PAWHOME_ACTOR_SESSION') : null } catch (error) { return null }
+      try { return typeof uni !== 'undefined' && uni && typeof uni.getStorageSync === 'function' ? uni.getStorageSync('PAWHOME_ACTOR_SESSION') : null } catch { return null }
     },
     loadAddress() {
       const applicationResult = this.resolvedRecordId
         ? getApplication('adoption', this.resolvedRecordId, { actorProvider: () => this.actorProvider(), requireActor: true })
         : null
       const application = applicationResult && applicationResult.success ? applicationResult.data : null
-      const saved = application && application.rewardAddress
-      this.selectedAddress = saved || null
+      this.selectedAddress = normalizeRewardOrderAddress(application && application.rewardAddress)
       this.selectedAddressId = this.selectedAddress && this.selectedAddress.id ? String(this.selectedAddress.id) : ''
     },
-    onAddressSelected(address) {
-      if (!address || !address.id) return
-      this.selectedAddress = { ...address, id: String(address.id) }
-      this.selectedAddressId = String(address.id)
+    onAddressSelected(address: AddressRecord) {
+      const normalizedAddress = normalizeRewardOrderAddress(address)
+      if (!normalizedAddress) return
+      this.selectedAddress = normalizedAddress
+      this.selectedAddressId = normalizedAddress.id
     },
     close() { this.visibleProxy = false },
     submit() {
-      if (!this.selectedAddress || this.submitting) {
-        if (!this.selectedAddress) uni.showToast({ title: '请先填写收货地址', icon: 'none' })
+      const selectedAddress = this.selectedAddress
+      if (!selectedAddress || this.submitting) {
+        if (!selectedAddress) uni.showToast({ title: '请先填写收货地址', icon: 'none' })
         return
       }
       const id = this.resolvedRecordId
@@ -109,10 +124,10 @@ export default {
         if (!started.success) return this.fail(started.error && started.error.message)
       }
 
-      const order = createRewardOrder(id, this.selectedAddress, actorOptions)
+      const order = createRewardOrder(id, selectedAddress, actorOptions)
       if (!order.success) return this.fail(order.error && order.error.message)
       const result = advanceApplication('adoption', id, 'reward_done', {
-        rewardAddress: { ...this.selectedAddress },
+        rewardAddress: { ...selectedAddress },
         rewardOrderId: order.data.id,
         rewardOrderSubmittedAt: Date.now()
       }, actorOptions)
@@ -122,12 +137,13 @@ export default {
       this.$emit('submitted', { order: order.data, record: result.data, recordId: id })
       this.visibleProxy = false
     },
-    fail(message) {
+    fail(message: string | null | undefined) {
       this.submitting = false
-      uni.showToast({ title: message || '提交订单失败', icon: 'none' })
+      const title = typeof message === 'string' && message ? message : '提交订单失败'
+      uni.showToast({ title, icon: 'none' })
     }
   }
-}
+})
 </script>
 
 <style scoped>

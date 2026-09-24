@@ -17,12 +17,12 @@ before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-account-tasks-runtime-'))
   await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'packages/account/services'), { recursive: true })
-  await fs.copyFile(path.join(ROOT, 'packages/account/services/tasksRuntime.js'), path.join(tempRoot, 'packages/account/services/tasksRuntime.js'))
+  await fs.copyFile(path.join(ROOT, 'packages/account/services/tasksRuntime.ts'), path.join(tempRoot, 'packages/account/services/tasksRuntime.ts'))
   globalThis.uni = {
     getStorageSync(key) { return storage.get(key) },
     setStorageSync(key, value) { writes += 1; storage.set(key, value) },
   }
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/tasksRuntime.js')).href}?test=${Date.now()}`)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/account/services/tasksRuntime.ts')).href}?test=${Date.now()}`)
 })
 
 beforeEach(() => { storage.clear(); writes = 0 })

@@ -21,12 +21,23 @@
   </view>
 </template>
 
-<script>
-import { getWechatNavLayout } from '@/utils/navLayout.js'
-import { goBackSmart } from '@/utils/navBack.js'
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
+import { getWechatNavLayout, type WechatNavLayout } from '@/utils/navLayout.ts'
+import { goBackSmart } from '@/utils/navBack.ts'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 
-export default {
+type NavSlotPosition = 'left' | 'center' | 'custom'
+interface PawPageNavState { nav: WechatNavLayout }
+
+function isNavSlotPosition(value: unknown): value is NavSlotPosition {
+  return value === 'left' || value === 'center' || value === 'custom'
+}
+
+export default defineComponent({
   name: 'PawPageNav',
   components: { PawIcon },
   options: {
@@ -46,11 +57,11 @@ export default {
     // Slot content is left-aligned by default; use center or custom when the
     // content itself, rather than the title, needs a different anchor.
     slotPosition: {
-      type: String,
+      type: String as PropType<NavSlotPosition>,
       default: 'left',
-      validator: value => ['left', 'center', 'custom'].includes(value)
+      validator: isNavSlotPosition
     },
-    slotStyle: { type: Object, default: () => ({}) },
+    slotStyle: { type: Object as PropType<Record<string, string | number | undefined>>, default: () => ({}) },
     contentSlotEnabled: { type: Boolean, default: true },
     background: { type: String, default: 'transparent' },
     light: { type: Boolean, default: false },
@@ -61,8 +72,11 @@ export default {
     nativeCapsuleGap: { type: Number, default: 8 },
     backHitWidth: { type: Number, default: 44 }
   },
-  emits: ['back', 'layout'],
-  data() {
+  emits: {
+    'back': eventContract<[]>(),
+    'layout': eventContract<[layout: WechatNavLayout]>(),
+  },
+  data(): PawPageNavState {
     return { nav: getWechatNavLayout() }
   },
   computed: {
@@ -125,7 +139,7 @@ export default {
       if (this.autoBack) goBackSmart({ fallbackUrl: this.fallbackUrl })
     }
   }
-}
+})
 </script>
 
 <style scoped>

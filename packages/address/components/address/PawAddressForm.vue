@@ -84,24 +84,62 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawLocationPickerSheet from '@/components/location/PawLocationPickerSheet.vue'
 import PawAddressImportSheet from './PawAddressImportSheet.vue'
 import PawCheckbox from '@/components/base/PawCheckbox.vue'
-import { recognizeAddress } from '@/utils/addressService.js'
-import { getAddressList } from '@/utils/addressMock.js'
-export default {
+import { recognizeAddress } from '@/utils/addressService.ts'
+import { getAddressList, type AddressKind, type AddressRecord } from '@/utils/addressMock.ts'
+import {
+  createAddressFormDemoMetadata,
+  normalizeAddressFormDraft,
+  normalizeWechatAddressDraft,
+  type AddressFormDraft,
+  type AddressFormFields
+} from '@/utils/addressFormMetadata.ts'
+import type { LocationPlace } from '@/utils/locationService.ts'
+
+type AddressFormImportSource = '' | 'service' | 'wechat'
+type AddressFormImportMode = 'service' | 'wechat'
+
+interface PawAddressFormState {
+  focusKey: string
+  smartText: string
+  isDefault: boolean
+  importSource: AddressFormImportSource
+  regionParts: string[]
+  form: AddressFormFields
+  showLocationPicker: boolean
+  locationPickerCity: string
+  showImportSheet: boolean
+  importSheetMode: AddressFormImportMode
+  serviceAddresses: AddressRecord[]
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value))
+}
+
+export default defineComponent({
   name: 'PawAddressForm',
   components: { PawPageNav, PawLocationPickerSheet, PawAddressImportSheet, PawCheckbox },
   props: {
-    kind: { type: String, default: 'shipping' },
+    kind: { type: String as PropType<AddressKind>, default: 'shipping' },
     typing: { type: Boolean, default: false },
-    initialAddress: { type: Object, default: () => ({}) },
+    initialAddress: { type: Object as PropType<Partial<AddressRecord>>, default: () => ({}) },
     embedded: { type: Boolean, default: false }
   },
-  emits: ['save'],
-  data() {
+  emits: {
+    save: (draft: AddressFormDraft) => typeof draft.name === 'string'
+      && typeof draft.phone === 'string'
+      && typeof draft.detail === 'string'
+      && Array.isArray(draft.regionParts)
+      && typeof draft.isDefault === 'boolean'
+  },
+  data(): PawAddressFormState {
     return {
       focusKey: '', smartText: '', isDefault: false, importSource: '', regionParts: [],
       form: { name: '', phone: '', detail: '' }, showLocationPicker: false, locationPickerCity: '长沙市',
@@ -113,23 +151,56 @@ export default {
     if (Object.keys(this.initialAddress || {}).length) this.applyAddress(this.initialAddress)
     else if (this.typing) this.fillDemo()
   },
-  watch: { typing(v) { if (v) this.fillDemo() }, initialAddress: { deep: true, handler(v) { if (v && Object.keys(v).length) this.applyAddress(v) } } },
+  watch: {
+    typing(value: boolean) {
+      if (value) this.fillDemo()
+    },
+    initialAddress: {
+      deep: true,
+      handler(value: Partial<AddressRecord>) {
+        if (value && Object.keys(value).length) this.applyAddress(value)
+      }
+    }
+  },
   methods: {
-    applyAddress(address = {}) {
-      this.form = { name: String(address.name || ''), phone: String(address.phone || ''), detail: String(address.detail || '') }
-      this.regionParts = Array.isArray(address.regionParts) ? address.regionParts.filter(Boolean).slice(0, 4) : []
-      this.isDefault = address.isDefault === true
+    applyAddress(address: Partial<AddressRecord> = {}) {
+      const draft = normalizeAddressFormDraft(address)
+      this.form = { name: draft.name, phone: draft.phone, detail: draft.detail }
+      this.regionParts = draft.regionParts
+      this.isDefault = draft.isDefault
       this.importSource = ''
     },
-    fillDemo(source = '') {
-      this.form = { name: '菠萝吹雪', phone: '13366669999', detail: this.kind === 'service' ? '鼎丰前程' : '找到一个大树根，绕着大树左转三圈右转三圈' }
-      this.regionParts = ['湖南省', '长沙市', '雨花区']
-      this.isDefault = true
+    fillDemo(source: AddressFormImportSource = '') {
+      const mock = createAddressFormDemoMetadata(this.kind)
+      this.form = { name: mock.name, phone: mock.phone, detail: mock.detail }
+      this.regionParts = mock.regionParts
+      this.isDefault = mock.isDefault
       this.importSource = source
-      this.smartText = '湖南省长沙市雨花区中意一路167号，菠萝吹雪，13366669999'
+      this.smartText = mock.smartText
     },
-    async readClipboard() { return new Promise(resolve => { if (typeof uni === 'undefined' || typeof uni.getClipboardData !== 'function') return resolve(''); uni.getClipboardData({ success: res => resolve((res && res.data) || ''), fail: () => resolve('') }) }) },
-    async recognize() { let text = (this.smartText || '').trim(); if (!text) text = (await this.readClipboard()).trim(); if (!text) return uni.showToast({ title: '请先粘贴地址', icon: 'none' }); this.smartText = text; const result = await recognizeAddress(text); this.form.name = result.name || this.form.name; this.form.phone = result.phone || this.form.phone; this.regionParts = result.regionParts || this.regionParts; this.form.detail = result.detail || this.form.detail; if (!result.name && !result.phone && !result.regionParts.length && !result.detail) uni.showToast({ title: '未识别到地址信息', icon: 'none' }) },
+    readClipboard(): Promise<string> {
+      if (typeof uni === 'undefined' || typeof uni.getClipboardData !== 'function') return Promise.resolve('')
+      return new Promise(resolve => {
+        uni.getClipboardData({
+          success: result => resolve(result.data),
+          fail: () => resolve('')
+        })
+      })
+    },
+    async recognize() {
+      let text = this.smartText.trim()
+      if (!text) text = (await this.readClipboard()).trim()
+      if (!text) return uni.showToast({ title: '请先粘贴地址', icon: 'none' })
+      this.smartText = text
+      const result = await recognizeAddress(text)
+      this.form.name = result.name || this.form.name
+      this.form.phone = result.phone || this.form.phone
+      this.regionParts = result.regionParts || this.regionParts
+      this.form.detail = result.detail || this.form.detail
+      if (!result.name && !result.phone && !result.regionParts.length && !result.detail) {
+        uni.showToast({ title: '未识别到地址信息', icon: 'none' })
+      }
+    },
     openServiceImport() {
       this.serviceAddresses = getAddressList('service')
       this.importSheetMode = 'service'
@@ -139,16 +210,13 @@ export default {
       this.importSheetMode = 'wechat'
       this.showImportSheet = true
     },
-    onImportSheetVisibleChange(value) {
+    onImportSheetVisibleChange(value: boolean) {
       this.showImportSheet = value
     },
-    onServiceAddressSelected(address = {}) {
-      this.form = {
-        name: String(address.name || ''),
-        phone: String(address.phone || ''),
-        detail: String(address.detail || '')
-      }
-      this.regionParts = Array.isArray(address.regionParts) ? address.regionParts.filter(Boolean).slice(0, 4) : []
+    onServiceAddressSelected(address: AddressRecord) {
+      const draft = normalizeAddressFormDraft(address)
+      this.form = { name: draft.name, phone: draft.phone, detail: draft.detail }
+      this.regionParts = draft.regionParts
       this.smartText = [...this.regionParts, this.form.detail, this.form.name, this.form.phone].filter(Boolean).join('，')
       this.isDefault = false
       this.importSource = 'service'
@@ -163,38 +231,67 @@ export default {
         return uni.showToast({ title: '当前环境不支持微信地址，请在真机重试', icon: 'none' })
       }
       api.call(typeof wx !== 'undefined' && wx.chooseAddress === api ? wx : uni, {
-        success: (result = {}) => this.applyWechatAddress(result),
-        fail: (error = {}) => {
-          const message = String(error.errMsg || '')
+        success: (result: UniNamespace.ChooseAddressRes) => this.applyWechatAddress(result),
+        fail: (error: unknown) => {
+          const message = isRecord(error) && typeof error.errMsg === 'string' ? error.errMsg : ''
           if (message.toLowerCase().includes('cancel')) return
           uni.showToast({ title: '未获取到微信地址，请授权后重试', icon: 'none' })
         }
       })
     },
-    applyWechatAddress(result = {}) {
-      const regionParts = [result.provinceName, result.cityName, result.countyName].filter(Boolean)
-      this.form = {
-        name: String(result.userName || ''),
-        phone: String(result.telNumber || ''),
-        detail: String(result.detailInfo || '')
-      }
-      this.regionParts = regionParts
-      this.smartText = [...regionParts, this.form.detail, this.form.name, this.form.phone].filter(Boolean).join('，')
+    applyWechatAddress(result: UniNamespace.ChooseAddressRes) {
+      const draft = normalizeWechatAddressDraft(result)
+      this.form = { name: draft.name, phone: draft.phone, detail: draft.detail }
+      this.regionParts = draft.regionParts
+      this.smartText = [...this.regionParts, this.form.detail, this.form.name, this.form.phone].filter(Boolean).join('，')
       this.importSource = 'wechat'
       this.showImportSheet = false
     },
-    openRegionPicker() { uni.navigateTo({ url: '/packages/address/pages/region-picker/index?mode=address', events: { regionSelected: ({ parts = [] } = {}) => { this.regionParts = parts.filter(Boolean) } }, success: res => res.eventChannel.emit('initRegion', { parts: this.regionParts }) }) },
-    openLocation() { this.locationPickerCity = this.regionParts[1] || this.regionParts[0] || uni.getStorageSync('selectedCity') || '长沙市'; this.showLocationPicker = true },
-    onLocationPickerVisibleChange(value) { this.showLocationPicker = value },
-    onLocationPicked(item) { const detail = [item && item.name, item && item.address].filter(Boolean).join(' ').trim(); if (detail) this.form.detail = detail },
-    openLocationCityPicker() { uni.navigateTo({ url: '/packages/discovery/pages/city-picker/index?current=' + encodeURIComponent(this.locationPickerCity), events: { citySelected: ({ city = '' } = {}) => { if (city.trim()) this.locationPickerCity = city.trim() } } }) },
+    openRegionPicker() {
+      uni.navigateTo({
+        url: '/packages/address/pages/region-picker/index?mode=address',
+        events: {
+          regionSelected: (value: unknown) => {
+            this.regionParts = normalizeAddressFormDraft(value).regionParts
+          }
+        },
+        success: (result: UniNamespace.NavigateToSuccessOptions) => {
+          result.eventChannel.emit('initRegion', { parts: this.regionParts })
+        }
+      })
+    },
+    openLocation() {
+      const storedCity = uni.getStorageSync('selectedCity')
+      this.locationPickerCity = this.regionParts[1] || this.regionParts[0]
+        || (typeof storedCity === 'string' ? storedCity : '长沙市')
+      this.showLocationPicker = true
+    },
+    onLocationPickerVisibleChange(value: boolean) {
+      this.showLocationPicker = value
+    },
+    onLocationPicked(item: LocationPlace) {
+      const detail = [item.name, item.address].filter(Boolean).join(' ').trim()
+      if (detail) this.form.detail = detail
+    },
+    openLocationCityPicker() {
+      uni.navigateTo({
+        url: '/packages/discovery/pages/city-picker/index?current=' + encodeURIComponent(this.locationPickerCity),
+        events: {
+          citySelected: (value: unknown) => {
+            if (!isRecord(value) || typeof value.city !== 'string') return
+            const city = value.city.trim()
+            if (city) this.locationPickerCity = city
+          }
+        }
+      })
+    },
     clearAll() { this.form = { name: '', phone: '', detail: '' }; this.regionParts = []; this.smartText = ''; this.isDefault = false; this.importSource = '' },
     toggleDefault() { this.isDefault = !this.isDefault },
-    onDefaultChange(value) { this.isDefault = !!value },
+    onDefaultChange(value: boolean) { this.isDefault = value },
     removeAddress() { uni.showToast({ title: '已删除', icon: 'none' }) },
     save() { if (!this.form.name || !this.form.phone || this.regionParts.length < 3 || !this.form.detail) return uni.showToast({ title: '请完善地址信息', icon: 'none' }); this.$emit('save', { name: this.form.name.trim(), phone: this.form.phone.trim(), regionParts: this.regionParts.filter(Boolean).slice(0, 4), detail: this.form.detail.trim(), isDefault: this.isDefault }) }
   }
-}
+})
 </script>
 
 <style scoped>

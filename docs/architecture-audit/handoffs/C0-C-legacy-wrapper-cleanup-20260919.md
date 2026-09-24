@@ -10,7 +10,7 @@
 
 ## 已完成
 
-以下旧生产页已经迁移到已有 canonical 页面并从 `pages.json` 与源码树移除：
+以下旧生产页已经迁移到已有 canonical 页面并从 `pages.tson` 与源码树移除：
 
 | 旧路径 | canonical 页面 | 迁移状态 |
 |---|---|---|
@@ -24,7 +24,7 @@
 
 ## 证据
 
-- 生产源码静态搜索未发现上述旧路径的页面/组件 caller；旧页面仅存在于 `pages.json`、Figma map 和历史审计文档。
+- 生产源码静态搜索未发现上述旧路径的页面/组件 caller；旧页面仅存在于 `pages.tson`、Figma map 和历史审计文档。
 - `postFeed.vue` 在 `state=select-order` 时打开现有 `PawOrderSelectSheet`。
 - `adoptApply.vue` 在 `state=pick-cats` 时隐藏申请页主体、以透明壳打开现有 `AdoptPickCatsSheet`，确认后进入 canonical 领养申请页，关闭时安全返回。
 - 旧投喂 90/91/92 页面删除前已核对 canonical `feedingDetail.vue` 的 variant、orderId、recordId、deliveryStatus、deliveryProgress 入口。
@@ -41,5 +41,5 @@ npm run check:routes                                         PASS
 
 ## 风险与后续
 
-- 历史审计文档仍可能提及旧路径，这些是历史证据，不是生产注册；后续台账应以当前 `pages.json`、Figma map 和本交接为准。
-- 外部未登记深链若仍直接访问旧路径，将无法继续使用；本批基于仓库内无静态 caller 和用户要求“迁移验证后移除旧页面”执行清理。若产品后续确认存在外部深链，应通过 `navigation/legacyRoutes.js` 增加受控兼容映射，不应恢复旧页面文件。
+- 历史审计文档仍可能提及旧路径，这些是历史证据，不是生产注册；后续台账应以当前 `pages.tson`、Figma map 和本交接为准。
+- 外部未登记深链若仍直接访问旧路径，将无法继续使用；本批基于仓库内无静态 caller 和用户要求“迁移验证后移除旧页面”执行清理。若产品后续确认存在外部深链，应通过 `navigation/legacyRoutes.ts` 增加受控兼容映射，不应恢复旧页面文件。

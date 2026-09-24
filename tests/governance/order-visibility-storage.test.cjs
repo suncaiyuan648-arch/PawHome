@@ -17,12 +17,12 @@ before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-order-visibility-'))
   await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'packages/feeding/services'), { recursive: true })
-  await fs.copyFile(path.join(ROOT, 'packages/feeding/services/orderVisibilityStorage.js'), path.join(tempRoot, 'packages/feeding/services/orderVisibilityStorage.js'))
+  await fs.copyFile(path.join(ROOT, 'packages/feeding/services/orderVisibilityStorage.ts'), path.join(tempRoot, 'packages/feeding/services/orderVisibilityStorage.ts'))
   globalThis.uni = {
     getStorageSync(key) { return storage.get(key) },
     setStorageSync(key, value) { writes.push({ key, value }); storage.set(key, value) },
   }
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/feeding/services/orderVisibilityStorage.js')).href}?test=${Date.now()}`)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/feeding/services/orderVisibilityStorage.ts')).href}?test=${Date.now()}`)
 })
 
 beforeEach(() => { storage.clear(); writes = [] })

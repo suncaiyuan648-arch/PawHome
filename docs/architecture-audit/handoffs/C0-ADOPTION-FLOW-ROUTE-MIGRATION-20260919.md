@@ -5,14 +5,14 @@
 
 ## 结论
 
-旧 `/pages/meMore/adoptionFlow` 已从 `pages.json` 删除，源文件已移除。领养和救助进度分别由职责明确的 canonical 页面承载：
+旧 `/pages/meMore/adoptionFlow` 已从 `pages.tson` 删除，源文件已移除。领养和救助进度分别由职责明确的 canonical 页面承载：
 
 ```text
 /packages/adoption/pages/progress/index?applicationId=<applicationId>
 /packages/rescue/pages/progress/index?rescueId=<rescueId>
 ```
 
-旧 `type/source/sourceType`、`id/recordId/rescueId` 分派逻辑不再由生产页面执行。`navigation/legacyRoutes.js` 保留旧链接的只读兼容解析，解析后返回上述 canonical route；冲突、缺少 ID 和跨域参数仍 fail-closed。
+旧 `type/source/sourceType`、`id/recordId/rescueId` 分派逻辑不再由生产页面执行。`navigation/legacyRoutes.ts` 保留旧链接的只读兼容解析，解析后返回上述 canonical route；冲突、缺少 ID 和跨域参数仍 fail-closed。
 
 ## 已完成改动
 

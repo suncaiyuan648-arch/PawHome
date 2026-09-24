@@ -13,12 +13,12 @@ let api
 
 before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-task-contracts-'))
-  await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+  await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fs.copyFile(
-    path.join(ROOT, 'navigation/taskContracts.js'),
-    path.join(tempRoot, 'taskContracts.js')
+    path.join(ROOT, 'navigation/taskContracts.ts'),
+    path.join(tempRoot, 'taskContracts.ts')
   )
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'taskContracts.js')).href}?test=${Date.now()}`)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'taskContracts.ts')).href}?test=${Date.now()}`)
 })
 
 after(async () => {

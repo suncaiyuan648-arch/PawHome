@@ -51,25 +51,20 @@
   </view>
 </template>
 
-<script>
-import { getAdoptionPick, setAdoptionPick } from '@/utils/adoptionStorage.js'
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
+
+import { getAdoptionPick, setAdoptionPick } from '@/utils/adoptionStorage.ts'
 import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 import PawDialog from '@/components/overlay/PawDialog.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawImage from '@/components/base/PawImage.vue'
+import { ADOPTION_PICK_PET_MOCKS } from '@/utils/adoptionMockData.ts'
+import type { AdoptionPetMetadata, AdoptionPetMockOption, AdoptionPetSelection, AdoptionPickPayload } from '@/utils/adoptionMockData.ts'
 
 const DEFAULT_IMG = '/static/home-feed-1.png'
-const DEFAULT_CATS = [
-  { id: 'pet-orange', name: '奥利奥', avatar: '/static/figma/adoption-flow/pet-orange.png', price: 20, disabled: false },
-  { id: 'pet-dog', name: '呗呗', avatar: '/static/figma/adoption-flow/apply-dog.png', price: 20, disabled: false },
-  { id: 'pet-black-white', name: '小黑白', avatar: '/static/figma/pets/pet-black-white.png', price: 15, disabled: true },
-  { id: 'pet-available-later-1', name: '小橘', avatar: '/static/figma/pets/pet-orange.png', price: 15, disabled: true },
-  { id: 'pet-available-later-2', name: '小花', avatar: '/static/figma/pets/pet-dog.png', price: 15, disabled: true },
-  { id: 'pet-available-later-3', name: '小白', avatar: DEFAULT_IMG, price: 15, disabled: true },
-  { id: 'pet-available-later-4', name: '小虎', avatar: DEFAULT_IMG, price: 15, disabled: true },
-]
 
-export default {
+export default defineComponent({
   name: 'AdoptPickCatsSheet',
   components: { PawBottomSheet, PawDialog, PawIcon, PawImage },
   props: {
@@ -95,12 +90,12 @@ export default {
     },
     /** 可由真实小院数据传入；不传时使用独立的 Figma 内容素材演示数据。 */
     cats: {
-      type: Array,
+      type: Array as PropType<AdoptionPetMetadata[] | null>,
       default: null,
     },
     /** 重新打开选猫面板时用于回填的宠物列表。 */
     selectedPets: {
-      type: Array,
+      type: Array as PropType<AdoptionPetSelection[]>,
       default: () => [],
     },
     maxSelection: {
@@ -126,18 +121,30 @@ export default {
       default: false,
     },
   },
-  emits: ['update:modelValue', 'close', 'confirmed'],
+  emits: {
+    'update:modelValue': (value: boolean) => typeof value === 'boolean',
+    close: null,
+    confirmed: (payload: AdoptionPickPayload) => Array.isArray(payload.pets)
+      && Array.isArray(payload.selectedPetIds)
+      && Array.isArray(payload.selectedIndices),
+  },
+  data(): { selectedIds: number[]; quotaDialogVisible: boolean } {
+    return {
+      selectedIds: [0, 1],
+      quotaDialogVisible: false,
+    }
+  },
   computed: {
     modelValueProxy: {
       get() {
         return this.modelValue
       },
-      set(value) {
+      set(value: boolean) {
         this.$emit('update:modelValue', value)
       },
     },
-    catOptions() {
-      const source = Array.isArray(this.cats) && this.cats.length ? this.cats : DEFAULT_CATS
+    catOptions(): AdoptionPetMockOption[] {
+      const source: readonly AdoptionPetMetadata[] = this.cats?.length ? this.cats : ADOPTION_PICK_PET_MOCKS
       return source.map((cat, index) => ({
         ...cat,
         id: String(cat.id || cat.petId || cat.key || 'pet-' + index),
@@ -153,25 +160,19 @@ export default {
       return this.normalizeAdoptionValue(this.availableQuota)
     },
     selectedValue() {
-      return this.selectedIds.reduce((total, index) => total + this.normalizeAdoptionValue(this.catOptions[index] && this.catOptions[index].price), 0)
+      return this.selectedIds.reduce((total, index) => total + this.normalizeAdoptionValue(this.catOptions[index]?.price), 0)
     },
     quotaDialogMessage() {
       return `已选动物价值合计￥${this.selectedValue}，超出当前可领养额度￥${this.availableAdoptionQuota}，请提升可领养额度后再试。`
     },
   },
-  data() {
-    return {
-      selectedIds: [0, 1],
-      quotaDialogVisible: false,
-    }
-  },
   watch: {
-    modelValue(v) {
+    modelValue(v: boolean) {
       if (v) this.resetLocalState()
     },
   },
   methods: {
-    normalizeAdoptionValue(value) {
+    normalizeAdoptionValue(value: string | number | null | undefined): number {
       const number = Number(value)
       return Number.isFinite(number) && number > 0 ? number : 0
     },
@@ -181,12 +182,12 @@ export default {
     resetLocalState() {
       const savedPick = getAdoptionPick()
       const sameYard = !savedPick.yardId || String(savedPick.yardId) === String(this.yardId)
-      const source = this.selectedPets.length
+      const source: AdoptionPetSelection[] = this.selectedPets.length
         ? this.selectedPets
         : sameYard && Array.isArray(savedPick.pets)
           ? savedPick.pets
           : []
-      const picked = []
+      const picked: number[] = []
       source.forEach((pet) => {
         const index = typeof pet === 'number'
           ? pet
@@ -213,7 +214,7 @@ export default {
     onDisabledPetTap() {
       uni.showToast({ title: '该猫咪暂不可选', icon: 'none' })
     },
-    toggleSelect(i) {
+    toggleSelect(i: number) {
       const c = this.catOptions[i]
       if (!c) return
       if (c.disabled) {
@@ -228,7 +229,7 @@ export default {
           uni.showToast({ title: '最多选择 6 只', icon: 'none' })
           return
         }
-        const nextValue = next.reduce((total, index) => total + this.normalizeAdoptionValue(this.catOptions[index] && this.catOptions[index].price), 0)
+        const nextValue = next.reduce((total, index) => total + this.normalizeAdoptionValue(this.catOptions[index]?.price), 0)
           + this.normalizeAdoptionValue(c.price)
         if (!this.rescueMode && nextValue > this.availableAdoptionQuota) {
           this.showQuotaInsufficient()
@@ -250,7 +251,7 @@ export default {
           ...this.catOptions[i],
           disabled: false,
         }))
-      const payload = {
+      const payload: AdoptionPickPayload = {
         pets: picked,
         selectedPetIds: picked.map((pet) => pet.id),
         selectedIndices: [...this.selectedIds].sort((a, b) => a - b),
@@ -267,7 +268,7 @@ export default {
       uni.navigateTo({ url: '/packages/adoption/pages/apply/index?state=pick-cats' })
     },
   },
-}
+})
 </script>
 
 <style lang="less" scoped>

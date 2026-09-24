@@ -49,11 +49,11 @@ function throwsCode(callback, code) {
 
 before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-management-contract-'))
-  await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+  await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
-  await fs.copyFile(path.join(ROOT, 'navigation/actorCapabilities.js'), path.join(tempRoot, 'navigation/actorCapabilities.js'))
-  await fs.copyFile(path.join(ROOT, 'navigation/managementContracts.js'), path.join(tempRoot, 'navigation/managementContracts.js'))
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/managementContracts.js')).href}?test=${Date.now()}-${Math.random()}`)
+  await fs.copyFile(path.join(ROOT, 'navigation/actorCapabilities.ts'), path.join(tempRoot, 'navigation/actorCapabilities.ts'))
+  await fs.copyFile(path.join(ROOT, 'navigation/managementContracts.ts'), path.join(tempRoot, 'navigation/managementContracts.ts'))
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/managementContracts.ts')).href}?test=${Date.now()}-${Math.random()}`)
 })
 
 after(async () => {
@@ -61,7 +61,7 @@ after(async () => {
 })
 
 test('management contract is pure and exposes separate read and edit capabilities', async () => {
-  const source = await fs.readFile(path.join(ROOT, 'navigation/managementContracts.js'), 'utf8')
+  const source = await fs.readFile(path.join(ROOT, 'navigation/managementContracts.ts'), 'utf8')
   assert.doesNotMatch(source, /(?:from\s+['"][^'"]*(?:vue|uni|pages|storage|mock)|require\s*\([^)]*(?:vue|uni|pages|storage|mock)|uni\.)/i)
   assert.ok(api.MANAGEMENT_CAPABILITIES.PROFILE_EDIT)
   assert.ok(api.MANAGEMENT_CAPABILITIES.YARD_EDIT)

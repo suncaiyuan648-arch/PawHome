@@ -25,51 +25,55 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawStatusPill from '@/components/PawStatusPill.vue'
-import { buildRoute } from '@/navigation/routeContracts.js'
-import { readRescueMinePage } from '../../services/mineReader.js'
+import { buildRoute } from '@/navigation/routeContracts.ts'
+import {
+	countRescueMineItems,
+	createRescueMinePageState,
+	getRescueMineStatusPresentation,
+	isMineFilter,
+	type RescueMinePageState
+} from '../../services/mineMetadata.ts'
+import type { MineFilter, MineItem, MineStatus } from '../../services/mineReader.ts'
+import { readRescueMinePage } from '../../services/mineReader.ts'
 
 const ACTOR_SESSION_KEY = 'PAWHOME_ACTOR_SESSION'
 
-export default {
+export default defineComponent({
   name: 'RescueMinePage',
   components: { PawPageNav, PawStatusPill },
-  data() {
-    return {
-      activeFilter: 'all',
-      tabs: [{ key: 'all', label: '全部' }, { key: 'platform_pending', label: '审核中' }, { key: 'platform_approved', label: '已通过' }, { key: 'platform_rejected', label: '未通过' }],
-      model: { items: [], pending: [], processed: [] },
-      actorError: null,
-    }
+  data(): RescueMinePageState {
+    return createRescueMinePageState()
   },
   computed: {
-    visibleItems() { return this.model.items || [] },
+    visibleItems() { return this.model.items },
   },
   onShow() { this.refresh() },
   methods: {
-    actorProvider() {
-      try { return uni.getStorageSync(ACTOR_SESSION_KEY) || null } catch (error) { return null }
+    actorProvider(): unknown {
+      try { return uni.getStorageSync(ACTOR_SESSION_KEY) || null } catch { return null }
     },
     refresh() {
       const result = readRescueMinePage({ actorProvider: () => this.actorProvider(), filter: this.activeFilter })
-      this.model = result || { items: [], pending: [], processed: [] }
-      this.actorError = result && result.diagnostics && result.diagnostics.actorError
+      this.model = result
+      this.actorError = result.diagnostics.actorError
     },
-    selectFilter(filter) { if (this.activeFilter === filter) return; this.activeFilter = filter; this.refresh() },
-    count(filter) {
-      if (filter === 'all') return (this.model.items || []).length
-      return (this.model.items || []).filter(item => item.applicationStatus === filter).length
+    selectFilter(filter: MineFilter) { if (!isMineFilter(filter) || this.activeFilter === filter) return; this.activeFilter = filter; this.refresh() },
+    count(filter: MineFilter) {
+      return countRescueMineItems(this.model.items, filter)
     },
-    statusLabel(status) { return ({ platform_pending: '审核中', platform_approved: '已通过', platform_rejected: '未通过' })[status] || '状态未知' },
-    statusTone(status) { return status === 'platform_approved' ? 'success' : status === 'platform_rejected' ? 'danger' : 'warning' },
-    openProgress(item) {
+    statusLabel(status: MineStatus) { return getRescueMineStatusPresentation(status).label },
+    statusTone(status: MineStatus) { return getRescueMineStatusPresentation(status).tone },
+    openProgress(item: MineItem) {
       if (!item || !item.rescueId) return
-      try { uni.navigateTo({ url: buildRoute('rescue.progress', { rescueId: item.rescueId }) }) } catch (error) { uni.showToast({ title: '救助进度暂不可用', icon: 'none' }) }
+      try { uni.navigateTo({ url: buildRoute('rescue.progress', { rescueId: item.rescueId }) }) } catch { uni.showToast({ title: '救助进度暂不可用', icon: 'none' }) }
     },
   },
-}
+})
 </script>
 
 <style scoped>

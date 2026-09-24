@@ -54,15 +54,15 @@ function reset() {
 
 before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-feedback-evidence-'))
-  await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+  await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
   await fs.mkdir(path.join(tempRoot, 'packages/feeding/services'), { recursive: true })
-  for (const file of ['actorCapabilities.js', 'feedbackContracts.js']) {
+  for (const file of ['actorCapabilities.ts', 'feedbackContracts.ts']) {
     await fs.copyFile(path.join(ROOT, 'navigation', file), path.join(tempRoot, 'navigation', file))
   }
   await fs.copyFile(
-    path.join(ROOT, 'packages/feeding/services/feedbackEvidenceStorage.js'),
-    path.join(tempRoot, 'packages/feeding/services/feedbackEvidenceStorage.js')
+    path.join(ROOT, 'packages/feeding/services/feedbackEvidenceStorage.ts'),
+    path.join(tempRoot, 'packages/feeding/services/feedbackEvidenceStorage.ts')
   )
   globalThis.uni = {
     storage: new Map(), reads: [], writes: [], failWrite: false,
@@ -73,7 +73,7 @@ before(async () => {
       this.storage.set(key, value)
     },
   }
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/feeding/services/feedbackEvidenceStorage.js')).href}?test=${Date.now()}`)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/feeding/services/feedbackEvidenceStorage.ts')).href}?test=${Date.now()}`)
 })
 
 beforeEach(reset)
@@ -83,7 +83,7 @@ after(async () => {
 })
 
 test('storage seam is append-only and exposes no delete or correction API', async () => {
-  const source = await fs.readFile(path.join(ROOT, 'packages/feeding/services/feedbackEvidenceStorage.js'), 'utf8')
+  const source = await fs.readFile(path.join(ROOT, 'packages/feeding/services/feedbackEvidenceStorage.ts'), 'utf8')
   assert.doesNotMatch(source, /removeStorageSync|deleteFeedback|correctFeedback|withdrawFeedback/)
   assert.equal(typeof api.readFeedbackEvidence, 'function')
   assert.equal(typeof api.appendFeedbackEvidence, 'function')

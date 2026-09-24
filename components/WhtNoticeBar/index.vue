@@ -55,10 +55,18 @@
     </view>
 </template>
 
-<script>
-const isVue3 = typeof window !== 'undefined' && window.Vue && window.Vue.version.startsWith('3')
+<script lang="ts">
+import { defineComponent } from 'vue'
+import {
+    createWhtNoticeBarState,
+    isWhtNoticeBarType,
+    normalizeWhtNoticeRect,
+    type WhtNoticeBarState,
+    type WhtNoticeBarType,
+    type WhtNoticeRect,
+} from './noticeMetadata.ts'
 
-export default {
+export default defineComponent({
     name: 'wht-notice-bar',
     props: {
         text: {
@@ -69,9 +77,7 @@ export default {
         type: {
             type: String,
             default: 'warning',
-            validator: value => {
-                return ['primary', 'success', 'warning', 'error', 'info'].includes(value)
-            },
+            validator: isWhtNoticeBarType,
             desc: '主题类型'
         },
         bgColor: {
@@ -127,33 +133,30 @@ export default {
         }
     },
 
-    data() {
-        return {
-            isShow: true,
-            isReady: false,
-            textWidth: 0,
-            containerWidth: 0,
-            animation: null,
-            animationData: null,
-            platform: '',
-            loopTimer: null
-        }
+    emits: {
+        click: () => true,
+        close: () => true,
+    },
+
+    data(): WhtNoticeBarState {
+        return createWhtNoticeBarState()
     },
 
     computed: {
         getIconType() {
-            const typeMap = {
+            const typeMap: Record<WhtNoticeBarType, string> = {
                 primary: 'info',
                 success: 'checkmarkempty',
                 warning: 'sound',
                 error: 'closeempty',
                 info: 'info'
             }
-            return typeMap[this.type] || 'sound'
+            const type = isWhtNoticeBarType(this.type) ? this.type : 'warning'
+            return typeMap[type]
         },
         
-        barStyle() {
-            const style = {}
+        barStyle(): Record<string, string> {
+            const style: Record<string, string> = {}
             if (this.color) {
                 style.color = this.color
             }
@@ -161,20 +164,21 @@ export default {
         },
 
         textBgStyle() {
-            const bgMap = {
+            const bgMap: Record<WhtNoticeBarType, string> = {
                 primary: '#ecf5ff',
                 success: '#f0f9eb',
                 warning: '#fdf6ec',
                 error: '#fef0f0',
                 info: '#f4f4f5'
             }
+            const type = isWhtNoticeBarType(this.type) ? this.type : 'warning'
             return {
-                background: this.bgColor || bgMap[this.type] || 'transparent'
+                background: this.bgColor || bgMap[type]
             }
         },
         
-        textStyle() {
-            const style = {}
+        textStyle(): Record<string, string | number> {
+            const style: Record<string, string | number> = {}
             if (!this.single) {
                 style['-webkit-line-clamp'] = this.rows
             }
@@ -193,7 +197,7 @@ export default {
         },
         
         // 是否需要滚动
-        needScroll() {
+        needScroll(): boolean {
             return this.scrollable && this.speed > 0
         }
     },
@@ -278,8 +282,8 @@ export default {
                         this.startCssLoop()
                     }
                 }
-            } catch (e) {
-                console.error('notice-bar init error:', e)
+            } catch (error: unknown) {
+                console.error('notice-bar init error:', error)
             }
         },
         
@@ -298,18 +302,19 @@ export default {
         },
         
         startMarquee() {
-            if (!this.animation || !this.needScroll) return
+            const animation = this.animation
+            if (!animation || !this.needScroll) return
             
             // 先重置位置
-            this.animation.translateX(this.containerWidth).step({ duration: 0 })
-            this.animationData = this.animation.export()
+            animation.translateX(this.containerWidth).step({ duration: 0 })
+            this.animationData = animation.export()
             
             // 延迟开始滚动
             setTimeout(() => {
-                this.animation
+                animation
                     .translateX(-this.textWidth)
                     .step()
-                this.animationData = this.animation.export()
+                this.animationData = animation.export()
                 
                 // 循环播放
                 setTimeout(() => {
@@ -353,7 +358,7 @@ export default {
             }, durationMs + 5000)
         },
         
-        getRect(selector) {
+        getRect(selector: string): Promise<WhtNoticeRect | null> {
             return new Promise((resolve) => {
                 const query = uni.createSelectorQuery()
                 
@@ -366,8 +371,8 @@ export default {
                 // #endif
                 
                 query.select(selector)
-                    .boundingClientRect(rect => {
-                        resolve(rect)
+                    .boundingClientRect((rect) => {
+                        resolve(normalizeWhtNoticeRect(rect))
                     })
                     .exec()
             })
@@ -383,7 +388,7 @@ export default {
             this.$emit('close')
         }
     }
-}
+})
 </script>
 
 <style lang="scss" scoped>

@@ -14,10 +14,15 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent } from 'vue'
+
 import PawButton from '@/components/base/PawButton.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
-export default {
+import { readPawEventDetail } from '@/utils/pawEventMetadata.ts'
+export default defineComponent({
   name: 'PawSearchBar',
   components: { PawButton, PawIcon },
   props: {
@@ -25,35 +30,44 @@ export default {
     placeholder: { type: String, default: '搜索' },
     readonly: { type: Boolean, default: false }
   },
-  emits: ['update:modelValue', 'input', 'focus', 'blur', 'confirm', 'search', 'tap'],
+  emits: {
+    'update:modelValue': eventContract<[value: string]>(),
+    'input': eventContract<[value: string]>(),
+    'focus': eventContract<[event: PawEvent]>(),
+    'blur': eventContract<[event: PawEvent]>(),
+    'confirm': eventContract<[value: string]>(),
+    'search': eventContract<[value: string, event?: PawEvent]>(),
+    'tap': eventContract<[event: PawEvent]>(),
+  },
   methods: {
-    getValue(event) {
-      return event && event.detail && typeof event.detail.value === 'string' ? event.detail.value : this.modelValue
+    getValue(event: PawEvent) {
+      const value = readPawEventDetail(event)?.value
+      return typeof value === 'string' ? value : this.modelValue
     },
-    handleInput(event) {
+    handleInput(event: PawEvent) {
       const value = this.getValue(event)
       this.$emit('update:modelValue', value)
       this.$emit('input', value)
     },
-    handleFocus(event) {
+    handleFocus(event: PawEvent) {
       this.$emit('focus', event)
     },
-    handleBlur(event) {
+    handleBlur(event: PawEvent) {
       this.$emit('blur', event)
     },
-    handleConfirm(event) {
+    handleConfirm(event: PawEvent) {
       const value = this.getValue(event)
       this.$emit('confirm', value)
       this.$emit('search', value)
     },
-    handleSearch(event) {
+    handleSearch(event: PawEvent) {
       this.$emit('search', this.modelValue, event)
     },
-    handleTap(event) {
+    handleTap(event: PawEvent) {
       if (this.readonly) this.$emit('tap', event)
     }
   }
-}
+})
 </script>
 
 <style scoped>

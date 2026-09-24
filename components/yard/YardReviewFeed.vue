@@ -20,11 +20,11 @@
       <view v-if="hideStatusTab || activeTab === 'dynamic'" class="reviewList">
         <view class="review-item">
           <view class="avatar" @click.stop="openReviewMainUser">
-            <image class="avatar-img" src="/static/avatarlog.png"></image>
+            <image class="avatar-img" :src="mainReview.avatar"></image>
           </view>
           <view class="review-content">
             <view class="review-name" @click.stop="openReviewMainUser">
-              <view>姜栋</view>
+              <view>{{ mainReview.name }}</view>
               <LevelBadge :level="1" />
             </view>
             <view class="review-text">
@@ -34,12 +34,12 @@
                   <image class="avatar-img" src="/static/avatarlog.png"></image>
                 </view>
               </view>
-              <view class="review-text-full"><text>来自花开富贵投喂的4斤猫粮</text></view>
+              <view class="review-text-full"><text>{{ mainReview.sourceText }}</text></view>
             </view>
             <view class="review-context">
               <view class="review-long-text">
                 <text>{{
-                  isReviewExpanded(reviewRowKey) || !isReviewLong ? reviewText : reviewPreview
+                  isReviewExpanded(reviewRowKey) || !isReviewLong ? mainReview.copy : reviewPreview
                 }}</text>
                 <text v-if="isReviewLong && !isReviewExpanded(reviewRowKey)" class="review-toggle"
                   @click.stop="toggleReview(reviewRowKey)"><text>...</text><text
@@ -52,17 +52,17 @@
               <view class="voice-msg__inner">
                 <uni-icons type="sound" :size="18" color="#384d7b"></uni-icons>
                 <view class="voice-msg__wave">
-                  <view v-for="(h, wi) in mainVoiceBars" :key="'wb-' + wi" class="voice-msg__bar"
+                  <view v-for="(h, wi) in mainReview.voiceBars" :key="'wb-' + wi" class="voice-msg__bar"
                     :style="{ height: h + 'px' }"></view>
                 </view>
               </view>
-              <text class="voice-msg__dur">{{ mainVoiceDuration }}</text>
+              <text class="voice-msg__dur">{{ mainReview.voiceDuration }}</text>
             </view>
             <view class="review-media">
-              <NineGridLayout :NineGridList="list9" containerWidth="300" BorderRadiusSize="0" />
+              <NineGridLayout :NineGridList="mainReview.mediaUrls" :container-width="300" :border-radius-size="0" />
             </view>
             <view class="reply">
-              <view class="reply-info"><text>昨天 20:45 江西</text>
+              <view class="reply-info"><text>{{ mainReview.meta }}</text>
                 <view class="reply-btn" @tap.stop="openReplySheet('main')">回复</view>
               </view>
               <view class="reply-num" @tap.stop="toggleMainReviewLike">
@@ -140,16 +140,48 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
 import NineGridLayout from "@/components/libai-NineGridLayout/libai-NineGridLayout.vue";
 import uniIcons from "@/uni_modules/uni-icons/components/uni-icons/uni-icons.vue";
 import YardCommentComposer from "@/components/yard/YardCommentComposer.vue";
 import ReplyComposerSheet from "@/components/ReplyComposerSheet.vue";
 import LevelBadge from "@/components/customBadge/LevelBadge.vue";
-import { safeImgSrc } from "@/utils/safeImgSrc.js";
-import { openUserProfile } from "@/utils/profileNav.js";
+import { safeImgSrc } from "@/utils/safeImgSrc.ts";
+import { openUserProfile } from "@/utils/profileNav.ts";
+import {
+  createYardReviewFeedMocks,
+  type YardReviewFeedTab,
+  type YardReviewMainMetadata,
+  type YardReviewReplyMetadata,
+  type YardReviewReplySendMetadata,
+  type YardReviewReplyTarget,
+  type YardThrowRecordMetadata
+} from "@/utils/yardReviewFeedMetadata.ts";
 
-export default {
+interface YardReviewFeedState {
+  mainReview: YardReviewMainMetadata
+  replySheetVisible: boolean
+  replySheetTarget: YardReviewReplyTarget | null
+  replyExpanded: boolean
+  previewReplyCount: number
+  mainVoicePlaying: boolean
+  mainVoiceTimer: ReturnType<typeof setTimeout> | null
+  playingReplyId: number | null
+  replyVoiceTimer: ReturnType<typeof setTimeout> | null
+  mainReviewLiked: boolean
+  mainReviewLikes: number
+  mockReplies: YardReviewReplyMetadata[]
+  reviewRowKey: string
+  activeTab: YardReviewFeedTab
+  throwRecords: YardThrowRecordMetadata[]
+  reviewExpandedMap: Record<string, boolean>
+  zan1: string
+  zan2: string
+}
+
+export default defineComponent({
   name: "YardReviewFeed",
   components: { NineGridLayout, uniIcons, YardCommentComposer, ReplyComposerSheet, LevelBadge },
   props: {
@@ -177,8 +209,21 @@ export default {
       default: "有话要说，告诉她这条路并不孤单",
     },
   },
-  data() {
+  emits: {
+    "composer-voice": () => true,
+    "composer-pick-image": () => true,
+    "tab-change": (tab: YardReviewFeedTab) => tab === "dynamic" || tab === "throw",
+    "reply-send": (payload: YardReviewReplySendMetadata) =>
+      Boolean(
+        payload &&
+          typeof payload.text === "string" &&
+          (payload.target === null || payload.target === "main" || typeof payload.target === "number"),
+      ),
+  },
+  data(): YardReviewFeedState {
+    const mocks = createYardReviewFeedMocks()
     return {
+      mainReview: mocks.main,
       replySheetVisible: false,
       replySheetTarget: null,
       replyExpanded: false,
@@ -187,151 +232,41 @@ export default {
       mainVoiceTimer: null,
       playingReplyId: null,
       replyVoiceTimer: null,
-      mainVoiceDuration: "12″",
-      mainVoiceBars: [6, 10, 5, 12, 7, 11, 8],
       mainReviewLiked: false,
-      mainReviewLikes: 12,
-      mockReplies: [
-        {
-          id: 1,
-          name: "姜栋",
-          tag: "楼主",
-          kind: "text",
-          text: "给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞给我点赞",
-          avatar: "/static/avatarlog.png",
-          meta: "昨天 20:45 江西",
-          likes: 32,
-          liked: false,
-        },
-        {
-          id: 2,
-          name: "小院春风",
-          kind: "text",
-          text: "猫猫真可爱，下次我也带点猫粮过去～",
-          avatar: "/static/user.png",
-          meta: "昨天 21:12 湖北",
-          likes: 8,
-          liked: false,
-        },
-        {
-          id: 3,
-          name: "爱心人士",
-          kind: "voice",
-          duration: "8″",
-          avatar: "/static/user.png",
-          meta: "昨天 22:01 广东",
-          likes: 5,
-          liked: false,
-          voiceBars: [5, 9, 6, 11, 7, 8, 6],
-        },
-        {
-          id: 4,
-          name: "夜猫子",
-          kind: "text",
-          text: "加油！支持小院～",
-          avatar: "/static/avatarlog.png",
-          meta: "今天 08:30 河南",
-          likes: 3,
-          liked: false,
-        },
-        {
-          id: 5,
-          name: "粮满多",
-          kind: "text",
-          text: "已投喂，注意查收～",
-          avatar: "/static/user.png",
-          meta: "今天 09:05 江苏",
-          likes: 2,
-          liked: false,
-        },
-        {
-          id: 6,
-          name: "橘座办事处",
-          kind: "text",
-          text: "下次组团去看猫！",
-          avatar: "/static/avatarlog.png",
-          meta: "今天 10:18 四川",
-          likes: 1,
-          liked: false,
-        },
-      ],
+      mainReviewLikes: mocks.main.likes,
+      mockReplies: mocks.replies,
       reviewRowKey: "main",
       activeTab: "dynamic",
       /** 投粮记录 Tab 列表（对接接口后替换） */
-      throwRecords: [
-        {
-          id: "t1",
-          name: "平安是福",
-          level: 1,
-          avatar: "/static/user.png",
-          weightText: "投粮200克",
-          feedbackText: "已反馈2/5次",
-        },
-        {
-          id: "t2",
-          name: "平安是福",
-          level: 1,
-          avatar: "/static/user.png",
-          weightText: "投粮200克",
-          feedbackText: "已反馈2/5次",
-        },
-        {
-          id: "t3",
-          name: "平安是福",
-          level: 1,
-          avatar: "/static/user.png",
-          weightText: "投粮200克",
-          feedbackText: "已反馈2/5次",
-        },
-        {
-          id: "t4",
-          name: "平安是福",
-          level: 1,
-          avatar: "/static/user.png",
-          weightText: "投粮200克",
-          feedbackText: "已反馈2/5次",
-        },
-      ],
+      throwRecords: mocks.throwRecords,
       reviewExpandedMap: {},
-      reviewText:
-        "小灰灰是去年冬天快过年的时候发现的流浪猫，一开始胆子很小，后面熟了之后才愿意跟我接触，希望多多投喂，谢谢，感谢大家的帮助和支持，我一定会好好照顾这些可爱的小生命，让它们健康成长。小灰灰是去年冬天快过年的时候发现的流浪猫，一开始胆子很小，后面熟了之后才愿意跟我接触，希望多多投喂，谢谢，感谢大家的帮助和支持，我一定会好好照顾这些可爱的小生命，让它们健康成长。小灰灰是去年冬天快过年的时候发现的流浪猫，一开始胆子很小，后面熟了之后才愿意跟我接触，希望多多投喂，谢谢，感谢大家的帮助和支持，我一定会好好照顾这些可爱的小生命，让它们健康成长。",
       zan1:
         "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAeCAYAAAA/xX6fAAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAF+SURBVEiJvZdbtoMgDEVPWJ3XpUOqDqA6gMiQpBMz/bjElVK10JaeL1FwmwcJEioVQvAicgXgAUBERudcvFwusWQ91cCYeSCi6+aLiM4lUFcDNLBIRGcRGQFEAEhWv9SpFMbMg153XXdWcHKxR3LxKxVbSER/wH/M7P3S2FUDkSxwzj0AQgj+60DrztyiZVkU+HD/I6AmS+5OKxG5fQVorev7fsifa2xLdQgMIfgC6zzwHNtqIDMPIjKnYdyyziZMabaedOGyLN64x5s50ey7B6U1AIBpmuatORpb/eBT2rizLswmj1uWqbL4+Z05HgCYGX3fD2TqY0wTRqDcRTapDj5szQOapkl0cGTNJ7JGrUlTmmXvyLzbV3WLd2Wr0U+ApvDffgKEKQ7NgXnhbw7MS2NToC19uuWaArd6ZVOgcefaK5sB9/poM+BeH3UoPIvU6OiUsJ5LRWRm5vGTmmp/AdL46ZRAAKAd45va6z4OALquo6MTWYUi0m/AXqu7A58a2QJRlyArAAAAAElFTkSuQmCC",
       zan2:
         "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAcCAYAAAB/E6/TAAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAE4SURBVEiJvZYxVoNAFEXvo05va+EyACcLcQG6iZBduAnX4IRhAR4b25xjZW/NtwiJRCFMQuBVw5n5//Lf8IcRZ8jS1CGtAAeAtFZZFjGxiobkeYHZqmPKK4TlUHwSC+qESG+AszR1VwFZnhc98EUD7Kr0fNAJ3cUujAN1782vpM1oUK9tO22H4qNBmN2fmL0FoK79KFBTjRtKoqq6HHSib/5qEAKthrU0dSSJa6xyEbFbdtb53o+hrv2+WgFYlr1GJm+9or4wu4lYt1ZZFjpYFBt4iaS1LMtskuTH8mNPhli5uUCTV/QOgLSZZY8UguawzsP438Swmmae3DqFIJi+os/9YGrQ4QycFKQQHuYAPbcfEuDjSom/W2OvEB6PQWZPVwItWpB/F8pEVeUxWwIvI0Ees2XfrfUHCTFt74bNhAQAAAAASUVORK5CYII=",
-      list9: [
-        "https://img2.baidu.com/it/u=2294066987,2848080806&fm=253&fmt=auto&app=120&f=JPEG?w=688&h=1215",
-        "https://img1.baidu.com/it/u=859607673,960376049&fm=253&fmt=auto&app=138&f=JPEG?w=750&h=500",
-        "https://img2.baidu.com/it/u=70470028,1003557371&fm=253&fmt=auto&app=120&f=JPEG?w=1280&h=800",
-        "https://img1.baidu.com/it/u=620762706,3267928372&fm=253&fmt=auto&app=138&f=JPEG?w=889&h=500",
-        "https://img1.baidu.com/it/u=2278717026,2923133725&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=665",
-        "https://img0.baidu.com/it/u=1170221409,3321766761&fm=253&fmt=auto&app=138&f=JPEG?w=750&h=500",
-        "https://img2.baidu.com/it/u=669729424,1761575290&fm=253&fmt=auto&app=138&f=JPEG?w=889&h=500",
-        "https://img2.baidu.com/it/u=2294066987,2848080806&fm=253&fmt=auto&app=120&f=JPEG?w=688&h=1215",
-        "https://img0.baidu.com/it/u=3207802179,3637851356&fm=253&fmt=auto&app=138&f=JPEG?w=889&h=500",
-      ],
     };
   },
   computed: {
-    reviewLimit() {
+    reviewLimit(): number {
       return 100;
     },
-    isReviewLong() {
-      return (this.reviewText || "").length > this.reviewLimit;
+    isReviewLong(): boolean {
+      return this.mainReview.copy.length > this.reviewLimit;
     },
-    reviewPreview() {
-      return (this.reviewText || "").slice(0, this.reviewLimit);
+    reviewPreview(): string {
+      return this.mainReview.copy.slice(0, this.reviewLimit);
     },
-    visibleReplies() {
+    visibleReplies(): YardReviewReplyMetadata[] {
       if (this.replyExpanded) return this.mockReplies;
       return this.mockReplies.slice(0, this.previewReplyCount);
     },
-    hiddenReplyCount() {
+    hiddenReplyCount(): number {
       return Math.max(0, this.mockReplies.length - this.previewReplyCount);
     },
-    replyTargetName() {
-      if (this.replySheetTarget === "main") return "姜栋";
-      const reply = this.mockReplies.find((item) => String(item.id) === String(this.replySheetTarget));
+    replyTargetName(): string {
+      if (this.replySheetTarget === "main") return this.mainReview.name;
+      if (typeof this.replySheetTarget !== "number") return "";
+      const reply = this.mockReplies.find((item) => item.id === this.replySheetTarget);
       return reply ? reply.name : "";
     },
   },
@@ -350,8 +285,7 @@ export default {
         this.mainReviewLikes += 1
       }
     },
-    toggleReplyLike(r) {
-      if (!r) return
+    toggleReplyLike(r: YardReviewReplyMetadata) {
       if (r.liked) {
         r.liked = false
         r.likes = Math.max(0, r.likes - 1)
@@ -362,21 +296,19 @@ export default {
     },
     openReviewMainUser() {
       openUserProfile({
-        pawId: "review-feed-main",
-        nickname: "姜栋",
-        avatar: "/static/avatarlog.png",
+        pawId: this.mainReview.pawId,
+        nickname: this.mainReview.name,
+        avatar: this.mainReview.avatar,
       });
     },
-    openReplyUser(r) {
-      if (!r) return;
+    openReplyUser(r: YardReviewReplyMetadata) {
       openUserProfile({
         pawId: r.pawId || "reply-" + r.id,
         nickname: r.name,
         avatar: r.avatar || "",
       });
     },
-    openThrowUser(item) {
-      if (!item) return;
+    openThrowUser(item: YardThrowRecordMetadata) {
       openUserProfile({
         pawId: item.pawId || "throw-" + item.id,
         nickname: item.name,
@@ -390,13 +322,13 @@ export default {
       this.$emit("composer-pick-image");
     },
     clearMainVoiceTimer() {
-      if (this.mainVoiceTimer) {
+      if (this.mainVoiceTimer !== null) {
         clearTimeout(this.mainVoiceTimer);
         this.mainVoiceTimer = null;
       }
     },
     clearReplyVoiceTimer() {
-      if (this.replyVoiceTimer) {
+      if (this.replyVoiceTimer !== null) {
         clearTimeout(this.replyVoiceTimer);
         this.replyVoiceTimer = null;
       }
@@ -411,8 +343,8 @@ export default {
         }, 2500);
       }
     },
-    playReplyVoice(r) {
-      if (!r || r.kind !== "voice") return;
+    playReplyVoice(r: YardReviewReplyMetadata) {
+      if (r.kind !== "voice") return;
       this.clearReplyVoiceTimer();
       if (this.playingReplyId === r.id) {
         this.playingReplyId = null;
@@ -424,15 +356,15 @@ export default {
         this.replyVoiceTimer = null;
       }, 2000);
     },
-    changeReview(tab) {
+    changeReview(tab: YardReviewFeedTab) {
       this.activeTab = tab;
       this.$emit("tab-change", tab);
     },
-    openReplySheet(target) {
+    openReplySheet(target: YardReviewReplyTarget) {
       this.replySheetTarget = target;
       this.replySheetVisible = true;
     },
-    onReplySheetSend(text) {
+    onReplySheetSend(text: string) {
       this.$emit("reply-send", { text, target: this.replySheetTarget });
       uni.showToast({ title: "已发送", icon: "none" });
     },
@@ -447,15 +379,15 @@ export default {
         },
       });
     },
-    isReviewExpanded(key) {
+    isReviewExpanded(key: string) {
       return !!this.reviewExpandedMap[key];
     },
-    toggleReview(key) {
+    toggleReview(key: string) {
       const cur = !!this.reviewExpandedMap[key];
       this.reviewExpandedMap = { ...this.reviewExpandedMap, [key]: !cur };
     },
   },
-};
+});
 </script>
 
 <style lang="less" scoped>

@@ -49,13 +49,13 @@ function throwsCode(fn, code) {
 
 before(async () => {
   tempRoot = await fsp.mkdtemp(path.join(os.tmpdir(), 'pawhome-adoption-condition-'))
-  await fsp.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+  await fsp.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fsp.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
   await fsp.copyFile(
-    path.join(ROOT, 'navigation/adoptionConditionContract.js'),
-    path.join(tempRoot, 'navigation/adoptionConditionContract.js')
+    path.join(ROOT, 'navigation/adoptionConditionContract.ts'),
+    path.join(tempRoot, 'navigation/adoptionConditionContract.ts')
   )
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/adoptionConditionContract.js')).href}?test=${Date.now()}`)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'navigation/adoptionConditionContract.ts')).href}?test=${Date.now()}`)
 })
 
 after(async () => {
@@ -63,7 +63,7 @@ after(async () => {
 })
 
 test('contract remains pure, exports the adoption condition seam, and exposes no writer', () => {
-  const source = fs.readFileSync(path.join(ROOT, 'navigation/adoptionConditionContract.js'), 'utf8')
+  const source = fs.readFileSync(path.join(ROOT, 'navigation/adoptionConditionContract.ts'), 'utf8')
   assert.doesNotMatch(source, /(?:import|require\s*\()[^\n]*(?:vue|uni|pages|packages|storage|mock)/i)
   assert.deepEqual(api.ADOPTION_CLOUD_PARENT_SELECTIONS, ['any', 'all', 'specific'])
   assert.deepEqual(api.ADOPTION_PERSPECTIVES, ['applicant', 'cloud_parent', 'owner'])

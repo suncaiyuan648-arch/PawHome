@@ -42,7 +42,7 @@
               @user-click="openCommentUser" @reply="openReplySheet" @like="toggleCommentLike" @voice-play="onVoicePlay"
               @empty-action="openReplySheet">
               <template #before>
-                <CommentComposer :avatar="currentUser.avatar" readonly @click="openReplySheet" @voice="onComposerVoice"
+                <CommentComposer :avatar="currentUser.avatar" readonly @click="openReplySheet()" @voice="onComposerVoice"
                   @pick-image="onComposerPickImage" />
               </template>
             </CommentThread>
@@ -66,14 +66,18 @@
         @voice="onComposerVoice" @pick-image="onComposerPickImage" />
       <ShareActionSheet v-model:visible="shareSheetVisible" />
       <AdoptPickCatsSheet v-model="adoptPickSheetVisible" :yard-name="yard.name" :yard-id="yardId" :cats="adoptionPets"
-        :owner-avatar="yard.avatar" :owner-paw-id="yard.owner && yard.owner.pawId" />
+        :owner-avatar="yard.avatar" :owner-paw-id="yard.owner ? yard.owner.pawId : undefined" />
       <YardFeedPopup v-if="commentsEmpty" v-model="feedPopupVisible" @learn-food="onLearnFood"
         @agreement="onAgreement" @feed-order="onFeedOrder" />
     </template>
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { findCommentById, type CommentItemRecord } from '@/components/dynamic/commentMetadata.ts'
+
+import { defineComponent } from 'vue'
+
 import PawAnnouncementMarquee from '@/components/PawAnnouncementMarquee.vue'
 import PawPageNav from '@/components/PawPageNav.vue'
 import PawAvatar from '@/components/identity/PawAvatar.vue'
@@ -90,48 +94,32 @@ import YardFeedRankStrip from '@/components/yard/YardFeedRankStrip.vue'
 import YardSummaryCard from '@/components/yard/YardSummaryCard.vue'
 import YardFeedPopup from '@/components/YardFeedPopup.vue'
 import PawLikeIcon from '@/components/base/PawLikeIcon.vue'
-import { getWechatNavLayout } from '@/utils/navLayout.js'
-import { openUserProfile } from '@/utils/profileNav.js'
-import { readDynamicRecord, normalizeDynamicRecord } from '@/packages/dynamic/services/reader.js'
+import { getWechatNavLayout, type WechatNavLayout } from '@/utils/navLayout.ts'
+import { openUserProfile } from '@/utils/profileNav.ts'
+import { readDynamicRecord, normalizeDynamicRecord } from '@/packages/dynamic/services/reader.ts'
+import {
+  createDynamicDetailPageState,
+  normalizeDynamicDetailRecord,
+  normalizeDynamicDetailRoute,
+  type DynamicDetailFooterAction,
+  type DynamicDetailPageState,
+  type DynamicDetailPrimaryAction,
+} from '@/packages/dynamic/services/detailMetadata.ts'
+import type { YardFeedAgreement } from '@/components/yard/yardFeedPopupMetadata.ts'
+import type { YardRankItem } from '@/utils/yardMock.ts'
 
-
-export default {
+export default defineComponent({
   name: 'DynamicDetailPage',
   components: { PawAnnouncementMarquee, PawPageNav, PawAvatar, PawOwnerBadge, PawFixedActionBar, DynamicMediaViewer, FeedingSourceRow, CommentComposer, CommentThread, ReplyComposerSheet, ShareActionSheet, AdoptPickCatsSheet, YardFeedRankStrip, YardSummaryCard, YardFeedPopup, PawLikeIcon },
-  data() {
-    return {
-      yardId: '',
-      dynamicId: '',
-      navLayout: getWechatNavLayout(),
-      recordStatus: 'loading',
-      recordError: '',
-      commentsEmpty: false,
-      commentsEmptyForced: false,
-      liked: false,
-      likes: 0,
-      replySheetVisible: false,
-      replySheetTarget: null,
-      shareSheetVisible: false,
-      adoptPickSheetVisible: false,
-      feedPopupVisible: false,
-      mediaItems: [],
-      announcementItems: [],
-      author: { name: '', avatar: '' },
-      currentUser: { avatar: '' },
-      feeders: [],
-      rankItems: [],
-      comments: [],
-      postCopy: '',
-      postMeta: '',
-      feedingSourceText: '',
-      feedSummary: '',
-      commentTotal: '共 0 条评论',
-      yard: { id: '', name: '', avatar: '', pets: [], owner: null }
-    }
+  emits: {
+    'reply-send': (text: string) => typeof text === 'string',
+  },
+  data(): DynamicDetailPageState {
+    return createDynamicDetailPageState(getWechatNavLayout())
   },
   computed: {
     contentTop() {
-      const nav = this.navLayout || {}
+      const nav = this.navLayout
       const measuredTop = Number(nav.totalHeight || (Number(nav.statusBarHeight || 44) + Number(nav.navBarHeight || 54)))
       // 动态区域紧跟 PawPageNav；公告只在动态内容顶部悬浮，不参与内容排版。
       return measuredTop
@@ -142,22 +130,22 @@ export default {
         height: `calc(100vh - ${this.contentTop}px)`
       }
     },
-    footerActions() {
+    footerActions(): DynamicDetailFooterAction[] {
       return [
         { key: 'share', label: '分享', iconName: 'actions/dynamic-share' },
         { key: 'yard', label: this.commentsEmpty ? '入驻' : '去看看', iconName: 'actions/dynamic-join' },
         { key: 'adopt', label: '领养', iconName: 'actions/dynamic-adopt', qa: 'qa-dynamic-detail-adopt' }
       ]
     },
-    primaryAction() {
+    primaryAction(): DynamicDetailPrimaryAction {
       return { key: 'feed', label: this.commentsEmpty ? '投点猫粮' : '云养一只', iconName: 'actions/feed', iconSize: 32, size: 'md' }
     },
-    recordActor() {
+    recordActor(): unknown {
       try {
         const session = typeof uni !== 'undefined' && uni && typeof uni.getStorageSync === 'function'
           ? uni.getStorageSync('PAWHOME_ACTOR_SESSION') : null
         return session && session.actor ? session.actor : session
-      } catch (error) {
+      } catch {
         return null
       }
     },
@@ -167,14 +155,15 @@ export default {
       return author && typeof author.name === 'string' ? author.name : ''
     },
     adoptionPets() {
-      return (this.yard.pets || []).filter(pet => pet.state === 'pending' || pet.state === 'cloud')
+      return this.yard.pets.filter(pet => pet.state === 'pending' || pet.state === 'cloud')
     }
   },
-  onLoad(query = {}) {
+  onLoad(query: unknown = {}) {
     this.navLayout = getWechatNavLayout()
-    if (query.yardId) this.yardId = String(query.yardId)
-    if (query.dynamicId) this.dynamicId = String(query.dynamicId)
-    this.commentsEmptyForced = query.state === 'comments-empty'
+    const route = normalizeDynamicDetailRoute(query)
+    if (route.yardId) this.yardId = route.yardId
+    if (route.dynamicId) this.dynamicId = route.dynamicId
+    this.commentsEmptyForced = route.commentsEmpty
     this.commentsEmpty = this.commentsEmptyForced
     this.loadRecord()
   },
@@ -205,7 +194,8 @@ export default {
         requireActor: false,
         allowPublic: true,
       })
-      const model = result.record && normalizeDynamicRecord(result.record)
+      const normalized = result.record && normalizeDynamicRecord(result.record)
+      const model = normalized && normalizeDynamicDetailRecord(normalized)
       if (!model) {
         this.recordStatus = 'error'
         this.recordError = result.code || 'NOT_FOUND'
@@ -232,14 +222,16 @@ export default {
       this.commentsEmpty = this.commentsEmptyForced || model.commentsTotal === 0
       if (this.commentsEmpty) this.comments = []
     },
-    onNavLayout(layout) { this.navLayout = layout },
+    onNavLayout(layout: WechatNavLayout) { this.navLayout = layout },
     toggleLike() { this.liked = !this.liked; this.likes = Math.max(0, this.likes + (this.liked ? 1 : -1)) },
     openProfile() { openUserProfile({ pawId: 'owner-1', nickname: this.author.name, avatar: this.author.avatar }) },
     openYard() { uni.navigateTo({ url: `/packages/yard/pages/detail/index?yardId=${encodeURIComponent(this.yardId)}` }) },
     openLeaderboard() { uni.navigateTo({ url: '/packages/discovery/pages/ranking/index' }) },
-    openRankUser(item) { if (item) openUserProfile({ pawId: item.pawId || item.id, nickname: item.text, avatar: item.avatar }) },
+    openRankUser(item: YardRankItem) {
+      openUserProfile({ pawId: item.pawId || item.id, nickname: item.text, avatar: item.avatar })
+    },
     openFeeders() { uni.showToast({ title: '查看投喂记录', icon: 'none' }) },
-    onFooterAction(action) {
+    onFooterAction(action: import('@/components/layout/PawFixedActionBar.vue').PawFixedAction) {
       if (action.key === 'share') { this.shareSheetVisible = true }
       if (action.key === 'yard') this.openYard()
       if (action.key === 'adopt') this.adoptPickSheetVisible = true
@@ -257,20 +249,28 @@ export default {
       })
     },
     onLearnFood() { uni.showToast({ title: '了解猫粮功能暂未开放', icon: 'none' }) },
-    onAgreement(which) { uni.showToast({ title: which === 'required' ? '请先阅读并同意投喂协议' : '阅读弹窗暂未开放', icon: 'none' }) },
+    onAgreement(which: YardFeedAgreement) {
+      uni.showToast({ title: which === 'required' ? '请先阅读并同意投喂协议' : '阅读弹窗暂未开放', icon: 'none' })
+    },
     onFeedOrder() { uni.navigateTo({ url: '/packages/feeding/pages/yard-orders/index?yardId=1' }) },
-    openReplySheet(comment) {
-      this.replySheetTarget = comment && comment.author ? comment : null
+    openReplySheet(comment?: CommentItemRecord) {
+      this.replySheetTarget = comment ? findCommentById(this.comments, comment.id) : null
       this.replySheetVisible = true
     },
-    onReplySend(text) { uni.showToast({ title: '已发送', icon: 'none' }); this.$emit('reply-send', text) },
+    onReplySend(text: string) { uni.showToast({ title: '已发送', icon: 'none' }); this.$emit('reply-send', text) },
     onComposerVoice() { uni.showToast({ title: '语音输入敬请期待', icon: 'none' }) },
     onComposerPickImage() { uni.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] }) },
-    openCommentUser(comment) { const author = comment && (comment.author || comment); if (author) openUserProfile({ pawId: author.pawId || comment.id, nickname: author.name, avatar: author.avatar }) },
-    toggleCommentLike(comment) { if (!comment) return; comment.liked = !comment.liked; comment.likes = Math.max(0, (comment.likes || 0) + (comment.liked ? 1 : -1)) },
+    openCommentUser(comment: CommentItemRecord) {
+      const author = comment.author || {}
+      openUserProfile({ pawId: author.pawId || comment.id, nickname: author.name, avatar: author.avatar })
+    },
+    toggleCommentLike(comment: CommentItemRecord) {
+      comment.liked = !comment.liked
+      comment.likes = Math.max(0, Number(comment.likes || 0) + (comment.liked ? 1 : -1))
+    },
     onVoicePlay() { }
   }
-}
+})
 </script>
 
 <style scoped>

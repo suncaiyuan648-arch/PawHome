@@ -22,18 +22,19 @@ let rescueStorage
 async function loadEsm() {
 	if (!tempEsmRoot) {
 		tempEsmRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-application-boundary-'))
-		await fs.writeFile(path.join(tempEsmRoot, 'package.json'), '{"type":"module"}\n')
+		await fs.cp(path.join(ROOT, 'contracts'), path.join(tempEsmRoot, 'contracts'), { recursive: true })
+		await fs.writeFile(path.join(tempEsmRoot, 'package.tson'), '{"type":"module"}\n')
 		await fs.mkdir(path.join(tempEsmRoot, 'utils'), { recursive: true })
 		for (const file of [
-			'applicationMockApi.js',
-			'adoptionStorage.js',
-			'rescueStorage.js',
-			'rewardOrderStorage.js'
+			'applicationMockApi.ts',
+			'adoptionStorage.ts',
+			'rescueStorage.ts',
+			'rewardOrderStorage.ts'
 		]) {
 			await fs.copyFile(path.join(ROOT, 'utils', file), path.join(tempEsmRoot, 'utils', file))
 		}
 	}
-	const fileUrl = pathToFileURL(path.join(tempEsmRoot, 'utils/applicationMockApi.js')).href
+	const fileUrl = pathToFileURL(path.join(tempEsmRoot, 'utils/applicationMockApi.ts')).href
 	return import(`${fileUrl}?test=${Date.now()}-${Math.random()}`)
 }
 
@@ -104,8 +105,8 @@ before(async () => {
 		}
 	}
 	api = await loadEsm()
-	const loaded = await import(`${pathToFileURL(path.join(tempEsmRoot, 'utils/adoptionStorage.js')).href}?test=${Date.now()}-adoption`)
-	const rescue = await import(`${pathToFileURL(path.join(tempEsmRoot, 'utils/rescueStorage.js')).href}?test=${Date.now()}-rescue`)
+	const loaded = await import(`${pathToFileURL(path.join(tempEsmRoot, 'utils/adoptionStorage.ts')).href}?test=${Date.now()}-adoption`)
+	const rescue = await import(`${pathToFileURL(path.join(tempEsmRoot, 'utils/rescueStorage.ts')).href}?test=${Date.now()}-rescue`)
 	adoptionStorage = loaded
 	rescueStorage = rescue
 })

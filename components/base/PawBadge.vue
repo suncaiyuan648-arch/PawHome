@@ -7,8 +7,11 @@
 	</view>
 </template>
 
-<script>
-export default {
+<script lang="ts">import { defineComponent, type PropType } from 'vue'
+
+type BadgeOffset = Array<number | string>
+
+export default defineComponent({
 	name: 'PawBadge',
 	props: {
 		count: { type: [Number, String], default: null },
@@ -21,7 +24,7 @@ export default {
 		overflowCount: { type: Number, default: 99 },
 		color: { type: String, default: '' },
 		textColor: { type: String, default: '' },
-		offset: { type: Array, default: () => [0, 0] }
+		offset: { type: Array as PropType<BadgeOffset>, default: () => [0, 0] }
 	},
 	computed: {
 		rawCount() {
@@ -60,7 +63,7 @@ export default {
 			const offset = Array.isArray(this.offset) ? this.offset : [0, 0]
 			const offsetX = Number(offset[0]) || 0
 			const offsetY = Number(offset[1]) || 0
-			const style = {}
+			const style: Record<string, string> = {}
 			if (offsetX || offsetY) style.transform = `translate(${offsetX}px, ${offsetY}px)`
 			if (this.color) style.backgroundColor = this.color
 			return style
@@ -69,7 +72,7 @@ export default {
 			return this.textColor ? { color: this.textColor } : {}
 		}
 	}
-}
+})
 </script>
 
 <style scoped>

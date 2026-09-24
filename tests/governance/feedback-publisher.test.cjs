@@ -22,16 +22,16 @@ function input(extra = {}) {
 
 before(async () => {
   tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pawhome-feedback-publisher-'))
-  await fs.writeFile(path.join(tempRoot, 'package.json'), '{"type":"module"}\n')
+  await fs.writeFile(path.join(tempRoot, 'package.tson'), '{"type":"module"}\n')
   await fs.mkdir(path.join(tempRoot, 'navigation'), { recursive: true })
-  await fs.copyFile(path.join(ROOT, 'navigation/actorCapabilities.js'), path.join(tempRoot, 'navigation/actorCapabilities.js'))
-  await fs.copyFile(path.join(ROOT, 'navigation/feedbackContracts.js'), path.join(tempRoot, 'navigation/feedbackContracts.js'))
+  await fs.copyFile(path.join(ROOT, 'navigation/actorCapabilities.ts'), path.join(tempRoot, 'navigation/actorCapabilities.ts'))
+  await fs.copyFile(path.join(ROOT, 'navigation/feedbackContracts.ts'), path.join(tempRoot, 'navigation/feedbackContracts.ts'))
   await fs.mkdir(path.join(tempRoot, 'packages/dynamic/services'), { recursive: true })
-  let source = await fs.readFile(path.join(ROOT, 'packages/dynamic/services/feedbackPublisher.js'), 'utf8')
-  source = source.replace("'@/navigation/actorCapabilities.js'", "'../../../navigation/actorCapabilities.js'")
-  source = source.replace("'@/navigation/feedbackContracts.js'", "'../../../navigation/feedbackContracts.js'")
-  await fs.writeFile(path.join(tempRoot, 'packages/dynamic/services/feedbackPublisher.js'), source)
-  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/dynamic/services/feedbackPublisher.js')).href}?test=${Date.now()}`)
+  let source = await fs.readFile(path.join(ROOT, 'packages/dynamic/services/feedbackPublisher.ts'), 'utf8')
+  source = source.replace("'@/navigation/actorCapabilities.ts'", "'../../../navigation/actorCapabilities.ts'")
+  source = source.replace("'@/navigation/feedbackContracts.ts'", "'../../../navigation/feedbackContracts.ts'")
+  await fs.writeFile(path.join(tempRoot, 'packages/dynamic/services/feedbackPublisher.ts'), source)
+  api = await import(`${pathToFileURL(path.join(tempRoot, 'packages/dynamic/services/feedbackPublisher.ts')).href}?test=${Date.now()}`)
 })
 
 after(async () => {
@@ -66,6 +66,30 @@ test('publisher refuses missing actors and cross-yard associations without writi
   assert.equal(conflict.success, false)
   assert.equal(conflict.error.code, 'CROSS_YARD_ASSOCIATION')
   assert.equal(sink.values.has(api.FEEDBACK_EVIDENCE_STORAGE_KEY), false)
+})
+
+test('ordinary dynamic publishing stays separate from feedback evidence and retries idempotently', () => {
+  const sink = storage()
+  const options = {
+    content: '今天在小院陪猫咪晒太阳。',
+    mediaList: ['wxfile://dynamic-a.jpg'],
+    actorProvider: actor(),
+    storage: sink,
+    attemptKey: 'dynamic-attempt-a',
+  }
+  const published = api.publishLocalDynamic(options)
+  assert.equal(published.success, true, published.error && published.error.message)
+  assert.equal(published.wrote, true)
+  assert.equal(published.data.record.kind, 'dynamic')
+  assert.equal(published.data.record.body, options.content)
+  assert.deepEqual(published.data.record.media, options.mediaList)
+  assert.equal(sink.values.has(api.FEEDBACK_EVIDENCE_STORAGE_KEY), false)
+
+  const retry = api.publishLocalDynamic(options)
+  assert.equal(retry.success, true)
+  assert.equal(retry.idempotent, true)
+  assert.equal(retry.wrote, false)
+  assert.equal(JSON.parse(sink.values.get(api.DYNAMIC_STORAGE_KEY)).length, 1)
 })
 
 test('runtime publisher stores feedback body/media and canonical associations only after fresh owner reads', () => {

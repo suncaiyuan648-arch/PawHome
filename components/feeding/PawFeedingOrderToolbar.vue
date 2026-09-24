@@ -14,47 +14,51 @@
   </view>
 </template>
 
-<script>
+<script lang="ts">
+import { eventContract } from '@/utils/componentEvents.ts'
+
+import { defineComponent, type PropType } from 'vue'
+
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import PawPopoverMenu from '@/components/navigation/PawPopoverMenu.vue'
+import type { PawPopoverMenuSelection } from '@/components/navigation/PawPopoverMenu.vue'
 import PawSearchBar from '@/components/navigation/PawSearchBar.vue'
-const FEEDING_ORDER_SORT_OPTIONS = Object.freeze([
-  { key: 'smart', label: '智能排序' },
-  { key: 'newest', label: '最新投粮' },
-  { key: 'status', label: '按状态' }
-])
+import type { FeedingOrderSort } from '@/utils/feedingOrderContracts.ts'
+import {
+  createFeedingOrderToolbarState,
+  isFeedingOrderSort,
+  type FeedingOrderToolbarState
+} from '@/packages/feeding/services/orderListMetadata.ts'
 
-export default {
+export default defineComponent({
   name: 'PawFeedingOrderToolbar',
   components: { PawIcon, PawPopoverMenu, PawSearchBar },
   props: {
     keyword: { type: String, default: '' },
-    sort: { type: String, default: 'smart' }
+    sort: { type: String as PropType<FeedingOrderSort>, default: 'smart' }
   },
-  emits: ['update:keyword', 'update:sort', 'search', 'sort'],
-  data() {
-    return {
-      inputValue: this.keyword,
-      sortKey: this.sort,
-      sortOpen: false,
-      sortOptions: FEEDING_ORDER_SORT_OPTIONS
-    }
+  emits: {
+    'update:keyword': eventContract<[value: string]>(),
+    'update:sort': eventContract<[sort: FeedingOrderSort]>(),
+    'search': eventContract<[value: string]>(),
+    'sort': eventContract<[sort: FeedingOrderSort]>(),
   },
+  data(): FeedingOrderToolbarState { return createFeedingOrderToolbarState(this.keyword, this.sort) },
   computed: {
     activeSortLabel() {
-      const option = this.sortOptions.find(item => item.key === this.sortKey)
+      const option = this.sortOptions.find((item) => item.key === this.sortKey)
       return option ? option.label : '智能排序'
     }
   },
   watch: {
-    keyword(value) { if (value !== this.inputValue) this.inputValue = value },
-    sort(value) { if (value !== this.sortKey) this.sortKey = value }
+    keyword(value: string) { if (value !== this.inputValue) this.inputValue = value },
+    sort(value: FeedingOrderSort) { if (value !== this.sortKey) this.sortKey = value }
   },
   methods: {
     toggleSort() {
       this.sortOpen = !this.sortOpen
     },
-    submitSearch(value) {
+    submitSearch() {
       // The shared search bar can emit its button event in the same tick as
       // the native input update. The toolbar's local value is the latest
       // source of truth, so do not let an older child payload win the race.
@@ -63,13 +67,14 @@ export default {
       this.$emit('update:keyword', next)
       this.$emit('search', next)
     },
-    selectSort(key) {
+    selectSort(key: PawPopoverMenuSelection) {
+      if (!isFeedingOrderSort(key)) return
       this.sortKey = key
       this.$emit('update:sort', key)
       this.$emit('sort', key)
     }
   }
-}
+})
 </script>
 
 <style scoped>

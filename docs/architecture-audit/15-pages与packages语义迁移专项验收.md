@@ -4,7 +4,7 @@
 
 ## 2026-09-21 返修复验结论
 
-本轮已完成 M01–M03 的代码与记录收口：消息生产列表统一落在 `packages/message/pages/list/index.vue`，四个已删除旧详情/资料地址由 `navigation/legacyRoutes.js` 解析到 canonical contract，06 矩阵新增当前目标/静态/兼容/证据列并修正过期中间路径。`pages/meMore` 与 `pages/yard` 下无引用的迁移残留组件和领养流程资源已删除。
+本轮已完成 M01–M03 的代码与记录收口：消息生产列表统一落在 `packages/message/pages/list/index.vue`，四个已删除旧详情/资料地址由 `navigation/legacyRoutes.ts` 解析到 canonical contract，06 矩阵新增当前目标/静态/兼容/证据列并修正过期中间路径。`pages/meMore` 与 `pages/yard` 下无引用的迁移残留组件和领养流程资源已删除。
 
 - 当前注册页 **77/77** 与源文件一致；`pages/feature` 不再有生产页面或服务。
 - `messageId` 会从旧 `messageDetail` 入口保留到统一通知列表，并在列表中触发同一条持久消息解析链。
@@ -20,7 +20,7 @@
 - 当前注册与页面源78/78通过；路由清理/合同测试36/36通过；分包边界审计通过（production部分使用现有构建产物，本轮未重构建）。
 - 页数增加来自职责拆分，不是旧页面全部还在。组件 `.vue` 不是独立页面，不能将它们计入注册页数量。
 
-证据：`.artifacts/architecture-governance/route-semantic-review/inventory.json`（63行逐一存在性/注册核对）、tests.log、legacy-probes.mjs/json/log。
+证据：`.artifacts/architecture-governance/route-semantic-review/inventory.tson`（63行逐一存在性/注册核对）、tests.log、legacy-probes.mjs/json/log。
 
 ## 已完成的迁移范围
 
@@ -46,8 +46,8 @@
 当前实际：
 
 1. `packages/message/pages/detail/index.vue` 仍按type=service/interaction/activity渲染整组静态消息，onLoad只消费type，不消费messageId；它不是单条消息详情。
-2. `pages/feature/notificationList.vue` 才是读取持久消息、按category筛选和按messageId打开业务目标的生产列表。消息Tab及登录/短信续接仍跳该路径；`navigation/routeContracts.js:144` 仍将notification.list绑定旧feature目录。
-3. `navigation/legacyRoutes.js:374–379` 把旧messageDetail导向新message/detail，还允许带messageId。独立解析得到成功URL，但目标页忽略这个ID；新入口和旧入口没有收敛到同一通知流程。
+2. `pages/feature/notificationList.vue` 才是读取持久消息、按category筛选和按messageId打开业务目标的生产列表。消息Tab及登录/短信续接仍跳该路径；`navigation/routeContracts.ts:144` 仍将notification.list绑定旧feature目录。
+3. `navigation/legacyRoutes.ts:374–379` 把旧messageDetail导向新message/detail，还允许带messageId。独立解析得到成功URL，但目标页忽略这个ID；新入口和旧入口没有收敛到同一通知流程。
 
 **返修结果：**统一域名选择 `message`；分类列表使用 `list/category`，正常入口、登录续接和 legacy adapter 均指向同一有效列表/消息解析链；旧静态 `detail` 页面及 feature 生产页已删除，视觉节点只作为 QA 参考。
 

@@ -1,5 +1,6 @@
 <template><AccountMedalView variant="map" /></template>
-<script>
+<script lang="ts">import { defineComponent } from 'vue'
+
 import AccountMedalView from '../../../components/AccountMedalView.vue'
-export default { name: 'AccountMedalMapPage', components: { AccountMedalView } }
+export default defineComponent({ name: 'AccountMedalMapPage', components: { AccountMedalView } })
 </script>
