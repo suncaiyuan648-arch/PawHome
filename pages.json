@@ -600,6 +600,25 @@
           }
         }
       ]
+    },
+    {
+      "root": "packages/activity",
+      "pages": [
+        {
+          "path": "pages/offline/list/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F6F6"
+          }
+        },
+        {
+          "path": "pages/offline/detail/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F6F6"
+          }
+        }
+      ]
     }
   ],
   "tabBar": {

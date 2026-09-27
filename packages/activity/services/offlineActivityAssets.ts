@@ -1,0 +1,16 @@
+export const OFFLINE_ACTIVITY_ASSETS = {
+  listBanner: '/static/figma/offline-activity/list-banner.webp',
+  sortChevron: '/static/figma/offline-activity/sort-chevron.svg',
+  back: '/static/figma/offline-activity/back.svg',
+  time: '/static/figma/offline-activity/time.svg',
+  location: '/static/figma/offline-activity/location.svg',
+  navigation: '/static/figma/offline-activity/navigation.svg',
+  members: '/static/figma/offline-activity/members.svg',
+  organizerKind: '/static/figma/offline-activity/organizer-kind.svg',
+  commentUser: '/static/figma/offline-activity/comment-user.png',
+  commentMic: '/static/figma/offline-activity/comment-mic.svg',
+  commentEmoji: '/static/figma/offline-activity/comment-emoji.svg',
+  like: '/static/figma/offline-activity/like.svg',
+  recommendMark: '/static/figma/offline-activity/recommend-mark.svg',
+  share: '/static/figma/offline-activity/share.svg',
+} as const

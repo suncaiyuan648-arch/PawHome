@@ -155,6 +155,7 @@
           id="qa-home-promo-offline-activity"
           class="home-promo-card home-promo-card--activity"
           aria-label="线下活动"
+          @tap="openOfflineActivities"
         >
           <image
             class="home-promo-title-graphic"
@@ -325,6 +326,7 @@ import PawPopoverMenu from '@/components/navigation/PawPopoverMenu.vue'
 import PawSearchBar from '@/components/navigation/PawSearchBar.vue'
 import PawIcon from '@/components/PawIcon/PawIcon.vue'
 import type { PawIconName } from '@/components/PawIcon/PawIcon.types.ts'
+import { buildRoute } from '@/navigation/routeContracts.ts'
 import FeedCard from '@/components/dynamic/FeedCard.vue'
 import YardSummaryCard from '@/components/yard/YardSummaryCard.vue'
 import { readPawEventNumber } from '@/utils/pawEventMetadata.ts'
@@ -535,6 +537,9 @@ export default defineComponent({
   methods: {
     serviceShortcutIconSize(sourceSize: number): number {
       return Math.min(sourceSize, this.homeServiceIconMaxSize)
+    },
+    openOfflineActivities() {
+      uni.navigateTo({ url: buildRoute('activity.offline.list') })
     },
     openSearchPage() {
       uni.navigateTo({

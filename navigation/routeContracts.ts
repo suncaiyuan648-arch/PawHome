@@ -298,6 +298,13 @@ const ROUTE_REGISTRY: Readonly<Record<string, RouteDefinition>> = Object.freeze(
     requestId: F.id(),
   }),
 
+  'activity.offline.list': route('/packages/activity/pages/offline/list/index'),
+  'activity.offline.detail': route(
+    '/packages/activity/pages/offline/detail/index',
+    { activityId: F.id() },
+    { required: ['activityId'] },
+  ),
+
   'adoption.mine': route('/packages/adoption/pages/mine/index'),
   'adoption.apply': route(
     '/packages/adoption/pages/apply/index',

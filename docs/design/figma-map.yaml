@@ -73,6 +73,33 @@ pages:
         mapping_status: verified-metadata
         mapping_note: 上滑 neirong 内容与固定筛选结构，导航实例展开、卡片补云养数。
 
+  offline_activity:
+    name: "线下活动"
+    route: "/packages/activity/pages/offline/list/index"
+    source: "packages/activity/pages/offline/list/index.vue"
+    design_doc: "docs/pages-design/线下活动.md"
+    mapping_status: verified-metadata
+    states:
+      list:
+        name: "线下活动列表"
+        node_id: 83:23943
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/activity/pages/offline/list/index"
+        source: "packages/activity/pages/offline/list/index.vue"
+        query: {}
+        mapping_status: verified-metadata
+        mapping_note: "首页线下活动入口进入；进行中/已结束列表共享语义路由。"
+      detail:
+        name: "线下活动详情"
+        node_id: 83:24014
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/activity/pages/offline/detail/index"
+        source: "packages/activity/pages/offline/detail/index.vue"
+        query:
+          activityId: "zz-adoption-day-2026"
+        mapping_status: verified-metadata
+        mapping_note: "活动详情以必需 activityId 读取数据；列表卡片和报名按钮进入同一语义目标。"
+
   dynamic_detail:
     name: "动态详情"
     route: "/packages/dynamic/pages/detail/index"
@@ -1527,6 +1554,69 @@ home_entry_assets:
     export_format: "png@3x"
     source_frame: "44 × 44"
     local_source: "static/figma/home/offline-activity-thumb.png"
+offline_activity_assets:
+  list_banner:
+    node_id: "83:23945"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    export_format: "webp optimized from Figma PNG"
+    source_frame: "375 × 268"
+    local_source: "static/figma/offline-activity/list-banner.webp"
+  event_cover:
+    node_id: "83:23951"
+    detail_node_id: "83:24015"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    export_format: "webp optimized from Figma PNG"
+    source_frame: "112 × 149 list / 375 × 371 detail"
+    local_source: "static/figma/offline-activity/event-cover.webp"
+  list_sort_chevron:
+    node_id: "83:24011"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    export_format: "svg"
+    source_frame: "5.8 × 9.8"
+    local_source: "static/figma/offline-activity/sort-chevron.svg"
+  detail_back:
+    node_id: "83:24069"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    export_format: "svg"
+    source_frame: "42 × 42"
+    local_source: "static/figma/offline-activity/back.svg"
+  detail_metadata_icons:
+    time_node_id: "83:24023"
+    location_node_id: "83:24040"
+    location_action_node_id: "83:24021"
+    members_node_id: "83:24018"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    export_format: "svg"
+    source_frames: "12 × 12; 14 × 14; 18 × 18; 15 × 15"
+    local_sources:
+      - "static/figma/offline-activity/time.svg"
+      - "static/figma/offline-activity/location.svg"
+      - "static/figma/offline-activity/navigation.svg"
+      - "static/figma/offline-activity/members.svg"
+  detail_organizer:
+    avatar_node_id: "83:24059"
+    type_icon_node_id: "83:24060"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    local_sources:
+      - "static/figma/offline-activity/organizer-detail.png"
+      - "static/figma/offline-activity/organizer-kind.svg"
+  detail_comment_icons:
+    microphone_node_id: "83:24082"
+    emoji_node_id: "83:24078"
+    like_node_id: "83:24091"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    local_sources:
+      - "static/figma/offline-activity/comment-mic.svg"
+      - "static/figma/offline-activity/comment-emoji.svg"
+      - "static/figma/offline-activity/like.svg"
+  detail_share_and_recommend:
+    share_node_id: "83:24144"
+    recommendation_left_node_id: "83:24137"
+    recommendation_right_node_id: "83:24136"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    local_sources:
+      - "static/figma/offline-activity/share.svg"
+      - "static/figma/offline-activity/recommend-mark.svg"
 components:
   app_header_page_nav:
     semantic_name: "AppHeader/PageNav"
