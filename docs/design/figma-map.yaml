@@ -1392,6 +1392,141 @@ paw_icon_sources:
     export_format: "svg"
     source_frame: "43 × 43"
     local_source: "assets/paw-icons/source/brand/feed-bag.svg"
+  actions/home-litter-cleanup:
+    node_id: "83:3994"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "svg"
+    source_frame: "50 × 50"
+    local_source: "assets/paw-icons/source/actions/home-litter-cleanup.svg"
+  actions/home-dog-walking:
+    node_id: "83:3995"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "svg"
+    source_frame: "50 × 50"
+    local_source: "assets/paw-icons/source/actions/home-dog-walking.svg"
+  actions/home-temporary-foster:
+    node_id: "83:3996"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "svg"
+    source_frame: "50 × 50"
+    local_source: "assets/paw-icons/source/actions/home-temporary-foster.svg"
+  actions/home-grooming:
+    node_id: "83:3997"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "svg"
+    source_frame: "53 × 53"
+    local_source: "assets/paw-icons/source/actions/home-grooming.svg"
+  actions/home-pet-transport:
+    node_id: "83:3999"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "svg"
+    source_frame: "50 × 50"
+    local_source: "assets/paw-icons/source/actions/home-pet-transport.svg"
+  brand/home-rescue-pool-title:
+    node_id: "83:3982"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "svg"
+    source_frame: "58 × 22"
+    local_source: "assets/paw-icons/source/brand/home-rescue-pool-title.svg"
+  brand/home-adoption-gift-title:
+    node_id: "83:3986"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "svg"
+    source_frame: "63 × 15"
+    local_source: "assets/paw-icons/source/brand/home-adoption-gift-title.svg"
+  brand/home-offline-activity-title:
+    node_id: "83:3991"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "svg"
+    source_frame: "63 × 15"
+    local_source: "assets/paw-icons/source/brand/home-offline-activity-title.svg"
+paw_icon_runtime_rasters:
+  actions/home-litter-cleanup:
+    node_id: "83:3994"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "png@3x"
+    source_frame: "50 × 50"
+    local_source: "assets/paw-icons/runtime/home-litter-cleanup.png"
+  actions/home-dog-walking:
+    node_id: "83:3995"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "png@3x"
+    source_frame: "50 × 50"
+    local_source: "assets/paw-icons/runtime/home-dog-walking.png"
+  actions/home-temporary-foster:
+    node_id: "83:3996"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "png@3x"
+    source_frame: "50 × 50"
+    local_source: "assets/paw-icons/runtime/home-temporary-foster.png"
+  actions/home-grooming:
+    node_id: "83:3997"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "png@3x"
+    source_frame: "53 × 53"
+    local_source: "assets/paw-icons/runtime/home-grooming.png"
+  actions/home-pet-transport:
+    node_id: "83:3999"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "png@3x"
+    source_frame: "50 × 50"
+    local_source: "assets/paw-icons/runtime/home-pet-transport.png"
+home_entry_assets:
+  rescue_pool_title_glyph:
+    node_id: "83:3982"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "svg"
+    source_frame: "58 × 22"
+    local_source: "static/figma/home/rescue-pool-title.svg"
+  adoption_gift_title_glyph:
+    node_id: "83:3986"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "svg"
+    source_frame: "63 × 15"
+    local_source: "static/figma/home/adoption-gift-title.svg"
+  offline_activity_title_glyph:
+    node_id: "83:3991"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "svg"
+    source_frame: "63 × 15"
+    local_source: "static/figma/home/offline-activity-title.svg"
+  rescue_pool_thumbnail:
+    node_id: "83:3983"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "png@3x"
+    source_frame: "52 × 52"
+    local_source: "static/figma/home/rescue-pool-thumb.png"
+  adoption_gift_thumbnail:
+    node_id: "83:3987"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "png@3x"
+    source_frame: "44 × 44"
+    local_source: "static/figma/home/adoption-gift-thumb.png"
+  offline_activity_thumbnail:
+    node_id: "83:3992"
+    file_key: "ikwcujfbxtNcjk9tjGjKx8"
+    figma_page: "Page 1"
+    export_format: "png@3x"
+    source_frame: "44 × 44"
+    local_source: "static/figma/home/offline-activity-thumb.png"
 components:
   app_header_page_nav:
     semantic_name: "AppHeader/PageNav"
@@ -1630,7 +1765,7 @@ new_design_references:
     file_key: ikwcujfbxtNcjk9tjGjKx8
     name: 首页-服务与救助入口版本
     status: design-reference-only
-    note: 与83:3464并存；新增服务/救助池/领养有礼入口，C6先核对入口合同，不自动覆盖当前首页。
+    note: 与83:3464并存；已按入口合同实施五个等宽顶部服务图标和救助池/领养有礼/线下活动卡片，只替换标题为 Figma PawIcon glyph，不覆盖当前首页其他内容。
   search_empty:
     node_id: 83:4109
     file_key: ikwcujfbxtNcjk9tjGjKx8

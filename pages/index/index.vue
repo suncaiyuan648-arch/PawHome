@@ -83,6 +83,93 @@
           />
         </view>
       </view>
+      <view
+        id="qa-home-service-shortcuts"
+        class="home-service-shortcuts"
+      >
+        <view
+          v-for="shortcut in homeServiceShortcuts"
+          :id="'qa-home-service-' + shortcut.key"
+          :key="shortcut.key"
+          class="home-service-shortcut"
+          :aria-label="shortcut.label"
+        >
+          <view class="home-service-shortcut-icon-stage">
+            <PawIcon
+              :name="shortcut.icon"
+              :size="serviceShortcutIconSize(shortcut.sourceSize)"
+              class="home-service-shortcut-icon"
+            />
+          </view>
+          <text
+            :id="'qa-home-service-label-' + shortcut.key"
+            class="home-service-shortcut-label"
+          >{{ shortcut.label }}</text>
+        </view>
+      </view>
+      <view
+        id="qa-home-promo-entries"
+        class="home-promo-grid"
+      >
+        <view
+          id="qa-home-promo-rescue"
+          class="home-promo-card home-promo-card--rescue"
+          aria-label="救助池"
+        >
+          <image
+            class="home-rescue-title-graphic"
+            src="/static/figma/home/rescue-pool-title.svg"
+            mode="aspectFit"
+            aria-label="救助池"
+          />
+          <view class="home-rescue-preview">
+            <text class="home-rescue-vote">投出你今天的宝贵一票</text>
+            <image
+              class="home-rescue-thumb"
+              src="/static/figma/home/rescue-pool-thumb.png"
+              mode="aspectFill"
+            />
+            <text class="home-rescue-desc">小猫腿上受伤了无法走路...</text>
+            <text class="home-rescue-followers">121人关注</text>
+          </view>
+        </view>
+        <view
+          id="qa-home-promo-adoption-gift"
+          class="home-promo-card home-promo-card--adoption"
+          aria-label="领养有礼"
+        >
+          <image
+            class="home-promo-title-graphic"
+            src="/static/figma/home/adoption-gift-title.svg"
+            mode="aspectFit"
+            aria-label="领养有礼"
+          />
+          <text class="home-promo-caption">鼓励真实领养</text>
+          <image
+            class="home-promo-thumb"
+            src="/static/figma/home/adoption-gift-thumb.png"
+            mode="aspectFill"
+          />
+        </view>
+        <view
+          id="qa-home-promo-offline-activity"
+          class="home-promo-card home-promo-card--activity"
+          aria-label="线下活动"
+        >
+          <image
+            class="home-promo-title-graphic"
+            src="/static/figma/home/offline-activity-title.svg"
+            mode="aspectFit"
+            aria-label="线下活动"
+          />
+          <text class="home-promo-caption home-promo-caption--activity">真实线下领养</text>
+          <image
+            class="home-promo-thumb"
+            src="/static/figma/home/offline-activity-thumb.png"
+            mode="aspectFill"
+          />
+        </view>
+      </view>
     </view>
     <view
       class="tab"
@@ -127,6 +214,9 @@
       :refresher-triggered="refresherTriggered"
       scroll-with-animation
       :scroll-into-view="scrollIntoViewId"
+      :upper-threshold="4"
+      :lower-threshold="80"
+      :show-scrollbar="false"
       @scroll="handleFeedScroll"
       @scrolltoupper="onFeedScrollToUpper"
       @touchstart.capture="onFeedTouchStart"
@@ -136,9 +226,6 @@
       @refresherpulling="onRefresherPulling"
       @refresherrefresh="onPullRefresh"
       @scrolltolower="onReachBottom"
-      :upper-threshold="4"
-      :lower-threshold="80"
-      :show-scrollbar="false"
     >
       <view class="feed-scroll-inner">
         <view id="feed-top-anchor"></view>
@@ -180,9 +267,9 @@
           :class="{ 'tab-switching': isTabSwitching }"
         >
           <view
-            class="paw-column"
             v-for="(column, columnIndex) in feedColumns"
             :key="'feed-column-' + columnIndex"
+            class="paw-column"
           >
             <FeedCard
               v-for="entry in column"
@@ -236,6 +323,8 @@ import CustomTabber from '@/components/CustomTabber/index.vue'
 import PawAnnouncementMarquee from '@/components/PawAnnouncementMarquee.vue'
 import PawPopoverMenu from '@/components/navigation/PawPopoverMenu.vue'
 import PawSearchBar from '@/components/navigation/PawSearchBar.vue'
+import PawIcon from '@/components/PawIcon/PawIcon.vue'
+import type { PawIconName } from '@/components/PawIcon/PawIcon.types.ts'
 import FeedCard from '@/components/dynamic/FeedCard.vue'
 import YardSummaryCard from '@/components/yard/YardSummaryCard.vue'
 import { readPawEventNumber } from '@/utils/pawEventMetadata.ts'
@@ -256,12 +345,48 @@ import {
 
 const FEED_PAGE_SIZE = 10
 const FEED_MOCK_TOTAL = 50
+const HOME_SERVICE_SHORTCUTS: HomeServiceShortcut[] = [
+  { key: 'litter-cleanup', label: '上门铲屎', icon: 'actions/home-litter-cleanup', sourceSize: 50 },
+  { key: 'dog-walking', label: '上门遛狗', icon: 'actions/home-dog-walking', sourceSize: 50 },
+  {
+    key: 'temporary-foster',
+    label: '临时寄养',
+    icon: 'actions/home-temporary-foster',
+    sourceSize: 50,
+  },
+  { key: 'grooming', label: '上门洗护', icon: 'actions/home-grooming', sourceSize: 53 },
+  { key: 'pet-transport', label: '宠物托运', icon: 'actions/home-pet-transport', sourceSize: 50 },
+]
+
+interface HomeServiceShortcut {
+  key: string
+  label: string
+  icon: PawIconName
+  sourceSize: number
+}
+
+function resolveHomeServiceIconMaxSize(windowWidth: unknown): number {
+  const width = Number(windowWidth)
+  const safeWidth = Number.isFinite(width) && width > 0 ? width : 375
+  const entryWidth = (safeWidth - 26) / 5
+  return Math.min(53, Math.max(16, Math.floor(entryWidth - 2)))
+}
+
+function readHomeServiceIconMaxSize(): number {
+  try {
+    return resolveHomeServiceIconMaxSize(uni.getSystemInfoSync().windowWidth)
+  } catch {
+    return resolveHomeServiceIconMaxSize(375)
+  }
+}
 
 interface HomePageData {
   pageState: string
   zan1: string
   zan2: string
   selectedCity: string
+  homeServiceShortcuts: HomeServiceShortcut[]
+  homeServiceIconMaxSize: number
   announcementItems: HomeAnnouncementMockMetadata[]
   announcementPollUrl: string
   announcementWsUrl: string
@@ -306,6 +431,7 @@ export default defineComponent({
     PawAnnouncementMarquee,
     PawPopoverMenu,
     PawSearchBar,
+    PawIcon,
     FeedCard,
     YardSummaryCard,
   },
@@ -315,6 +441,7 @@ export default defineComponent({
     this.searchOverlayExpanded = false
     const city = uni.getStorageSync('selectedCity')
     if (typeof city === 'string' && city) this.selectedCity = city
+    this.homeServiceIconMaxSize = readHomeServiceIconMaxSize()
     // #ifdef MP-WEIXIN
     this.$nextTick(() => {
       const cur = getCurrentPages().slice(-1)[0]
@@ -333,6 +460,8 @@ export default defineComponent({
       zan1: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAeCAYAAAA/xX6fAAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAF+SURBVEiJvZdbtoMgDEVPWJ3XpUOqDqA6gMiQpBMz/bjElVK10JaeL1FwmwcJEioVQvAicgXgAUBERudcvFwusWQ91cCYeSCi6+aLiM4lUFcDNLBIRGcRGQFEAEhWv9SpFMbMg153XXdWcHKxR3LxKxVbSER/wH/M7P3S2FUDkSxwzj0AQgj+60DrztyiZVkU+HD/I6AmS+5OKxG5fQVorev7fsifa2xLdQgMIfgC6zzwHNtqIDMPIjKnYdyyziZMabaedOGyLN64x5s50ey7B6U1AIBpmuatORpb/eBT2rizLswmj1uWqbL4+Z05HgCYGX3fD2TqY0wTRqDcRTapDj5szQOapkl0cGTNJ7JGrUlTmmXvyLzbV3WLd2Wr0U+ApvDffgKEKQ7NgXnhbw7MS2NToC19uuWaArd6ZVOgcefaK5sB9/poM+BeH3UoPIvU6OiUsJ5LRWRm5vGTmmp/AdL46ZRAAKAd45va6z4OALquo6MTWYUi0m/AXqu7A58a2QJRlyArAAAAAElFTkSuQmCC',
       zan2: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAcCAYAAAB/E6/TAAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAE4SURBVEiJvZYxVoNAFEXvo05va+EyACcLcQG6iZBduAnX4IRhAR4b25xjZW/NtwiJRCFMQuBVw5n5//Lf8IcRZ8jS1CGtAAeAtFZZFjGxiobkeYHZqmPKK4TlUHwSC+qESG+AszR1VwFZnhc98EUD7Kr0fNAJ3cUujAN1782vpM1oUK9tO22H4qNBmN2fmL0FoK79KFBTjRtKoqq6HHSib/5qEAKthrU0dSSJa6xyEbFbdtb53o+hrv2+WgFYlr1GJm+9or4wu4lYt1ZZFjpYFBt4iaS1LMtskuTH8mNPhli5uUCTV/QOgLSZZY8UguawzsP438Swmmae3DqFIJi+os/9YGrQ4QycFKQQHuYAPbcfEuDjSom/W2OvEB6PQWZPVwItWpB/F8pEVeUxWwIvI0Ees2XfrfUHCTFt74bNhAQAAAAASUVORK5CYII=',
       selectedCity: '广州市',
+      homeServiceShortcuts: HOME_SERVICE_SHORTCUTS,
+      homeServiceIconMaxSize: readHomeServiceIconMaxSize(),
       announcementItems: createHomeAnnouncementMocks(),
       // 接入后端时填写轮询接口或 WebSocket 地址；为空时只播放本地初始公告。
       announcementPollUrl: '',
@@ -404,6 +533,9 @@ export default defineComponent({
     if (this.loadMoreRequestTimer) clearTimeout(this.loadMoreRequestTimer)
   },
   methods: {
+    serviceShortcutIconSize(sourceSize: number): number {
+      return Math.min(sourceSize, this.homeServiceIconMaxSize)
+    },
     openSearchPage() {
       uni.navigateTo({
         url: '/packages/discovery/pages/search/index',
@@ -753,7 +885,7 @@ export default defineComponent({
   .container2 {
     flex-shrink: 0;
     width: 100%;
-    height: 70px;
+    height: 269px;
     position: relative;
     overflow: hidden;
     isolation: isolate;
@@ -870,6 +1002,214 @@ export default defineComponent({
     transform: translateY(0);
     transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
     will-change: transform;
+  }
+
+  .home-service-shortcuts {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    height: 69px;
+    margin: 0;
+    padding: 0 13px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .home-service-shortcut {
+    display: flex;
+    flex: 0 1 50px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    width: 50px;
+    max-width: 20%;
+    height: 69px;
+    overflow: visible;
+  }
+
+  .home-service-shortcut-icon-stage {
+    display: flex;
+    flex-shrink: 0;
+    align-items: flex-end;
+    justify-content: center;
+    width: 100%;
+    height: 53px;
+  }
+
+  .home-service-shortcut-icon {
+    flex-shrink: 0;
+  }
+
+  .home-service-shortcut-label {
+    display: block;
+    flex-shrink: 0;
+    width: 100%;
+    margin-top: 0;
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    color: #333;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .home-promo-grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.79fr) repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    height: 111px;
+    min-width: 0;
+    margin: 19px 7px 0;
+    box-sizing: border-box;
+  }
+
+  .home-promo-card {
+    position: relative;
+    height: 111px;
+    min-width: 0;
+    border-radius: 10px;
+    box-sizing: border-box;
+  }
+
+  .home-promo-card--rescue {
+    background: linear-gradient(90deg, #ff2651 0%, #fe6583 100%);
+  }
+
+  .home-promo-card--adoption {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 0 8px;
+    background: linear-gradient(90deg, #f9f95b 0%, #f9f9c9 100%);
+  }
+
+  .home-promo-card--activity {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 0 8px;
+    background: linear-gradient(90deg, #40b9f8 0%, #aedaf1 100%);
+  }
+
+  .home-rescue-title-graphic {
+    position: absolute;
+    z-index: 2;
+    top: -9px;
+    left: 11px;
+    display: block;
+    width: 58px;
+    height: 22px;
+    pointer-events: none;
+  }
+
+  .home-promo-title-graphic {
+    display: block;
+    flex: 0 0 15px;
+    width: 63px;
+    height: 15px;
+  }
+
+  .home-rescue-preview {
+    position: absolute;
+    top: 19px;
+    right: 7px;
+    left: 7px;
+    height: 85px;
+    border-radius: 10px;
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .home-rescue-vote,
+  .home-rescue-desc,
+  .home-rescue-followers,
+  .home-promo-caption {
+    display: block;
+    box-sizing: border-box;
+  }
+
+  .home-rescue-vote {
+    position: absolute;
+    top: 2px;
+    left: 7px;
+    width: 120px;
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 17px;
+    color: #333;
+    white-space: nowrap;
+  }
+
+  .home-rescue-thumb {
+    position: absolute;
+    top: 28px;
+    left: 5px;
+    width: 52px;
+    height: 52px;
+    border-radius: 5px;
+  }
+
+  .home-rescue-desc {
+    position: absolute;
+    top: 26px;
+    left: 62px;
+    width: 78px;
+    max-width: calc(100% - 66px);
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 17px;
+    color: #333;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .home-rescue-followers {
+    position: absolute;
+    bottom: 6px;
+    left: 61px;
+    width: 52px;
+    overflow: hidden;
+    font-size: 11px;
+    line-height: 16px;
+    color: #999;
+    white-space: nowrap;
+  }
+
+  .home-promo-caption {
+    position: static;
+    flex: 0 0 17px;
+    width: 72px;
+    overflow: hidden;
+    font-family: 'Source Han Sans CN', 'PingFang SC', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 17px;
+    color: #999;
+    text-align: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .home-promo-caption--activity {
+    color: #fff;
+  }
+
+  .home-promo-thumb {
+    position: static;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    margin: 0;
+    border-radius: 5px;
   }
 
   .container2.hidden .search {

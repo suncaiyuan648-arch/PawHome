@@ -513,6 +513,67 @@ module.exports = {
       figmaNodeId: '62:38895',
       sourceLabel: 'Figma node 62:38895',
     },
+    'actions/home-litter-cleanup': {
+      sourceFrame: { width: 50, height: 50 },
+      slot: 50,
+      preserveRects: true,
+      runtimeRasterSource: 'assets/paw-icons/runtime/home-litter-cleanup.png',
+      figmaNodeId: '83:3994',
+      sourceLabel: 'Figma node 83:3994',
+    },
+    'actions/home-dog-walking': {
+      sourceFrame: { width: 50, height: 50 },
+      slot: 50,
+      preserveRects: true,
+      runtimeRasterSource: 'assets/paw-icons/runtime/home-dog-walking.png',
+      figmaNodeId: '83:3995',
+      sourceLabel: 'Figma node 83:3995',
+    },
+    'actions/home-temporary-foster': {
+      sourceFrame: { width: 50, height: 50 },
+      slot: 50,
+      preserveRects: true,
+      runtimeRasterSource: 'assets/paw-icons/runtime/home-temporary-foster.png',
+      figmaNodeId: '83:3996',
+      sourceLabel: 'Figma node 83:3996',
+    },
+    'actions/home-grooming': {
+      sourceFrame: { width: 53, height: 53 },
+      slot: 53,
+      preserveRects: true,
+      runtimeRasterSource: 'assets/paw-icons/runtime/home-grooming.png',
+      figmaNodeId: '83:3997',
+      sourceLabel: 'Figma node 83:3997',
+    },
+    'actions/home-pet-transport': {
+      sourceFrame: { width: 50, height: 50 },
+      slot: 50,
+      preserveRects: true,
+      runtimeRasterSource: 'assets/paw-icons/runtime/home-pet-transport.png',
+      figmaNodeId: '83:3999',
+      sourceLabel: 'Figma node 83:3999',
+    },
+    'brand/home-rescue-pool-title': {
+      sourceFrame: { width: 58, height: 22 },
+      slot: 58,
+      preserveRects: true,
+      figmaNodeId: '83:3982',
+      sourceLabel: 'Figma node 83:3982',
+    },
+    'brand/home-adoption-gift-title': {
+      sourceFrame: { width: 63, height: 15 },
+      slot: 63,
+      preserveRects: true,
+      figmaNodeId: '83:3986',
+      sourceLabel: 'Figma node 83:3986',
+    },
+    'brand/home-offline-activity-title': {
+      sourceFrame: { width: 63, height: 15 },
+      slot: 63,
+      preserveRects: true,
+      figmaNodeId: '83:3991',
+      sourceLabel: 'Figma node 83:3991',
+    },
   },
   // Optional design-approved optical metadata. scale is a ratio; offsets are
   // 24-unit design coordinates and are baked into the generated SVG. Never
@@ -603,5 +664,19 @@ module.exports = {
     'brand/feed-kibble': 'assets/paw-icons/source/brand/feed-kibble.svg',
     'brand/feed-bowl': 'assets/paw-icons/source/brand/feed-bowl.svg',
     'brand/feed-bag': 'assets/paw-icons/source/brand/feed-bag.svg',
+    'actions/home-litter-cleanup':
+      'assets/paw-icons/source/actions/home-litter-cleanup.svg',
+    'actions/home-dog-walking': 'assets/paw-icons/source/actions/home-dog-walking.svg',
+    'actions/home-temporary-foster':
+      'assets/paw-icons/source/actions/home-temporary-foster.svg',
+    'actions/home-grooming': 'assets/paw-icons/source/actions/home-grooming.svg',
+    'actions/home-pet-transport':
+      'assets/paw-icons/source/actions/home-pet-transport.svg',
+    'brand/home-rescue-pool-title':
+      'assets/paw-icons/source/brand/home-rescue-pool-title.svg',
+    'brand/home-adoption-gift-title':
+      'assets/paw-icons/source/brand/home-adoption-gift-title.svg',
+    'brand/home-offline-activity-title':
+      'assets/paw-icons/source/brand/home-offline-activity-title.svg',
   },
 }

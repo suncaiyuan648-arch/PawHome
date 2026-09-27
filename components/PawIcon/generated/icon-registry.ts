@@ -1296,5 +1296,141 @@ export const PAW_ICON_REGISTRY = Object.freeze({
     "figmaNodeId": "62:38895",
     "sourceLabel": "Figma node 62:38895",
     "src": "/static/paw-icons/color/brand/feed-bag.svg"
+  },
+  "actions/home-litter-cleanup": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "sourceFrame": {
+      "width": 50,
+      "height": 50
+    },
+    "sourceBounds": null,
+    "recommendedSlot": null,
+    "slot": 50,
+    "family": null,
+    "preserveRects": true,
+    "figmaNodeId": "83:3994",
+    "sourceLabel": "Figma node 83:3994",
+    "src": "/static/paw-icons/color/actions/home-litter-cleanup.svg"
+  },
+  "actions/home-dog-walking": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "sourceFrame": {
+      "width": 50,
+      "height": 50
+    },
+    "sourceBounds": null,
+    "recommendedSlot": null,
+    "slot": 50,
+    "family": null,
+    "preserveRects": true,
+    "figmaNodeId": "83:3995",
+    "sourceLabel": "Figma node 83:3995",
+    "src": "/static/paw-icons/color/actions/home-dog-walking.svg"
+  },
+  "actions/home-temporary-foster": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "sourceFrame": {
+      "width": 50,
+      "height": 50
+    },
+    "sourceBounds": null,
+    "recommendedSlot": null,
+    "slot": 50,
+    "family": null,
+    "preserveRects": true,
+    "figmaNodeId": "83:3996",
+    "sourceLabel": "Figma node 83:3996",
+    "src": "/static/paw-icons/color/actions/home-temporary-foster.svg"
+  },
+  "actions/home-grooming": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "sourceFrame": {
+      "width": 53,
+      "height": 53
+    },
+    "sourceBounds": null,
+    "recommendedSlot": null,
+    "slot": 53,
+    "family": null,
+    "preserveRects": true,
+    "figmaNodeId": "83:3997",
+    "sourceLabel": "Figma node 83:3997",
+    "src": "/static/paw-icons/color/actions/home-grooming.svg"
+  },
+  "actions/home-pet-transport": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "sourceFrame": {
+      "width": 50,
+      "height": 50
+    },
+    "sourceBounds": null,
+    "recommendedSlot": null,
+    "slot": 50,
+    "family": null,
+    "preserveRects": true,
+    "figmaNodeId": "83:3999",
+    "sourceLabel": "Figma node 83:3999",
+    "src": "/static/paw-icons/color/actions/home-pet-transport.svg"
+  },
+  "brand/home-rescue-pool-title": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "sourceFrame": {
+      "width": 58,
+      "height": 22
+    },
+    "sourceBounds": null,
+    "recommendedSlot": null,
+    "slot": 58,
+    "family": null,
+    "preserveRects": true,
+    "figmaNodeId": "83:3982",
+    "sourceLabel": "Figma node 83:3982",
+    "src": "/static/paw-icons/color/brand/home-rescue-pool-title.svg"
+  },
+  "brand/home-adoption-gift-title": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "sourceFrame": {
+      "width": 63,
+      "height": 15
+    },
+    "sourceBounds": null,
+    "recommendedSlot": null,
+    "slot": 63,
+    "family": null,
+    "preserveRects": true,
+    "figmaNodeId": "83:3986",
+    "sourceLabel": "Figma node 83:3986",
+    "src": "/static/paw-icons/color/brand/home-adoption-gift-title.svg"
+  },
+  "brand/home-offline-activity-title": {
+    "kind": "color",
+    "width": 24,
+    "height": 24,
+    "sourceFrame": {
+      "width": 63,
+      "height": 15
+    },
+    "sourceBounds": null,
+    "recommendedSlot": null,
+    "slot": 63,
+    "family": null,
+    "preserveRects": true,
+    "figmaNodeId": "83:3991",
+    "sourceLabel": "Figma node 83:3991",
+    "src": "/static/paw-icons/color/brand/home-offline-activity-title.svg"
   }
 })

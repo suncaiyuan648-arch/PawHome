@@ -45,6 +45,25 @@ function readSource(absolutePath, relativePath) {
   return source
 }
 
+function applyRuntimeRasterSource(source, name) {
+  const configured = (manifest.meta && manifest.meta[name]) || {}
+  if (!configured.runtimeRasterSource) return source
+  const runtimeRasterPath = path.resolve(ROOT, configured.runtimeRasterSource)
+  if (!fs.existsSync(runtimeRasterPath)) {
+    fail(`runtime raster source not found: ${configured.runtimeRasterSource}`)
+  }
+  const rasterBytes = fs.readFileSync(runtimeRasterPath)
+  const dataUri = `data:image/png;base64,${rasterBytes.toString('base64')}`
+  const optimized = source.replace(
+    /((?:xlink:)?href=["'])data:image\/png;base64,[^"']+(["'])/i,
+    (_, prefix, suffix) => `${prefix}${dataUri}${suffix}`,
+  )
+  if (optimized === source) {
+    fail(`runtime raster replacement requires an embedded PNG image: ${name}`)
+  }
+  return optimized
+}
+
 function readOpticalMetadata(name, relativePath) {
   const configured = (manifest.optical && manifest.optical[name]) || {}
   const scale = configured.scale === undefined ? 1 : Number(configured.scale)
@@ -119,10 +138,11 @@ async function build() {
     const sourcePath = sourceRelativePath(name, configuredPath)
     const source = readSource(sourceAbsolutePath(name, configuredPath), sourcePath)
     const sourceViewBox = readViewBox(source, sourcePath)
+    const runtimeSource = applyRuntimeRasterSource(source, name)
     const metadata = readV3Metadata(name, sourceViewBox, sourcePath)
     const optical = readOpticalMetadata(name, sourcePath)
     const normalized = await normalizeAndFitSvg(
-      source,
+      runtimeSource,
       sourceViewBox,
       optical,
       metadata.slot,

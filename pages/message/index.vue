@@ -169,8 +169,9 @@ export default defineComponent({
       if (mb && mb.left) {
         this.menuRightWidth = Math.max(sys.windowWidth - mb.left, 87)
       }
-    } catch {}
-    // #endif
+    } catch {
+      // #endif
+    }
   },
   methods: {
     getUnreadCount(type: MessageCategory) {
