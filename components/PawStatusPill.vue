@@ -55,6 +55,14 @@ export default defineComponent({
   border: 1px solid #ff8b91;
 }
 
+.paw-status--gift {
+  min-height: 32px;
+  padding: 0 15px;
+  background: rgba(255, 61, 61, 0.2);
+  color: #fff;
+  font-size: 13px;
+}
+
 .paw-status--neutral {
   background: #ededed;
   color: #777777;

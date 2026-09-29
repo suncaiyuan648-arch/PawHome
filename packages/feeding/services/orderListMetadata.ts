@@ -16,6 +16,8 @@ export interface FeedingOrderListPageState {
   items: FeedingOrderListItem[]
   keyword: string
   sort: FeedingOrderSort
+  selectedDate: string
+  calendarVisible: boolean
   loading: boolean
 }
 
@@ -70,7 +72,14 @@ export function isFeedingOrderSort(value: unknown): value is FeedingOrderSort {
 }
 
 export function createFeedingOrderListPageState(): FeedingOrderListPageState {
-  return { items: [], keyword: '', sort: 'smart', loading: false }
+  return {
+    items: [],
+    keyword: '',
+    sort: 'smart',
+    selectedDate: '',
+    calendarVisible: false,
+    loading: false,
+  }
 }
 
 export function createFeedingOrderToolbarState(

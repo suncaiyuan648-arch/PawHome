@@ -36,6 +36,7 @@ export interface MeOrderEntryMetadata {
   label: string
   iconName: string
   badge: number
+  tab: 'all' | 'unpaid' | 'unshipped' | 'unreceived' | 'unreviewed'
 }
 
 export interface MeReviewCardMetadata {
@@ -63,11 +64,11 @@ export interface MePageState {
 }
 
 const ORDER_ENTRIES: readonly MeOrderEntryMetadata[] = Object.freeze([
-  { label: '全部', iconName: 'actions/order-all', badge: 0 },
-  { label: '待付款', iconName: 'actions/order-pay', badge: 7 },
-  { label: '待发货', iconName: 'actions/order-ship', badge: 7 },
-  { label: '待收货', iconName: 'actions/order-receive', badge: 7 },
-  { label: '待评价', iconName: 'actions/order-review', badge: 7 },
+  { label: '全部', iconName: 'actions/order-all', badge: 0, tab: 'all' },
+  { label: '待付款', iconName: 'actions/order-pay', badge: 7, tab: 'unpaid' },
+  { label: '待发货', iconName: 'actions/order-ship', badge: 7, tab: 'unshipped' },
+  { label: '待收货', iconName: 'actions/order-receive', badge: 7, tab: 'unreceived' },
+  { label: '待评价', iconName: 'actions/order-review', badge: 7, tab: 'unreviewed' },
 ])
 
 const REVIEW_CARDS: readonly MeReviewCardMetadata[] = Object.freeze([

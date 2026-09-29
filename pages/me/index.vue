@@ -115,10 +115,11 @@
 
         <view class="orders-card card card--elevated">
           <view class="card-header">
-            <text class="card-title">我的订单</text>
+            <text class="card-title" data-qa="qa-me-my-orders" @click="goShoppingOrders('all')">我的订单</text>
             <view
               class="card-link"
-              @click="toast('全部订单')"
+              data-qa="qa-me-orders-all-link"
+              @click="goShoppingOrders('all')"
             >
               <text>全部</text>
               <PawIcon
@@ -133,7 +134,8 @@
               v-for="(item, i) in orderEntries"
               :key="i"
               class="order-item"
-              @click="toast(item.label)"
+              :data-qa="`qa-me-order-${item.tab}`"
+              @click="goShoppingOrders(item.tab)"
             >
               <view class="order-icon-wrap">
                 <PawBadge :count="item.badge">
@@ -432,6 +434,9 @@ export default defineComponent({
     // #endif
   },
   methods: {
+    goShoppingOrders(tab: 'all' | 'unpaid' | 'unshipped' | 'unreceived' | 'unreviewed') {
+      uni.navigateTo({ url: buildRoute('feeding.myOrders', { tab }) })
+    },
     ensureLogin() {
       if (this.pageState === 'drawer' || this.pageState === 'profile-upload') return true
       const loggedIn = !!uni.getStorageSync('PAWHOME_ACTOR_SESSION')

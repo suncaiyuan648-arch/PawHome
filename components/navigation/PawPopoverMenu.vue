@@ -1,5 +1,5 @@
 <template>
-  <view class="paw-popover-menu">
+  <view class="paw-popover-menu" :class="{ 'paw-popover-menu--order-actions': variant === 'order-actions', 'paw-popover-menu--start': placement === 'start' }">
     <view
       class="paw-popover-menu__trigger"
       @tap.stop="toggle"
@@ -40,6 +40,8 @@ import { defineComponent, type PropType } from 'vue'
 
 export type PawPopoverMenuInput = string | { key?: string | number; label?: string }
 export type PawPopoverMenuSelection = string | number
+export type PawPopoverMenuVariant = 'default' | 'order-actions'
+export type PawPopoverMenuPlacement = 'start' | 'end'
 
 interface NormalizedPopoverMenuItem {
   key: string | number
@@ -51,6 +53,8 @@ export default defineComponent({
   name: 'PawPopoverMenu',
   props: {
     modelValue: { type: Boolean, default: false },
+    variant: { type: String as PropType<PawPopoverMenuVariant>, default: 'default' },
+    placement: { type: String as PropType<PawPopoverMenuPlacement>, default: 'end' },
     items: { type: Array as PropType<PawPopoverMenuInput[]>, default: () => [] },
     activeKey: { type: [String, Number], default: '' },
   },
@@ -115,6 +119,10 @@ export default defineComponent({
   background: rgba(255, 255, 255, 0.98);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
 }
+.paw-popover-menu--start .paw-popover-menu__panel {
+  right: auto;
+  left: 0;
+}
 .paw-popover-menu__item {
   position: relative;
   display: flex;
@@ -136,5 +144,22 @@ export default defineComponent({
   color: #222;
   font-size: 16px;
   font-weight: 700;
+}
+.paw-popover-menu--order-actions .paw-popover-menu__panel {
+  top: 33px;
+  right: auto;
+  left: -19px;
+  width: 73px;
+  padding: 0;
+  border-radius: 3px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+.paw-popover-menu--order-actions .paw-popover-menu__item {
+  justify-content: center;
+  height: 42px;
+  padding: 0;
+  color: #666;
+  font-size: 12px;
 }
 </style>

@@ -1,5 +1,8 @@
 <template>
-  <view class="feeding-order-toolbar">
+  <view
+    class="feeding-order-toolbar"
+    :class="{ 'feeding-order-toolbar--yard': variant === 'yard' }"
+  >
     <view class="feeding-order-toolbar__search">
       <PawSearchBar
         v-model="inputValue"
@@ -7,25 +10,46 @@
         @search="submitSearch"
       />
     </view>
-    <PawPopoverMenu
-      v-model="sortOpen"
-      :items="sortOptions"
-      :active-key="sortKey"
-      @select="selectSort"
-    >
-      <template #trigger>
-        <view
-          class="feeding-order-toolbar__sort"
-          @tap.stop="toggleSort"
+    <view class="feeding-order-toolbar__filters">
+      <PawPopoverMenu
+        v-model="sortOpen"
+        :items="displaySortOptions"
+        :active-key="sortKey"
+        :placement="variant === 'yard' ? 'start' : 'end'"
+        @select="selectSort"
+      >
+        <template #trigger>
+          <view
+            class="feeding-order-toolbar__sort"
+            data-qa="qa-yard-orders-smart-filter"
+            @tap.stop="toggleSort"
+          >
+            <text>{{ activeSortLabel }}</text>
+            <PawIcon
+              name="navigation/sort-arrow"
+              :size="8"
+            />
+          </view>
+        </template>
+      </PawPopoverMenu>
+      <view
+        v-if="variant === 'yard'"
+        class="feeding-order-toolbar__calendar"
+        data-qa="qa-yard-orders-calendar"
+        @tap.stop="openCalendar"
+      >
+        <image
+          class="feeding-order-toolbar__calendar-icon"
+          :src="calendarIconSrc"
+          mode="aspectFit"
+        />
+        <text
+          v-if="date"
+          class="feeding-order-toolbar__date"
+          >{{ date }}</text
         >
-          <text>{{ activeSortLabel }}</text>
-          <PawIcon
-            name="navigation/sort-arrow"
-            :size="8"
-          />
-        </view>
-      </template>
-    </PawPopoverMenu>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -49,21 +73,33 @@ export default defineComponent({
   name: 'PawFeedingOrderToolbar',
   components: { PawIcon, PawPopoverMenu, PawSearchBar },
   props: {
+    variant: { type: String as PropType<'mine' | 'yard'>, default: 'mine' },
     keyword: { type: String, default: '' },
     sort: { type: String as PropType<FeedingOrderSort>, default: 'smart' },
+    date: { type: String, default: '' },
   },
   emits: {
     'update:keyword': eventContract<[value: string]>(),
     'update:sort': eventContract<[sort: FeedingOrderSort]>(),
     search: eventContract<[value: string]>(),
     sort: eventContract<[sort: FeedingOrderSort]>(),
+    calendar: eventContract<[]>(),
   },
   data(): FeedingOrderToolbarState {
     return createFeedingOrderToolbarState(this.keyword, this.sort)
   },
   computed: {
+    calendarIconSrc() {
+      return '/packages/feeding/static/calendar.svg'
+    },
+    displaySortOptions() {
+      if (this.variant !== 'yard') return this.sortOptions
+      return this.sortOptions.map((option) =>
+        option.key === 'smart' ? { ...option, label: '智能筛选' } : option,
+      )
+    },
     activeSortLabel() {
-      const option = this.sortOptions.find((item) => item.key === this.sortKey)
+      const option = this.displaySortOptions.find((item) => item.key === this.sortKey)
       return option ? option.label : '智能排序'
     },
   },
@@ -94,6 +130,9 @@ export default defineComponent({
       this.$emit('update:sort', key)
       this.$emit('sort', key)
     },
+    openCalendar() {
+      this.$emit('calendar')
+    },
   },
 })
 </script>
@@ -105,6 +144,27 @@ export default defineComponent({
   gap: 8px;
   width: 100%;
   box-sizing: border-box;
+}
+
+.feeding-order-toolbar__filters {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+}
+
+.feeding-order-toolbar--yard {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.feeding-order-toolbar--yard .feeding-order-toolbar__search {
+  flex: none;
+  width: 100%;
+}
+
+.feeding-order-toolbar--yard .feeding-order-toolbar__filters {
+  justify-content: space-between;
+  width: 100%;
 }
 
 .feeding-order-toolbar__search {
@@ -122,5 +182,35 @@ export default defineComponent({
   color: #333333;
   font-size: 14px;
   white-space: nowrap;
+}
+
+.feeding-order-toolbar--yard .feeding-order-toolbar__sort {
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 5px;
+  background: #fff;
+  color: #999;
+  font-size: 12px;
+}
+
+.feeding-order-toolbar__calendar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 30px;
+  min-height: 30px;
+}
+
+.feeding-order-toolbar__calendar-icon {
+  display: block;
+  flex: none;
+  width: 21px;
+  height: 21px;
+}
+
+.feeding-order-toolbar__date {
+  margin-left: 4px;
+  color: #666;
+  font-size: 11px;
 }
 </style>

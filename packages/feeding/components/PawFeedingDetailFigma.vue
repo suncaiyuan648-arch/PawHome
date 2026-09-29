@@ -271,10 +271,21 @@
     </view>
     <PawFixedActionBar
       v-if="shouldShowFeedback"
+      :actions="[calendarAction]"
       :primary-action="feedbackAction"
       :primary-width="90"
-      :primary-end="true"
+      @action="onFooterAction"
       @primary="onFeedback"
+    />
+
+    <PawDatePickerSheet
+      v-model="feedbackCalendarVisible"
+      mode="pet"
+      :selected-date="feedbackCalendarDate"
+      :today="feedbackCalendarToday"
+      :entries="feedbackCalendarEntries"
+      qa="qa-feeding-detail-calendar-sheet"
+      @select="onFeedbackCalendarSelect"
     />
   </view>
 </template>
@@ -288,9 +299,11 @@ import PawToast from './feedback/PawToast.vue'
 import PawFeedingFeedbackTag from '@/components/feeding/PawFeedingFeedbackTag.vue'
 import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import PawFixedActionBar from '@/components/layout/PawFixedActionBar.vue'
+import type { PawFixedAction } from '@/components/layout/PawFixedActionBar.vue'
 import PawPageNav from '@/components/PawPageNav.vue'
 import { goBackSmart } from '@/utils/navBack.ts'
 import type { FeedingOrderDetail, FeedingLogisticsEntry } from '../services/orderMockApi.ts'
+import PawDatePickerSheet, { type PawDatePickerEntry } from './PawDatePickerSheet.vue'
 import {
   createEmptyFeedingOrderDetail,
   createFeedingDetailFigmaState,
@@ -327,6 +340,7 @@ export default defineComponent({
     PawFeedingFeedbackTag,
     LevelBadge,
     PawFixedActionBar,
+    PawDatePickerSheet,
     PawPageNav,
   },
   props: {
@@ -403,6 +417,31 @@ export default defineComponent({
         shape: 'pill',
       }
     },
+    calendarAction(): PawFixedAction {
+      return {
+        key: 'calendar',
+        label: '日历',
+        image: '/packages/feeding/static/calendar.svg',
+        iconSize: 21,
+        qa: 'qa-feeding-detail-calendar',
+      }
+    },
+    feedbackCalendarEntries(): PawDatePickerEntry[] {
+      const date = this.normalizeCalendarDate(this.detailView.time) || '2026-02-05'
+      const feedback = this.feedbackTagText
+      return [
+        {
+          date,
+          count: 1,
+          total: 5,
+          label: `${this.detailView.petName || '小动物'} · ${feedback}`,
+          tone: this.detailStatusTone === 'red' ? 'red' : 'green',
+        },
+      ]
+    },
+    feedbackCalendarToday(): string {
+      return this.normalizeCalendarDate(this.detailView.time) || '2026-02-05'
+    },
     feedbackTagText() {
       return `已反馈${this.detailView.feedbackProgress || '2/5'}次`
     },
@@ -434,6 +473,20 @@ export default defineComponent({
         return
       }
       uni.showToast({ title: '反馈', icon: 'none' })
+    },
+    onFooterAction(action: PawFixedAction) {
+      if (action.key !== 'calendar') return
+      this.feedbackCalendarDate =
+        this.feedbackCalendarDate || this.feedbackCalendarEntries[0]?.date || ''
+      this.feedbackCalendarVisible = true
+    },
+    onFeedbackCalendarSelect(date: string) {
+      this.feedbackCalendarDate = date
+    },
+    normalizeCalendarDate(value: string): string {
+      const match = String(value || '').match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
+      if (!match) return ''
+      return `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`
     },
     openTimelineDynamic(row: FeedingTimelineRow) {
       const dynamicId = `${this.orderId || 'feeding'}-feedback-${row.indexText.charAt(0)}`

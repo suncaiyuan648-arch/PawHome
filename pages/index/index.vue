@@ -137,6 +137,7 @@
           id="qa-home-promo-adoption-gift"
           class="home-promo-card home-promo-card--adoption"
           aria-label="领养有礼"
+          @tap="openAdoptionGift"
         >
           <image
             class="home-promo-title-graphic"
@@ -540,6 +541,9 @@ export default defineComponent({
     },
     openOfflineActivities() {
       uni.navigateTo({ url: buildRoute('activity.offline.list') })
+    },
+    openAdoptionGift() {
+      uni.navigateTo({ url: buildRoute('adoption.gift') })
     },
     openSearchPage() {
       uni.navigateTo({

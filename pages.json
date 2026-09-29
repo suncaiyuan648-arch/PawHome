@@ -103,6 +103,13 @@
       "root": "packages/adoption",
       "pages": [
         {
+          "path": "pages/gift/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F6F6"
+          }
+        },
+        {
           "path": "pages/mine/index",
           "style": {
             "navigationStyle": "custom",
@@ -507,6 +514,13 @@
       "root": "packages/feeding",
       "pages": [
         {
+          "path": "pages/my-orders/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F8F8F8"
+          }
+        },
+        {
           "path": "pages/mine/index",
           "style": {
             "navigationStyle": "custom",
@@ -613,6 +627,13 @@
         },
         {
           "path": "pages/offline/detail/index",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#F5F6F6"
+          }
+        },
+        {
+          "path": "pages/offline/create/index",
           "style": {
             "navigationStyle": "custom",
             "backgroundColor": "#F5F6F6"

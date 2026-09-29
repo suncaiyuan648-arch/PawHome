@@ -299,12 +299,16 @@ const ROUTE_REGISTRY: Readonly<Record<string, RouteDefinition>> = Object.freeze(
   }),
 
   'activity.offline.list': route('/packages/activity/pages/offline/list/index'),
+  'activity.offline.create': route('/packages/activity/pages/offline/create/index'),
   'activity.offline.detail': route(
     '/packages/activity/pages/offline/detail/index',
     { activityId: F.id() },
     { required: ['activityId'] },
   ),
 
+  'adoption.gift': route('/packages/adoption/pages/gift/index', {
+    tab: F.enum(['prizes', 'records']),
+  }),
   'adoption.mine': route('/packages/adoption/pages/mine/index'),
   'adoption.apply': route(
     '/packages/adoption/pages/apply/index',
@@ -549,6 +553,9 @@ const ROUTE_REGISTRY: Readonly<Record<string, RouteDefinition>> = Object.freeze(
   }),
 
   'feeding.mine': route('/packages/feeding/pages/mine/index', { userId: F.id() }),
+  'feeding.myOrders': route('/packages/feeding/pages/my-orders/index', {
+    tab: F.enum(['all', 'unpaid', 'unshipped', 'unreceived', 'unreviewed']),
+  }),
   'feeding.yardOrders': route('/packages/feeding/pages/yard-orders/index', { yardId: F.id() }),
   'feeding.order.detail': route(
     '/packages/feeding/pages/order/detail/index',

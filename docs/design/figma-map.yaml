@@ -73,6 +73,27 @@ pages:
         mapping_status: verified-metadata
         mapping_note: 上滑 neirong 内容与固定筛选结构，导航实例展开、卡片补云养数。
 
+  adoption_gift:
+    name: "领养有礼"
+    route: "/packages/adoption/pages/gift/index"
+    source: "packages/adoption/pages/gift/index.vue"
+    design_doc: "docs/pages-design/领养有礼.md"
+    states:
+      prizes:
+        name: "本期奖品"
+        node_id: 83:24149
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        query:
+          tab: prizes
+        mapping_status: user-provided-exact-node
+      records:
+        name: "领养记录"
+        node_id: 83:24277
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        query:
+          tab: records
+        mapping_status: user-provided-exact-node
+
   offline_activity:
     name: "线下活动"
     route: "/packages/activity/pages/offline/list/index"
@@ -99,6 +120,15 @@ pages:
           activityId: "zz-adoption-day-2026"
         mapping_status: verified-metadata
         mapping_note: "活动详情以必需 activityId 读取数据；列表卡片和报名按钮进入同一语义目标。"
+      create:
+        name: "发起线下活动"
+        node_id: 83:4577
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        route: "/packages/activity/pages/offline/create/index"
+        source: "packages/activity/pages/offline/create/index.vue"
+        query: {}
+        mapping_status: user-provided
+        mapping_note: "用户指定活动创建表单节点；画布层名称为发布-创建小院，节点内容为发起线下活动表单。"
 
   dynamic_detail:
     name: "动态详情"
@@ -822,6 +852,30 @@ pages:
           reason: packages/yard/pages/detail/index.vue:onLoad 的白名单及 PawYardDetailFigma.state
             已核对；yardId/角色需 fixture，新稿内容尚未逐屏验收。
 
+  yard_feeding_orders:
+    name: 小院订单
+    route: /packages/feeding/pages/yard-orders/index
+    source: packages/feeding/pages/yard-orders/index.vue
+    design_doc: docs/pages-design/小院订单.md
+    states:
+      list:
+        name: 院主-投粮订单
+        node_id: 83:9255
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        mapping_status: verified-visual-browser
+        mapping_note: 用户指定精确节点；浏览器核对布局和文字属性。搜索占满一行，筛选和日历固定在订单滚动区上方。
+        query:
+          yardId: "1"
+      calendar_total:
+        name: 院主-总反馈日历
+        node_id: 83:18832
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        mapping_status: verified-visual-browser
+        mapping_note: 小院订单列表日历入口打开的底部抽屉；使用 PawDatePickerSheet 与 PawBottomSheet 复用实现。
+        query:
+          yardId: "1"
+          sheet: total
+
   feeding_order_detail:
     name: 投喂订单详情
     route: /packages/feeding/pages/order/detail/index
@@ -853,6 +907,16 @@ pages:
         runtime:
           status: fixture-required
           reason: 反馈入口仍由可信订单关系决定；query 仅定位本地/mock 视觉态。
+      calendar_pet:
+        name: 院主-单独宠物反馈日历
+        node_id: 83:18955
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        mapping_status: verified-visual-browser
+        mapping_note: 院主投粮详情底部日历按钮打开的单独宠物反馈状态；与列表日历共用日期选择和底部抽屉组件。
+        query:
+          variant: 91
+          perspective: yard-manager
+          sheet: pet
       variant_92:
         name: 云家长-投粮详情
         node_id: 62:37087
@@ -865,6 +929,24 @@ pages:
         runtime:
           status: fixture-required
           reason: variant=92 仅承载本地/mock 云养与物流展示；orderId/recordId 仍需显式传入。
+
+  my_shopping_orders:
+    name: 我的订单-购物订单
+    route: /packages/feeding/pages/my-orders/index
+    source: packages/feeding/pages/my-orders/index.vue
+    design_doc: docs/pages-design/我的订单.md
+    states:
+      all:
+        name: 我的订单-全部
+        node_id: 83:23734
+        file_key: ikwcujfbxtNcjk9tjGjKx8
+        mapping_status: verified-visual-browser
+        mapping_note: 精确节点在浏览器中核对；Figma MCP 本次达到调用上限。购物订单含四种卡片状态，售后中按产品要求改待评价。
+        query:
+          tab: all
+        runtime:
+          status: fixture-required
+          reason: 购物订单接口未接入，当前仅为设计展示数据。
 
 # Figma states whose current code route/source has not yet been formally mapped.
 # Keep them here for discovery, but do not let an agent guess the route.

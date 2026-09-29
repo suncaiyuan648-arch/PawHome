@@ -3,6 +3,8 @@ import type { FeedingOrderDetail, FeedingTimelineEntry } from './orderMockApi.ts
 export interface FeedingDetailFigmaState {
   avatarImgs: string[]
   photoImgs: string[]
+  feedbackCalendarVisible: boolean
+  feedbackCalendarDate: string
 }
 
 export interface FeedingTimelineRow
@@ -95,6 +97,8 @@ export function createFeedingDetailFigmaState(): FeedingDetailFigmaState {
   return {
     avatarImgs: DETAIL_IMAGES.slice(0, 4),
     photoImgs: DETAIL_IMAGES.slice(4, 7),
+    feedbackCalendarVisible: false,
+    feedbackCalendarDate: '',
   }
 }
 

@@ -7,6 +7,7 @@
       'paw-fixed-action-bar--primary-end': primaryEnd,
       'paw-fixed-action-bar--stacked': stacked,
       'paw-fixed-action-bar--dual': secondaryAction,
+      'paw-fixed-action-bar--offline-activity': variant === 'offline-activity',
     }"
   >
     <view
@@ -86,7 +87,10 @@
       <PawButton
         v-if="primaryAction"
         class="paw-fixed-action-bar__primary"
-        :class="{ 'paw-fixed-action-bar__primary--full': primaryFullWidth }"
+        :class="{
+          'paw-fixed-action-bar__primary--full': primaryFullWidth,
+          'paw-fixed-action-bar__primary--disabled': primaryAction.disabled,
+        }"
         :qa="primaryAction.qa || ''"
         :text="primaryAction.label"
         :tone="primaryAction.tone || 'brand'"
@@ -155,6 +159,7 @@ export default defineComponent({
     safeArea: { type: Boolean, default: true },
     primaryFullWidth: { type: Boolean, default: false },
     stacked: { type: Boolean, default: false },
+    variant: { type: String, default: '' },
   },
   emits: {
     action: eventContract<[action: PawFixedAction]>(),
@@ -368,5 +373,62 @@ export default defineComponent({
   display: block;
   line-height: 20px;
   white-space: nowrap;
+}
+
+.paw-fixed-action-bar--offline-activity {
+  height: 101px;
+  min-height: 101px;
+  padding: 10px 18px 34px 23px;
+}
+
+/* #ifdef MP-WEIXIN */
+.paw-fixed-action-bar--offline-activity.paw-fixed-action-bar--safe {
+  height: calc(67px + env(safe-area-inset-bottom));
+  min-height: calc(67px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+}
+/* #endif */
+
+.paw-fixed-action-bar--offline-activity .paw-fixed-action-bar__content {
+  height: 47px;
+  gap: 16px;
+}
+
+.paw-fixed-action-bar--offline-activity .paw-fixed-action-bar__action {
+  flex: 0 0 30px;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 47px;
+  padding: 0;
+  color: #2c2c2c;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.paw-fixed-action-bar--offline-activity .paw-fixed-action-bar__icon {
+  width: 18px;
+  height: 18px;
+  margin-bottom: 3px;
+}
+
+.paw-fixed-action-bar--offline-activity .paw-fixed-action-bar__primary {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 47px;
+  min-height: 47px;
+  border-radius: 23.5px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.paw-fixed-action-bar--offline-activity .paw-fixed-action-bar__primary--disabled {
+  background: #eee;
+  color: #aaa;
+}
+
+.paw-fixed-action-bar--offline-activity .paw-fixed-action-bar__primary-label {
+  line-height: 24px;
 }
 </style>

@@ -1,6 +1,7 @@
 <template>
   <view
     class="feeding-order-page"
+    :class="{ 'feeding-order-page--yard': variant === 'yard' }"
     data-qa="feeding-order-page"
   >
     <PawPageNav
@@ -14,7 +15,9 @@
       <PawFeedingOrderToolbar
         v-model:keyword="keyword"
         v-model:sort="sort"
+        :variant="variant === 'yard' ? 'yard' : 'mine'"
         @search="onSearch"
+        @calendar="openCalendar"
       />
 
       <scroll-view
@@ -24,7 +27,7 @@
       >
         <slot
           name="before-list"
-          :items="items"
+          :items="visibleItems"
         />
         <view
           v-if="loading"
@@ -32,7 +35,7 @@
           >加载中...</view
         >
         <view
-          v-else-if="emptyState || !items.length"
+          v-else-if="emptyState || !visibleItems.length"
           class="feeding-order-state"
         >
           <slot name="empty"
@@ -45,7 +48,7 @@
           data-qa="feeding-order-list"
         >
           <view
-            v-for="item in items"
+            v-for="item in visibleItems"
             :key="item.id"
             class="feeding-order-card"
             data-qa="feeding-order-card"
@@ -127,9 +130,19 @@
         </view>
         <slot
           name="after-list"
-          :items="items"
+          :items="visibleItems"
         />
       </scroll-view>
+
+      <PawDatePickerSheet
+        v-model="calendarVisible"
+        mode="total"
+        :selected-date="selectedDate"
+        :today="todayDate"
+        :entries="calendarEntries"
+        qa="qa-feeding-calendar-sheet"
+        @select="onDateChange"
+      />
     </view>
   </view>
 </template>
@@ -144,6 +157,7 @@ import PawImage from '@/components/base/PawImage.vue'
 import PawFeedingFeedbackTag from '@/components/feeding/PawFeedingFeedbackTag.vue'
 import LevelBadge from '@/components/customBadge/LevelBadge.vue'
 import PawPageNav from '@/components/PawPageNav.vue'
+import PawDatePickerSheet, { type PawDatePickerEntry } from './PawDatePickerSheet.vue'
 import PawFeedingOrderToolbar from './PawFeedingOrderToolbar.vue'
 import { getFeedingOrders, type FeedingOrderVariant } from '../services/orderMockApi.ts'
 import {
@@ -161,6 +175,7 @@ export default defineComponent({
     PawFeedingFeedbackTag,
     LevelBadge,
     PawPageNav,
+    PawDatePickerSheet,
     PawFeedingOrderToolbar,
   },
   props: {
@@ -182,7 +197,28 @@ export default defineComponent({
   },
   computed: {
     pageTitle() {
-      return this.variant === 'yard' ? '小院投粮' : '我的投粮'
+      return this.variant === 'yard' ? '小院订单' : '我的投粮'
+    },
+    visibleItems(): FeedingOrderListItem[] {
+      return this.items
+    },
+    todayDate(): string {
+      return this.calendarEntries[0]?.date || ''
+    },
+    calendarEntries(): PawDatePickerEntry[] {
+      if (this.variant !== 'yard') return []
+      return this.items.reduce<PawDatePickerEntry[]>((entries, item) => {
+        const match = String(item.time || '').match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
+        if (!match) return entries
+        const date = `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`
+        entries.push({
+          date,
+          count: 1,
+          label: `${item.petName || '小动物'} · ${item.orderState || '待反馈'}`,
+          tone: item.orderTone === 'red' ? 'red' : item.orderTone === 'green' ? 'green' : 'orange',
+        })
+        return entries
+      }, [])
     },
   },
   watch: {
@@ -199,6 +235,12 @@ export default defineComponent({
     onSearch(value: string) {
       this.keyword = value
       this.loadOrders()
+    },
+    onDateChange(date: string) {
+      this.selectedDate = date
+    },
+    openCalendar() {
+      this.calendarVisible = true
     },
     loadOrders() {
       if (this.emptyState) {
@@ -246,6 +288,16 @@ export default defineComponent({
   background: #f5f5f5;
 }
 
+.feeding-order-page--yard {
+  height: 100vh;
+  overflow: hidden;
+  --order-name-size: 14px;
+  --order-spec-size: 14px;
+  --order-spec-weight: 500;
+  --order-time-size: 12px;
+  --order-copy-size: 12px;
+}
+
 .feeding-order-content {
   display: flex;
   flex: 1 1 auto;
@@ -261,6 +313,10 @@ export default defineComponent({
   margin-top: 10px;
   padding-bottom: 20px;
   box-sizing: border-box;
+}
+
+.feeding-order-page--yard .feeding-order-scroll {
+  height: 0;
 }
 
 .feeding-order-list {
@@ -279,6 +335,10 @@ export default defineComponent({
   border-radius: 14px;
   background: #ffffff;
   color: #333333;
+}
+
+.feeding-order-page--yard .feeding-order-card {
+  min-height: 128px;
 }
 
 .feeding-order-card__layout,
@@ -329,7 +389,7 @@ export default defineComponent({
 .feeding-order-card__name {
   min-width: 0;
   overflow: hidden;
-  font-size: 16px;
+  font-size: var(--order-name-size, 16px);
   line-height: 22px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -354,13 +414,14 @@ export default defineComponent({
 
 .feeding-order-card__amount {
   color: #333333;
-  font-size: 16px;
+  font-size: var(--order-spec-size, 16px);
+  font-weight: var(--order-spec-weight, 400);
   line-height: 22px;
 }
 
 .feeding-order-card__time {
   color: #999999;
-  font-size: 13px;
+  font-size: var(--order-time-size, 13px);
   line-height: 18px;
 }
 
@@ -373,7 +434,7 @@ export default defineComponent({
   min-width: 0;
   overflow: hidden;
   color: #1292ff;
-  font-size: 13px;
+  font-size: var(--order-copy-size, 13px);
   line-height: 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -395,6 +456,10 @@ export default defineComponent({
 
 .feeding-order-card__status--orange .feeding-order-card__copy {
   color: #ff9f43;
+}
+
+.feeding-order-page--yard .feeding-order-card__status--green .feeding-order-card__copy {
+  color: #12ca7a;
 }
 
 .feeding-order-state {

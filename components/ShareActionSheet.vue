@@ -11,25 +11,48 @@
       <text class="share-action-sheet__title">分享至</text>
 
       <view class="share-action-sheet__main-row">
-        <view
+        <template
           v-for="item in mainActions"
           :key="item.key"
-          class="share-action-sheet__cell"
-          hover-class="share-action-sheet__cell--pressed"
-          @tap.stop="onPick(item.key)"
         >
-          <view
-            class="share-action-sheet__bubble"
-            :style="bubbleStyle(item.bubble)"
+          <button
+            v-if="item.key === 'wechat' && nativeWechatShare"
+            class="share-action-sheet__cell share-action-sheet__native-share"
+            open-type="share"
+            hover-class="share-action-sheet__cell--pressed"
+            @tap.stop="onNativeWechatShare"
           >
-            <PawIcon
-              class="share-action-sheet__icon"
-              :name="item.iconName"
-              :size="item.iconSize"
-            />
+            <view
+              class="share-action-sheet__bubble"
+              :style="bubbleStyle(item.bubble)"
+            >
+              <PawIcon
+                class="share-action-sheet__icon"
+                :name="item.iconName"
+                :size="item.iconSize"
+              />
+            </view>
+            <text class="share-action-sheet__label">{{ item.label }}</text>
+          </button>
+          <view
+            v-else
+            class="share-action-sheet__cell"
+            hover-class="share-action-sheet__cell--pressed"
+            @tap.stop="onPick(item.key)"
+          >
+            <view
+              class="share-action-sheet__bubble"
+              :style="bubbleStyle(item.bubble)"
+            >
+              <PawIcon
+                class="share-action-sheet__icon"
+                :name="item.iconName"
+                :size="item.iconSize"
+              />
+            </view>
+            <text class="share-action-sheet__label">{{ item.label }}</text>
           </view>
-          <text class="share-action-sheet__label">{{ item.label }}</text>
-        </view>
+        </template>
       </view>
 
       <image
@@ -114,6 +137,7 @@ export default defineComponent({
     visible: { type: Boolean, default: false },
     // 页面控制器提供当前业务对象，组件只负责把它原样带回选择事件。
     shareData: { type: Object as PropType<ShareData>, default: () => ({}) },
+    nativeWechatShare: { type: Boolean, default: false },
   },
   emits: {
     'update:visible': eventContract<[value: boolean]>(),
@@ -176,6 +200,9 @@ export default defineComponent({
       this.$emit('select', key, this.shareData)
       this.close()
     },
+    onNativeWechatShare() {
+      this.$emit('select', 'wechat', this.shareData)
+    },
   },
 })
 </script>
@@ -221,6 +248,19 @@ export default defineComponent({
   align-items: center;
   width: 48px;
   height: 67px;
+}
+
+.share-action-sheet__native-share {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  line-height: normal;
+}
+
+.share-action-sheet__native-share::after {
+  border: 0;
 }
 
 .share-action-sheet__bubble {

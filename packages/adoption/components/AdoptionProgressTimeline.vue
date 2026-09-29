@@ -1,6 +1,7 @@
 <template>
   <view
     class="adoption-progress-timeline"
+    :class="{ 'adoption-progress-timeline--gift': variant === 'gift' }"
     data-qa="qa-adoption-progress-timeline"
   >
     <view
@@ -39,12 +40,18 @@
       </view>
     </view>
     <view class="adoption-progress-timeline__labels">
-      <text :class="{ active: step >= 1 }">领养成功</text>
+      <text :class="{ active: step >= 1 }">{{ variant === 'gift' ? '申请领养' : '领养成功' }}</text>
       <text :class="{ active: step >= 2 }">院主确认</text>
-      <text :class="{ active: step >= 3 }">评审中</text>
-      <text :class="{ active: step >= 4 }">{{ step >= 4 ? '抽取奖励' : '奖励' }}</text>
+      <text :class="{ active: step >= 3 }">{{ variant === 'gift' ? '评审通过' : '评审中' }}</text>
+      <text :class="{ active: step >= 4 }">{{
+        variant === 'gift' ? '抽取奖励' : step >= 4 ? '抽取奖励' : '奖励'
+      }}</text>
     </view>
-    <text class="adoption-progress-timeline__percent">{{ percent }}</text>
+    <text
+      v-if="variant !== 'gift'"
+      class="adoption-progress-timeline__percent"
+      >{{ percent }}</text
+    >
   </view>
 </template>
 
@@ -59,6 +66,7 @@ export default defineComponent({
   props: {
     step: { type: Number, default: 1 },
     percent: { type: String, default: '0%' },
+    variant: { type: String, default: 'default' },
   },
   computed: {
     markers() {
@@ -174,5 +182,41 @@ export default defineComponent({
   color: #aaa;
   font-size: 11px;
   line-height: 16px;
+}
+</style>
+
+<style scoped>
+.adoption-progress-timeline--gift {
+  min-height: 74px;
+  padding: 15px 39px 9px;
+  border-radius: 15px 15px 0 0;
+}
+.adoption-progress-timeline--gift .adoption-progress-timeline__track {
+  margin-right: 0;
+}
+.adoption-progress-timeline--gift .adoption-progress-timeline__line,
+.adoption-progress-timeline--gift .adoption-progress-timeline__active {
+  background: #ffe400;
+}
+.adoption-progress-timeline--gift
+  .adoption-progress-timeline__marker
+  .adoption-progress-timeline__dot {
+  width: 16px;
+  height: 16px;
+  border: 0;
+  background: #ffe400;
+  color: #333;
+}
+.adoption-progress-timeline--gift .adoption-progress-timeline__reward {
+  opacity: 1;
+}
+.adoption-progress-timeline--gift .adoption-progress-timeline__labels {
+  margin-left: -1px;
+  margin-right: -8px;
+  color: #666;
+  font-size: 10px;
+}
+.adoption-progress-timeline--gift .adoption-progress-timeline__labels text.active {
+  color: #666;
 }
 </style>

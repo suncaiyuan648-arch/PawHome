@@ -87,7 +87,7 @@
 import { defineComponent } from 'vue'
 
 import PawPageNav from '@/components/PawPageNav.vue'
-import PawJuryItemCard from './components/PawJuryItemCard.vue'
+import PawJuryItemCard from '@/components/jury/PawJuryItemCard.vue'
 import type { JuryIdentity, JuryItem } from '@/utils/juryMock.ts'
 import { getJuryItems } from '@/utils/juryStorage.ts'
 import { goBackSmart } from '@/utils/navBack.ts'

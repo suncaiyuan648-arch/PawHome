@@ -10,39 +10,35 @@
     />
 
     <PawPageNav
-      background="transparent"
-      :show-back="false"
+      :background="navBackground"
+      :show-back="!isAtTop"
       :auto-back="false"
+      :content-slot-enabled="isAtTop"
       slot-position="custom"
       :slot-style="backSlotStyle"
+      @back="goBack"
       @layout="onNavLayout"
     >
       <template #content>
-        <view
-          class="offline-activity-detail-page__back-hit"
-          data-qa="qa-offline-activity-back"
-          aria-label="返回"
-          role="button"
-          @tap.stop="goBack"
-        >
-          <image
-            class="offline-activity-detail-page__back-icon"
-            :src="assets.back"
-            mode="aspectFit"
-            aria-hidden="true"
-          />
-        </view>
+        <OfflineActivityBackButton
+          qa="qa-offline-activity-back"
+          @back="goBack"
+        />
       </template>
     </PawPageNav>
 
     <scroll-view
+      id="offline-activity-detail-scroll"
       class="offline-activity-detail-page__scroll"
       scroll-y
       :enable-flex="true"
       :show-scrollbar="false"
       :bounces="false"
+      :upper-threshold="4"
       data-qa="qa-offline-activity-detail"
       @scroll="onScroll"
+      @scrolltoupper="onScrollToTop"
+      @touchend="scheduleNavReconcile"
     >
       <view class="offline-activity-detail-page__content">
         <image
@@ -61,8 +57,15 @@
         <template v-if="activity">
           <view class="offline-activity-detail-page__summary">
             <view class="offline-activity-detail-page__summary-title-row">
-              <text class="offline-activity-detail-page__summary-title">{{ activity.detailTitle }}</text>
-              <view class="offline-activity-detail-page__summary-status">
+              <text class="offline-activity-detail-page__summary-title">{{
+                activity.detailTitle
+              }}</text>
+              <view
+                class="offline-activity-detail-page__summary-status"
+                :class="{
+                  'offline-activity-detail-page__summary-status--ended': activity.state === 'ended',
+                }"
+              >
                 <text>{{ activity.stateLabel }}</text>
               </view>
             </view>
@@ -71,9 +74,12 @@
                 v-for="tag in activity.tags"
                 :key="tag"
                 class="offline-activity-detail-page__tag"
-              >{{ tag }}</text>
+                >{{ tag }}</text
+              >
             </view>
-            <view class="offline-activity-detail-page__meta-row offline-activity-detail-page__meta-row--time">
+            <view
+              class="offline-activity-detail-page__meta-row offline-activity-detail-page__meta-row--time"
+            >
               <image
                 class="offline-activity-detail-page__meta-icon offline-activity-detail-page__meta-icon--time"
                 :src="assets.time"
@@ -83,7 +89,9 @@
               <text class="offline-activity-detail-page__meta-label">时间</text>
               <text class="offline-activity-detail-page__meta-value">{{ activity.startText }}</text>
             </view>
-            <view class="offline-activity-detail-page__meta-row offline-activity-detail-page__meta-row--location">
+            <view
+              class="offline-activity-detail-page__meta-row offline-activity-detail-page__meta-row--location"
+            >
               <image
                 class="offline-activity-detail-page__meta-icon offline-activity-detail-page__meta-icon--location"
                 :src="assets.location"
@@ -91,7 +99,9 @@
                 aria-hidden="true"
               />
               <text class="offline-activity-detail-page__meta-label">地点</text>
-              <text class="offline-activity-detail-page__meta-value offline-activity-detail-page__meta-value--location">
+              <text
+                class="offline-activity-detail-page__meta-value offline-activity-detail-page__meta-value--location"
+              >
                 {{ activity.detailLocation }}
               </text>
               <image
@@ -101,7 +111,9 @@
                 aria-hidden="true"
               />
             </view>
-            <view class="offline-activity-detail-page__meta-row offline-activity-detail-page__meta-row--members">
+            <view
+              class="offline-activity-detail-page__meta-row offline-activity-detail-page__meta-row--members"
+            >
               <image
                 class="offline-activity-detail-page__meta-icon offline-activity-detail-page__meta-icon--members"
                 :src="assets.members"
@@ -109,31 +121,35 @@
                 aria-hidden="true"
               />
               <text class="offline-activity-detail-page__meta-label">成员</text>
-              <view class="offline-activity-detail-page__member-avatars">
-                <image
-                  v-for="(avatar, index) in activity.participantAvatars"
-                  :key="avatar"
-                  class="offline-activity-detail-page__member-avatar"
-                  :class="{ 'offline-activity-detail-page__member-avatar--overlap': index > 0 }"
-                  :src="avatar"
-                  mode="aspectFill"
-                />
-              </view>
-              <text class="offline-activity-detail-page__member-count">{{ activity.participantCount }} 人已报名</text>
+              <PawAvatarStack
+                class="offline-activity-detail-page__member-avatars"
+                :items="activity.participantAvatars"
+                :size="19"
+                :overlap="7"
+                :max="3"
+              />
+              <text class="offline-activity-detail-page__member-count"
+                >{{ activity.participantCount }} 人已报名</text
+              >
             </view>
           </view>
 
-          <view class="offline-activity-detail-page__section offline-activity-detail-page__description">
+          <view
+            class="offline-activity-detail-page__section offline-activity-detail-page__description"
+          >
             <text class="offline-activity-detail-page__section-title">活动详情</text>
             <view class="offline-activity-detail-page__description-copy">
               <text
                 v-for="line in activity.description"
                 :key="line"
-              >{{ line }}</text>
+                >{{ line }}</text
+              >
             </view>
           </view>
 
-          <view class="offline-activity-detail-page__section offline-activity-detail-page__organizer">
+          <view
+            class="offline-activity-detail-page__section offline-activity-detail-page__organizer"
+          >
             <text class="offline-activity-detail-page__section-title">活动发起人</text>
             <view class="offline-activity-detail-page__organizer-profile">
               <image
@@ -144,10 +160,14 @@
               />
               <view class="offline-activity-detail-page__organizer-info">
                 <view class="offline-activity-detail-page__organizer-name-row">
-                  <text class="offline-activity-detail-page__organizer-name">{{ activity.organizerName }}</text>
+                  <text class="offline-activity-detail-page__organizer-name">{{
+                    activity.organizerName
+                  }}</text>
                   <LevelBadge :level="1" />
                 </view>
-                <text class="offline-activity-detail-page__organizer-events">{{ activity.organizerEvents }}</text>
+                <text class="offline-activity-detail-page__organizer-events">{{
+                  activity.organizerEvents
+                }}</text>
                 <view class="offline-activity-detail-page__organizer-type">
                   <image
                     class="offline-activity-detail-page__organizer-type-icon"
@@ -161,64 +181,32 @@
             </view>
           </view>
 
-          <view class="offline-activity-detail-page__section offline-activity-detail-page__comments">
-            <text class="offline-activity-detail-page__section-title">留言 15</text>
-            <view class="offline-activity-detail-page__composer">
-              <image
-                class="offline-activity-detail-page__composer-user"
-                :src="assets.commentUser"
-                mode="aspectFill"
-              />
-              <view class="offline-activity-detail-page__composer-input">
-                <text>留下你的想法吧~</text>
-                <view class="offline-activity-detail-page__composer-tools">
-                  <image
-                    class="offline-activity-detail-page__composer-mic"
-                    :src="assets.commentMic"
-                    mode="aspectFit"
-                    aria-hidden="true"
-                  />
-                  <image
-                    class="offline-activity-detail-page__composer-emoji"
-                    :src="assets.commentEmoji"
-                    mode="aspectFit"
-                    aria-hidden="true"
-                  />
-                </view>
-              </view>
-            </view>
+          <view
+            class="offline-activity-detail-page__section offline-activity-detail-page__comments"
+          >
+            <text class="offline-activity-detail-page__section-title"
+              >留言 {{ comments.length }}</text
+            >
+            <CommentComposer
+              class="offline-activity-detail-page__composer"
+              :avatar="assets.commentUser"
+              placeholder="留下你的想法吧~"
+              fluid
+              readonly
+              data-qa="qa-offline-activity-comment-composer"
+              @click="openReplySheet()"
+              @voice="onComposerUnavailable"
+              @pick-image="onComposerUnavailable"
+            />
             <view class="offline-activity-detail-page__comment-list">
-              <view
-                v-for="comment in activity.comments"
+              <CommentItem
+                v-for="comment in comments"
                 :key="comment.id"
                 class="offline-activity-detail-page__comment"
-              >
-                <image
-                  class="offline-activity-detail-page__comment-avatar"
-                  :src="comment.avatar"
-                  mode="aspectFill"
-                />
-                <view class="offline-activity-detail-page__comment-main">
-                  <view class="offline-activity-detail-page__comment-author-row">
-                    <text class="offline-activity-detail-page__comment-author">{{ comment.author }}</text>
-                    <LevelBadge :level="comment.level" />
-                  </view>
-                  <text class="offline-activity-detail-page__comment-body">{{ comment.body }}</text>
-                  <view class="offline-activity-detail-page__comment-meta">
-                    <text class="offline-activity-detail-page__comment-time">{{ comment.meta }}</text>
-                    <text class="offline-activity-detail-page__comment-reply">回复</text>
-                    <view class="offline-activity-detail-page__comment-likes">
-                      <image
-                        class="offline-activity-detail-page__like-icon"
-                        :src="assets.like"
-                        mode="aspectFit"
-                        aria-hidden="true"
-                      />
-                      <text>{{ comment.likes }}</text>
-                    </view>
-                  </view>
-                </view>
-              </view>
+                :comment="comment"
+                @reply="openReplySheet"
+                @like="toggleCommentLike"
+              />
             </view>
           </view>
 
@@ -254,37 +242,38 @@
           <view
             class="offline-activity-detail-page__invalid-action"
             @tap="goBack"
-          >返回活动列表</view>
+            >返回活动列表</view
+          >
         </view>
       </view>
     </scroll-view>
 
-    <view
+    <PawFixedActionBar
       v-if="activity"
       class="offline-activity-detail-page__action-bar"
       data-qa="qa-offline-activity-action-bar"
-    >
-      <button
-        class="offline-activity-detail-page__share"
-        open-type="share"
-        aria-label="分享"
-        data-qa="qa-offline-activity-share"
-      >
-        <image
-          class="offline-activity-detail-page__share-icon"
-          :src="assets.share"
-          mode="aspectFit"
-          aria-hidden="true"
-        />
-        <text>分享</text>
-      </button>
-      <button
-        class="offline-activity-detail-page__register"
-        hover-class="offline-activity-detail-page__register--pressed"
-        data-qa="qa-offline-activity-register"
-        @tap="registerForActivity"
-      >报名参与</button>
-    </view>
+      :actions="shareActions"
+      :primary-action="registerAction"
+      primary-full-width
+      variant="offline-activity"
+      @action="onFooterAction"
+      @primary="registerForActivity"
+    />
+
+    <ShareActionSheet
+      v-model:visible="shareSheetVisible"
+      :share-data="activityShareData"
+      native-wechat-share
+      @select="onShareAction"
+    />
+
+    <ReplyComposerSheet
+      v-model:visible="replySheetVisible"
+      :reply-to-name="replyTargetName"
+      @send="onReplySend"
+      @voice="onComposerUnavailable"
+      @pick-image="onComposerUnavailable"
+    />
   </view>
 </template>
 
@@ -293,14 +282,24 @@ import { defineComponent } from 'vue'
 
 import PawPageNav from '@/components/PawPageNav.vue'
 import LevelBadge from '@/components/customBadge/LevelBadge.vue'
+import PawAvatarStack from '@/components/identity/PawAvatarStack.vue'
+import PawFixedActionBar, { type PawFixedAction } from '@/components/layout/PawFixedActionBar.vue'
+import CommentComposer from '@/components/dynamic/CommentComposer.vue'
+import CommentItem from '@/components/dynamic/CommentItem.vue'
+import type { CommentItemRecord } from '@/components/dynamic/commentMetadata.ts'
+import ReplyComposerSheet from '@/components/ReplyComposerSheet.vue'
+import ShareActionSheet, {
+  type ShareActionKey,
+  type ShareData,
+} from '@/components/ShareActionSheet.vue'
 import { buildRoute, isPlainRecord, parseRoute } from '@/navigation/routeContracts.ts'
 // #ifdef MP-WEIXIN
 import { decodeWeixinLoadOptions } from '@/navigation/weixinLoadOptions.ts'
 // #endif
-import { goBackSmart } from '@/utils/navBack.ts'
 import { readPawEventNumber } from '@/utils/pawEventMetadata.ts'
 import type { WechatNavLayout } from '@/utils/navLayout.ts'
 import OfflineActivityCard from '../../../components/OfflineActivityCard.vue'
+import OfflineActivityBackButton from '../../../components/OfflineActivityBackButton.vue'
 import { OFFLINE_ACTIVITY_ASSETS } from '../../../services/offlineActivityAssets.ts'
 import {
   getOfflineActivityDetail,
@@ -312,36 +311,121 @@ interface OfflineActivityDetailPageState {
   assets: typeof OFFLINE_ACTIVITY_ASSETS
   activity: OfflineActivityDetail | null
   navTotalHeight: number
-  scrollTop: number
+  showScrolledNav: boolean
+  comments: CommentItemRecord[]
+  replySheetVisible: boolean
+  replyTarget: CommentItemRecord | null
+  nextCommentId: number
+  shareActions: PawFixedAction[]
+  shareSheetVisible: boolean
 }
 
+// Keep the visual state stable near the top while the scroll-view settles.
+const NAV_SHOW_SCROLL_TOP = 48
+const NAV_HIDE_SCROLL_TOP = 24
+const NAV_RECONCILE_DELAY_MS = 100
+const NAV_RECONCILE_MAX_SAMPLES = 15
+
+interface NavReconcileState {
+  token: number
+  timer: ReturnType<typeof setTimeout> | null
+}
+
+const navReconcileStates = new WeakMap<object, NavReconcileState>()
+
 function readActivityId(options: unknown): string {
-  let query: Record<string, unknown>
-  // #ifdef MP-WEIXIN
-  query = decodeWeixinLoadOptions(options)
-  // #endif
-  // #ifndef MP-WEIXIN
-  query = isPlainRecord(options) ? options : {}
-  // #endif
+  const query: Record<string, unknown> = {
+    // #ifdef MP-WEIXIN
+    ...decodeWeixinLoadOptions(options),
+    // #endif
+    // #ifndef MP-WEIXIN
+    ...(isPlainRecord(options) ? options : {}),
+    // #endif
+  }
   const activityId = typeof query.activityId === 'string' ? query.activityId : ''
   const target = buildRoute('activity.offline.detail', { activityId })
   return parseRoute(target).params.activityId
 }
 
+function toCommentRecord(comment: OfflineActivityDetail['comments'][number]): CommentItemRecord {
+  return {
+    id: comment.id,
+    author: { name: comment.author, avatar: comment.avatar, level: comment.level },
+    copy: comment.body,
+    meta: comment.meta,
+    likes: comment.likes,
+    liked: false,
+  }
+}
+
 export default defineComponent({
   name: 'OfflineActivityDetailPage',
-  components: { PawPageNav, LevelBadge, OfflineActivityCard },
+  components: {
+    PawPageNav,
+    OfflineActivityBackButton,
+    LevelBadge,
+    PawAvatarStack,
+    PawFixedActionBar,
+    OfflineActivityCard,
+    CommentComposer,
+    CommentItem,
+    ReplyComposerSheet,
+    ShareActionSheet,
+  },
   data(): OfflineActivityDetailPageState {
     return {
       assets: OFFLINE_ACTIVITY_ASSETS,
       activity: null,
       navTotalHeight: 0,
-      scrollTop: 0,
+      showScrolledNav: false,
+      comments: [],
+      replySheetVisible: false,
+      replyTarget: null,
+      nextCommentId: 1,
+      shareActions: [
+        {
+          key: 'share',
+          label: '分享',
+          image: OFFLINE_ACTIVITY_ASSETS.share,
+          qa: 'qa-offline-activity-share',
+        },
+      ],
+      shareSheetVisible: false,
     }
   },
   computed: {
+    isAtTop(): boolean {
+      return !this.showScrolledNav
+    },
     heroSpacerHeight(): number {
       return Math.max(0, 371 - this.navTotalHeight)
+    },
+    navBackground(): string {
+      return this.isAtTop ? 'transparent' : '#fff'
+    },
+    replyTargetName(): string {
+      return this.replyTarget?.author?.name || ''
+    },
+    registerAction(): PawFixedAction | null {
+      if (!this.activity) return null
+      return {
+        key: 'register',
+        label: this.activity.state === 'ended' ? '活动已结束' : '报名参与',
+        disabled: this.activity.state === 'ended',
+        tone: this.activity.state === 'ended' ? 'secondary' : 'brand',
+        qa: 'qa-offline-activity-register',
+      }
+    },
+    activityShareData(): ShareData {
+      if (!this.activity) return {}
+      return {
+        title: this.activity.detailTitle,
+        path: buildRoute('activity.offline.detail', { activityId: this.activity.activityId }),
+        imageUrl: this.activity.cover,
+      }
+    },
+    heroBackdropHidden(): boolean {
+      return !this.isAtTop
     },
     backSlotStyle(): Record<string, string> {
       return {
@@ -349,9 +433,6 @@ export default defineComponent({
         right: '0px',
         justifyContent: 'flex-start',
       }
-    },
-    heroBackdropHidden(): boolean {
-      return this.scrollTop > 0
     },
     recommendedActivity() {
       return getOfflineActivitySummaries('ongoing').find(
@@ -363,27 +444,100 @@ export default defineComponent({
     try {
       const activityId = readActivityId(options)
       this.activity = getOfflineActivityDetail(activityId) || null
+      this.comments = this.activity ? this.activity.comments.map(toCommentRecord) : []
     } catch {
       this.activity = null
+      this.comments = []
     }
   },
   onShareAppMessage() {
     if (!this.activity) return { title: '线下活动' }
+    this.shareSheetVisible = false
     return {
       title: this.activity.detailTitle,
       path: buildRoute('activity.offline.detail', { activityId: this.activity.activityId }),
       imageUrl: this.activity.cover,
     }
   },
+  onShareTimeline() {
+    if (!this.activity) return { title: '线下活动' }
+    return {
+      title: this.activity.detailTitle,
+      query: `activityId=${encodeURIComponent(this.activity.activityId)}`,
+      imageUrl: this.activity.cover,
+    }
+  },
+  onUnload() {
+    const state = navReconcileStates.get(this)
+    if (state?.timer) clearTimeout(state.timer)
+    navReconcileStates.delete(this)
+  },
   methods: {
     onNavLayout(layout: WechatNavLayout) {
       this.navTotalHeight = layout.totalHeight
     },
     onScroll(event: unknown) {
-      this.scrollTop = readPawEventNumber(event, 'scrollTop')
+      const scrollTop = readPawEventNumber(event, 'scrollTop')
+      this.updateNavForScrollTop(scrollTop)
+      this.scheduleNavReconcile()
+    },
+    onScrollToTop() {
+      this.showScrolledNav = false
+      this.scheduleNavReconcile()
+    },
+    updateNavForScrollTop(scrollTop: number) {
+      if (scrollTop <= NAV_HIDE_SCROLL_TOP) this.showScrolledNav = false
+      else if (scrollTop >= NAV_SHOW_SCROLL_TOP) this.showScrolledNav = true
+    },
+    scheduleNavReconcile() {
+      const state = navReconcileStates.get(this) || { token: 0, timer: null }
+      if (state.timer) clearTimeout(state.timer)
+      state.token += 1
+      navReconcileStates.set(this, state)
+      this.sampleNavPosition(state, state.token, null, NAV_RECONCILE_MAX_SAMPLES)
+    },
+    sampleNavPosition(
+      state: NavReconcileState,
+      token: number,
+      previousTop: number | null,
+      remainingSamples: number,
+    ) {
+      state.timer = setTimeout(() => {
+        state.timer = null
+        uni
+          .createSelectorQuery()
+          .in(this)
+          .select('#offline-activity-detail-scroll')
+          .scrollOffset((offset) => {
+            if (navReconcileStates.get(this) !== state || state.token !== token) return
+            if (!offset || Array.isArray(offset)) return
+            const scrollTop = offset.scrollTop
+            if (typeof scrollTop !== 'number') return
+            this.updateNavForScrollTop(scrollTop)
+            if (
+              scrollTop > NAV_HIDE_SCROLL_TOP &&
+              remainingSamples > 1 &&
+              (previousTop === null || Math.abs(scrollTop - previousTop) > 0.5)
+            ) {
+              this.sampleNavPosition(state, token, scrollTop, remainingSamples - 1)
+            }
+          })
+          .exec()
+      }, NAV_RECONCILE_DELAY_MS)
     },
     goBack() {
-      goBackSmart({ fallbackUrl: buildRoute('activity.offline.list') })
+      const listUrl = buildRoute('activity.offline.list')
+      const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : []
+      const previous = pages.length > 1 ? pages[pages.length - 2] : null
+      const previousRoute = previous && (previous.route || previous.$page?.route)
+      if (previousRoute === listUrl.slice(1)) {
+        uni.navigateBack({
+          delta: 1,
+          fail: () => uni.redirectTo({ url: listUrl, fail: () => uni.reLaunch({ url: listUrl }) }),
+        })
+        return
+      }
+      uni.redirectTo({ url: listUrl, fail: () => uni.reLaunch({ url: listUrl }) })
     },
     openActivity(activityId: string) {
       try {
@@ -397,7 +551,56 @@ export default defineComponent({
       }
     },
     registerForActivity() {
+      if (!this.activity || this.activity.state === 'ended') return
       uni.showToast({ title: '报名功能暂未开放', icon: 'none' })
+    },
+    onFooterAction(action: PawFixedAction) {
+      if (action.key === 'share' && this.activity) this.shareSheetVisible = true
+    },
+    onShareAction(key: ShareActionKey, shareData: ShareData) {
+      if (key === 'wechat') return
+      if (key === 'moments') {
+        uni.showToast({ title: '请从右上角菜单分享到朋友圈', icon: 'none' })
+        return
+      }
+      if (key === 'link') {
+        const path = typeof shareData.path === 'string' ? shareData.path : ''
+        if (!path) return
+        uni.setClipboardData({
+          data: path,
+          success: () => uni.showToast({ title: '小程序页面路径已复制', icon: 'none' }),
+        })
+        return
+      }
+      uni.showToast({
+        title: key === 'poster' ? '海报功能暂未开放' : '举报功能暂未开放',
+        icon: 'none',
+      })
+    },
+    openReplySheet(comment?: CommentItemRecord) {
+      this.replyTarget = comment || null
+      this.replySheetVisible = true
+    },
+    onReplySend(text: string) {
+      const target = this.replyTarget
+      this.comments.unshift({
+        id: `local-comment-${this.nextCommentId++}`,
+        author: { name: '我', avatar: this.assets.commentUser },
+        copy: text,
+        meta: '刚刚',
+        likes: 0,
+        liked: false,
+        ...(target ? { replyTo: { name: target.author?.name || '' } } : {}),
+      })
+      this.replyTarget = null
+      uni.showToast({ title: '留言仅本次浏览可见', icon: 'none' })
+    },
+    toggleCommentLike(comment: CommentItemRecord) {
+      comment.liked = !comment.liked
+      comment.likes = Math.max(0, Number(comment.likes || 0) + (comment.liked ? 1 : -1))
+    },
+    onComposerUnavailable() {
+      uni.showToast({ title: '语音和图片留言暂未开放', icon: 'none' })
     },
   },
 })
@@ -424,27 +627,10 @@ export default defineComponent({
   display: block;
   width: 100%;
   height: 371px;
-  opacity: 1;
 }
 
 .offline-activity-detail-page__hero-backdrop--hidden {
   opacity: 0;
-}
-
-.offline-activity-detail-page__back-hit {
-  display: flex;
-  flex: 0 0 42px;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-}
-
-.offline-activity-detail-page__back-icon {
-  display: block;
-  flex: 0 0 42px;
-  width: 42px;
-  height: 42px;
 }
 
 .offline-activity-detail-page__scroll {
@@ -531,6 +717,10 @@ export default defineComponent({
   color: #fff;
   font-size: 12px;
   line-height: 20px;
+}
+
+.offline-activity-detail-page__summary-status--ended {
+  background: #aaa;
 }
 
 .offline-activity-detail-page__tags {
@@ -635,24 +825,8 @@ export default defineComponent({
 }
 
 .offline-activity-detail-page__member-avatars {
-  display: flex;
   flex: 0 0 auto;
-  align-items: center;
   margin-left: 12px;
-}
-
-.offline-activity-detail-page__member-avatar {
-  display: block;
-  flex: 0 0 19px;
-  width: 19px;
-  height: 19px;
-  border: 1px solid #fff;
-  border-radius: 50%;
-  box-sizing: border-box;
-}
-
-.offline-activity-detail-page__member-avatar--overlap {
-  margin-left: -7px;
 }
 
 .offline-activity-detail-page__member-count {
@@ -784,57 +958,7 @@ export default defineComponent({
 }
 
 .offline-activity-detail-page__composer {
-  display: flex;
-  flex: 0 0 34px;
-  align-items: center;
-  min-width: 0;
   margin-top: 27px;
-  gap: 11px;
-}
-
-.offline-activity-detail-page__composer-user {
-  display: block;
-  flex: 0 0 34px;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-}
-
-.offline-activity-detail-page__composer-input {
-  display: flex;
-  flex: 1 1 auto;
-  align-items: center;
-  justify-content: space-between;
-  height: 33px;
-  min-width: 0;
-  padding: 0 10px 0 15px;
-  border-radius: 15px;
-  background: #f4f4f5;
-  color: #b2b2b2;
-  font-size: 13px;
-  line-height: 17px;
-  box-sizing: border-box;
-}
-
-.offline-activity-detail-page__composer-tools {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 10px;
-}
-
-.offline-activity-detail-page__composer-mic {
-  display: block;
-  flex: 0 0 13px;
-  width: 13px;
-  height: 17.15px;
-}
-
-.offline-activity-detail-page__composer-emoji {
-  display: block;
-  flex: 0 0 17px;
-  width: 17px;
-  height: 17px;
 }
 
 .offline-activity-detail-page__comment-list {
@@ -845,95 +969,7 @@ export default defineComponent({
 }
 
 .offline-activity-detail-page__comment {
-  display: flex;
-  flex: 0 0 83px;
   min-width: 0;
-  gap: 7px;
-}
-
-.offline-activity-detail-page__comment-avatar {
-  display: block;
-  flex: 0 0 33px;
-  width: 33px;
-  height: 33px;
-  border-radius: 50%;
-}
-
-.offline-activity-detail-page__comment-main {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.offline-activity-detail-page__comment-author-row {
-  display: flex;
-  flex: 0 0 17px;
-  align-items: center;
-  gap: 6px;
-}
-
-.offline-activity-detail-page__comment-author {
-  display: block;
-  color: #666;
-  font-size: 13px;
-  line-height: 17px;
-}
-
-.offline-activity-detail-page__comment-body {
-  display: -webkit-box;
-  flex: 0 0 36px;
-  margin-top: 4px;
-  overflow: hidden;
-  color: #333;
-  font-size: 13px;
-  line-height: 18px;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.offline-activity-detail-page__comment-meta {
-  display: flex;
-  flex: 0 0 17px;
-  align-items: center;
-  min-width: 0;
-  margin-top: 5px;
-  color: #8c8c8c;
-  font-size: 12px;
-  line-height: 17px;
-}
-
-.offline-activity-detail-page__comment-time {
-  display: block;
-  flex: 0 1 auto;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.offline-activity-detail-page__comment-reply {
-  display: block;
-  flex: 0 0 auto;
-  margin-left: 10px;
-  color: #616161;
-}
-
-.offline-activity-detail-page__comment-likes {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  margin-left: auto;
-  color: #686868;
-  font-size: 13px;
-  font-weight: 500;
-  gap: 5px;
-}
-
-.offline-activity-detail-page__like-icon {
-  display: block;
-  flex: 0 0 13px;
-  width: 13px;
-  height: 14px;
 }
 
 .offline-activity-detail-page__recommend-heading {
@@ -964,81 +1000,10 @@ export default defineComponent({
 
 .offline-activity-detail-page__action-bar {
   position: fixed;
-  z-index: 300;
   right: 0;
   bottom: 0;
   left: 0;
-  display: flex;
-  align-items: center;
-  width: 100%;
-  height: 101px;
-  padding: 10px 18px 34px 23px;
-  border-top: 0.5px solid rgba(0, 0, 0, 0.05);
-  background: #fff;
-  box-sizing: border-box;
-  gap: 16px;
-}
-
-/* #ifdef MP-WEIXIN */
-.offline-activity-detail-page__action-bar {
-  height: calc(67px + env(safe-area-inset-bottom));
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-/* #endif */
-
-.offline-activity-detail-page__share {
-  display: flex;
-  flex: 0 0 30px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 47px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #2c2c2c;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 16px;
-}
-
-.offline-activity-detail-page__share::after,
-.offline-activity-detail-page__register::after {
-  border: 0;
-}
-
-.offline-activity-detail-page__share-icon {
-  display: block;
-  flex: 0 0 18px;
-  width: 18px;
-  height: 18px;
-  margin-bottom: 3px;
-}
-
-.offline-activity-detail-page__register {
-  display: flex;
-  flex: 1 1 auto;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  height: 47px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 23.5px;
-  background: #ffe60f;
-  color: #333;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 24px;
-  white-space: nowrap;
-}
-
-.offline-activity-detail-page__register--pressed {
-  opacity: 0.7;
+  z-index: 300;
 }
 
 .offline-activity-detail-page__invalid {

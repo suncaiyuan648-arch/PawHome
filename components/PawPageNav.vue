@@ -26,7 +26,7 @@
           <PawIcon
             name="navigation/back"
             size="base"
-            color="#282827"
+            :color="backColor"
             label="返回"
           />
         </view>
@@ -106,6 +106,7 @@ export default defineComponent({
     },
     contentSlotEnabled: { type: Boolean, default: true },
     background: { type: String, default: 'transparent' },
+    backColor: { type: String, default: '#282827' },
     light: { type: Boolean, default: false },
     showBack: { type: Boolean, default: true },
     autoBack: { type: Boolean, default: true },

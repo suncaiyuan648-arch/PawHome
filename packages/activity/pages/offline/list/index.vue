@@ -11,8 +11,17 @@
       background="transparent"
       :show-back="false"
       :auto-back="false"
+      slot-position="custom"
+      :slot-style="backSlotStyle"
       @layout="onNavLayout"
-    />
+    >
+      <template #content>
+        <OfflineActivityBackButton
+          qa="qa-offline-activity-list-back"
+          @back="goBack"
+        />
+      </template>
+    </PawPageNav>
 
     <view
       class="offline-activity-list-page__top-space"
@@ -81,6 +90,12 @@
         </view>
       </view>
     </scroll-view>
+
+    <PawFixedActionBar
+      :primary-action="createActivityAction"
+      primary-full-width
+      @primary="onCreateActivity"
+    />
   </view>
 </template>
 
@@ -88,8 +103,11 @@
 import { defineComponent } from 'vue'
 
 import PawPageNav from '@/components/PawPageNav.vue'
+import PawFixedActionBar, { type PawFixedAction } from '@/components/layout/PawFixedActionBar.vue'
 import { buildRoute } from '@/navigation/routeContracts.ts'
+import { goBackSmart } from '@/utils/navBack.ts'
 import type { WechatNavLayout } from '@/utils/navLayout.ts'
+import OfflineActivityBackButton from '../../../components/OfflineActivityBackButton.vue'
 import OfflineActivityCard from '../../../components/OfflineActivityCard.vue'
 import { OFFLINE_ACTIVITY_ASSETS } from '../../../services/offlineActivityAssets.ts'
 import {
@@ -100,20 +118,29 @@ import {
 interface OfflineActivityListPageState {
   activeState: OfflineActivityState
   assets: typeof OFFLINE_ACTIVITY_ASSETS
+  createActivityAction: PawFixedAction
   navTotalHeight: number
 }
 
 export default defineComponent({
   name: 'OfflineActivityListPage',
-  components: { PawPageNav, OfflineActivityCard },
+  components: { PawPageNav, PawFixedActionBar, OfflineActivityBackButton, OfflineActivityCard },
   data(): OfflineActivityListPageState {
     return {
       activeState: 'ongoing',
       assets: OFFLINE_ACTIVITY_ASSETS,
+      createActivityAction: {
+        key: 'create-activity',
+        label: '发起活动',
+        qa: 'qa-offline-activity-create',
+      },
       navTotalHeight: 0,
     }
   },
   computed: {
+    backSlotStyle(): Record<string, string> {
+      return { left: '7px', right: '0px', justifyContent: 'flex-start' }
+    },
     topSpacerHeight(): number {
       return Math.max(0, 198 - this.navTotalHeight)
     },
@@ -125,8 +152,14 @@ export default defineComponent({
     onNavLayout(layout: WechatNavLayout) {
       this.navTotalHeight = layout.totalHeight
     },
+    goBack() {
+      goBackSmart({ fallbackUrl: '/pages/index/index' })
+    },
     selectState(state: OfflineActivityState) {
       this.activeState = state
+    },
+    onCreateActivity() {
+      uni.navigateTo({ url: buildRoute('activity.offline.create') })
     },
     openActivity(activityId: string) {
       try {
@@ -242,7 +275,7 @@ export default defineComponent({
   flex: 0 0 8px;
   width: 5.8px;
   height: 9.8px;
-  transform: rotate(90deg) scaleY(-1);
+  transform: rotate(-90deg);
 }
 
 .offline-activity-list-page__scroll {
@@ -260,7 +293,7 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding: 7px 0 24px;
+  padding: 7px 0 104px;
   box-sizing: border-box;
   gap: 8px;
 }
