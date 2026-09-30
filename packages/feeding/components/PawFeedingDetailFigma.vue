@@ -281,9 +281,14 @@
     <PawDatePickerSheet
       v-model="feedbackCalendarVisible"
       mode="pet"
-      :selected-date="feedbackCalendarDate"
+      :selected-date="feedbackCalendarDate || feedbackCalendarToday"
+      :initial-date="feedbackCalendarToday"
       :today="feedbackCalendarToday"
-      :entries="feedbackCalendarEntries"
+      :min-date="feedbackCalendarMinDate"
+      :max-date="feedbackCalendarMaxDate"
+      :cache-key="feedbackCalendarCacheKey"
+      :entries="[]"
+      :load-month="loadFeedbackCalendarMonth"
       qa="qa-feeding-detail-calendar-sheet"
       @select="onFeedbackCalendarSelect"
     />
@@ -431,6 +436,7 @@ export default defineComponent({
       const feedback = this.feedbackTagText
       return [
         {
+          id: `${this.orderId || this.detailView.orderId || 'feeding'}-feedback`,
           date,
           count: 1,
           total: 5,
@@ -441,6 +447,27 @@ export default defineComponent({
     },
     feedbackCalendarToday(): string {
       return this.normalizeCalendarDate(this.detailView.time) || '2026-02-05'
+    },
+    feedbackCalendarMinDate(): string {
+      const today = this.feedbackCalendarToday
+      const match = today.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+      if (!match) return today
+      const date = new Date(Number(match[1]), Number(match[2]) - 1 - 12, Number(match[3]))
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+        date.getDate(),
+      ).padStart(2, '0')}`
+    },
+    feedbackCalendarMaxDate(): string {
+      const today = this.feedbackCalendarToday
+      const match = today.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+      if (!match) return today
+      const date = new Date(Number(match[1]), Number(match[2]) - 1 + 12, Number(match[3]))
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+        date.getDate(),
+      ).padStart(2, '0')}`
+    },
+    feedbackCalendarCacheKey(): string {
+      return `${this.orderId || this.detailView.orderId || 'feeding'}:${this.perspective || 'cloud-parent'}`
     },
     feedbackTagText() {
       return `已反馈${this.detailView.feedbackProgress || '2/5'}次`
@@ -482,6 +509,12 @@ export default defineComponent({
     },
     onFeedbackCalendarSelect(date: string) {
       this.feedbackCalendarDate = date
+    },
+    loadFeedbackCalendarMonth(month: string): PawDatePickerEntry[] {
+      const normalizedMonth = String(month || '').slice(0, 7)
+      return this.feedbackCalendarEntries.filter(
+        (entry) => entry.date.slice(0, 7) === normalizedMonth,
+      )
     },
     normalizeCalendarDate(value: string): string {
       const match = String(value || '').match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)

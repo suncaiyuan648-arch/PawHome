@@ -137,9 +137,14 @@
       <PawDatePickerSheet
         v-model="calendarVisible"
         mode="total"
-        :selected-date="selectedDate"
+        :selected-date="selectedDate || todayDate"
+        :initial-date="todayDate"
         :today="todayDate"
-        :entries="calendarEntries"
+        :min-date="calendarMinDate"
+        :max-date="calendarMaxDate"
+        :cache-key="calendarCacheKey"
+        :entries="[]"
+        :load-month="loadCalendarMonth"
         qa="qa-feeding-calendar-sheet"
         @select="onDateChange"
       />
@@ -166,6 +171,23 @@ import {
   type FeedingOrderListItem,
   type FeedingOrderListPageState,
 } from '../services/orderListMetadata.ts'
+
+const DEFAULT_CALENDAR_TODAY = '2026-02-05'
+
+function normalizeCalendarDate(value: string): string {
+  const match = String(value || '').match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
+  if (!match) return ''
+  return `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`
+}
+
+function shiftCalendarMonth(value: string, amount: number): string {
+  const match = normalizeCalendarDate(value).match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!match) return ''
+  const date = new Date(Number(match[1]), Number(match[2]) - 1 + amount, Number(match[3]))
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+    date.getDate(),
+  ).padStart(2, '0')}`
+}
 
 export default defineComponent({
   name: 'PawFeedingOrderList',
@@ -203,7 +225,33 @@ export default defineComponent({
       return this.items
     },
     todayDate(): string {
-      return this.calendarEntries[0]?.date || ''
+      const dates = this.calendarEntries
+        .map((entry) => entry.date)
+        .filter(Boolean)
+        .sort()
+      return dates[dates.length - 1] || DEFAULT_CALENDAR_TODAY
+    },
+    calendarMinDate(): string {
+      const dates = this.calendarEntries
+        .map((entry) => entry.date)
+        .filter(Boolean)
+        .sort()
+      const earliest = dates[0]
+      return earliest && earliest < this.todayDate
+        ? earliest
+        : shiftCalendarMonth(this.todayDate, -12)
+    },
+    calendarMaxDate(): string {
+      const dates = this.calendarEntries
+        .map((entry) => entry.date)
+        .filter(Boolean)
+        .sort()
+      const latest = dates[dates.length - 1]
+      return latest && latest > this.todayDate ? latest : shiftCalendarMonth(this.todayDate, 12)
+    },
+    calendarCacheKey(): string {
+      const itemKey = this.items.map((item) => `${item.id}:${item.time || ''}`).join(',')
+      return [this.variant, this.yardId, this.yardOwnerId, this.keyword, itemKey].join('|')
     },
     calendarEntries(): PawDatePickerEntry[] {
       if (this.variant !== 'yard') return []
@@ -212,6 +260,7 @@ export default defineComponent({
         if (!match) return entries
         const date = `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`
         entries.push({
+          id: item.id,
           date,
           count: 1,
           label: `${item.petName || '小动物'} · ${item.orderState || '待反馈'}`,
@@ -241,6 +290,10 @@ export default defineComponent({
     },
     openCalendar() {
       this.calendarVisible = true
+    },
+    loadCalendarMonth(month: string): PawDatePickerEntry[] {
+      const normalizedMonth = String(month || '').slice(0, 7)
+      return this.calendarEntries.filter((entry) => entry.date.slice(0, 7) === normalizedMonth)
     },
     loadOrders() {
       if (this.emptyState) {

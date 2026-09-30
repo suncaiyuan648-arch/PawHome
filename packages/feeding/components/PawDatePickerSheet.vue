@@ -27,10 +27,14 @@
           scroll-y
           :show-scrollbar="false"
           :bounces="false"
+          :scroll-into-view="calendarScrollIntoView"
+          @scrolltoupper="loadPreviousMonths"
+          @scrolltolower="loadNextMonths"
         >
           <view class="paw-date-picker-sheet__months">
             <view
               v-for="month in calendarMonths"
+              :id="monthAnchorId(month.key)"
               :key="month.key"
               class="paw-date-picker-sheet__month"
             >
@@ -45,6 +49,7 @@
                     'paw-date-picker-sheet__cell--today': cell.date === todayDate,
                     'paw-date-picker-sheet__cell--selected':
                       cell.date === normalizedSelectedDate && cell.date !== todayDate,
+                    'paw-date-picker-sheet__cell--disabled': cell.disabled,
                   }"
                   :data-date="cell.date"
                   data-qa="qa-feeding-calendar-date"
@@ -119,7 +124,17 @@ import PawBottomSheet from '@/components/overlay/PawBottomSheet.vue'
 export type PawDatePickerMode = 'total' | 'pet'
 export type PawDatePickerTone = 'green' | 'red' | 'orange' | 'blue' | 'gray'
 
+export type PawDatePickerMonthLoader = (
+  // eslint-disable-next-line no-unused-vars
+  ...args: [string]
+) =>
+  | PawDatePickerEntry[]
+  | readonly PawDatePickerEntry[]
+  | Promise<PawDatePickerEntry[] | readonly PawDatePickerEntry[] | void>
+  | void
+
 export interface PawDatePickerEntry {
+  id?: string
   date: string
   count?: number
   total?: number
@@ -131,6 +146,7 @@ interface PawDateCell {
   date: string
   day: number
   muted: boolean
+  disabled: boolean
   count: number
   total: number
   tone: PawDatePickerTone | ''
@@ -144,7 +160,16 @@ interface PawDateMonth {
 
 interface PawDatePickerSheetState {
   viewDate: string
+  loadedMonthKeys: string[]
+  loadedEntries: PawDatePickerEntry[]
+  monthEntriesCache: Record<string, PawDatePickerEntry[]>
+  requestedMonthKeys: string[]
+  loadingMonthKeys: string[]
+  calendarScrollIntoView: string
 }
+
+const DEFAULT_HISTORY_MONTHS = 12
+const MONTH_LOAD_BATCH = 2
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
 
@@ -174,6 +199,27 @@ function addMonths(date: Date, amount: number): Date {
   return new Date(date.getFullYear(), date.getMonth() + amount, 1)
 }
 
+function monthKey(value: string | Date): string {
+  const date = value instanceof Date ? value : parseDate(value)
+  if (!date) return ''
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}`
+}
+
+function normalizeDate(value: string): string {
+  const date = parseDate(value)
+  return date ? formatDate(date) : ''
+}
+
+function dateFromMonthKey(value: string): Date | null {
+  const match = String(value || '').match(/^(\d{4})-(\d{2})$/)
+  if (!match) return null
+  return new Date(Number(match[1]), Number(match[2]) - 1, 1)
+}
+
+function dateDiffInMonths(from: Date, to: Date): number {
+  return (to.getFullYear() - from.getFullYear()) * 12 + to.getMonth() - from.getMonth()
+}
+
 function entryTone(entry: PawDatePickerEntry | undefined): PawDatePickerTone | '' {
   if (!entry || !entry.count) return ''
   return entry.tone || (entry.count > 1 ? 'green' : 'orange')
@@ -188,16 +234,32 @@ export default defineComponent({
     selectedDate: { type: String, default: '' },
     today: { type: String, default: '' },
     initialDate: { type: String, default: '' },
+    minDate: { type: String, default: '' },
+    maxDate: { type: String, default: '' },
     entries: { type: Array as PropType<PawDatePickerEntry[]>, default: () => [] },
+    cacheKey: { type: String, default: '' },
+    loadMonth: {
+      type: Function as unknown as PropType<PawDatePickerMonthLoader | null>,
+      default: null,
+    },
     qa: { type: String, default: 'qa-paw-date-picker-sheet' },
     emptyText: { type: String, default: '当天暂无反馈记录' },
   },
   emits: {
     'update:modelValue': eventContract<[value: boolean]>(),
     select: eventContract<[date: string]>(),
+    'load-month': eventContract<[month: string]>(),
   },
   data(): PawDatePickerSheetState {
-    return { viewDate: '' }
+    return {
+      viewDate: '',
+      loadedMonthKeys: [],
+      loadedEntries: [],
+      monthEntriesCache: {},
+      requestedMonthKeys: [],
+      loadingMonthKeys: [],
+      calendarScrollIntoView: '',
+    }
   },
   computed: {
     valueProxy: {
@@ -212,10 +274,32 @@ export default defineComponent({
       return WEEKDAYS
     },
     normalizedSelectedDate(): string {
-      return this.selectedDate || this.entries[0]?.date || formatDate(new Date())
+      return (
+        normalizeDate(this.selectedDate) ||
+        normalizeDate(this.initialDate) ||
+        normalizeDate(this.today) ||
+        this.loadedEntries[0]?.date ||
+        formatDate(new Date())
+      )
     },
     todayDate(): string {
-      return this.today || formatDate(new Date())
+      return normalizeDate(this.today) || formatDate(new Date())
+    },
+    normalizedMinDate(): string {
+      const maxDate = parseDate(this.maxDate) || parseDate(this.todayDate) || new Date()
+      const minDate = parseDate(this.minDate) || addMonths(maxDate, -DEFAULT_HISTORY_MONTHS)
+      return formatDate(minDate <= maxDate ? minDate : maxDate)
+    },
+    normalizedMaxDate(): string {
+      const maxDate = parseDate(this.maxDate) || parseDate(this.todayDate) || new Date()
+      const minDate = parseDate(this.minDate) || addMonths(maxDate, -DEFAULT_HISTORY_MONTHS)
+      return formatDate(maxDate >= minDate ? maxDate : minDate)
+    },
+    availableMonthKeys(): string[] {
+      const min = monthStart(this.normalizedMinDate)
+      const max = monthStart(this.normalizedMaxDate)
+      const span = Math.max(0, Math.min(dateDiffInMonths(min, max), 2400))
+      return Array.from({ length: span + 1 }, (_, index) => monthKey(addMonths(min, index)))
     },
     selectedDateLabel(): string {
       const parsed = parseDate(this.normalizedSelectedDate)
@@ -223,7 +307,7 @@ export default defineComponent({
       return `${parsed.getFullYear()}年${parsed.getMonth() + 1}月${parsed.getDate()}日`
     },
     entriesByDate(): Record<string, PawDatePickerEntry> {
-      return this.entries.reduce<Record<string, PawDatePickerEntry>>((result, entry) => {
+      return this.loadedEntries.reduce<Record<string, PawDatePickerEntry>>((result, entry) => {
         if (!entry || !entry.date) return result
         const previous = result[entry.date]
         if (!previous) {
@@ -242,11 +326,13 @@ export default defineComponent({
       }, {})
     },
     selectedEntries(): PawDatePickerEntry[] {
-      return this.entries.filter((entry) => entry.date === this.normalizedSelectedDate)
+      return this.loadedEntries.filter((entry) => entry.date === this.normalizedSelectedDate)
     },
     calendarMonths(): PawDateMonth[] {
-      const start = monthStart(this.viewDate || this.normalizedSelectedDate)
-      return [0, 1].map((offset) => this.createMonth(addMonths(start, offset)))
+      return this.loadedMonthKeys
+        .map((key) => dateFromMonthKey(key))
+        .filter((date): date is Date => Boolean(date))
+        .map((date) => this.createMonth(date))
     },
     fallbackLabel(): string {
       return this.mode === 'pet' ? '该宠物暂无反馈说明' : '小院暂无反馈说明'
@@ -254,18 +340,151 @@ export default defineComponent({
   },
   watch: {
     modelValue(value: boolean) {
-      if (value) this.syncViewDate()
+      if (value) this.resetCalendar()
     },
-    entries() {
-      if (this.modelValue) this.syncViewDate()
+    entries(value: PawDatePickerEntry[]) {
+      this.replaceEntries(value)
+    },
+    initialDate() {
+      if (this.modelValue) this.resetCalendar()
+    },
+    minDate() {
+      if (this.modelValue) this.resetCalendar()
+    },
+    maxDate() {
+      if (this.modelValue) this.resetCalendar()
+    },
+    cacheKey() {
+      this.monthEntriesCache = {}
+      this.requestedMonthKeys = []
+      this.loadedEntries = this.mergeEntries([], this.entries)
+      if (this.modelValue) this.resetCalendar()
     },
   },
   created() {
-    this.syncViewDate()
+    this.viewDate = this.initialDate || this.selectedDate || this.todayDate
+    this.replaceEntries(this.entries)
   },
   methods: {
-    syncViewDate() {
-      this.viewDate = this.initialDate || this.normalizedSelectedDate
+    replaceEntries(entries: PawDatePickerEntry[]) {
+      const nextEntries = Array.isArray(entries) ? entries : []
+      this.loadedEntries = this.loadMonth
+        ? this.mergeEntries(this.loadedEntries, nextEntries)
+        : this.mergeEntries([], nextEntries)
+    },
+    mergeEntries(
+      current: PawDatePickerEntry[],
+      incoming: readonly PawDatePickerEntry[],
+    ): PawDatePickerEntry[] {
+      const result: PawDatePickerEntry[] = []
+      const seen = new Set<string>()
+      current.concat(incoming as PawDatePickerEntry[]).forEach((entry) => {
+        if (!entry || !entry.date) return
+        const key = entry.id
+          ? `id:${entry.id}`
+          : [
+              entry.date,
+              entry.count || 0,
+              entry.total || 0,
+              entry.label || '',
+              entry.tone || '',
+            ].join('|')
+        if (seen.has(key)) return
+        seen.add(key)
+        result.push({ ...entry, date: normalizeDate(entry.date) || entry.date })
+      })
+      return result
+    },
+    resetCalendar() {
+      this.viewDate = this.initialDate || this.selectedDate || this.todayDate
+      this.loadedEntries = this.mergeEntries([], this.entries)
+      if (!this.loadMonth) this.requestedMonthKeys = []
+      this.loadingMonthKeys = []
+      this.calendarScrollIntoView = ''
+
+      const available = this.availableMonthKeys
+      if (!available.length) {
+        this.loadedMonthKeys = []
+        return
+      }
+      const selectedMonth = monthKey(this.viewDate) || available[0]
+      const centerIndex = Math.max(0, available.indexOf(selectedMonth))
+      const start = Math.max(0, centerIndex - 1)
+      const end = Math.min(available.length, centerIndex + 2)
+      this.loadedMonthKeys = available.slice(start, end)
+      this.loadedMonthKeys.forEach((month) => {
+        const cached = this.monthEntriesCache[month]
+        if (cached) this.loadedEntries = this.mergeEntries(this.loadedEntries, cached)
+      })
+      this.requestMonths(this.loadedMonthKeys)
+    },
+    requestMonths(months: readonly string[]) {
+      months.forEach((month) => this.requestMonth(month))
+    },
+    async requestMonth(month: string) {
+      if (!month) return
+      const cached = this.monthEntriesCache[month]
+      if (cached) {
+        this.loadedEntries = this.mergeEntries(this.loadedEntries, cached)
+        if (!this.requestedMonthKeys.includes(month)) {
+          this.requestedMonthKeys = [...this.requestedMonthKeys, month]
+        }
+        return
+      }
+      if (this.requestedMonthKeys.includes(month)) return
+      this.requestedMonthKeys = [...this.requestedMonthKeys, month]
+      this.$emit('load-month', month)
+      if (!this.loadMonth) return
+      const requestCacheKey = this.cacheKey
+      this.loadingMonthKeys = [...this.loadingMonthKeys, month]
+      try {
+        const result = await this.loadMonth(month)
+        if (requestCacheKey !== this.cacheKey) return
+        if (Array.isArray(result)) {
+          this.monthEntriesCache = { ...this.monthEntriesCache, [month]: result.slice() }
+          this.loadedEntries = this.mergeEntries(this.loadedEntries, result)
+        }
+      } catch {
+        this.requestedMonthKeys = this.requestedMonthKeys.filter((value) => value !== month)
+      } finally {
+        this.loadingMonthKeys = this.loadingMonthKeys.filter((value) => value !== month)
+      }
+    },
+    loadPreviousMonths() {
+      const first = this.loadedMonthKeys[0]
+      const index = this.availableMonthKeys.indexOf(first)
+      if (!first || index <= 0) return
+      const previous = this.availableMonthKeys.slice(Math.max(0, index - MONTH_LOAD_BATCH), index)
+      const anchor = first
+      this.loadedMonthKeys = [...previous, ...this.loadedMonthKeys]
+      this.requestMonths(previous)
+      this.restoreMonthAnchor(anchor)
+    },
+    loadNextMonths() {
+      const last = this.loadedMonthKeys[this.loadedMonthKeys.length - 1]
+      const index = this.availableMonthKeys.indexOf(last)
+      if (!last || index < 0 || index >= this.availableMonthKeys.length - 1) return
+      const next = this.availableMonthKeys.slice(index + 1, index + 1 + MONTH_LOAD_BATCH)
+      this.loadedMonthKeys = [...this.loadedMonthKeys, ...next]
+      this.requestMonths(next)
+    },
+    restoreMonthAnchor(month: string) {
+      const anchor = this.monthAnchorId(month)
+      this.$nextTick(() => {
+        this.calendarScrollIntoView = anchor
+        setTimeout(() => {
+          if (this.calendarScrollIntoView === anchor) this.calendarScrollIntoView = ''
+        }, 80)
+      })
+    },
+    monthAnchorId(month: string): string {
+      return `paw-date-picker-month-${month}`
+    },
+    isDateSelectable(date: string): boolean {
+      const normalized = normalizeDate(date)
+      return Boolean(
+        normalized && normalized >= this.normalizedMinDate && normalized <= this.normalizedMaxDate,
+      )
     },
     createMonth(start: Date): PawDateMonth {
       const year = start.getFullYear()
@@ -282,6 +501,7 @@ export default defineComponent({
           date: key,
           day: date.getDate(),
           muted: date.getMonth() !== month,
+          disabled: !this.isDateSelectable(key),
           count: entry?.count || 0,
           total: entry?.total || entry?.count || 0,
           tone: entryTone(entry),
@@ -294,6 +514,8 @@ export default defineComponent({
       }
     },
     selectDate(date: string) {
+      if (!this.isDateSelectable(date)) return
+      this.requestMonth(monthKey(date))
       this.$emit('select', date)
     },
   },
@@ -385,6 +607,10 @@ export default defineComponent({
 
 .paw-date-picker-sheet__cell--muted .paw-date-picker-sheet__day {
   color: #ddd;
+}
+
+.paw-date-picker-sheet__cell--disabled {
+  opacity: 0.45;
 }
 
 .paw-date-picker-sheet__cell--today .paw-date-picker-sheet__day {
